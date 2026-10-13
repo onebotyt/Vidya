@@ -1,0 +1,394 @@
+erDiagram
+    %% =========================================================================
+    %% UIAP College Biometric Attendance System — Authoritative Master ERD
+    %% Total Tables: 26 (InnoDB MySQL 8.x)
+    %% =========================================================================
+
+    %% -------------------------------------------------------------------------
+    %% GROUP A: CENTRAL IDENTITY, AUTHENTICATION & GOVERNANCE
+    %% -------------------------------------------------------------------------
+
+    users {
+        int id PK "Primary key"
+        varchar username UK "Login ID / Official enrollment no"
+        varchar email UK "Institutional / Google email"
+        varchar password_hash "bcrypt hash of permanent password"
+        varchar temp_password_hash "bcrypt hash of temporary password"
+        boolean must_change_password "Mandatory password change flag"
+        varchar google_sub UK "Google OAuth unique subject ID"
+        enum status "PROVISIONED|PENDING|ACTIVE|REJECTED|SUSPENDED"
+        varchar rejection_reason "Rejection justification note"
+        timestamp created_at "Account creation timestamp"
+        timestamp updated_at "Account modification timestamp"
+    }
+
+    user_roles {
+        int id PK "Primary key"
+        int user_id FK "References users(id)"
+        enum role "SYSTEM_ADMIN|TEACHER|STUDENT"
+        timestamp created_at "Role assignment timestamp"
+    }
+
+    user_sessions {
+        int id PK "Primary key"
+        int user_id FK "References users(id)"
+        varchar refresh_token_hash UK "SHA-256 hash of refresh token"
+        varchar user_agent "Client browser / device user agent"
+        varchar ip_address "Client IPv4/IPv6 address"
+        datetime expires_at "Session expiration timestamp"
+        boolean is_revoked "Session revocation flag"
+        timestamp created_at "Session initialization timestamp"
+        timestamp updated_at "Session update timestamp"
+    }
+
+    notifications {
+        int id PK "Primary key"
+        int user_id FK "References users(id)"
+        varchar title "Notification alert headline"
+        text message "Notification message body"
+        enum type "INFO|WARNING|SUCCESS|DANGER"
+        boolean is_read "Read status indicator"
+        varchar link_url "Frontend navigation target URL"
+        timestamp created_at "Notification dispatch timestamp"
+    }
+
+    audit_logs {
+        int id PK "Primary key"
+        int user_id FK "References users(id)"
+        varchar action "Action identifier (e.g. SESSION_FINALIZED)"
+        varchar entity_type "Target entity name"
+        varchar entity_id "Target entity primary key"
+        json details_json "Before/after state snapshot payload"
+        varchar ip_address "Originating client IPv4/IPv6"
+        timestamp created_at "Immutable audit creation timestamp"
+    }
+
+    system_settings {
+        int id PK "Primary key"
+        varchar setting_key UK "Unique configuration key"
+        text setting_value "Configuration value payload"
+        varchar description "Setting description"
+        int updated_by FK "References users(id)"
+        timestamp updated_at "Auto-updated timestamp"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% GROUP B: ACADEMIC MASTER HIERARCHY
+    %% -------------------------------------------------------------------------
+
+    departments {
+        int id PK "Primary key"
+        varchar name UK "Full department name"
+        varchar code UK "Department shorthand code"
+        boolean is_active "Active status toggle"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Update timestamp"
+    }
+
+    branches {
+        int id PK "Primary key"
+        int department_id FK "References departments(id)"
+        varchar name "Degree branch title"
+        varchar code "Branch shorthand code"
+        boolean is_active "Active status toggle"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Update timestamp"
+    }
+
+    academic_years {
+        int id PK "Primary key"
+        varchar label UK "Academic year label (e.g. 2026-27)"
+        date start_date "Academic year opening date"
+        date end_date "Academic year closing date"
+        boolean is_current "Active institutional year flag"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Update timestamp"
+    }
+
+    subjects {
+        int id PK "Primary key"
+        int department_id FK "References departments(id)"
+        int branch_id FK "References branches(id)"
+        int year "Cohort year level (1-4)"
+        int semester "Cohort semester (1-8)"
+        varchar name "Subject course name"
+        varchar code "Subject syllabus code"
+        boolean is_active "Active status toggle"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Update timestamp"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% GROUP C: FACULTY & FUNCTIONAL ASSIGNMENTS
+    %% -------------------------------------------------------------------------
+
+    teachers {
+        int id PK "Primary key"
+        int user_id FK "References users(id)"
+        varchar employee_id UK "Official faculty employee code"
+        varchar full_name "Faculty legal full name"
+        varchar phone "Contact phone number"
+        timestamp created_at "Profile creation timestamp"
+        timestamp updated_at "Profile modification timestamp"
+    }
+
+    teacher_assignments {
+        int id PK "Primary key"
+        int teacher_id FK "References teachers(id)"
+        enum assignment_type "SUBJECT_TEACHER|CLASS_TEACHER|HOD"
+        int subject_id FK "References subjects(id)"
+        int department_id FK "References departments(id)"
+        int branch_id FK "References branches(id)"
+        int year "Cohort year (1-4)"
+        int semester "Cohort semester (1-8)"
+        int academic_year_id FK "References academic_years(id)"
+        int assigned_by FK "References users(id)"
+        boolean is_active "Active assignment toggle"
+        timestamp created_at "Assignment creation timestamp"
+        timestamp updated_at "Assignment update timestamp"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% GROUP D: STUDENTS & COHORT ENROLLMENTS
+    %% -------------------------------------------------------------------------
+
+    students {
+        int id PK "Primary key"
+        int user_id FK "References users(id)"
+        varchar official_enrollment_no UK "University permanent ID"
+        varchar full_name "Student legal full name"
+        enum entry_mode "teacher_provisioned|self_registered|admin_created"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Modification timestamp"
+    }
+
+    enrollments {
+        int id PK "Primary key"
+        int student_id FK "References students(id)"
+        int department_id FK "References departments(id)"
+        int branch_id FK "References branches(id)"
+        int year "Cohort year level (1-4)"
+        int semester "Cohort semester (1-8)"
+        int academic_year_id FK "References academic_years(id)"
+        int class_roll_no "Cohort-specific roll number"
+        enum status "ENROLLED|COMPLETED|PROMOTED|DROPPED"
+        timestamp created_at "Enrollment creation timestamp"
+        timestamp updated_at "Enrollment update timestamp"
+    }
+
+    cohort_registration_settings {
+        int id PK "Primary key"
+        int department_id FK "References departments(id)"
+        int branch_id FK "References branches(id)"
+        int year "Cohort year (1-4)"
+        int semester "Cohort semester (1-8)"
+        int academic_year_id FK "References academic_years(id)"
+        boolean registration_open "Self-registration toggle"
+        int changed_by FK "References users(id)"
+        timestamp changed_at "Toggle modification timestamp"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% GROUP E: ATTENDANCE SESSIONS & ROSTER SNAPSHOTS
+    %% -------------------------------------------------------------------------
+
+    attendance_sessions {
+        int id PK "Primary key"
+        int teacher_id FK "References teachers(id)"
+        int subject_id FK "References subjects(id)"
+        int department_id FK "References departments(id)"
+        int branch_id FK "References branches(id)"
+        int year "Cohort year (1-4)"
+        int semester "Cohort semester (1-8)"
+        int academic_year_id FK "References academic_years(id)"
+        enum session_type "THEORY|PRACTICAL|TUTORIAL|EXTRA"
+        varchar label "Descriptive session label"
+        datetime start_time "Session start timestamp"
+        datetime end_time "Session closure timestamp"
+        enum state "DRAFT|OPEN|CLOSED|FINALIZED"
+        datetime auto_close_at "Automated submission cutoff"
+        timestamp created_at "Session creation timestamp"
+        timestamp updated_at "Session update timestamp"
+    }
+
+    attendance_session_students {
+        int id PK "Primary key"
+        int session_id FK "References attendance_sessions(id)"
+        int student_id FK "References students(id)"
+        int enrollment_id FK "References enrollments(id)"
+        int class_roll_no "Frozen snapshot roll number"
+        boolean included "Denominator inclusion flag"
+        timestamp created_at "Snapshot freeze timestamp"
+    }
+
+    attendance_session_pins {
+        int id PK "Primary key"
+        int session_id FK "References attendance_sessions(id)"
+        varchar pin_code "6-digit numerical verification PIN"
+        datetime expires_at "PIN expiration timestamp"
+        boolean is_active "Active PIN toggle"
+        int generated_by FK "References users(id)"
+        timestamp created_at "PIN generation timestamp"
+    }
+
+    attendance_session_qr {
+        int id PK "Primary key"
+        int session_id FK "References attendance_sessions(id)"
+        varchar token_hash "Rotating HMAC cryptographic signature"
+        datetime expires_at "QR token expiration timestamp"
+        boolean is_active "Active QR token toggle"
+        int generated_by FK "References users(id)"
+        timestamp created_at "QR generation timestamp"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% GROUP F: HARDWARE TERMINALS & BIOMETRIC MAPPING
+    %% -------------------------------------------------------------------------
+
+    devices {
+        int id PK "Primary key"
+        varchar device_uid UK "ESP32 MAC address / hardware UID"
+        varchar name "Classroom / Lab device label"
+        int department_id FK "References departments(id)"
+        int branch_id FK "References branches(id)"
+        int year "Cohort year (1-4)"
+        int semester "Cohort semester (1-8)"
+        int academic_year_id FK "References academic_years(id)"
+        varchar secret_hash "Pre-shared key HMAC authentication hash"
+        varchar certificate_fingerprint "Server TLS certificate fingerprint"
+        boolean is_active "Device activation toggle"
+        timestamp last_heartbeat_at "Last received heartbeat timestamp"
+        timestamp created_at "Registration timestamp"
+        timestamp updated_at "Device update timestamp"
+    }
+
+    fingerprint_slots {
+        int id PK "Primary key"
+        int device_id FK "References devices(id)"
+        int slot_id "Optical sensor memory slot (1-1000)"
+        int student_id FK "References students(id)"
+        timestamp enrolled_at "Enrollment timestamp"
+        boolean is_active "Slot active toggle"
+    }
+
+    device_events {
+        int id PK "Primary key"
+        int device_id FK "References devices(id)"
+        enum event_type "HEARTBEAT|SCAN_SYNC|COMMAND_ACK|ERROR"
+        json payload_json "Hardware telemetry details"
+        timestamp created_at "Event logging timestamp"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% GROUP G: THREE INDEPENDENT ATTENDANCE STREAMS & CORRECTIONS
+    %% -------------------------------------------------------------------------
+
+    esp32_presence {
+        int id PK "Primary key"
+        varchar event_id UK "Unique hardware scan UUID"
+        int device_id FK "References devices(id)"
+        int student_id FK "References students(id)"
+        datetime scan_time "Physical optical touch timestamp"
+        json payload_json "Raw telemetry payload"
+        timestamp created_at "Server receipt timestamp"
+    }
+
+    register_attendance {
+        int id PK "Primary key"
+        int session_id FK "References attendance_sessions(id)"
+        int student_id FK "References students(id)"
+        enum attendance_status "PRESENT|ABSENT|LATE"
+        enum source "MANUAL|ESP32_SYNC|SELF_REQUEST"
+        text teacher_notes "Faculty justification remarks"
+        int marked_by FK "References users(id)"
+        timestamp marked_at "Initial record timestamp"
+        timestamp updated_at "Record update timestamp"
+    }
+
+    register_attendance_corrections {
+        int id PK "Primary key"
+        int register_id FK "References register_attendance(id)"
+        enum previous_status "Original status (PRESENT|ABSENT|LATE)"
+        enum new_status "Corrected status (PRESENT|ABSENT|LATE)"
+        int corrected_by FK "References users(id)"
+        text reason "Mandatory legal correction reason"
+        timestamp created_at "Correction audit timestamp"
+    }
+
+    student_self_attendance {
+        int id PK "Primary key"
+        int session_id FK "References attendance_sessions(id)"
+        int student_id FK "References students(id)"
+        enum verification_method "PIN|QR|MANUAL_REQUEST"
+        enum request_status "PENDING|ACCEPTED|REJECTED"
+        timestamp submitted_at "Claim submission timestamp"
+        datetime reviewed_at "Faculty review timestamp"
+        int reviewed_by FK "References users(id)"
+    }
+
+    %% -------------------------------------------------------------------------
+    %% RELATIONAL CARDINALITIES & FOREIGN KEY CONSTRAINTS
+    %% -------------------------------------------------------------------------
+
+    users ||--o{ user_roles : "has_roles"
+    users ||--o{ user_sessions : "maintains_sessions"
+    users ||--o| teachers : "has_teacher_profile"
+    users ||--o| students : "has_student_profile"
+    users ||--o{ notifications : "receives_notifications"
+    users ||--o{ audit_logs : "triggers_audit"
+    users ||--o{ system_settings : "updates_settings"
+    users ||--o{ teacher_assignments : "assigns_teachers"
+    users ||--o{ cohort_registration_settings : "modifies_reg_settings"
+    users ||--o{ attendance_session_pins : "generates_pins"
+    users ||--o{ attendance_session_qr : "generates_qr"
+    users ||--o{ register_attendance : "marks_register"
+    users ||--o{ register_attendance_corrections : "authorizes_corrections"
+    users ||--o{ student_self_attendance : "reviews_claims"
+
+    departments ||--o{ branches : "contains_branches"
+    departments ||--o{ subjects : "offers_subjects"
+    departments ||--o{ enrollments : "cohort_dept_enrollments"
+    departments ||--o{ teacher_assignments : "scoped_dept_assignments"
+    departments ||--o{ cohort_registration_settings : "scoped_dept_reg_settings"
+    departments ||--o{ attendance_sessions : "session_department"
+    departments ||--o{ devices : "allocated_department"
+
+    branches ||--o{ subjects : "categorizes_subjects"
+    branches ||--o{ enrollments : "cohort_branch_enrollments"
+    branches ||--o{ teacher_assignments : "scoped_branch_assignments"
+    branches ||--o{ cohort_registration_settings : "scoped_branch_reg_settings"
+    branches ||--o{ attendance_sessions : "session_branch"
+    branches ||--o{ devices : "allocated_branch"
+
+    academic_years ||--o{ enrollments : "scopes_enrollments"
+    academic_years ||--o{ teacher_assignments : "scopes_assignments"
+    academic_years ||--o{ cohort_registration_settings : "scopes_reg_settings"
+    academic_years ||--o{ attendance_sessions : "scopes_sessions"
+    academic_years ||--o{ devices : "scopes_devices"
+
+    teachers ||--o{ teacher_assignments : "assigned_to"
+    teachers ||--o{ attendance_sessions : "conducts_sessions"
+
+    subjects ||--o{ teacher_assignments : "taught_in_assignments"
+    subjects ||--o{ attendance_sessions : "subject_taught"
+
+    students ||--o{ enrollments : "enrolled_in"
+    students ||--o{ fingerprint_slots : "mapped_slots"
+    students ||--o{ esp32_presence : "biometric_scans"
+    students ||--o{ register_attendance : "recorded_attendance"
+    students ||--o{ student_self_attendance : "claims_self_attendance"
+    students ||--o{ attendance_session_students : "frozen_in_roster"
+
+    enrollments ||--o{ attendance_session_students : "snapshots_enrollment"
+
+    attendance_sessions ||--o{ attendance_session_students : "freezes_roster"
+    attendance_sessions ||--o{ attendance_session_pins : "generates_pin"
+    attendance_sessions ||--o{ attendance_session_qr : "generates_qr"
+    attendance_sessions ||--o{ register_attendance : "contains_register"
+    attendance_sessions ||--o{ student_self_attendance : "receives_claims"
+
+    register_attendance ||--o{ register_attendance_corrections : "audits_corrections"
+
+    devices ||--o{ fingerprint_slots : "allocates_slots"
+    devices ||--o{ device_events : "logs_events"
+    devices ||--o{ esp32_presence : "captures_presence"

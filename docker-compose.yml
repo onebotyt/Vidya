@@ -1,0 +1,22 @@
+services:
+  vidyaos-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vidyaos-institutional-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_CLIENT=sqlite
+      - SQLITE_FILE=/app/data/college_attendance.sqlite
+      - WHATSAPP_SESSION_DIR=/app/whatsapp_session
+      - UPLOADS_DIR=/app/uploads
+      - JWT_SECRET=vidyaos-institutional-secret-change-in-production-2026
+    volumes:
+      # Persistent Storage: All records, uploads, and bot logins survive container rebuilds
+      - ./server-data/db:/app/data
+      - ./server-data/uploads:/app/uploads
+      - ./server-data/whatsapp-session:/app/whatsapp_session

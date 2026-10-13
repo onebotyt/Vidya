@@ -1,0 +1,81 @@
+# Node.js
+node_modules/
+package-lock.json
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Databases & local persistent storage
+server-data/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite.bak*
+*.db
+
+# Git standalone caches & backups
+.git_standalone/
+.git_backups/
+
+# Uploads & User generated media
+uploads/
+backend/uploads/
+whatsapp_session/
+backend/whatsapp_session/
+.wwebjs_auth/
+.wwebjs_cache/
+
+# OS Artifacts & IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs & temp test captures
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+scratch/
+browser/
+*.png
+*.jpg
+test-*.png
+evaluation_*.png
+
+# Test & verification scripts (local development only, NEVER push to GitHub)
+scripts/test-*
+scripts/test_*
+scripts/verify-*
+scripts/simulate-*
+scripts/check-*
+scripts/scan-*
+scripts/find-*
+scripts/take-*
+scripts/capture-*
+scripts/inspect-*
+*.test.js
+*.spec.js
+tests/
+test/
+backend/scripts/test-*
+backend/scripts/test_*
+backend/scripts/verify-*
+backend/scripts/simulate-*
+backend/scripts/check-*
+backend/scripts/scan-*
+backend/scripts/find-*
+backend/scripts/take-*
+backend/scripts/capture-*
+backend/scripts/inspect-*
+backend/scripts/export-*
+backend/scripts/*.png
+backend/scripts/*.jpg
+frontend/standalone/
+**/standalone.html
+**/preview.html
+
+

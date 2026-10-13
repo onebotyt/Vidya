@@ -1,0 +1,32 @@
+[Unit]
+Description=VidyaOS Institutional Campus Management Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/vidyaos
+ExecStart=/usr/bin/node /var/www/vidyaos/backend/server.js
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=vidyaos-backend
+
+# Environment Variables
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=DB_CLIENT=sqlite
+Environment=SQLITE_FILE=/var/www/vidyaos/data/college_attendance.sqlite
+Environment=UPLOADS_DIR=/var/www/vidyaos/uploads
+Environment=WHATSAPP_SESSION_DIR=/var/www/vidyaos/whatsapp_session
+
+# Security Limits
+LimitNOFILE=65536
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
