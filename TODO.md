@@ -34,6 +34,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 208: Unified Monorepo Architecture (`onebotyt/Vidya`) & Standalone Repositories Synchronization Engine
+
+- **User Requirements**:
+  - Initialized new unified repository `https://github.com/onebotyt/Vidya.git` hosting both frontend and backend together for unified development and experimentation.
+  - Maintained full synchronization capability with old separate component repositories (`https://github.com/onebotyt/VidyaOS.git` and `https://github.com/onebotyt/VidyaOS_BackEnd.git`).
+
+- **Key Architectural & Code Changes**:
+  1. **Unified Root Monorepo (`Vidya`)**:
+     - Initialized root git repository tracking `frontend/`, `backend/`, and institutional configurations (`docker-compose.yml`, `TODO.md`, `README.md`, `docs/`, `database/`, etc.).
+     - Connected remote `origin -> https://github.com/onebotyt/Vidya.git` and pushed initial monorepo on branch `main`.
+  2. **Isolated Standalone Git Engine (`.git_standalone/`)**:
+     - Preserved exact standalone `.git` repositories in `.git_standalone/frontend.git` and `.git_standalone/backend.git`.
+     - Completely excluded `.git_standalone/` and `.git_backups/` from the root monorepo via `.gitignore`.
+     - Backed up initial git directories to `d:/uiap/.git_backups/`.
+  3. **Cross-Platform Sync & Push Automation**:
+     - **`node push-all.js "<message>"`**: Commits and pushes changes across all 3 repositories simultaneously (`Vidya`, `VidyaOS`, and `VidyaOS_BackEnd`).
+     - **`node sync-separate-repos.js "<message>"`**: Syncs current working tree changes in `frontend/` and `backend/` to their standalone GitHub remotes.
+     - **`push-all.ps1` & `sync-separate-repos.ps1`**: Native PowerShell equivalents for Windows terminal environments.
+     - **`restore-separate-git.ps1`**: Instant rollback script to restore standalone `.git` folders to `backend/.git` and `frontend/.git` if ever required.
+
+- **Verification Results**:
+  - Monorepo published to `https://github.com/onebotyt/Vidya.git` (`main` branch active).
+  - Standalone repos sync verified cleanly with `node sync-separate-repos.js` (0 errors).
+  - `test-theme-support.js`: **93/93 PASS** (0 hardcoded hex colors, 100% tokenized).
+  - `test-rbac-and-structure.js`: **30/30 PASS**.
+
+---
+
 ### ✅ Milestone 207: Mobile Viewport Auto-Zoom & Horizontal Overflow Elimination
 
 - **User Requirements**:
