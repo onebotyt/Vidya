@@ -34,6 +34,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 211: Complete Removal of `frontend/components` & Modular Page Decoupling
+
+- **User Requirements**:
+  - *"@[frontend/components] remove this we not needed because i need i just pick any folder of frontend page like@[frontend/student/assignments], @[frontend/student/dashboard] this and other dev can make frontend page without problems that is why no shared css ,js only necessary outside css,js links"*
+  - Completely eliminate the `frontend/components/` directory and all lingering references to `/components/modal/` across all frontend sections.
+  - Allow developers to pick up any page folder (e.g. `student/assignments`, `student/dashboard`, `faculty/registers`, etc.) without hidden component folder dependencies.
+
+- **Key Architectural & Code Changes**:
+  1. **Purged `frontend/components` Directory**:
+     - Deleted the entire directory `frontend/components/` (`modal.css`, `modal.html`, `modal.js`).
+     - Removed the static `/components` mount middleware from [backend/server.js](file:///d:/uiap/Attendance-System-Simplified/backend/server.js).
+  2. **Decoupled All HTML Pages (34 files across Faculty, Student, and Login)**:
+     - Stripped all `<link rel="stylesheet" href="/components/modal/modal.css...">` and `<script src="/components/modal/modal.js..."></script>` tags from all 34 HTML files in `frontend/faculty/`, `frontend/student/`, and `frontend/login/`.
+     - Standardized page dependencies so each page relies strictly on standard global assets (`/css/variables.css`, `/css/layout.css`, `/css/components.css`, `/js/api.js`, `/js/ui.js`, `/js/auth.js`) and its own local folder scripts/styles.
+
+- **Verification Results**:
+  - `test-theme-support.js`: **93/93 PASS**.
+  - `test-rbac-and-structure.js`: **30/30 PASS**.
+  - `test-register-consolidation.js`: **46/46 PASS**.
+  - `test-roll-call-upgrade.js`: **PASS**.
+  - `test-live-log-checkin.js`: **PASS**.
+  - `test-student-self-registration.js`: **30/30 PASS**.
+  - `test-api-flows.js`: **25/25 PASS**.
+
+---
+
 ### ✅ Milestone 210: Elimination of Redundant External CSS/JS Links & Component Consolidation
 
 - **User Requirements**:
