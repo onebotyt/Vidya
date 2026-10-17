@@ -34,6 +34,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 209: Admin Drawer Inline Script Syntax Error Fix (`')' expected`)
+
+- **User Requirements**:
+  - *"Explain what this problem is and help me fix it: ')' expected. @[d:\uiap\Attendance-System-Simplified\frontend\admin\academic-structure\index.html:L131]"*
+
+- **Root Cause & Resolution**:
+  - The drawer links used HTML-encoded entities inside the inline JavaScript event handler: `onclick="if(window.innerWidth&lt;=768)window.closeSidebar()"`.
+  - The embedded JavaScript language server analyzed the code as `window.innerWidth & lt ; = 768`. Because `&lt;` ends with a semicolon `;`, the parser treated `;` as an early statement terminator inside the `if (...)` condition, expecting a closing parenthesis `)` before the `;`.
+  - Replaced `&lt;=` with standard `<=` across [academic-structure/index.html](file:///d:/uiap/Attendance-System-Simplified/frontend/admin/academic-structure/index.html), [dashboard/index.html](file:///d:/uiap/Attendance-System-Simplified/frontend/admin/dashboard/index.html), [faculty/index.html](file:///d:/uiap/Attendance-System-Simplified/frontend/admin/faculty/index.html), [profile/index.html](file:///d:/uiap/Attendance-System-Simplified/frontend/admin/profile/index.html), [settings/index.html](file:///d:/uiap/Attendance-System-Simplified/frontend/admin/settings/index.html), and [audit-logs/index.html](file:///d:/uiap/Attendance-System-Simplified/frontend/admin/audit-logs/index.html).
+
+- **Verification Results**:
+  - `test-theme-support.js`: **93/93 PASS**.
+  - `test-rbac-and-structure.js`: **30/30 PASS**.
+
+---
+
 ### ✅ Milestone 208: Unified Monorepo Architecture (`onebotyt/Vidya`) & Standalone Repositories Synchronization Engine
 
 - **User Requirements**:
