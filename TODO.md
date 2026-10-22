@@ -34,6 +34,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 244: Fix Registration Form Horizontal Layout Blowout (Unclosed Callout Flex Container)
+
+- **User Insight & Bug Report**:
+  - *"REGISTER PAGE IS BROKEN FIX IT"* (with screenshot showing all fields squished horizontally in a single row across the screen).
+- **Root Cause Analysis**:
+  - In `frontend/login/register/index.html`, `<div class="callout" id="stu-routing-banner">` was opened at line 84 to wrap the Department Verification message, but was missing its closing `</div>`.
+  - In `register.css`, `.callout` is styled with `display: flex; gap: 0.65rem;` (flex-direction defaults to `row`).
+  - Without the closing `</div>`, the entire remainder of the registration form (Google Auto-Fill button, section headers, all 2-column grid rows, password fields, submit button) was parsed by the browser as children of the horizontal flex container, forcing them side-by-side in a single overflowing row.
+- **Completed Deliverables**:
+  1. **Closed `stu-routing-banner` in `frontend/login/register/index.html`**:
+     - Added the closing `</div>` right after `stu-routing-desc`.
+     - Validated entire document with automated AST parser: 100% of HTML tags are now balanced.
+  2. **Restored Proper Responsive Grid**:
+     - Academic details, Google 1-click button, Personal Information, and Set Password sections now display in their intended vertical stack with 2-column responsive field grids.
+  3. **Multi-Repo Synchronization & Deployment**:
+     - Pushed to both [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git) (monorepo) and [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git) (standalone frontend).
+
+---
+
 ### ✅ Milestone 243: Institutional Home Page Set as Root (`/`) with Seamless Sign-In Navigation to `/login`
 
 - **User Insight & Clarified Specification**:
