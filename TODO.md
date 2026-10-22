@@ -34,6 +34,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 255: Spacious Question Editor Modal with Full-Width Textarea & Premium Card Layout
+
+- **User Insight & Clarified Specification**:
+  - *"MAKE MODEL BETTER TEXT AERA I SMALL"*
+- **Root Cause**:
+  - The Question Editor Modal crammed all four elements (`Q#` label, question description text input, marks numeric input with `pts`, and delete button) into a single horizontal row.
+  - On mobile displays (~360px), after accounting for padding, label, marks stepper, and delete icon, the text input was compressed into a tiny ~80px box that truncated descriptions.
+  - In addition, the modal close button (`✕`) was hidden by `.modal-close-btn { display: none !important; }` in core CSS.
+- **Completed Deliverables**:
+  1. **Two-Tier Structured Question Card Layout**:
+     - **Top Bar**: Primary-tint pill badge (`Q1`, `Q2`), compact marks stepper with `Max: [ 5 ] pts`, and circular delete button.
+     - **Bottom Bar**: Full-width, multi-line `textarea` (`width: 100% !important; min-height: 48px;`) spanning the entire width (300px+ on mobile, 450px on desktop) with comfortable line height and placeholder.
+  2. **Elevated Modal Header & Controls**:
+     - Added dedicated icon box, clear title (`Edit Questions & Marks`), informative subtitle, and visible circular `✕` close button (`width: 32px; height: 32px; border-radius: 50%;`).
+  3. **High-Comfort Summary Card & Actions**:
+     - Modern `TOTAL MAX MARKS` dashboard card with bold mono counter and pill buttons (`Split Evenly` & `+ Add Q`).
+     - Polished footer with ghost `Cancel` and solid primary `Apply & Update` button.
+  4. **Regression Verification**:
+     - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 254: Elevated Question Editor Modal Stacking & Renamed Button to `Q Edit`
 
 - **User Insight & Clarified Specification**:
