@@ -34,6 +34,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 247: Marks Workspace Redesign (PC Image 4 & Mobile Image 5)
+
+- **User Insight & Clarified Specification**:
+  - *"REMOVE Avg Score,Pass % AND FIX UI AND REMOVE DELETE BTN AND REDEGIN PAGE DESIGN NO 4 IMAGE IS PC SCREEN NEW DESIGN NO 5 IS FOR MOBILE SCREEN"*
+- **Completed Deliverables**:
+  1. **PC Screen Redesign (Image 4)**:
+     - Replaced bulky boxed KPI cards with a clean horizontal inline statistics ticker: `Scheduled Exams`, `Published Assignments`, `Enrolled Students`, `Avg. Score`, `Assignments Avg.`, `Pending Grading`.
+     - Subheader line with `Academic Marksheets & Evaluation` and action buttons: `[ Unified Sheets Studio ]`, `[ + New Assignment ]`, and dark button `[ Schedule Test ]`.
+     - Filter and search toolbar: category pills (`All Work`, `Class Tests`, `Assignments`) and dynamic search bar.
+     - Removed `AVG SCORE` and `PASS %` columns from the Class Tests table (reduced to 6 clean columns: `#`, `TEST NAME`, `DATE`, `MAX MARKS`, `GRADED`, `ACTIONS`).
+     - Removed `AVG SCORE` column from Coursework Marksheets table (8 clean columns).
+     - Removed edit and trash/delete buttons (`delWork`) from the `ACTIONS` column in both tables. Only the primary `[ Enter Marks ]` button remains.
+     - Modernized `GRADED` column with pill badges (e.g. green pill `10/10` or subtle gray pill `0/10`).
+  2. **Mobile Screen Redesign (Image 5)**:
+     - Mini horizontal statistics ticker for phone screens: `4 Tests • 5 Items • 10 Enrolled • 42.5% Avg`.
+     - Section headers with test count and dedicated compact `[ + Schedule Test ]` / `[ + New Assignment ]` action buttons.
+     - Responsive mobile cards view (`.marks-mobile-list`):
+       - Header row: Test title on left, compact `[ Enter Marks ]` button on right.
+       - Subtitle row: `15 Oct 2026 • 20 Max Marks`.
+       - Status badge row: `10/10 Graded` (green pill) or `0/10 Graded` (gray pill).
+     - Clean responsive switching via `@media (max-width: 768px)`: automatically hides wide tables and shows mobile cards list on phone screens.
+  3. **Theme Token Compliance & Zero Hardcoded Colors**:
+     - All styles adhere 100% to semantic CSS variables (`var(--bg-card)`, `var(--text-main)`, `var(--text-muted)`, `var(--border-color)`, `var(--status-present-bg)`, `var(--status-present)`).
+  4. **Automated Verification**:
+     - `verify-marks-tab-redesign.js`: 20/20 passed.
+     - `test-theme-support.js`: 88/88 passed.
+     - `test-rbac-and-structure.js`: 34/34 passed.
+     - `test-register-consolidation.js`: 46/46 passed.
+     - `verify-mobile-marks-table.js`: 12/12 passed.
+
 ### ✅ Milestone 246: Dynamic Questions Fallback & Responsive Mobile Marks Table Overhaul
 
 - **User Insight & Clarified Specification**:
