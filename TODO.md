@@ -34,6 +34,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 254: Elevated Question Editor Modal Stacking & Renamed Button to `Q Edit`
+
+- **User Insight & Clarified Specification**:
+  - *"NOW FIX QUESTIONS EDIT BTN WHEN CLICK MODEL APPER BEHIND ALSO BTN NAME Q EDIT"*
+- **Root Cause**:
+  - `#modal-enter-marks` had `z-index: 99999 !important;` in mobile standalone mode, while the questions editor `#modal-edit-questions` only inherited base `.modal-backdrop` `z-index: 1500`, causing it to render behind the marks studio.
+- **Completed Deliverables**:
+  1. **Z-Index Layering Elevation**:
+     - Configured `#modal-edit-questions` with `z-index: 100010 !important;` and its `.modal-card` with `z-index: 100015 !important;` and `box-shadow: var(--shadow-lg) !important;`.
+     - Added `body.marks-standalone-page #modal-edit-questions { z-index: 100010 !important; }` ensuring it always floats cleanly above `#modal-enter-marks`.
+     - Mobile modal centering and responsive sizing with `max-width: 440px; max-height: 85vh; margin: auto;`.
+  2. **Button Renaming**:
+     - Updated toolbar action button `#btn-modal-edit-q` text from `Edit Questions` / `Edit` to **`Q Edit`** across all viewport sizes in `index.html`.
+  3. **Event Listener Clean-up**:
+     - Enhanced backdrop click handler in `group-detail-core.js` to dispatch `closeModal(modalId)` cleanly preserving underlying marks table state.
+  4. **Regression Verification**:
+     - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 253: Fixed R.N and STUDENT Header Overlapping & Aligned Column Geometry
 
 - **User Insight & Clarified Specification**:
