@@ -34,6 +34,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 241: Comprehensive Landing Page & Hub Buttons Migration to Extensionless Clean URLs
+
+- **User Insight & Error Diagnosis**:
+  - *"yes you url wroking but when i going using home page sign in btn page not oping"*
+  - The user verified that `/login` on the active Vercel deployment works cleanly, but clicking "Sign In" or "Launch Campus Portal" on the landing page redirected to a 404 because landing page buttons previously contained hardcoded paths to `/login/index.html` and `/login/register.html`.
+  - When users clicked those legacy paths, Vercel issued a 308 redirect or encountered edge cache mismatches on older deployments.
+
+- **Completed Deliverables**:
+  1. **Landing Page (`frontend/index.html`) Clean URL Upgrades**:
+     - Header "Sign In" button updated: `href="/login"` (was `/login/index.html`).
+     - Header "Register" button updated: `href="/register"` (was `/login/register.html`).
+     - Hero CTA "Launch Campus Portal" updated: `href="/login"` (was `/login/index.html`).
+     - Hero CTA "Self-Registration Gateway" updated: `href="/register"` (was `/login/register.html`).
+     - Role Portal Cards (Student, Faculty & HOD, Admin) updated to `/login`, `/register?role=student`, and `/register?role=faculty`.
+     - Floating bottom dock and site footer navigation links updated to `/login` and `/register`.
+  2. **Inter-Page Cross Link Modernization**:
+     - `frontend/login/index.html` & `frontend/login/index/index.html`: Updated pending status banners, new account links, and faculty application links from `/login/register.html` to clean `/register`.
+     - `frontend/login/register/index.html`: Updated header and footer "Sign In" links from `/login/index.html` to clean `/login`.
+     - `frontend/login/register/register.js` & `frontend/faculty/sheets/sheets.js`: Updated programmatic redirect and logout URLs to clean `/login`.
+  3. **Multi-Repo Synchronization & Deployment**:
+     - Pushed clean URL upgrades to both [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git) (monorepo) and [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git) (frontend).
+
+---
+
 ### ✅ Milestone 240: Resolution of Vercel cleanUrls Routing Collision & Extensionless Rewrite Protocol
 
 - **User Insight & Error Diagnosis**:
