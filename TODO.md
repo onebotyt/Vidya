@@ -34,6 +34,44 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 245: Minimal Mobile Marks Page, Mobile Question Editor, Test Scheduling Workflow & Attendance Correlation
+
+- **User Insight & Clarified Specification**:
+  - *"NOW MAKE MINIMUL MARKS PAGE FOR MOBILE SCREEN ALSO RIGHT NOW FOR ENTERING STUDENT MARKS WE HAVE EXCELL SHEET LAYOUT BUT IN MOBILE SO MAKE SIMPEL LIST IN THAT CLASSROLLNO, STUDENT NAME , THEN Q1,Q2,Q3,Q4 IF MORE SHOW MORE QN THEN TOTAL AUTOMATIC AND QUESTION EDIT BTN FROM MOBILE AND REMEMBER THIS WORK FLOW FROM START FROM SUDULING TEST TEACHER GET MODEL IN THAT PICK TITEL ,MAX NO OF QUESTIONS,MAX MARKS,DATE,QUESTIONS LIST CAN TEACHER CAN ADD QUESTIONS AT TIME OF SUDULING TEST OR IF WANT LATER CAN ADD ALSO STUDENT ONLY SEE TEST IS SUDLUDED WITH TITLE AND DATE CAN NOT SEE QUESTION UNTIL TEACHER GIVE MARKS TO STUDENTS ALSO IN TEST MARKS ASSENT STUDENT AUTOMATICALLY GET MARKS AS ABSENT IF THAT DAY TEACHER HAS UPDATED HIS DIGITAL REGISTER"*
+- **Completed Deliverables**:
+  1. **Minimal Mobile Marks Entry Cards List (`#marks-mobile-viewport`)**:
+     - Built a dedicated touch-first card format for phone screens instead of cramped, horizontally scrolling spreadsheets.
+     - Each student card (`.mobile-marks-card`) displays:
+       - **Class Roll Number** pill badge (e.g. `#1`, `#2`)
+       - **Student Full Name** and official enrollment identifier
+       - **Absent Quick-Toggle Button** (`P` / `AB (Absent)`)
+       - **Dynamic Question Grid (`.mobile-q-grid`)**: Renders `Q1`, `Q2`, `Q3`, `Q4` ... with individual question labels and max points indicator (`/ 5`). Uses large, finger-friendly touch inputs (`inputmode="decimal"`) that automatically advance and recalculate in real-time.
+       - **Auto-Calculated Total Box**: Shows live running sum (`Total: 18 / 20`) formatted in primary brand token with absent badge (`0 (AB)`) when marked absent.
+     - Automatically selects `'mobile'` mode when viewport width `< 768px`.
+  2. **Mobile & Desktop Question Editor Modal (`#modal-edit-questions`)**:
+     - Added a prominent **"Edit Questions"** button accessible directly on mobile cards header and desktop toolbar.
+     - Allows teacher to customize question labels, topic/question statement, and max marks at any time.
+     - Includes **"Split Evenly"** and **"+ Add Q"** helpers, with live total max marks tally.
+     - Changes are persisted to backend (`PUT /api/v1/teaching-groups/:id/tests/:testId`) and update the marks roster dynamically without page reload.
+  3. **Interactive Test Scheduling Workflow (`#modal-schedule-test`)**:
+     - Modal accepts **Title**, **Date**, **Max Marks**, and **Number of Questions**.
+     - Provides an interactive **Questions List & Marks Distribution** builder (`#test-schedule-q-rows`) where teachers can customize question topics and points at scheduling time or schedule first and add/edit later.
+     - Includes **"Auto-Split"** and **"+ Add Question"** controls.
+  4. **Strict Student Visibility Guard**:
+     - In `backend/src/controllers/teachingGroupController.js` (`getTests`), if the requester is a student who has not received evaluated marks yet, the questions and instructions are stripped (`questions = null`), so students can only see that a test is scheduled with Title, Date, and Max Marks.
+     - Once teacher enters and saves marks, questions and evaluations become visible to the student.
+  5. **Digital Register Attendance Correlation**:
+     - In `getTestScores`, cross-references `register_attendance` and `attendance_sessions` on the test date.
+     - If the teacher updated the digital register on that exam date, any student marked `ABSENT` in attendance automatically gets flagged with `is_absent: true`, `register_absent: true`, and `marks_obtained: 0`.
+     - Displays an informative correlation banner in the marks modal (`#marks-register-att-banner`) showing the count of students marked absent from the register.
+  6. **Design System & Zero Hardcoded Colors Compliance**:
+     - 100% theme token compliant (`var(--bg-card)`, `var(--bg-surface)`, `var(--text-main)`, `var(--status-absent)`, etc.).
+     - Verified with `test-theme-support.js` (88/88 passed, 0 hardcoded colors).
+  7. **Multi-Repo Synchronization & Deployment**:
+     - Synchronized changes to monorepo [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git), standalone frontend [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git), and standalone backend [onebotyt/VidyaOS_BackEnd](https://github.com/onebotyt/VidyaOS_BackEnd.git).
+
+---
+
 ### ✅ Milestone 244: Fix Registration Form Horizontal Layout Blowout (Unclosed Callout Flex Container)
 
 - **User Insight & Bug Report**:
