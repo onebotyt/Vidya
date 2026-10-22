@@ -1,65 +1,61 @@
-# Vidya — Smart College Attendance & Institutional Operating System
+# 🎓 Vidya — Institutional Campus Operating & Attendance Management System
 
-A production-ready, full-stack institutional attendance tracking and course administration system designed for colleges and universities. Features hardware-integrated biometric attendance (ESP32 terminals), role-based delegation (Admin, HOD, Teacher, Class Teacher, Student), automated registers, and student demographics analytics.
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.x-000000?style=flat-square&logo=express)](https://expressjs.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-Local_Dev-003B57?style=flat-square&logo=sqlite)](https://sqlite.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-Production_Ready-4479A1?style=flat-square&logo=mysql)](https://mysql.com/)
+[![HTML5 / CSS3](https://img.shields.io/badge/Frontend-Vanilla_HTML5%20%2F%20CSS3-E34F26?style=flat-square&logo=html5)](https://developer.mozilla.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker)](https://www.docker.com/)
 
----
-
-## 🏛️ Key Architectural Features
-
-1. **Unified Academic Structure**:
-   - **Departments & Programs (Single Code)**: Consolidated departments and degree branches into a single unified catalog (`IT`, `CE`, `ME`, `CL`, `EE`). No redundant branch codes or double-selection required.
-   - **Academic Years & Terms**: Session terms with one-click active calendar switching.
-
-2. **Hierarchical Academic Delegation**:
-   - **Admin**: Master setup (Departments, Academic Years, Appoint HODs, ESP32 Terminals, Institutional Reporting, Audit).
-   - **HOD (Head of Department)**: Departmental curriculum, subjects creation, teacher allocations, class teacher designations.
-   - **Teacher**: Course registers, daily lecture attendance sessions, practical batches.
-   - **Class Teacher**: Cohort oversight, student demographic provisioning, self-registration approval.
-   - **Student**: Mobile/web self-service, 75% attendance predictor, lecture-by-lecture audit history, Google SSO linking.
-
-3. **Touch-Screen Biometric Terminal Integration**:
-   - ESP32 hardware terminal integration with offline fallback, fingerprint slot ID mapping, and anti-spoofing session locks.
-
-4. **Institutional Student Analytics**:
-   - Interactive KPI cards, department distribution charts, biometric hardware coverage doughnuts, cohort breakdown summaries, and on-demand student rosters.
+**Vidya** is a production-grade, full-stack institutional campus operating system and attendance management platform. Built for colleges and polytechnic institutions (following the **IRDT Uttarakhand** academic framework), Vidya replaces fragmented paper registers and spreadsheets with a unified, high-performance web platform.
 
 ---
 
-## ✨ New: Simplified Faculty Portal & Extra Features
+## 📚 Detailed Documentation Directory
 
-The faculty side has been redesigned for non-technical use — log in as a teacher
-and you land on a big-tile hub (`/faculty/dashboard.html`) instead of a busy
-dashboard. Everything is 1–3 taps:
+Comprehensive, in-depth documentation is available under [`docs/`](docs/):
 
-| Feature | Where | What it does |
-|---|---|---|
-| **Take Attendance** | `/faculty/attendance/quick.html` | Tap a class → tap only the absent names → tap Submit. Everyone else is marked present automatically and the register is finalized in one step. |
-| **Timetable** | `/faculty/timetable.html` (teacher) · `/student/timetable.html` (student) | Simple weekly schedule per class. |
-| **Assignments** | `/faculty/assignments.html` (teacher) · `/student/assignments.html` (student) | Teacher gives an assignment (with an optional file); students upload PPT/DOC/PDF/XLS/etc.; teacher downloads and grades each submission. |
-| **Leave Requests** | `/faculty/leave-approvals.html` (teacher) · `/student/leave.html` (student) | Students apply for leave; their teacher approves or rejects with an optional note. |
-| **Test Marks** | `/faculty/marks.html` (teacher) · `/student/scores.html` (student) | Teacher creates a test and enters marks for the whole class in one table; students see their own scores. |
-| **Attendance Analytics** | `/faculty/analytics.html` | Per-class attendance %, a 14-day trend, and a count of students below 75%. |
+| Document | Description |
+|:---|:---|
+| **[01. Project Overview & Architecture](docs/01_PROJECT_OVERVIEW_AND_ARCHITECTURE.md)** | System design, clean 3-tier MVC architecture, technology stack, and architectural invariants. |
+| **[02. User Roles & System Workflows](docs/02_USER_ROLES_AND_WORKFLOWS.md)** | Granular RBAC hierarchy (Admin, HOD, Teacher, Class Teacher, Student), step-by-step user journeys, and lifecycle progression. |
+| **[03. REST API & Endpoints Directory](docs/03_API_DOCUMENTATION_AND_ENDPOINTS.md)** | Complete catalog of all 17 backend modules with endpoints, methods, parameters, and response schemas. |
+| **[04. Database Schema & Data Models](docs/04_DATABASE_SCHEMA_AND_MODELS.md)** | Full entity-relationship diagrams (ERD), table catalog (25+ tables), foreign keys, and indexes. |
+| **[05. Hardware IoT ESP32 Integration](docs/05_HARDWARE_IOT_ESP32_INTEGRATION.md)** | Classroom touch-screen biometric fingerprint terminal architecture, heartbeat protocol, and offline scan ring buffer. |
+| **[06. Deployment & MySQL Migration Guide](docs/06_DEPLOYMENT_AND_MYSQL_MIGRATION_GUIDE.md)** | Step-by-step guide for moving from local SQLite to production MySQL on cloud VPS, cPanel, or Docker. |
 
-The registers view is available at `/faculty/registers.html`
-for anyone who wants the full register-book view.
+---
 
-These features added 6 new database tables (`leave_applications`, `timetable_slots`,
-`assignments`, `assignment_submissions`, `exams`, `exam_scores`) via
-`database/migrations/003_faculty_plus_features.sql`, 5 new backend route files
-(`quick.js`, `leave.js`, `timetable.js`, `assignments.js`, `exams.js`), and a new
-`/api/v1/reports/analytics` endpoint. Uploaded files are stored under
-`backend/uploads/` and served at `/uploads/...`.
+## 🏛️ Core Architectural Highlights
+
+1. **Clean 3-Tier MVC Architecture**:
+   - Strict separation between **Models** (`src/models/`), **Controllers** (`src/controllers/`), and **Routes** (`src/routes/`).
+   - 100% bidirectional code traceability across all 17 backend modules with standardized JSDoc docblocks.
+2. **Dual-Engine Database Layer**:
+   - **Local Development**: Native synchronous SQLite3 (`DatabaseSync`) with Write-Ahead Logging (WAL) for zero-setup, instant cold starts.
+   - **Production Deployment**: Dual-compatible with **MySQL 8.x / MariaDB** via connection pooling (`mysql2`). Seamlessly toggle via `DB_CLIENT=sqlite` or `DB_CLIENT=mysql` in `.env`.
+3. **Consolidated Register Architecture (`/faculty/registers.html`)**:
+   - **Tab 1: Physical Day 1–31 Attendance Ledger** with one-click status toggles, batch markers, remarks, and Excel export.
+   - **Tab 2: Coursework & Assignments** with scoped file upload dropboxes and grading.
+   - **Tab 3: Class Tests & Marksheets Studio** with an interactive marks roster, keyboard arrow navigation, and validation clamping.
+   - **Dual Live Roll Call Studio (`#manual-roll-modal`)**: Concurrent dynamic QR code, rotating 6-digit PIN code, and real-time student check-in log.
+4. **Touch-Screen Biometric Terminal Integration (ESP32)**:
+   - Hardware terminal communication reporting student fingerprint scans, liveness heartbeats, and offline sync buffers.
+5. **Universal Design System (100% Theme Token Integrity)**:
+   - Pure semantic CSS variables in `variables.css`. Zero hardcoded hex colors. Instant, seamless light/dark theme switching.
+
+---
 
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
-- **Node.js**: v18.0.0 or higher
+- **Node.js**: v20.0.0 or higher (v22 LTS recommended)
 - **npm**: v9.0.0 or higher
-- SQLite3 (zero-configuration embedded engine)
+- Embedded SQLite3 (pre-installed in Node) or MySQL 8.x (for production)
 
 ### 1. Installation
 ```bash
-# Navigate to the backend directory
+# Navigate to backend directory
 cd backend
 
 # Install dependencies
@@ -68,96 +64,94 @@ npm install
 
 ### 2. Environment Configuration
 ```bash
-# Copy the example environment file
+# Copy example environment configuration
 cp .env.example .env
 ```
-Default `.env` settings:
+Default `.env` settings (for local development with SQLite):
 ```env
 PORT=3000
 NODE_ENV=development
+DB_CLIENT=sqlite
+SQLITE_FILE=college_attendance.sqlite
 JWT_SECRET=super-secure-jwt-secret-college-attendance-2026-key
 JWT_EXPIRES_IN=7d
-DB_CLIENT=sqlite3
-SQLITE_DB_PATH=./college_attendance.sqlite
 CORS_ORIGIN=http://localhost:3000
 ```
 
 ### 3. Start the Server
 ```bash
-npm start
-# or
 node server.js
 ```
-The application will launch on `http://localhost:3000`.
+The server will initialize the database and launch on:
+👉 **`http://localhost:3000`**
 
 ---
 
 ## 🔐 Default Demo Accounts
 
-All demo accounts share the password: **`Admin@123`** (or **`Password@123`** for faculty/students).
+All demo accounts share the password: **`Admin@123`** (for Administrator) or **`Password@123`** (for HOD, Faculty, and Students).
 
-| Role | Username / Email | Password | Scope |
-| :--- | :--- | :--- | :--- |
-| **System Administrator** | `admin` | `Admin@123` | Institutional Admin Console |
-| **HOD (IT Dept)** | `hod.it@college.edu` | `Password@123` | Information Technology HOD Portal |
-| **HOD (CE Dept)** | `hod.ce@college.edu` | `Password@123` | Computer Engineering HOD Portal |
-| **HOD (ME Dept)** | `hod.me@college.edu` | `Password@123` | Mechanical Engineering HOD Portal |
-| **Faculty / Class Teacher** | `prof.sharma@college.edu` | `Password@123` | Lecture Registers & Cohorts |
-| **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | Lecture Registers & Cohorts |
-| **Student** | `student.it01@college.edu` | `Password@123` | Student Attendance Portal |
+| Role | Username / Email | Password | Landing Page |
+|:---|:---|:---|:---|
+| **System Administrator** | `admin` | `Admin@123` | `/admin/academic-structure.html` |
+| **HOD (Information Tech)** | `hod.it@college.edu` | `Password@123` | `/faculty/hod-dashboard.html` |
+| **HOD (Civil Engineering)** | `hod.ce@college.edu` | `Password@123` | `/faculty/hod-dashboard.html` |
+| **Faculty / Class Teacher** | `prof.sharma@college.edu` | `Password@123` | `/faculty/registers.html` |
+| **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
+| **Student** | `student.it01@college.edu` | `Password@123` | `/student/dashboard.html` |
 
 ---
 
-## 📁 Project Directory Structure
+## 🧪 Automated Verification Test Suite
+
+Run these automated verification suites from `backend/` to validate the installation:
+
+```bash
+cd backend
+node scripts/test-api-flows.js                 # 25/25 PASS (Core API integration flows)
+node scripts/test-rbac-and-structure.js         # 30/30 PASS (RBAC guards & permanent redirects)
+node scripts/test-register-consolidation.js     # 46/46 PASS (Registers, tabs, modals, drawer)
+node scripts/test-theme-support.js              # 93/93 PASS (Theme token integrity, 0 hardcoded colors)
+node scripts/test-student-self-registration.js   # 30/30 PASS (Student self-registration & approvals)
+```
+
+---
+
+## 📦 Project Directory Structure
 
 ```
-Attendance-system/
-├── ATTENDANCE_ARCHITECTURE_FREEZE.md      # Strict architectural boundary documentation
-├── SYSTEM_SPECIFICATION_AND_FEATURES.md   # Complete system requirements and features
-├── README.md                              # This setup and quickstart guide
-├── attendance/                            # System plans, SRS, and API contracts
-│   ├── 01_ATTENDANCE_WEB_SRS.md
-│   ├── 02_ATTENDANCE_MOBILE_APP_SRS.md
-│   ├── 04_API_CONTRACT.md
-│   └── DATABASE_SCHEMA_AND_ERD.md
-├── backend/
-│   ├── server.js                          # Express application entry point & URL routing
-│   ├── package.json                       # Backend dependencies and scripts
-│   ├── college_attendance.sqlite          # Pre-seeded SQLite database
+Attendance-System-Simplified/
+├── docs/                                # In-depth architectural & deployment guides
+│   ├── 01_PROJECT_OVERVIEW_AND_ARCHITECTURE.md
+│   ├── 02_USER_ROLES_AND_WORKFLOWS.md
+│   ├── 03_API_DOCUMENTATION_AND_ENDPOINTS.md
+│   ├── 04_DATABASE_SCHEMA_AND_MODELS.md
+│   ├── 05_HARDWARE_IOT_ESP32_INTEGRATION.md
+│   └── 06_DEPLOYMENT_AND_MYSQL_MIGRATION_GUIDE.md
+├── frontend/                            # Zero-build HTML5/CSS3/Modular JS client
+│   ├── admin/                           # System Administrator portal
+│   ├── faculty/                         # Faculty & HOD portal (Registers, Dashboard)
+│   ├── student/                         # Student self-service portal
+│   └── shared/                          # Unified CSS design tokens & modular JS auth
+├── backend/                             # Express REST API Server
 │   ├── src/
-│   │   ├── config/                        # Database connection & environment configuration
-│   │   ├── middleware/                    # Auth token verification & role enforcement
-│   │   ├── routes/                        # REST API routes (/admin, /hod, /faculty, /students, etc.)
-│   │   └── utils/                         # Token helpers and validation
-│   └── scripts/                           # Database seeding and verification scripts
-│       ├── seed-demo.js                   # Populates comprehensive demo college dataset
-│       └── verify-all.js                  # Automated test verification suite
-├── database/
-│   ├── schema.sql                         # Full DDL database schema definition
-│   ├── migrations/                        # Versioned SQL migration scripts
-│   └── sqlite/                            # SQLite schema definitions
-└── frontend/
-    ├── index.html                         # Institutional portal landing page
-    ├── admin/                             # Admin portal (Academic structure, analytics, HODs, reports)
-    ├── faculty/                           # Faculty & HOD portal (Registers, attendance marking, cohorts)
-    ├── student/                           # Student portal (Live status, predictor, attendance history)
-    ├── css/                               # Design system, layout, and component styling
-    └── js/                                # API client, auth guards, and UI utilities
+│   │   ├── models/                      # Pure data access & SQL queries (16 models)
+│   │   ├── controllers/                 # Request coordinators & response envelopes (17 controllers)
+│   │   ├── routes/                      # Declarative Express REST endpoints (17 routers)
+│   │   ├── middleware/                  # Granular RBAC guards (auth, requireScope, validate)
+│   │   ├── services/                    # Business services (audit, notifications, promotion)
+│   │   └── config/                      # Dual database adapter (SQLite / MySQL)
+│   ├── database/                        # Migration dumps & MySQL production scripts
+│   ├── scripts/                         # Verification & testing suites
+│   ├── server.js                        # Express server entry point
+│   ├── package.json
+│   └── .env.example
+├── Dockerfile                           # Container definition
+├── docker-compose.yml                   # Multi-container orchestration
+└── README.md
 ```
 
 ---
 
-## 📊 Database Schema & Reseeding
-
-- The complete SQL schema definition is available at [`database/schema.sql`](database/schema.sql).
-- To re-seed fresh demo data at any time:
-  ```bash
-  cd backend
-  node scripts/seed-demo.js
-  ```
-- To run automated test checks across all endpoints:
-  ```bash
-  cd backend
-  node scripts/test-ui-dom-integration.js
-  node scripts/test-single-controller.js
-  ```
+## 📄 License & Attribution
+Vidya Campus Operating System © 2026. Designed for institutional education deployment.

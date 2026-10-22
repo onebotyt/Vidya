@@ -30,7 +30,7 @@
 3. **Role-Based Access Control (RBAC)**:
    - Backend routes must use the granular middlewares in `backend/src/middleware/auth.js`:
      - `requireHOD()` for curriculum/faculty management.
-     - `requireClassTeacher()` for student roster approvals and roster changes.
+     - `requireDepartmentFaculty()` (and backward-compatible `requireClassTeacher()`) allowing all branch faculty to manage and assist student rosters, approvals, and cohorts.
      - `requireSubjects()` for registers and assignments.
    - Frontend pages must call `guardRoute({ requireHOD: true, ... })` from `frontend/shared/js/auth.js`.
 
