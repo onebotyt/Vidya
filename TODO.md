@@ -56,7 +56,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Redesigned the toolbar from 4 clumsy wrapped rows into a compact layout with 26px button heights, abbreviated labels (`Edit Questions`, `+ Add Q`, `- Remove Q`, `Columns`, `Table`, `Excel`, `Export`).
      - Elevated `.modal-backdrop` to `z-index: 1500 !important;` (above `.classroom-mobile-bottom-nav` which sits at `z-index: 1000`), completely resolving the bottom navigation dock overlap.
      - On mobile screens, set `#modal-enter-marks .modal-card` to `100dvh` full-viewport height with the table viewport taking all flexible space in the center, and the footer (`Cancel` and `Save Marks` buttons) pinned safely at the bottom.
-  5. **Verification & Regression Testing**:
+  5. **Script Integrity & Syntax Verification**:
+     - Resolved an extraneous dangling closing brace `}` in `group-detail-classwork.js` around line 1933 that caused a parse failure (`SyntaxError: Unexpected token '}'`), restoring full classwork and marksheet initialization.
+     - Verified with `node -c frontend/faculty/group-detail/js/*.js` (0 errors across all scripts).
+  6. **Verification & Regression Testing**:
      - Verified with `verify-mobile-marks-table.js` (12/12 passed).
      - Verified with `test-theme-support.js` (88/88 passed, 0 hardcoded colors).
      - Verified with `test-rbac-and-structure.js` (34/34 passed) and `test-register-consolidation.js` (46/46 passed).
