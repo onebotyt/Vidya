@@ -34,6 +34,39 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 258: Minimal Mobile Marks Entry Redesign & High-Fidelity UI Alignment (Mockups 2, 3 & Minimal Mobile Marks Modal)
+
+- **User Insight & Clarified Specification**:
+  - *"WHEN CLICK ENTER MARKS THIS TABLE OPEN FOR MOBILE THIS IS MINIMAL FOR MOBILE"*
+  - User provided an image mockup titled **"MOBILE MARKS ENTRY REDESIGN"** demonstrating the exact minimal design for the Marks Entry Modal (`#modal-enter-marks`) on mobile screens:
+    1. **Header**: Left back arrow button (`←`), Center title (`Unit Test 2 — Advanced SQL`) with subtitle (`Max Marks: 20 • 15 Oct 2026`), Right user avatar badge (`DS`).
+    2. **Toolbar**: Single flat minimal row with 5 buttons: `[ 📝 Edit ]`, `[ + Q ]`, `[ - Q ]`, `[ ⇅ Columns ⌵ ]`, `[ ↗ Export ]` (no heavy box borders; Table/Excel toggle hidden on mobile).
+    3. **Table Headers**: `STUDENT` (spanning roll & name), `P` (status indicator header), `Q1`, `Q2`, `Q3`, `Q4` (questions), `TOTAL` (right aligned).
+    4. **Table Rows**:
+       - Roll Number: 2 digits with leading zero (`01`, `02`, `03`...), muted gray text.
+       - Student Name: Bold/medium font with text ellipsis.
+       - Attendance Dot: Soft circular indicator under `P` (soft green dot `•` for Present, soft red dot `•` for Absent, interactive toggle).
+       - Question Inputs: Clean **underline-only** inputs (no bounding boxes, `border-bottom: 1.5px solid var(--border-color); background: transparent; text-align: center;`, with default `0` above the underline; on `:focus` active blue underline highlight).
+       - Total: Clean text format `0/20` (or `score/20`), soft gray text, right-aligned.
+    5. **Footer**: Pinned at bottom with `Total Max Marks: 20` • `Auto-calculated` on the left, and `Cancel` text link + dark solid `[ Save Marks ]` button on the right.
+
+- **Completed Deliverables**:
+  1. **Minimal Mobile Marks Entry Modal (`#modal-enter-marks`)**:
+     - Updated HTML in `frontend/faculty/group-detail/index.html` with `.marks-modal-header-minimal` (back button, title, meta, faculty avatar `DS`, and desktop close button), `.marks-modal-toolbar` with minimal flat buttons, and `.marks-modal-footer-minimal`.
+     - In `group-detail-classwork.js`: dynamic population of title, subtitle (`Max Marks: 20 • Date`), and avatar initials (`DS`); rendered 2-digit roll numbers (`01`, `02`...), `.minimal-att-dot.btn-sheet-att-toggle`, underline-only inputs `.minimal-q-input.marks-input-cell.q-score-input` with default `0`, and totals in `${val}/${totalMax}` format.
+  2. **PC & Mobile Classwork Layout Alignment (Images 2 & 3)**:
+     - PC Layout (Image 2): Desktop categories sidebar with uppercase headers & count chips, toolbar with `+ Create` button, collapsible unit title headers, desktop cards with left type icon, title, meta pills, inline description, and right actions + 3-metrics stats block (`SUBMITTED | PENDING | STUDENTS`).
+     - Mobile Layout (Image 3): Mobile sticky header bar with back button, class name (`Database Management Systems • Sem 5 • CSE`) and avatar (`DS`), sticky category pills strip with count badges, collapsible units with item counts and chevrons, and mobile cards featuring the 3-metrics stats strip, vibrant `[ Enter Marks ]` button, outline `[ 👥 Submissions & Roster ]` button, and `[ ⚙️ ]` options button.
+  3. **Verification**:
+     - All 88 theme tests pass with zero hardcoded colors.
+     - All 12 mobile marks table tests pass.
+     - All 20 marks tab redesign tests pass.
+     - All 34 RBAC & structure tests pass.
+     - All 46 register consolidation tests pass.
+     - All 30 student self-registration tests pass.
+
+---
+
 ### ✅ Milestone 257: Collapsible Google Classroom Style Unit Sections, Unit Title Details & 3-Dots Edit Menu
 
 - **User Insight & Clarified Specification**:
