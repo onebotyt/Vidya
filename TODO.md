@@ -34,6 +34,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 253: Fixed R.N and STUDENT Header Overlapping & Aligned Column Geometry
+
+- **User Insight & Clarified Specification**:
+  - *"R.N ANS STUDENT HEADER OVERLAPING FIX IT"*
+- **Root Cause**:
+  - `th.col-roll` had an inline width of `36px` while the subsequent sticky column `th.col-name` was set to `left: 32px`!
+  - In addition, `.col-roll` had `padding-left: 0.75rem` (12px) and `overflow: visible`, causing the `"R.N"` text to spill past 32px and collide directly with `"STUDENT"`.
+- **Completed Deliverables**:
+  1. **Strict 32px Geometric Boundary Alignment**:
+     - Synchronized inline and CSS width of `col-roll` to exactly `32px` (`box-sizing: border-box !important;`).
+     - Set `overflow: hidden !important;` on `th.col-roll` to prevent any text spillover.
+     - Adjusted `padding-left: 0.45rem` on `.col-roll` and `.col-name`, leaving a crisp 14px clear gap between `"R.N"` and `"STUDENT"`.
+  2. **Typography Calibration**:
+     - Applied `font-size: 0.68rem; font-weight: 700;` to `.col-roll .mobile-text` and `.col-name .mobile-text`.
+     - Preserves vertical alignment between header labels and body table rows (`01`, `02`... and student names).
+  3. **Regression Verification**:
+     - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 252: Mobile Table Enhancements (R.N Header, Sticky Right Total, Hidden Columns Filter & Full Text Wrapping)
 
 - **User Insight & Clarified Specification**:
