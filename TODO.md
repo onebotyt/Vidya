@@ -34,6 +34,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 256: Syllabus Unit Organization & Unit-Based Classwork Filtering
+
+- **User Insight & Clarified Specification**:
+  - *"IN CLASSWORK TAB THIS SAME ASSIGNMENT OR TEST SHOW IN THAT UNIT AND ALSO OPTION TO FILTER BY UNIT OR SHOW ALL DEFAULT SHOW ALL"*
+- **Completed Deliverables**:
+  1. **Dynamic Unit Dropdown in Creation & Edit Modals**:
+     - Added `<select id="assign-unit">` to `#modal-create-assignment`.
+     - Added `<select id="practical-unit">` to `#modal-create-practical`.
+     - Added `<select id="test-unit">` to `#modal-schedule-test`.
+     - Added `<select id="edit-work-unit">` to `#modal-edit-classwork`.
+     - Created `populateUnitDropdowns()` in `group-detail-classwork.js` dynamically populating unit options up to `total_units` (e.g. Unit 1 to Unit 5, or custom number configured for the teaching group).
+  2. **Classwork Unit Filter Controls (Toolbar & Sidebar)**:
+     - Added `#cw-unit-filter-select` in `.cw-toolbar` (desktop & mobile) with `All Units (Show All)` as the default view.
+     - Added dynamic `#cw-unit-filter-list` in the `.cw-categories` sidebar displaying each unit with its active item count.
+     - Implemented `filterCWByUnit(unit)` and `updateUnitFilterBar()` handling instant switching between `all`, `Unit 1`, `Unit 2`, etc., and `General Coursework`.
+  3. **Structured Unit Section Headers & Work Badges**:
+     - In `renderCWList()`, when `All Units` is selected, coursework items are structured under neat unit section headers (`Unit 1`, `Unit 2`, etc.) with count badges, matching modern institutional LMS standards.
+     - In each work card header, added `.work-unit-badge` showing `Unit 1`, `Unit 2`, etc. with SVG unit icon and theme-compliant color tokens.
+  4. **Full-Stack Persistence**:
+     - Updated `teachingGroupController.js`, `assignmentController.js`, `examController.js`, `teachingGroupModel.js`, `assignmentModel.js`, and `examModel.js` to parse and store `unit_name` in SQLite assessments table.
+  5. **Regression Verification**:
+     - Created `scripts/verify-classwork-unit-organization.js` (19/19 tests passing).
+     - Verified all regression suites: `test-theme-support.js` (88/88), `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 255: Spacious Question Editor Modal with Full-Width Textarea & Premium Card Layout
 
 - **User Insight & Clarified Specification**:
