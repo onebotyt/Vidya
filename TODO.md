@@ -34,6 +34,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 251: Dedicated Full-Screen Separate Page Mode for Mobile Marks Entry
+
+- **User Insight & Clarified Specification**:
+  - *"FIX UI UX MORE AND I THINK YOU MADE MODLE NOT LIKE SEPARTE PAGE MAKE LIKE SEPRATE PAGE SO THAT SCROLL BAR NOT APPER BECAUSE CONTENT IN BACKGROUND"*
+- **Completed Deliverables**:
+  1. **Background Content Isolation**:
+     - When `#modal-enter-marks` opens on mobile devices (`window.innerWidth < 768`), the class `.marks-standalone-page` is automatically applied to `document.body` and `document.documentElement`.
+     - In CSS, `body.marks-standalone-page > :not(#modal-enter-marks):not(#modal-edit-questions):not(#gd-toast):not(.classroom-toast)` sets `display: none !important;`.
+     - All background content (app bar, classroom banner, tabs nav, activity feed, test list, cards, mobile bottom nav dock) is completely removed from the rendering tree while entering marks.
+     - Because background content does not exist in the render tree, the background scroll height is zero and no background scrollbars can ever appear!
+  2. **Dedicated Separate Page Layout**:
+     - `#modal-enter-marks` operates as a 100vw × 100dvh standalone screen (`position: fixed; inset: 0; z-index: 99999; background: var(--bg-card); overflow: hidden;`).
+     - Smooth native app navigation: clicking the back arrow (`←`) or `Cancel` or saving marks removes `.marks-standalone-page` and returns instantly to the classroom workspace.
+     - Added browser history state integration (`history.pushState` & `popstate` listener) so mobile hardware back gestures navigate back cleanly without exiting the browser.
+  3. **Regression Verification**:
+     - 100% pass on all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 250: Mobile Marks Modal Refinements (Scroll Lock, White-Blue Theme, Zero Overlap)
 
 - **User Insight & Clarified Specification**:
