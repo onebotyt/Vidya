@@ -34,6 +34,29 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 250: Mobile Marks Modal Refinements (Scroll Lock, White-Blue Theme, Zero Overlap)
+
+- **User Insight & Clarified Specification**:
+  - *"FIX UI UX AND I CAN SEE SIDE SCROLL BAR WHEN TRY TO SCROLL THAT MEANS BEHIND THIS WE HAVE FIX THAT ALSO REMOVE AUTO CALCULATE TEXTE AND FIX OVER LAPING AND ON HEAD REMOVE LOGO ALSO FIX THEME TO OUT WHITE BLUE COLOR THAT WE USE IN ALL CODE"*
+- **Completed Deliverables**:
+  1. **Header Logo / Avatar Removal**:
+     - Removed circular avatar badge (`#marks-modal-user-avatar`) from the modal header.
+     - Title (`Unit Test 2 — Advanced SQL`) now spans 100% of the horizontal space without ellipsis truncation.
+     - Back navigation arrow (`←`) styled in VidyaOS signature blue (`var(--color-primary)`).
+  2. **Scroll Lock & Scrollbar Suppression**:
+     - Implemented `body.modal-open` CSS rule (`overflow: hidden !important; touch-action: none !important;`) preventing background body scroll and side scrollbars behind the modal.
+     - Suppressed bulky Windows/browser horizontal scrollbars on `#marks-table-viewport` using `scrollbar-width: none !important;` and `-webkit-scrollbar { display: none !important; }`.
+  3. **Auto-Calculated Text Removed & Zero Overlap Footer**:
+     - Removed `• Auto-calculated` caption completely from the footer.
+     - Fixed footer layout: `Total Max Marks: 20` on the left with `flex: 1 1 auto; white-space: nowrap;` and `Cancel` / `Save Marks` on the right with `flex-shrink: 0; gap: 0.6rem;`.
+     - Zero overlap between labels and action buttons across all viewport widths.
+  4. **Signature White & Blue Institutional Theme**:
+     - Replaced dark button with VidyaOS signature vibrant blue button (`var(--color-primary)`, `#ffffff` text, subtle elevation).
+     - Clean white card backgrounds (`var(--bg-card)`) with soft surface accents (`var(--bg-surface)`).
+     - Export dropdown menu aligned to open inward (`right: 0; left: auto;`), preventing right edge overflow.
+  5. **Regression Verification**:
+     - 100% pass on all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 249: Minimal Mobile Marks Entry Modal Redesign (Mockup Implementation)
 
 - **User Insight & Clarified Specification**:
