@@ -34,6 +34,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 242: Direct Root Access Configuration (`/` Defaulting Directly to Sign-In Portal)
+
+- **User Insight & Architecture Request**:
+  - *"i need login page can open with this url https://vidyaos-pink.vercel.app/"*
+  - The user requested that the login portal open directly at the institutional domain root (`/`), providing instant zero-latency sign-in for faculty, students, HODs, and administrators without needing to navigate through a marketing landing page or click intermediate CTA buttons.
+
+- **Completed Deliverables**:
+  1. **Root Page (`frontend/index.html`) Assigned to Sign-In Portal**:
+     - Configured `frontend/index.html` to be the direct Sign-In portal (preserving all Google OAuth, credential forms, and temporary password activation modals).
+     - Preserved the full marketing landing page and feature showroom at `frontend/landing/index.html` (accessible via `/landing` and `/home`).
+  2. **Zero-Latency Dual Entry Resolution**:
+     - Visiting `https://vidyaos-pink.vercel.app/` instantly opens the Login portal with 0 redirects and 0 latency.
+     - Visiting `https://vidyaos-pink.vercel.app/login` and `/login/` also opens the Login portal directly.
+     - Visiting `https://vidyaos-pink.vercel.app/register` opens the student and faculty onboarding gateway.
+     - Visiting `https://vidyaos-pink.vercel.app/landing` or `/home` opens the product landing showroom.
+  3. **Multi-Repo Synchronization & Deployment**:
+     - Pushed to both [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git) (monorepo) and [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git) (frontend).
+
+---
+
 ### ✅ Milestone 241: Comprehensive Landing Page & Hub Buttons Migration to Extensionless Clean URLs
 
 - **User Insight & Error Diagnosis**:
