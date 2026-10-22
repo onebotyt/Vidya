@@ -34,7 +34,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 245: Minimal Mobile Marks Page, Mobile Question Editor, Test Scheduling Workflow & Attendance Correlation
+### ✅ Milestone 246: Dynamic Questions Fallback & Responsive Mobile Marks Table Overhaul
+
+- **User Insight & Clarified Specification**:
+  - *"I CAN SEE HARDCODED Q1 TO Q4 ... openEditQuestionsModal() ... AND REMOVE THAT MOBILE CARD ONLY TABLE VERSION GOOD WE JUST HAVE TO REDUSE TEXT MARGIN PADDING TO FIT IN SMALL SCREENS ALSO FIX UINOT PROPERLY"*
+- **Completed Deliverables**:
+  1. **Dynamic Question Fallback (Zero Hardcoded Q1-Q4)**:
+     - In `openEditQuestionsModal()`, replaced the hardcoded `[{ num: 1, label: 'Q1', max: 5 }, ..., Q4]` fallback with a dynamic generator that inspects `S.currentTest.questions` (JSON/array), `S.currentTest.num_questions`, and calculates per-question points from `testMax / qCount`.
+  2. **Complete Removal of Mobile Cards Mode**:
+     - Removed `#btn-view-mobile` from the toolbar and `#marks-mobile-viewport` from the DOM in `frontend/faculty/group-detail/index.html`.
+     - Purged the `'mobile'` view mode from `group-detail-classwork.js` (`setMarksModalView`, `updateViewModeUI`, `renderMarksEntryTable`).
+     - Simplified view switcher to a clean two-segment toggle: **Table** (`table`) and **Excel** (`excel`).
+  3. **Responsive Mobile Table Architecture (< 768px)**:
+     - In `classwork.css`, added specialized mobile rules with reduced text sizes, cell padding, and input widths:
+       - **Roll No**: 32px, centered, sticky `left: 0`.
+       - **Student Name**: 90px–120px, text ellipsis, compact inline attendance toggle button (`P` / `AB`), sticky `left: 32px` with a subtle elevation divider shadow so teachers never lose track of which student they are grading while swiping horizontally.
+       - **Question Score Inputs**: 38px–42px wide, 28px height, centered text, `inputmode="decimal"`.
+       - **Total Column**: 42px–46px wide with live updating badge.
+       - Fits comfortably within standard mobile screen widths (~360px–412px) for 1–4 questions without overflowing, and provides smooth touch swiping for tests with 5+ questions.
+  4. **Compact Toolbar & Fixed Modal Layout**:
+     - Redesigned the toolbar from 4 clumsy wrapped rows into a compact layout with 26px button heights, abbreviated labels (`Edit Questions`, `+ Add Q`, `- Remove Q`, `Columns`, `Table`, `Excel`, `Export`).
+     - Elevated `.modal-backdrop` to `z-index: 1500 !important;` (above `.classroom-mobile-bottom-nav` which sits at `z-index: 1000`), completely resolving the bottom navigation dock overlap.
+     - On mobile screens, set `#modal-enter-marks .modal-card` to `100dvh` full-viewport height with the table viewport taking all flexible space in the center, and the footer (`Cancel` and `Save Marks` buttons) pinned safely at the bottom.
+  5. **Verification & Regression Testing**:
+     - Verified with `verify-mobile-marks-table.js` (12/12 passed).
+     - Verified with `test-theme-support.js` (88/88 passed, 0 hardcoded colors).
+     - Verified with `test-rbac-and-structure.js` (34/34 passed) and `test-register-consolidation.js` (46/46 passed).
+
+---
 
 - **User Insight & Clarified Specification**:
   - *"NOW MAKE MINIMUL MARKS PAGE FOR MOBILE SCREEN ALSO RIGHT NOW FOR ENTERING STUDENT MARKS WE HAVE EXCELL SHEET LAYOUT BUT IN MOBILE SO MAKE SIMPEL LIST IN THAT CLASSROLLNO, STUDENT NAME , THEN Q1,Q2,Q3,Q4 IF MORE SHOW MORE QN THEN TOTAL AUTOMATIC AND QUESTION EDIT BTN FROM MOBILE AND REMEMBER THIS WORK FLOW FROM START FROM SUDULING TEST TEACHER GET MODEL IN THAT PICK TITEL ,MAX NO OF QUESTIONS,MAX MARKS,DATE,QUESTIONS LIST CAN TEACHER CAN ADD QUESTIONS AT TIME OF SUDULING TEST OR IF WANT LATER CAN ADD ALSO STUDENT ONLY SEE TEST IS SUDLUDED WITH TITLE AND DATE CAN NOT SEE QUESTION UNTIL TEACHER GIVE MARKS TO STUDENTS ALSO IN TEST MARKS ASSENT STUDENT AUTOMATICALLY GET MARKS AS ABSENT IF THAT DAY TEACHER HAS UPDATED HIS DIGITAL REGISTER"*
