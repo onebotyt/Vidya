@@ -34,6 +34,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 240: Resolution of Vercel cleanUrls Routing Collision & Extensionless Rewrite Protocol
+
+- **User Insight & Error Diagnosis**:
+  - *"still"* (attached screenshot of `vidyaos-pink.vercel.app/login` returning `404: NOT_FOUND`)
+  - **In-Depth Root Cause Discovery**:
+    1. **Collision Between Files and Folders**: In Milestone 239, `frontend/login.html` and `frontend/login/index.html` were both present in the project. When Vercel enables `cleanUrls: true`, it attempts to map both `login.html` and `login/` to the single URI `/login`, resulting in an internal edge router collision. The same collision affected `login/register.html` vs `login/register/index.html`.
+    2. **CleanUrls Rewrite Restriction on Destinations with `.html`**: In Vercel's Edge Router, when `cleanUrls: true` is enabled, any rewrite rule whose `destination` explicitly ends in `.html` (e.g. `"destination": "/login/index.html"`) conflicts with the clean URL engine and causes Vercel to emit a 404 error page. Rewrites under `cleanUrls` must point to clean, extensionless paths (e.g. `"/login/register"` or `"/admin/academic-structure"`).
+    3. **Natural Directory Index Resolution**: `frontend/login/index.html` is naturally and automatically served by Vercel at `/login` and `/login/` without needing an explicit rewrite once the colliding `login.html` file is removed.
+
+- **Completed Deliverables**:
+  1. **Elimination of File/Folder Collisions**:
+     - Removed `frontend/login.html` (leaving canonical `frontend/login/index.html` as the clean directory index).
+     - Removed `frontend/login/register.html` (leaving canonical `frontend/login/register/index.html`).
+  2. **Physical Role Entrypoint Landing Redirects**:
+     - Created `frontend/admin/index.html` (instant fallback redirect to `/admin/academic-structure`).
+     - Created `frontend/faculty/index.html` (instant fallback redirect to `/faculty/dashboard`).
+     - Created `frontend/student/index.html` (instant fallback redirect to `/student/dashboard`).
+  3. **Strict Extensionless `vercel.json` Specification (`frontend/vercel.json` & `vercel.json`)**:
+     - Removed all conflicting `.html` destinations from rewrites.
+     - Kept static asset mapping (`/css/:path*` ➔ `/shared/css/:path*`, `/js/:path*` ➔ `/shared/js/:path*`).
+     - Rewrote `/admin` ➔ `/admin/academic-structure`, `/faculty` ➔ `/faculty/dashboard`, `/student` ➔ `/student/dashboard`, and `/register` ➔ `/login/register`.
+  4. **Multi-Repo Synchronization & Deployment**:
+     - Pushed clean, collision-free updates to both [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git) (monorepo) and [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git) (frontend).
+
+---
+
 ### ✅ Milestone 239: Resolution of Vercel Production 404 Error on /login & Comprehensive Cloud Rewrites
 
 - **User Insight & Error Diagnosis**:
