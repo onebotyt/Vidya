@@ -34,6 +34,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 239: Resolution of Vercel Production 404 Error on /login & Comprehensive Cloud Rewrites
+
+- **User Insight & Error Diagnosis**:
+  - *"my vercal website not working after git push"*
+  - The user provided a screenshot of `vidyaos-pink.vercel.app/login` displaying a `404: NOT_FOUND ("This page doesn't exist")` error page.
+  - **Root Cause Analysis**:
+    1. In the local Node.js environment, `server.js` used Express middleware (`app.get('/:section/:page.html', ...)` and `app.get(['/login', '/login.html'], ...)`) to route requests.
+    2. However, Vercel hosts the frontend as a static CDN. In the repository, login was placed under `frontend/login/index/index.html`. Because neither `frontend/login.html` nor `frontend/login/index.html` existed at the `login/` root, Vercel's static router could not find the file and returned 404.
+    3. Furthermore, `frontend/vercel.json` previously only handled `/api/v1/` and `/uploads/`, lacking rewrites for `/login`, `/register`, `/css/*` (mapped to `/shared/css/*`), and `/js/*` (mapped to `/shared/js/*`).
+
+- **Completed Deliverables**:
+  1. **Direct Physical Entrypoint Creation (`frontend/login/index.html`, `frontend/login.html`, `frontend/login/register.html`)**:
+     - Placed `index.html`, `index.css`, and `index.js` directly under `frontend/login/` so Vercel, Netlify, and Cloudflare Pages immediately find `/login/index.html` on `/login` and `/login/`.
+     - Created `frontend/login.html` and `frontend/login/register.html` for instant resolution of direct `.html` links.
+     - Preserved `frontend/login/index/index.html` for complete backward compatibility with any hardcoded paths.
+  2. **Comprehensive Cloud Routing Configuration (`frontend/vercel.json` & `vercel.json`)**:
+     - Configured static asset rewrites: `/css/:path*` ➔ `/shared/css/:path*` and `/js/:path*` ➔ `/shared/js/:path*`.
+     - Configured clean entrypoint rewrites: `/login` ➔ `/login/index.html`, `/register` ➔ `/login/register/index.html`.
+     - Configured modular page rewrites: `/:section/:page.html` ➔ `/:section/:page/index.html`.
+     - Added root `vercel.json` so deployments from the monorepo also resolve cleanly.
+  3. **Multi-Repo Synchronization & Deployment**:
+     - Pushed to both Monorepo ([onebotyt/Vidya](https://github.com/onebotyt/Vidya.git)) and Frontend repository ([onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git)), triggering automatic redeployment on Vercel.
+
+---
+
 ### ✅ Milestone 238: Phase 2 Major Project Presentation & Viva Defense Report Document
 
 - **User Insight & Architecture Shift**:
