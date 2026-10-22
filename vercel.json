@@ -24,27 +24,35 @@
     },
     {
       "source": "/login",
-      "destination": "/frontend/login"
+      "destination": "/frontend/login/index.html"
+    },
+    {
+      "source": "/login/",
+      "destination": "/frontend/login/index.html"
     },
     {
       "source": "/register",
-      "destination": "/frontend/login/register"
+      "destination": "/frontend/login/register/index.html"
+    },
+    {
+      "source": "/register/",
+      "destination": "/frontend/login/register/index.html"
     },
     {
       "source": "/register.html",
-      "destination": "/frontend/login/register"
+      "destination": "/frontend/login/register/index.html"
     },
     {
       "source": "/login/register.html",
-      "destination": "/frontend/login/register"
+      "destination": "/frontend/login/register/index.html"
     },
     {
       "source": "/login/student-register.html",
-      "destination": "/frontend/login/register?role=student"
+      "destination": "/frontend/login/register/index.html?role=student"
     },
     {
       "source": "/login/faculty-register.html",
-      "destination": "/frontend/login/register?role=faculty"
+      "destination": "/frontend/login/register/index.html?role=faculty"
     },
     {
       "source": "/admin",

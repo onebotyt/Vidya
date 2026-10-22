@@ -34,6 +34,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 243: Institutional Home Page Set as Root (`/`) with Seamless Sign-In Navigation to `/login`
+
+- **User Insight & Clarified Specification**:
+  - *"THIS OPEN HOME PAGE THEN ANY ONE CAN CLICK ON SIGN IN BTN TO GO IN LOGIN PAGE AND LOG IN https://vidyaos-pink.vercel.app/"*
+  - The institutional domain root (`https://vidyaos-pink.vercel.app/` or `/`) opens the full interactive **Home Page** (VidyaOS showcase, live biometric matrix preview, role portal cards, architecture badges, floating island dock).
+  - Anyone visiting the Home Page can click the **"Sign In"** button (or "Launch Campus Portal" / role cards) to immediately navigate to the **Login Page** (`/login`) and authenticate without encountering 404 or redirect issues.
+
+- **Completed Deliverables**:
+  1. **Root Page (`frontend/index.html`) Restored to Full Home Page**:
+     - Configured `frontend/index.html` with the complete VidyaOS landing experience.
+     - Brand emblem and floating dock home buttons updated to root `/`.
+  2. **Direct, Error-Free Sign In Navigation (`href="/login"`)**:
+     - Navigation CTA: `<a href="/login" class="btn-nav-cta">` ("Sign In")
+     - Hero Launch CTA: `<a href="/login" class="btn-hero-launch">` ("Launch Campus Portal")
+     - Student Portal Card: `<a href="/login" class="btn-portal-enter student">`
+     - Faculty Portal Card: `<a href="/login" class="btn-portal-enter faculty">`
+     - Administration Card: `<a href="/login" class="btn-portal-enter admin">`
+     - Floating Island Quick Dock: `<a href="/login" class="dock-btn" aria-label="Sign In Portal">`
+     - Footer Link: `<a href="/login">Unified Sign In</a>`
+  3. **Zero-Redirect Direct File Rewrites in `vercel.json` and `frontend/vercel.json`**:
+     - Rewrites `/login` and `/login/` directly to `/login/index.html` (monorepo `/frontend/login/index.html`) with HTTP 200.
+     - Rewrites `/register` directly to `/login/register/index.html` with HTTP 200.
+  4. **Multi-Repo Synchronization & Deployment**:
+     - Pushed to both [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git) (monorepo) and [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git) (standalone frontend).
+
+---
+
 ### ✅ Milestone 242: Direct Root Access Configuration (`/` Defaulting Directly to Sign-In Portal)
 
 - **User Insight & Architecture Request**:
