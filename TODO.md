@@ -34,6 +34,35 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 257: Collapsible Google Classroom Style Unit Sections, Unit Title Details & 3-Dots Edit Menu
+
+- **User Insight & Clarified Specification**:
+  - *"LIKE THIS NOT SHOWING UNIT 1 THEN UNDER UNIT 1 ASSIGNMENT AND TEST ALSO THAT UNIT 1 TITLE CARD ADD ARROW THEN CLICK ON IT OPEN/CLOSE ASSIGNMENT AND TEST UNDER THAT UNIT AND THERR DOT THEN CLICK SHOW OPTION LIKE EDIT WHEN CLCIK ON EDIT USER TEACHER CAN ADD UNIT NAME SO LOOK MORE DETAILS ALSO IN WROK CREATE BTN ADD UNIT ADD OPTION WHEN CLICK ON SHOW MODEL TO ADD NEW UNIT ,NAME"*
+- **Completed Deliverables**:
+  1. **Google Classroom Style Unit Title Cards with Collapse Arrow**:
+     - Redesigned unit headers into `.cw-unit-section-header` displaying the comprehensive unit heading (e.g. `Unit 2 - Declarations, Control Structures and Arrays`, `Unit 1 - Basics and Language Fundamentals`), horizontal divider line, and item count badge.
+     - Added interactive chevron arrow button (`.unit-toggle-btn`) with smooth 90-degree CSS rotation on `.is-collapsed`.
+     - Clicking either the chevron button or the unit title card header smoothly collapses and expands the list of assignments and tests under that unit.
+  2. **Three-Dots Menu (⋮) on Unit Title Cards**:
+     - Added `.unit-menu-trigger` and `.unit-dropdown-menu` to every unit header.
+     - Features `Edit Unit Details` (opens the modal to customize unit name and syllabus title), `Add Work to Unit` (opens assignment creation modal with that unit pre-selected), and `Delete Unit`.
+     - Clicking anywhere outside closes the active dropdown menu.
+  3. **Unit / Topic Creation in "+ Create" Menus**:
+     - Added `Unit / Topic` with book icon to the desktop create dropdown (`#cw-dd-menu`).
+     - Added `Unit / Topic` to the mobile FAB speed dial menu (`#cw-mobile-fab-menu`).
+     - Clicking opens `#modal-unit-editor` with pre-filled next unit number.
+  4. **Dedicated Unit / Topic Editor Modal (`#modal-unit-editor`)**:
+     - Includes Unit Tag input (`#unit-editor-name`, e.g. `Unit 1`), Unit / Module Title input (`#unit-editor-title`, e.g. `Basics and Language Fundamentals`), and optional syllabus outline textarea (`#unit-editor-desc`).
+     - Fully keyboard-accessible (Escape key closes modal, registered in `group-detail-core.js`).
+  5. **Backend Database Schema & API Routes**:
+     - Added `syllabus_units` TEXT column to `teaching_groups` SQLite schema with automatic migration in `backend/src/config/db.js`.
+     - Implemented `POST /api/v1/teaching-groups/:id/units` in `backend/src/routes/teachingGroups.js` and `teachingGroupController.js` supporting atomic save, update, and delete actions.
+     - Updated `TeachingGroupModel.getGroupById` and `TeachingGroupModel.updateGroupSyllabusUnits`.
+  6. **Regression & Quality Verification**:
+     - Verified with `backend/scratch/verify_classwork_units.js` (29/29 tests passing).
+     - Verified `test-theme-support.js` (88/88 passed, 0 hardcoded colors).
+     - Verified `test-register-consolidation.js` (46/46 passed) and `test-rbac-and-structure.js` (34/34 passed).
+
 ### ✅ Milestone 256: Syllabus Unit Organization & Unit-Based Classwork Filtering
 
 - **User Insight & Clarified Specification**:
