@@ -1,0 +1,102 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://vidyaos-backend.onrender.com/api/v1/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://vidyaos-backend.onrender.com/uploads/:path*"
+    },
+    {
+      "source": "/css/:path*",
+      "destination": "/frontend/shared/css/:path*"
+    },
+    {
+      "source": "/js/:path*",
+      "destination": "/frontend/shared/js/:path*"
+    },
+    {
+      "source": "/shared/:path*",
+      "destination": "/frontend/shared/:path*"
+    },
+    {
+      "source": "/login",
+      "destination": "/frontend/login/index.html"
+    },
+    {
+      "source": "/login/",
+      "destination": "/frontend/login/index.html"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/frontend/login/index.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/frontend/login/register/index.html"
+    },
+    {
+      "source": "/register.html",
+      "destination": "/frontend/login/register/index.html"
+    },
+    {
+      "source": "/login/register",
+      "destination": "/frontend/login/register/index.html"
+    },
+    {
+      "source": "/login/register.html",
+      "destination": "/frontend/login/register/index.html"
+    },
+    {
+      "source": "/login/student-register.html",
+      "destination": "/frontend/login/register/index.html?role=student"
+    },
+    {
+      "source": "/login/faculty-register.html",
+      "destination": "/frontend/login/register/index.html?role=faculty"
+    },
+    {
+      "source": "/admin",
+      "destination": "/frontend/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/admin/",
+      "destination": "/frontend/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/faculty",
+      "destination": "/frontend/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/",
+      "destination": "/frontend/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/student",
+      "destination": "/frontend/student/dashboard/index.html"
+    },
+    {
+      "source": "/student/",
+      "destination": "/frontend/student/dashboard/index.html"
+    },
+    {
+      "source": "/:section/:page.html",
+      "destination": "/frontend/:section/:page/index.html"
+    },
+    {
+      "source": "/:section/:page.css",
+      "destination": "/frontend/:section/:page/:page.css"
+    },
+    {
+      "source": "/:section/:page.js",
+      "destination": "/frontend/:section/:page/:page.js"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/frontend/:path*"
+    }
+  ]
+}
