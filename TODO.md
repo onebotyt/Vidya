@@ -34,6 +34,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 252: Mobile Table Enhancements (R.N Header, Sticky Right Total, Hidden Columns Filter & Full Text Wrapping)
+
+- **User Insight & Clarified Specification**:
+  - *"ROLLNO COLUMN HEADER NEED TO SHOW R.N AND TOTAL COLUMN MARKS STICK TO RIGHT FIX IT AND REMOVE VISIBLETY COLUMN OPTION FOR MOBILE SCREENS AND IF NAME TEXT GET LAGER TEXT GET WRAP AND SSHOW FULL TEXT"*
+- **Completed Deliverables**:
+  1. **Roll Number Header Set to `R.N`**:
+     - Updated `.col-roll` mobile table header from `STUDENT` to **`R.N`** in `group-detail-classwork.js`.
+     - Student Name column header explicitly displays `STUDENT` on mobile and `Student Name` on desktop.
+  2. **Total Column Sticky to the Right Edge**:
+     - Set `position: sticky !important; top: 0 !important; right: 0 !important; z-index: 22 !important;` on `.marks-table .col-total`.
+     - Set `position: sticky !important; right: 0 !important; z-index: 11 !important; background: var(--bg-card) !important;` with an elevated edge drop-shadow on `.marks-table .cell-total`.
+     - When faculty scroll questions horizontally (`Q1`–`Qn`), each student's `TOTAL` marks (`0/20`) remain permanently visible and pinned on the right edge of the screen.
+  3. **Removed Columns Visibility Filter on Mobile**:
+     - Applied `.desktop-only-col-filter` to `#marks-col-filter-wrapper` in `index.html` and `classwork.css`.
+     - Completely hides the Columns dropdown on viewports `<768px`, maximizing toolbar space for `Edit`, `+ Q`, `- Q`, and `Export`.
+  4. **Full Text Name Wrapping**:
+     - Removed `text-overflow: ellipsis; white-space: nowrap;` constraint on `.student-name-text` and `.cell-student-name`.
+     - Enabled `white-space: normal !important; overflow-wrap: break-word !important; line-height: 1.25 !important;` allowing longer student names to wrap naturally and show the entire text without truncation.
+  5. **Regression Verification**:
+     - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 251: Dedicated Full-Screen Separate Page Mode for Mobile Marks Entry
 
 - **User Insight & Clarified Specification**:
