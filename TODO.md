@@ -34,6 +34,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 249: Minimal Mobile Marks Entry Modal Redesign (Mockup Implementation)
+
+- **User Insight & Clarified Specification**:
+  - *"WHEN CLICK ENTER MARKS THIS TABLE OPEN FOR MOBILE THIS IS MINIMAL FOR MOBILE"*
+  - Implement the exact minimal mobile design for the marks entry table (`#modal-enter-marks`) matching the user-provided "MOBILE MARKS ENTRY REDESIGN" mockup.
+- **Completed Deliverables**:
+  1. **Minimal Mobile Modal Header**:
+     - Left back button (`←` SVG arrow) for smooth one-touch exit on mobile devices (`.modal-back-btn`).
+     - Center title hierarchy: test title (`Unit Test 2 — Advanced SQL`) with subtitle metadata (`Max Marks: 20 • 15 Oct 2026`).
+     - Right circular faculty avatar badge (`DS`) dynamically derived from faculty account initials.
+     - Desktop close button (`✕`) hidden on mobile viewports (<768px).
+  2. **Minimal Flat Toolbar (5 Actions)**:
+     - Formatted as a single flat horizontal row without card borders: `[ 📝 Edit ]`, `[ + Q ]`, `[ - Q ]`, `[ ⇅ Columns ⌵ ]`, and `[ ↗ Export ]`.
+     - Responsive text spans (`.desktop-text` vs `.mobile-text`) providing compact labels (`+ Q`, `- Q`, `Edit`).
+     - Desktop-only view mode toggle (Table / Excel) and Set Default button hidden on mobile screens.
+  3. **Minimal Table Columns & Formatting**:
+     - `STUDENT` spanning the 2-digit padded roll numbers (`01`, `02`, `03`...) and student name with clean ellipsis truncation.
+     - `P` status column featuring a soft circular attendance dot (`.minimal-att-dot`) with interactive toggle (soft green for Present, soft red for Absent).
+     - Underline-only question inputs (`.minimal-q-input`) with no bounding boxes (`border: none; border-bottom: 1.5px solid var(--border-color); background: transparent; text-align: center`), active highlight underline on focus, and default `0` centered above the underline.
+     - Right-aligned `TOTAL` column cleanly displaying `0/20` (or `score/totalMax`) in soft muted typography.
+  4. **Minimal Pinned Footer**:
+     - Left: `Total Max Marks: 20` with bold maximum and `• Auto-calculated` caption.
+     - Right: Plain text `Cancel` button and dark solid `[ Save Marks ]` pill button (`.btn-modal-save-dark`).
+  5. **Architecture & Zero Hex Integrity**:
+     - 100% theme token compliant (no hardcoded hex/rgb colors).
+     - Full viewport height (`height: 100dvh !important;`) on mobile with sticky columns for horizontal scroll.
+     - 100% pass on regression suite: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
+
 ### ✅ Milestone 248: Antigravity Skills Installation from Vault (300+ Catalog)
 
 - **User Insight & Clarified Specification**:
