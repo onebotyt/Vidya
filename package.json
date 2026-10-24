@@ -1,0 +1,18 @@
+{
+  "name": "vidya-institutional-system",
+  "version": "1.0.0",
+  "description": "VidyaOS — Institutional Campus & Academic Operating System",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "collab:pull": "node scripts/collab/pull-dev2.js",
+    "collab:diff": "node scripts/collab/diff-dev2.js",
+    "collab:apply": "node scripts/collab/apply-dev2.js",
+    "collab:preview": "node scripts/collab/preview-server.js",
+    "push:safe": "node scripts/collab/safe-push.js",
+    "push:backend": "node scripts/collab/safe-push.js",
+    "test:theme": "node backend/scripts/test-theme-support.js",
+    "test:rbac": "node backend/scripts/test-rbac-and-structure.js"
+  },
+  "author": "Vidya Engineering",
+  "license": "ISC"
+}

@@ -34,7 +34,628 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 281: GitHub Collaboration Architecture with Strict Frontend-Only Merges & Dual Frontend Mirror
+
+- **User Insight & Clarified Specification**:
+  - *"now i want to do code collab using github and i want give 2nd dev full code backend and frontend but when he make changes i only need frontend code update /plan"*
+  - *"also in my pc we going to make separate copy of frontend that going to pull updated code from github so i have 2 frontend code 1 is my and other 2nd dev and i can see both at same time to compare and fix"*
+  - *"and repo will we using that we pushing both frontend and backend code combine"*
+- **Root Cause & Comprehensive Architecture**:
+  1. **Primary Monorepo Combined Collaboration**:
+     - Main repository remains `https://github.com/onebotyt/Vidya.git` where both frontend and backend are pushed combined.
+     - 2nd developer receives full codebase access to run the local Express server and SQLite database on `http://localhost:3000` with pre-seeded mock accounts.
+  2. **Automated GitHub PR Guard CI & Governance**:
+     - Added `.github/workflows/frontend-pr-guard.yml` to automatically verify that any Pull Request targeting `main` only touches files prefixed with `frontend/`. Any change to backend, root files, or `TODO.md` fails CI and blocks the merge.
+     - Added `.github/CODEOWNERS` declaring `@onebotyt` as the sole code owner for `/backend/`, root files, and `TODO.md`.
+  3. **Dual Frontend Mirror Architecture (`frontend_dev2/`)**:
+     - Added `frontend_dev2/` and `frontend_collab/` to `.gitignore` so local comparisons never contaminate git tracking or trigger conflicts.
+     - Created `scripts/collab/pull-dev2.js` (`npm run collab:pull <branch>`): Safely extracts `frontend/` from the 2nd dev's remote branch directly into `frontend_dev2/` without touching the working tree.
+  4. **Side-by-Side Live Browser Preview (Port 3000 vs 3001)**:
+     - Updated `backend/server.js` to support dynamic `process.env.FRONTEND_DIR`.
+     - Created `scripts/collab/preview-server.js` (`npm run collab:preview`): Boots Express on Port 3001 pointing to `frontend_dev2/` while connecting to the identical SQLite database. Primary dev can inspect both versions concurrently on `http://localhost:3000` and `http://localhost:3001`.
+  5. **File Comparator & Selective Apply CLI**:
+     - Created `scripts/collab/diff-dev2.js` (`npm run collab:diff [file]`): Compares `frontend/` vs `frontend_dev2/`, providing high-level statistics and detailed line-by-line diffs.
+     - Created `scripts/collab/apply-dev2.js` (`npm run collab:apply <path>`): Selectively merges approved files from `frontend_dev2/` to `frontend/` with automatic JS syntax and theme token checks.
+  6. **Pre-Seeded Database Inclusion**:
+     - Whitelisted `!backend/college_attendance.sqlite` in root and `backend/.gitignore`. The pre-seeded database file is now tracked in Git so Dev 2 has all tables, mock accounts, courses, and registers out-of-the-box without manual migrations. Ephemeral WAL and journal locks remain strictly ignored.
+  7. **Dev 2 Antigravity AI Instructions**:
+     - Created `DEV2_ANTIGRAVITY_INSTRUCTIONS.md` with explicit guidelines for the 2nd developer and their Antigravity AI assistant.
+     - Updated `AGENTS.md` with External Contributor instructions.
+     - Mandated that Dev 2's Antigravity must update `TODO.md` with structured milestone entries for every task/fix completed so the primary repository owner can immediately read what changed.
+     - Updated `.github/workflows/frontend-pr-guard.yml` to allow both `frontend/**` files and documentation files (`*.md`).
+  8. **Autonomous Pull/Push Protocol for Dev 2 & Primary Dev Frontend Push Protection**:
+     - Documented autonomous task execution lifecycle for Dev 2's Antigravity in `DEV2_ANTIGRAVITY_INSTRUCTIONS.md` (auto-sync, test theme tokens, auto-update `TODO.md`, auto-commit, auto-push, and output PR link).
+     - Built `scripts/collab/safe-push.js` (`npm run push:safe` / `npm run push:backend`): automatically excludes unmerged local `frontend/` changes from primary dev pushes to ensure Dev 2's active frontend work is never accidentally overwritten or clobbered.
+     - Added Primary Developer safety invariant in `AGENTS.md`.
+- **Verification**:
+  - `node scripts/collab/verify-collab-system.js`: 23/23 tests passed (100%).
+  - `node backend/scripts/test-theme-support.js`: 88/88 tests passed (0 hardcoded colors).
+  - All collaboration scripts verified clean syntax via `node -c`.
+
+### ✅ Milestone 280: Remove Empty "Mark as Done" Button, Require File Attachment, and Refine Student Submission UI/UX
+
+
+- **User Request & Screenshots**:
+  - *"FIX UI UX ALSO THIS IS FROM STUDENT VIEW ALSO REMOVE THAT MARK AS DONE BTN WHEN STUDENT SUBMITS FILE THEN STUDENT STATUS BECOME MARK AS DONE SO WE NOT NEED THAT BTN STUDENT CAN CLICK ON IT WITHOUT UPLODING FILE"*
+  - **Screenshot 1**: Student view displayed duplicate `+ + Add work` button and a secondary `Mark as done` button before any file was attached.
+  - **Screenshot 2**: Clicking `Mark as done` triggered a browser confirm prompt (*"Turn in without attaching work? Your teacher will see that no work was attached."*) enabling empty submissions.
+- **Root Cause & Resolution**:
+  1. **Removed "Mark as done" Button**:
+     - Removed `<button class="btn-mark-done">Mark as done</button>` from `renderStudentYourWorkHtml` in [group-detail-classwork.js](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail/js/group-detail-classwork.js#L2269-L2281). Students can now only submit by first selecting a file through `Add work`.
+  2. **Prevented Submissions Without Files**:
+     - Updated `handleStudentWorkSubmitClick` to require a staged file. If no file is attached, it displays a polite toast (`Please attach a file before turning in`) rather than prompting for empty submissions.
+  3. **Fixed Duplicate `+ + Add work` Label**:
+     - Removed the redundant `+` from the label text (`<span>Add work</span>`) since the `<svg>` icon already renders the plus sign.
+  4. **Mobile Bottom Sheet UX Improvements**:
+     - Styled `.mobile-your-work-sheet` as `position: fixed; bottom: 0; left: 0; right: 0;` so it docks cleanly to the viewport bottom.
+     - Added `padding-bottom: 220px !important;` to `.mobile-work-details-content` and `.work-inst-container` in student mode, ensuring all assignment instructions, attachments, and class comments can be scrolled completely into view without being obscured by the bottom sheet.
+     - Restyled `.btn-mobile-add-work` as a clean Google Classroom rounded pill button with subtle border and hover effects.
+  5. **Verification**:
+     - All syntax verified cleanly via `node -c`.
+     - Regression suites passed 100%: `verify-unified-classroom.js` (15/15), `test-theme-support.js` (88/88).
+
+### ✅ Milestone 279: Fix PC Desktop Comments UI, Enable Persistent Comments, and Resolve Mobile Runtime Exceptions
+
+- **User Requests & Screenshots**:
+  - *"FIX IN PC SCREEN ON FACULTY LOGIN COMMENTS BOX FROM MOBILE APPEAR THAT IS NOT PROPER UI AND COMMENTS NOT WORKING FIX IT AND IN MOBILE SCREEN BLANK PAGE AND ERRORS"*
+  - **Screenshot 1 (PC Screen)**: On PC / desktop resolution (`1920x1080`), a mobile-style floating bottom bar (`.work-inst-bottom-bar`) was anchored to the bottom of the monitor screen, while comments inside the instructions pane did not function.
+  - **Screenshots 2 & 3 (Mobile Screen & Console Errors)**:
+    - Mobile screen showed a completely blank white view when tapping an assignment.
+    - Console Error 1: `Uncaught ReferenceError: renderScheduleQChips is not defined at group-detail-classwork.js:4288:31` on initial load.
+    - Console Error 2: `Uncaught (in promise) ReferenceError: isTest is not defined at openWorkInstructionsView (group-detail-classwork.js:2019:72)`.
+- **Root Cause & Resolution**:
+  1. **Fixed `renderScheduleQChips` & `updateScheduleQChip` Exports**:
+     - Removed obsolete assignments `window.renderScheduleQChips = renderScheduleQChips` and `window.updateScheduleQChip = updateScheduleQChip` from the export block in `group-detail-classwork.js`. Their undeclared state was terminating top-level script evaluation before comment handlers and instructions methods could be registered.
+  2. **Fixed `isTest is not defined` Runtime Exception in `openWorkInstructionsView`**:
+     - Declared `const isTest = type === 'test' || item._type === 'test';` before computing `typeLabel`. This prevents the uncaught ReferenceError which halted execution before `content.innerHTML` and `loadWorkInstRoster` could execute on mobile.
+  3. **Desktop Google Classroom Native Inline Comments UI**:
+     - On PC / desktop (`@media (min-width: 769px)`), hid `#work-inst-bottom-bar` (`display: none !important;`).
+     - Added an inline desktop comment composer (`.work-inst-inline-composer`) directly beneath the comments list inside `.work-inst-comments-section`, featuring the user's avatar, input field, and send button.
+     - Bottom floating bar is now only rendered on mobile screens (`<= 768px`).
+  4. **Persisted Assignment Comments (`localStorage` & in-memory)**:
+     - Implemented `getWorkComments` and `saveWorkComment` to preserve comments across browser reloads via `localStorage` alongside `item._comments`.
+     - `submitWorkInstComment` and `submitWorkInstActiveComment` now support both inline and mobile inputs, updating the DOM and displaying confirmation toasts.
+  5. **Verification**:
+     - Verified zero syntax errors via `node -c`.
+     - Verified zero missing window export identifiers across all group-detail modules.
+     - Passed entire regression test suite (15/15 unified classroom, 88/88 theme tokens, 34/34 RBAC, 46/46 registers consolidation, 25/25 API flows).
+
+### ✅ Milestone 278: Remove Private Comments Section from Assignment Instructions View
+
+- **User Request & Screenshot**:
+  - *"REMOVE Private comments"*
+  - Screenshot of `http://localhost:3000/student/group-detail.html?id=1&tab=classwork` showing the desktop 2-column assignment instructions layout, where a secondary sidebar card titled "Private comments" ("Add comment to instructor…") sat beneath the "Your work" card.
+- **Root Cause & Resolution**:
+  - In `frontend/faculty/group-detail/js/group-detail-classwork.js`, the desktop instructions view (`openWorkInstructionsView`) rendered a secondary `.pwd-sidebar-card` for private comments below `#pc-your-work-body`.
+  - Removed the entire "Private comments" card container and its inner markup from the desktop sidebar column.
+  - The right column now cleanly displays only the "Your work" card with its submission status, attachments/staged file actions, and due date notice.
+  - Verified syntax cleanly via `node -c` on all group-detail scripts.
+  - Regression test suite passing 100%: `verify-unified-classroom.js` (15/15), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46), `test-api-flows.js` (25/25).
+
+### ✅ Milestone 277: Fix Infinite Skeleton Loading in Student Classwork View
+
+- **User Issue & Screenshot**:
+  - *"FIX NOT LODDING"*
+  - Screenshot of `http://localhost:3000/student/group-detail.html?id=1&tab=classwork` showed infinite skeleton placeholder rows in the Classwork tab and the `+ Create` button improperly displayed.
+- **Root Cause**:
+  - A `SyntaxError: Identifier 'isStudent' has already been declared` occurred in `frontend/faculty/group-detail/js/group-detail-classwork.js` at line 2039 due to a duplicate `const isStudent` declaration inside `openWorkInstructionsView`.
+  - This prevented `group-detail-classwork.js` from parsing in the browser, halting execution of `loadCWAssignments()` and `renderCWList()`, which left the skeleton placeholder rows indefinitely.
+  - Additionally, `index.html` used `#cw-main-create-btn` and `.cw-dd-wrap` for the `+ Create` button, which were not included in `body.student-mode` CSS suppression.
+- **Resolution**:
+  1. Removed the duplicate `isStudent` declaration in [group-detail-classwork.js](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail/js/group-detail-classwork.js). Verified zero syntax errors across all JavaScript files with `node -c`.
+  2. Added `#cw-main-create-btn` and `.cw-dd-wrap` to `body.student-mode` hidden rules in [core.css](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail/css/core.css) so the `+ Create` button is completely hidden from students.
+  3. Verified all test suites: `verify-unified-classroom.js` (15/15), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46), and `test-api-flows.js` (25/25).
+
+### ✅ Milestone 276: Student Submission Status Parity & Staged File Preview/Cancel System
+
+- **User Insight & Screenshots**:
+  - *"STUDENTS VIEW SHOWING STATUS OF STUDENTS SUBMISSIONS YOU CAN SEE IN IMAGE 1 AND IMAGE 2 IS FROM GOOGLE CLASSROOM THAT NOT SHOWING STATUS AND IMAGE 3 FROM INSIDE INSTRUCTIONS PAGE AND IN MOBILE WHEN FILE STUDENT SELECT TO SUBMIT THAT FILE STUDENT CAN SEE PREVIEW OR CANCEL AND SELECT DIFFERENT TO SUBMIT"*
+  - **Image 1 (Before)**: Student view in VidyaOS displayed whole-class submission counts (`• 10/10 submitted`, `• 3/10 submitted`) and the faculty statistics block (`3 SUBMITTED | 7 PENDING | 10 STUDENTS`).
+  - **Image 2 (Google Classroom Reference)**: In Google Classroom student view, whole-class counts and faculty stats blocks are hidden. Only the student's personal status (`Handed in` / `Assigned`) is displayed in the card header and expanded row.
+  - **Images 3 & 4 (Google Classroom Instructions & Mobile)**: When a student selects a file to submit, they can preview the file, cancel it with `✕` to select a different file, or click `Turn in` when satisfied.
+- **Root Cause & Comprehensive Resolution**:
+  1. **Suppression of Whole-Class Submission Statistics (`renderWorkCardHtml` & `core.css`)**:
+     - Omitted `.work-submit-ratio-chip` (`• X/Y submitted`) and `.work-mobile-stat-badge` for students in `renderWorkCardHtml`.
+     - In the expanded card meta row, replaced the faculty `.work-expanded-stats` box with `.student-card-status-badge` showing the student's personal status (`Handed in` in green or `Assigned` in muted text), exactly matching Google Classroom Image 2.
+     - Added CSS rules in `core.css` hiding `.work-expanded-stats`, `.work-submit-ratio-chip`, `.work-mobile-stat-badge`, and `.work-mobile-sub-sep` in `body.student-mode`.
+  2. **Staged File Preview, Cancel, and Turn-in System (`group-detail-classwork.js` & `classwork.css`)**:
+     - Decoupled file selection from immediate upload. When a student chooses a file via `+ Add work` (mobile) or `+ Add or create` (desktop), the file is held in `window.S_stagedStudentFile`.
+     - Rendered `.gc-staged-file-card` displaying the file icon, file name, formatted file size (e.g. `1.4 MB`), and an interactive preview link (`previewStagedStudentFile`) opening the document object URL in a new browser tab.
+     - Provided a circular cancel button `✕` (`handleStudentCancelStagedFile`) allowing the student to dismiss the staged file and select a different one.
+     - Rendered a full-width **"Turn in"** button (`handleStudentWorkSubmitClick`) that submits the staged file with clear feedback and allows unsubmit/resubmit at any time.
+  3. **Verification**:
+     - Verified with `scripts/verify-unified-classroom.js` (15/15 passing), `test-theme-support.js` (88/88 passing), `test-rbac-and-structure.js` (34/34 passing), and `test-api-flows.js` (25/25 passing).
+
+### ✅ Milestone 275: Fix Student Assignment Instructions Page Blank View
+
+- **User Issue & Screenshot**:
+  - *"IN STUDENT VIEW INSTRUCTIONS PAGE BLANK FIX IT"*
+  - Screenshot showed mobile Google Classroom header (`<-` back arrow) with a single centered "Instructions" tab, and the entire content below was completely blank.
+- **Root Cause**:
+  - In `frontend/faculty/group-detail/js/group-detail-classwork.js`, tapping an assignment card on mobile (`window.innerWidth <= 768`) in `toggleWorkCardExpand` was hardcoded to call `openWorkInstructionsView(id, type, event, 'roster')`.
+  - Passing `'roster'` invoked `switchWorkInstTab('roster')`, which set `#pane-work-instructions` to `display: none` and `#pane-work-roster` to `display: block`.
+  - For students, `loadWorkInstRoster` is intentionally omitted and `#btn-inst-tab-roster` is hidden by CSS (`body.student-mode #btn-inst-tab-roster { display: none !important; }`), resulting in an empty `#pane-work-roster` with the `#pane-work-instructions` hidden.
+- **Resolution**:
+  1. In `toggleWorkCardExpand`: Evaluated `isStudent` before calling `openWorkInstructionsView(id, type, event, isStudent ? 'instructions' : 'roster')`.
+  2. In `openWorkInstructionsView`: Added role check to force `initialTab = 'instructions'` whenever `isStudent` is true, ensuring student callers never activate the teacher's grading roster. Added fallback lookup for `item` across `S.assignments` and `S.tests`.
+  3. In `switchWorkInstTab`: Added guard to force `tab = 'instructions'` if in student mode, ensuring `#pane-work-instructions` remains visible and active.
+  4. In `core.css`: Added `.work-inst-bottom-bar` to `body.student-mode` hidden list to avoid floating over the student's "Your work" bottom sheet.
+  5. Verified with `scripts/verify-unified-classroom.js` (13/13 passing), `test-theme-support.js` (88/88 passing), and full regression test suites.
+
+### ✅ Milestone 274: Unified Single-Engine Google Classroom Workspace (Zero Code Duplication)
+
+- **User Insight & Clarified Specification**:
+  - *"IMAGE 1,2 FOR FACULTY SIDE AND IAMGE 3,4 STUDENT SIDE BOTH NOT SAME ALSO STUDENT CLASSROOM NOT REFINE GOOD SO WHAT YOU NEED TO DO YOU SAME CLASSROOM AS TEACHER BUT RESTRICT STUDENT OPTIONS THIS WAHY CODE CAN BE REDUCED AND IF LATER WE FIX OR UPDATE TEACHER CLASSROOM STUDENT ALSO FIX"*
+  - Accompanied by 4 screenshots:
+    - **Images 1 & 2 (Faculty Desktop & Mobile)**: Rich Google Classroom academic illustration banner (blue gradient, yellow notebook/folder, headphones), clean navbar, stream, quick actions, and mobile bottom navigation.
+    - **Images 3 & 4 (Student Desktop & Mobile)**: Divergent, unrefined separate codebase with different green styling, disparate cards, and maintenance overhead.
+- **Root Cause & Comprehensive Resolution**:
+  1. **Single Unified Engine Architecture**:
+     - Routed `/student/group-detail.html`, `/student/group-detail`, and `/student/group-detail/` in `backend/server.js` directly to `frontend/faculty/group-detail/index.html`.
+     - Aliased `/student/group-detail` static assets to `frontend/faculty/group-detail` for 100% asset compatibility.
+     - Any fix, redesign, or update to the teacher classroom workspace automatically applies to student classroom instantaneously.
+  2. **Role Detection & Student Mode (`group-detail-core.js`)**:
+     - Updated `guardRoute({ requireRoles: ['TEACHER', 'SYSTEM_ADMIN', 'STUDENT'] })`.
+     - Detected student role (`user?.role === 'STUDENT' || window.location.pathname.startsWith('/student')`) and activated `document.body.classList.add('student-mode')` and `data-user-role="STUDENT"`.
+     - Dynamically configured `initStudentModeUI()`: updated brand and Classes Hub buttons to `/student/dashboard.html`, popover links to `/student/profile.html`, and role label to "Student".
+  3. **Role-Based CSS Restrictions (`core.css`, `classwork.css`)**:
+     - **Banner Controls**: Restricted teacher actions (`.banner-actions`: `Customize`, `Sheets Studio`, `Register`, `Promote Cohort`, `#btn-desktop-class-settings` gear).
+     - **Tabs Navigation**: Restricted teacher ledger tabs (`#tab-btn-register`, `#tab-btn-marks`, `#tab-btn-sheets`, `#mobile-tab-btn-register`, `#mobile-tab-btn-marks`). Desktop shows `Stream`, `Classwork`, `People`, and `Attendance`. Mobile bottom nav renders 3 clean tabs (`Stream`, `Classwork`, `People`).
+     - **Stream Left Sidebar**: Replaced teacher Quick Actions with Google Classroom student "Upcoming" work card (`#student-upcoming-card`).
+     - **Classwork Tab**: Restricted teacher creation & editing controls (`#btn-create-work-dropdown`, `#classwork-mobile-fab`, `#cw-mobile-fab-menu`, `#btn-edit-units-modal`, `.unit-menu-wrap`, `.work-card-menu-wrap`, `.work-action-btn`).
+     - **People Tab**: Restricted teacher administrative invite/add/remove controls (`.compact-invite-card`, `.add-student-bar`, `.person-rm-btn`).
+  4. **Student Turn-In & Submission Parity (`group-detail-classwork.js`)**:
+     - When viewing instructions (`openWorkInstructionsView`), hid teacher roster tab (`#btn-inst-tab-roster`).
+     - Rendered student "Your work" panel (Desktop right column, mobile elevated bottom sheet):
+       - Live submission status badge (`Assigned` or `Turned in`).
+       - Staged/submitted file card with attachment preview.
+       - "+ Add or create" / "+ Add work" file input triggering `/api/v1/assignments/:id/submit`.
+       - "Turn in" and "Unsubmit" (`/api/v1/assignments/:id/unsubmit`) action buttons.
+       - Private comments prompt to instructor.
+  5. **Student Course Attendance Telemetry (`tab-attendance`)**:
+     - Added `#tab-attendance` pane with Safe Zone / Deficit badge, classes attended vs conducted, consecutive attendance buffer calculator, and course session history table.
+- **Verification & Regression Suite**:
+  - `verify-unified-classroom.js`: 12/12 passed.
+  - `test-theme-support.js`: 88/88 passed (0 hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - `test-api-flows.js`: 25/25 passed.
+
+---
+
+### ✅ Milestone 273: Colorful Subject Hero Banner Visible on Mobile Stream
+
+- **User Insight & Clarified Specification**:
+  - *"IN MOBILE I DON'T SEE THAT COLORFULL SUBJACT CARD AND THIS CARD DESIGN IS FROM WHEN CLASSROOM IS CREATE THAT GET DESIGNED CARD THAT IS RIGHT NOW FACULTY CLASSROOM HAVE SAME CARD DESIGN NEED TO IN SAME SUBJACT IN STUDENT BECAUSE IN GOOGLE CLASSROOM CARD STAY SAME"*
+  - Accompanied by image of the colorful green card (`Database Management Systems (Theory)`, `Dr. Rajesh Sharma • Information Technology`, badges `DATABA`, `THEORY`, `SEMESTER 5`, avatar `RS`).
+- **Root Cause & Comprehensive Resolution**:
+  1. **Restored Colorful Subject Hero Banner on Mobile**:
+     - Removed `.student-hero-banner` from `@media (max-width: 768px)` hide rules.
+     - Styled `.student-hero-banner` for mobile with responsive padding (`1.25rem 1.25rem 1.35rem`), fluid typography, and compact circular teacher avatar (`44px` with glass border).
+  2. **Active Tab Coordination**:
+     - Configured `body:not([data-active-tab="stream"]) .student-hero-banner { display: none !important; }` on mobile so the colorful card is prominently displayed at the top of the **Stream** tab (just like the native Google Classroom mobile app), while leaving the Classwork tab dedicated to unit listings and assignments.
+     - Updated `switchStudentTab(tabName)` in `student-group.js` to set `data-active-tab` on `document.body`.
+     - Initialized `<body class="classroom-page" data-active-tab="stream">` in `index.html`.
+  3. **Theme & Color Consistency**:
+     - Retained exact `palette-${groupId % 6}` gradient themes (`palette-1` green gradient `hsl(152, 72%, 34%)` to `hsl(142, 71%, 45%)`) ensuring 100% card design parity between Faculty and Student views for the same subject.
+     - Bumped cache busters to `?v=20261023_05`.
+- **Verification & Regression Suite**:
+  - `verify-student-ui-ux.js`: 27/27 passed.
+  - `test-theme-support.js`: 88/88 passed (0 hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+
+---
+
+### ✅ Milestone 272: Student Classroom UI/UX Responsive Isolation & Single Mobile App Bar
+
+- **User Insight & Clarified Specification**:
+  - *"FIX UI UX"* with two screenshots:
+    1. **Mobile Screenshot (Image 1)**: Double stacked headers at top — desktop `.gc-navbar` (`☰ [GradCap] C.. › Database Management Systems [Moon] [AS]`) squished and overlapping text with icons, and below it `.mobile-class-app-bar` duplicating the hamburger button and displaying fallback `"Class"` instead of the course title.
+    2. **Desktop Screenshot (Image 2)**: `.mobile-class-app-bar` (`☰ Class [Filter] [User] [Options]`) erroneously rendered on desktop screen right above the green hero banner.
+- **Root Cause & Comprehensive Resolution**:
+  1. **Strict Responsive Viewport Isolation**:
+     - **Desktop (`>= 769px`)**: Enforced `.mobile-class-app-bar, .student-mobile-bottom-nav, .mobile-cw-unit-section, .mobile-work-details-view, .mobile-options-dropdown { display: none !important; }`. Only `.gc-navbar`, the class hero banner, and desktop tabs (`Stream`, `Classwork`, `People`, `Attendance`) render on desktop.
+     - **Mobile (`<= 768px`)**: Enforced `.gc-navbar, .student-hero-banner, .student-tabs-nav, .pc-unit-section, .pc-work-details-grid, .pwd-top-breadcrumbs, .pc-work-details-container { display: none !important; }`. Squeezed desktop navbar is completely hidden; only `.mobile-class-app-bar` renders at top.
+  2. **Single Native Mobile Top App Bar**:
+     - Left: Hamburger drawer button `☰` + dynamic subject title (`#mobile-course-title`, e.g. "Database Management Systems (Theory)") with flexbox ellipsis truncation.
+     - Right: Topic Filter button (`toggleMobileUnitFilter()`), Theme Toggle button (`toggleTheme()`), Student Initials circular avatar (`#mobile-user-avatar`), and Three-dots menu (`toggleMobileOptionsMenu()`).
+  3. **Mobile Dropdowns & Modal Sheets**:
+     - Moved `.user-profile-popover` and `.apps-launcher-dropdown` outside `.gc-navbar` and positioned them `position: fixed !important; z-index: 10015;` so they work seamlessly from both desktop and mobile headers.
+     - Added `#mobile-options-dropdown` for quick actions: Refresh Stream, Class Info, and Back to Classes Hub.
+     - Added `#mobile-unit-filter-modal` (touch-friendly bottom sheet) for unit/topic filtering.
+     - Added `#student-course-info-modal` displaying course details, subject code, instructor, department, and semester.
+  4. **Dynamic Data Hydration**:
+     - `renderHeroBanner()` in `student-group.js` dynamically sets `#mobile-course-title`.
+     - `loadStudentProfile()` in `student-group.js` updates `#mobile-user-avatar` with student initials.
+  5. **Theme Token Compliance & Zero Hardcoded Colors**:
+     - Fixed `student-mobile-bottom-nav` box shadow to use `var(--shadow-sm)`. 100% theme token compliant.
+     - Cache buster bumped to `?v=20261023_04`.
+- **Verification & Regression Suite**:
+  - `verify-student-ui-ux.js`: 23/23 passed.
+  - `test-theme-support.js`: 88/88 passed (0 hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+
+---
+
+### ✅ Milestone 271: Student Assignment Instructions Page Desktop & Mobile Visual Alignment Fix
+
+- **User Insight & Clarified Specification**:
+  - *"FIX INSTRUCTIONS PAGE"*
+  - Two screenshots provided:
+    1. **Desktop View (Image 1)**: PC assignment instructions layout (`.pc-work-details-container`) had a raw, unstyled duplicate mobile layout (`.mobile-work-details-view`) showing directly underneath it on the same page.
+    2. **Mobile View (Image 2)**: Global navigation header (`.gc-navbar` with breadcrumb `C.. › Database Management Systems...`) squeezed and crowded above the mobile assignment header (`← ⋮`), and the `+ Add work` button had duplicate plus icons (`+ + Add work`).
+- **Root Cause & Comprehensive Resolution**:
+  1. **Strict Responsive View Isolation**:
+     - On Desktop (`@media (min-width: 769px)`): Enforced `.pc-work-details-container { display: block !important; }` and `.mobile-work-details-view { display: none !important; }`. This completely eliminates the duplicate unstyled mobile markup from rendering below the PC instructions view.
+     - On Mobile (`@media (max-width: 768px)`): Enforced `.pc-work-details-container, .pc-work-details-grid, .pwd-top-breadcrumbs { display: none !important; }` and `.mobile-work-details-view { display: block !important; }`.
+  2. **Dedicated Mobile Instructions Screen Mode**:
+     - When viewing instructions on mobile (`body.viewing-work-details` on `@media (max-width: 768px)`), hid `.gc-navbar`, `.student-mobile-bottom-nav`, and `.mobile-class-app-bar` with `display: none !important;`. The mobile view now starts cleanly with the native Google Classroom sticky app bar (`←` back button and `⋮` options menu).
+     - Increased `.mobile-details-body` bottom scroll padding to `220px` to ensure instructions, description, and attachment cards remain fully scrollable above the elevated fixed bottom sheet (`.mobile-your-work-sheet`).
+  3. **Button Label & Breadcrumb Ergonomics**:
+     - Fixed `+ + Add work` duplicate icon by updating `<span id="mobile-add-work-label">Add work</span>` (clean SVG plus icon + `Add work`).
+     - Made course breadcrumb (`#pwd-course-breadcrumb`) in `.pwd-top-breadcrumbs` an interactive link with `closeStudentWorkDetails(event)` so students can click either "Classroom" or the course name to return smoothly to the classwork list.
+  4. **Cache Invalidation**:
+     - Bumped query strings to `?v=20261023_03` in `frontend/student/group-detail/index.html`.
+- **Verification & Regression Suite**:
+  - `verify_student_instructions_fix.js`: 6/6 passed.
+  - `test-theme-support.js`: 88/88 passed (100% theme token compliant, 0 hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - Clean JS syntax via `node --check`.
+
+### ✅ Milestone 270: Student Classroom CSS Repair & Google Classroom Student To-do Hub Launch (Phase 2 Ecosystem Modernization)
+
+- **User Insight & Clarified Specification**:
+  - *"CSS BROKE FIX IT ALSO START MAKING NEXT PHASE"*
+  - Screenshot of `http://localhost:3000/student/group-detail.html?id=1&tab=stream` showing legacy sidebar intrusion and unstyled Stream tab text.
+- **Root Cause & Comprehensive Resolution**:
+  1. **Legacy Sidebar Interference**: `frontend/shared/js/auth.js` previously treated student desktop views as standard pages (`isDrawerPortal = false`), injecting `#app-sidebar` and `.sidebar-open`. Resolved by adding active DOM element purges (`existingSidebar.remove()`), adding `isStudentPortal` to `isDrawerPortal = true`, and enforcing `#app-sidebar, .app-sidebar, .sidebar-backdrop { display: none !important; }` and zero padding on `.sidebar-open` in `student-group.css` and `assignments.css`.
+  2. **Page Class Consistency**: Updated `frontend/student/group-detail/index.html` and `frontend/student/dashboard/index.html` to use `<body class="classroom-page">`.
+  3. **Stream Tab Styling**: Added comprehensive theme-token styles for `.stream-layout` (2-column desktop, 1-column mobile), `.stream-upcoming-card`, `.stream-composer-box` (collapsed pill + expanded textarea & file attach actions), `.stream-post-card` (author metadata, verified teacher badge, attachment pills), `.stream-comments-section` (comment list, bubble, input pill + send button).
+  4. **Cache Busting**: Added `?v=20261023_02` query strings across CSS and JS script tags in student HTML templates to ensure clients never load stale cached assets.
+- **Next Phase: Google Classroom Student "To-do" Hub (`/student/assignments.html` & `/student/todo.html`)**:
+  1. **Unified Multi-Class Work Aggregation**: Aggregates assignments from `/api/v1/assignments` and class tests from `/api/v1/exams` across all enrolled classes.
+  2. **Three Authentic Material Tabs with Live Counters**:
+     - **Assigned `(N)`**: Active and scheduled work grouped by collapsible deadline accordions ("This week", "Next week", "Later", "No due date").
+     - **Missing `(N)`**: Overdue unsubmitted coursework grouped by "This week", "Last week", "Earlier" with prominent red `Missing` status pills.
+     - **Done `(N)`**: Submitted and graded items showing green `Turned in` / `Done late` / `score/max` badges and teacher feedback snippets.
+  3. **Class Filter Dropdown**: Filter work items seamlessly across "All classes" or specific courses (populated via `/api/v1/teaching-groups/student/my-groups`).
+  4. **Direct Workspace Navigation**: Clicking any work card navigates directly into the class turn-in workspace (`/student/group-detail.html?id=:id&work=:workId`).
+  5. **Server 301 Permanent Redirect**: Added `/student/todo.html` and `/student/todo` ➔ `/student/assignments.html`.
+- **Verification & Regression Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% theme token compliant, 0 hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: All passed.
+  - `test-student-self-registration.js`: 30/30 passed.
+  - `test-api-flows.js`: 25/25 passed.
+  - Clean JS syntax via `node --check`.
+
+### ✅ Milestone 269: Student Classroom Pixel-Perfect Visual Alignment (Images 1-5 Parity)
+
+- **User Insight & Clarified Specification**:
+  - *"IN PC STUDENT VIEW IMAGE 1,2 AND IN MOBILE LIKE IMAGE 3,4 AFTER SUBMIT IMAGE 5"*
+- **Completed Visual Deliverables**:
+  1. **Image 1: PC Assignment Details & Turn-In Workspace**:
+     - Standalone two-column layout (`.pc-work-details-grid`).
+     - Left Column: Breadcrumb trail (`Classroom › Course › Semester`), large blue circular clipboard icon, bold assignment title, instructor subtitle with publication date, points badge (`10 points`), due date (`Due 19 Aug, 23:59`), bulleted instructions list, authentic Google Classroom attachment preview card with SVG document thumbnail, and class comments input.
+     - Right Column: Pinned "Your work" card showing submission status (`Handed in` in green when submitted, `Assigned` when pending), submitted file preview card with document thumbnail preview, active `Unsubmit` button, and "Work cannot be turned in after the due date" notice. Pinned "Private comments" card below.
+  2. **Image 2: PC Classwork Tab**:
+     - Unit section headers (`.pc-unit-section`) with unit title, collapse chevron, and three-dots options menu.
+     - Expandable `.pc-work-card` featuring circular blue clipboard icon, assignment title, due date, "Posted [Date]" vs status badge (`Handed in` / `Assigned`), formatted bulleted description, Google Classroom attachment card with thumbnail, and blue "View instructions" link leading to Image 1.
+  3. **Image 3: Mobile Classwork Tab**:
+     - Responsive top app bar (`.mobile-class-app-bar`) with hamburger `≡`, course title, filter icon, avatar, and options menu.
+     - Unit header "Unit 1" with clean accent divider.
+     - Single work item rows (`.mobile-work-item-row`) with vibrant blue circle clipboard icon (`📋`), assignment title on line 1, due date on line 2, and right-aligned status (`Assigned` or `Turned in`).
+     - Bottom navigation bar with 3 tabs (`Stream`, `Classwork`, `People`) with active blue rounded pill background highlight around the clipboard icon.
+  4. **Image 4: Mobile Assignment Details (Before Submit)**:
+     - Header bar with back arrow `←` and options menu `⋮`.
+     - Due date line, policy notice ("Work cannot be turned in after the due date"), bold title, points badge (`100 points`), "Add class comment" row, bulleted description, "Attachments" section with thumbnail card.
+     - Elevated bottom sheet (`.mobile-your-work-sheet`) showing drag handle `—`, "Your work" title, `Assigned` status, and full-width blue pill `+ Add work` button.
+  5. **Image 5: Mobile Assignment Details (After Submit / Turned In)**:
+     - Elevated bottom sheet dynamically transitions to **"Turned in" in vibrant green**, displays submitted file card with square red `PDF` badge and file name (e.g. `01_Girdhar_Dhami_JAVA_Assignment_03.pdf`), and includes `Unsubmit` button.
+  6. **Backend Unsubmit API (`POST /api/v1/assignments/:id/unsubmit`)**:
+     - Added `deleteSubmission` to `AssignmentModel` and registered unsubmit endpoint in `AssignmentController` and `assignmentRoutes.js`.
+     - Validated complete submit -> turned-in -> unsubmit -> assigned cycle.
+  7. **Zero Hardcoded Hex Colors**:
+     - 100% theme token compliance verified with `node scripts/test-theme-support.js` (88/88 passed).
+
+### ✅ Milestone 268: Student Google Classroom Workspace Architecture & Direct Class Actions Parity
+
+- **User Insight & Clarified Specification**:
+  - *"NOW WE NEED TO FIX STUDENT CODE WITH UPDATE SYSTEM ANALYZE STUDENT WHAT NEED TO REMOVE AND UPGRADE BECAUSE STUDENT NOT HAVE CLASSROOM SYSTEM"*
+- **Completed Deliverables**:
+  1. **Complete Student Google Classroom Workspace (`/student/group-detail.html?id=:id`)**:
+     - Built modular `frontend/student/group-detail/index.html`, `student-group.css`, and `student-group.js`.
+     - Hero Class Banner with dynamic palette colors (`palette-0` to `palette-5`), course code chips, component badge (Theory/Practical), instructor details, and faculty avatar.
+     - Dual-mode navigation: desktop tabs bar (`Stream`, `Classwork`, `Attendance`, `People`) and pinned mobile bottom dock (`Stream`, `Classwork`, `Attendance`, `People`).
+  2. **4 Core Student Classroom Tabs**:
+     - **Tab 1: Stream**:
+       - Upcoming work sidebar block with due dates.
+       - "Announce something to your class" student question composer supporting text and file attachments.
+       - Teacher announcements feed with verified `TEACHER` badges, download cards, and interactive comments thread.
+     - **Tab 2: Classwork**:
+       - Structured by syllabus units (`Unit 1`, `Unit 2`, etc.) matching the faculty classroom syllabus matrix.
+       - Toolbar with Topic / Unit filter, Category filter (Assignments, Practicals, Tests, Final Docs), and Collapse All toggle.
+       - Coursework cards with live student status pills (`Turned In`, `Assigned`, `Missing / Late`, `Graded (score/max)`).
+       - Interactive Student Work Turn-In modal (`#student-work-modal`) with teacher instructions, download links, file upload staging (`+ Add or create file`), and atomic submission action (`Turn In` / `Resubmit`).
+     - **Tab 3: Attendance**:
+       - Subject-specific personal attendance telemetry (overall % gauge, safe zone vs deficit warning status, attended / conducted / absent counters, and exam eligibility buffer calculations).
+       - Chronological session-by-session attendance history table (Date, Session/Topic, Type, Status badge, Recorded via).
+     - **Tab 4: People**:
+       - Course instructor(s) profile cards with department badges.
+       - Enrolled classmates roster list with 2-digit roll numbers and avatar badges.
+  3. **Backend Personalized Submission Status Joining**:
+     - Updated `TeachingGroupModel.getGroupAssignments(groupId, studentId = null)` to join `assessment_submissions` for the authenticated student.
+     - Updated `TeachingGroupController.getAssignments()` to extract `req.user.student_id` and attach `my_submission` object (`status`, `is_submitted`, `submitted_at`, `marks_obtained`, `file_path`, `original_filename`, `feedback`).
+  4. **Student Dashboard Direct In-Class Linking**:
+     - Updated `renderGoogleClassCards()` in `frontend/student/dashboard/dashboard.js`:
+       - Class Title click opens `/student/group-detail.html?id=${c.id}` directly.
+       - Card actions link directly to in-class tabs:
+         - `Attendance` ➔ `/student/group-detail.html?id=${c.id}&tab=attendance`
+         - `Classwork` ➔ `/student/group-detail.html?id=${c.id}&tab=classwork`
+         - `People` ➔ `/student/group-detail.html?id=${c.id}&tab=people`
+         - `Stream` ➔ `/student/group-detail.html?id=${c.id}&tab=stream`
+       - Slide-out drawer links updated to `/student/group-detail.html?id=${c.id}`.
+       - "+ Join Class" code submission instantly navigates student into joined classroom workspace.
+  5. **Theme Compliance & Verification**:
+     - 100% theme token compliant (Zero hardcoded `#hex` colors across all newly created HTML and CSS).
+     - All 88 theme tests pass (`test-theme-support.js`).
+     - All 46 register consolidation tests pass (`test-register-consolidation.js`).
+     - All 34 RBAC tests pass (`test-rbac-and-structure.js`).
+     - All 30 student self-registration tests pass (`test-student-self-registration.js`).
+     - Roll Call upgrade and live log tests pass.
+
+### ✅ Milestone 267: Mobile Classroom Bottom Nav Refinement, Dedicated Compact Register View & Roll Call Modal Fix
+
+- **User Insight & Clarified Specification**:
+  - *"NOW REMOVE SHEETS BTN ON BOTTOM NAV BAR THIS PAGE ONLY FOR BIG SCREENS AND MOVE PEOPLE NAV ON LAST AND IN REGISTER IN MOBLIE SCREENS NO 30 DAY METRIC ONLY COMPAT UI UX ALSO FIX ROLL CALL BTN"*
+- **Root Cause Analysis**:
+  1. **Bottom Nav Sheets & People Order**: Sheets Studio tab button was present on mobile bottom navigation bar where screen space is constrained; Sheets Studio is designed specifically for desktop spreadsheets. Furthermore, the user wanted People tab moved to the very end of bottom nav (Stream -> Classwork -> Register -> Marks -> People).
+  2. **Register Tab on Mobile**: The physical 30/31-day table ledger with horizontal scrolling was togglable/visible on mobile screens; user specified mobile view must strictly only show the compact daily UI/UX with no 30-day matrix table.
+  3. **Roll Call Button Failure & 404 Error**:
+     - `openClassRollCallModal()` previously made a request to fictitious endpoint `/api/v1/attendance/roll-call/start`, resulting in a `Request failed with status 404` toast.
+     - The modal backdrop `#classroom-roll-modal` was missing proper `open` class toggling compatible with standard modal styling, causing modal popup failure.
+- **Completed Deliverables**:
+  1. **Mobile Bottom Navigation Bar**:
+     - Removed Sheets button from `#classroom-mobile-bottom-nav` (`#mobile-tab-btn-sheets` hidden via DOM and CSS `display: none !important;`). Sheets Studio remains cleanly accessible on desktop tabs on big screens.
+     - Moved People button (`#mobile-tab-btn-people`) to the last position in `#classroom-mobile-bottom-nav`. The 5-item mobile nav order is now: `Stream` -> `Classwork` -> `Register` -> `Marks` -> `People`.
+  2. **Strict Compact Register UI/UX on Mobile**:
+     - In `register.css`, enforced `#desktop-matrix-container { display: none !important; }` and `#btn-toggle-mobile-mode { display: none !important; }` on `@media (max-width: 768px)`.
+     - Ensured `.mobile-compact-section` is always active and `document.body.classList.remove('mobile-full-ledger')` is called during tab switching and register loading.
+  3. **Roll Call Studio Modal & API Integration**:
+     - Fixed `openClassRollCallModal()` and `closeClassRollCallModal()` in `group-detail-register.js` to open/close `#classroom-roll-modal` via `openModal('classroom-roll-modal')` / `closeModal('classroom-roll-modal')`.
+     - Connected session management to legitimate backend endpoints (`/api/v1/faculty/registers/${regId}/sessions`, `/api/v1/attendance/sessions/${sess.id}/pin`, `/api/v1/attendance/sessions/${sess.id}/qr`).
+     - Automated live check-in polling via `/api/v1/attendance/sessions/${sess.id}/self-attendance` and enabled manual roster toggling with zero 404 errors.
+- **Verification**:
+  - `node scripts/test-theme-support.js`: 88/88 passed (100% theme token compliance, 0 hardcoded colors).
+  - `node scripts/test-register-consolidation.js`: 46/46 passed.
+  - `node scripts/test-roll-call-upgrade.js` & `node scripts/test-live-log-checkin.js`: All passed.
+
+### ✅ Milestone 266: Direct Classroom Page Linking from Subject Cards & Mobile Header Create Class Button
+
+- **User Insight & Clarified Specification**:
+  - *"NOW FIX SUBJACT CARD BTN ATTENDANCE ,REGISTER,CLASSWORK RIGHT NOW THEY NOT OPEN PAGE INSIDE WE HAVE CLASS I NEED THEY OPEN CLASSROOM WROK PAGE,REGISTER PAGE DIRECTLY AND I DON'T SEE CREATE CLASS BTN FIX IT"*
+- **Root Cause Analysis**:
+  1. **Subject Card Action Buttons Routing**: The 4 action buttons on the subject cards in `groups.js` and `dashboard.js` (`Take Attendance`, `Register`, and `Classwork`) were linking out to `/faculty/registers.html` instead of opening the class pages directly inside the subject classroom (`group-detail.html`).
+  2. **Missing `Create Class` Button on Mobile**: In `groups.css` (line 2141) and `dashboard.css` (line 2278), `@media (max-width: 768px)` had `.classes-header-actions { display: none; }`. This completely hid `#btn-create-group` from mobile users.
+- **Completed Deliverables**:
+  1. **Direct In-Class Linking**:
+     - `Take Attendance`: Updated to `/faculty/group-detail.html?id=${g.id}&tab=register&action=rollcall` (opens the class register tab and automatically triggers `openClassRollCallModal()` for live attendance studio).
+     - `Register`: Updated to `/faculty/group-detail.html?id=${g.id}&tab=register` (opens the 31-day attendance register matrix directly inside the subject classroom).
+     - `Students`: Preserved direct link `/faculty/group-detail.html?id=${g.id}&tab=people` (opens enrolled student roster inside the class).
+     - `Classwork`: Updated to `/faculty/group-detail.html?id=${g.id}&tab=classwork` (opens coursework, assignments, tests, and submission ledgers directly inside the class).
+  2. **Mobile Create Class Button**:
+     - Updated `.classes-header-actions` in `groups.css` and `dashboard.css` for `@media (max-width: 768px)`:
+     - Promoted `#btn-create-group` into an accessible, primary pill button (`+ Create Class`) aligned directly on the right of `Subject Classes [count]` in the top header row.
+     - Kept secondary actions (`Broadcast Notice`, `Students Roster`) hidden on mobile to avoid row crowding.
+  3. **Auto Roll Call Studio Handler**:
+     - In `group-detail-core.js`, added support for `groupId` URL parameters (`id`, `groupId`, `group`) and detected `action=rollcall` / `action=attendance` to automatically trigger `openClassRollCallModal()`.
+- **Verification**:
+  - `node scripts/test-theme-support.js`: 88/88 tests passed with 0 hardcoded colors.
+  - `node scripts/test-register-consolidation.js`: 46/46 tests passed.
+  - `node scripts/test-rbac-and-structure.js`: 34/34 tests passed.
+  - `node scripts/test-roll-call-upgrade.js`: All tests passed.
+  - `node scripts/test-live-log-checkin.js`: All tests passed.
+
+### ✅ Milestone 265: Fix Student Work Page Opening (Eliminating Edit Page Collision) & Remove Topic Option from Edit Page
+
+- **User Insight & Clarified Specification**:
+  - *"fix when i click on open student wrok page not open insted edit page open fix it also remove that topic option"*
+- **Root Cause Analysis**:
+  - In `classwork.css`, `body.work-standalone-page #work-edit-page-view` had `display: flex !important;`.
+  - When `openWorkInstructionsView()` was invoked on mobile, it applied `work-standalone-page` to `<body>`.
+  - Because `#work-edit-page-view` had `display: flex !important;` and appeared later in the DOM with `z-index: 10000 !important;`, it forcefully covered `#work-instructions-view`, making the user see the edit page instead of the student work roster page.
+- **Completed Deliverables**:
+  1. **Strict Standalone Page CSS Isolation**:
+     - Separated `body.work-instructions-standalone #work-instructions-view` and `body.work-edit-standalone #work-edit-page-view`.
+     - Explicitly enforced `#work-instructions-view[style*="display:none"]` and `#work-edit-page-view[style*="display:none"] { display: none !important; }`.
+     - Increased `.work-dd-item` touch target on mobile to `min-height: 44px; padding: 0.75rem 0.9rem !important;` to eliminate tap misfires.
+  2. **Topic Option Removal from Edit Page**:
+     - Removed visible Topic dropdown from mobile settings list in `#work-edit-page-view`.
+     - Removed visible Topic dropdown from desktop sidebar in `#work-edit-page-view`.
+     - Retained `<input type="hidden" id="edit-work-unit">` and `id="edit-work-unit-mobile"` to seamlessly preserve existing `item.unit_name` on save without breaking database/API payloads.
+  3. **Robust Multi-Signature Handler for `openWorkInstructionsView`**:
+     - Enhanced `openWorkInstructionsView(arg1, arg2, arg3, arg4)` to flexibly accept `(id, type, event, tab)`, `(id, type, tab)`, or `(type, id, ...)` without throwing `event.stopPropagation()` TypeErrors.
+     - Robust numeric ID normalization with `Number(t.id) === Number(id)`.
+     - Explicitly closes `#work-edit-page-view` and all dropdown menus upon opening instructions/student work.
+     - Properly loads student roster and activates the "Student work" tab when `tab === 'roster'`.
+  4. **Verification**:
+     - All 3 regression suites passing (`test-theme-support.js` 88/88, `test-rbac-and-structure.js` 34/34, `test-register-consolidation.js` 46/46).
+
+### ✅ Milestone 264: Settings Icon Removal, Three-Dot Options Dropdown (Edit/Delete), & Google Classroom Edit Page View (Mobile Image 2, PC Image 3)
+
+- **User Insight & Clarified Specification**:
+  - *"remove setting icon and fix three dot add edit and delete btn and fix edit model insted model page apper in mobile like image 2 and for pc image 3 design"*
+- **Completed Deliverables**:
+  1. **Top Nav Settings Icon Removal & Three-Dot Dropdown**:
+     - Removed the gear settings button from `.work-inst-top-nav`.
+     - Pinned options menu trigger to `.work-inst-more-wrap` with `#work-inst-dropdown`.
+     - Toggling opens a clean dropdown menu containing:
+       - **Edit**: opens the new full-page Google Classroom editor.
+       - **Delete**: prompts direct deletion confirmation and removes the item.
+     - Document-level outside click listener dismisses the dropdown automatically.
+  2. **Google Classroom Mobile Edit Page (Image 2 Alignment)**:
+     - Dedicated page view `#work-edit-page-view` replaces the popup modal dialog.
+     - **Top Bar**: Close button `✕`, pill `Save` button, and options `⋮`.
+     - **Main Content**:
+       - Large, clean borderless title input (`.gc-edit-title-input`).
+       - `👥 All students` audience chip.
+       - Outlined Material `Description` box with floating label and text-alignment icon `≡`.
+       - Attachment card with paperclip `📎`, PDF badge, `Students can view file`, and `⋮`.
+       - `+ Add attachment` button.
+       - Quick setting rows for Points, Due Date, and Topic.
+  3. **Google Classroom PC / Desktop Edit Workspace (Image 3 Alignment)**:
+     - Responsive two-column desktop workspace (`.work-edit-workspace`):
+       - **Top Nav Bar**: Close `✕`, assignment clipboard icon, `Assignment` heading, and blue rounded `Save` button.
+       - **Left Main Card**:
+         - Outlined `Title*` container box.
+         - Outlined `Instructions (optional)` container box with rich formatting toolbar (`B`, `I`, `U`, list, clear).
+         - Attachment preview card with sharing options (`Students can view file ▾`) and remove `✕`.
+         - Dedicated `Attach` toolbar card with 5 circular icon tools: Drive, YouTube, + Create, Upload, Link.
+       - **Right Sidebar**:
+         - Assign to: `👥 All students`.
+         - Points input: `100`.
+         - Due date picker with `☑ Close submissions after due date` checkbox and info tooltip.
+         - Topic unit dropdown selector.
+         - `+ Rubric` button.
+     - Synchronized saving via `submitEditWork()`, updates the teaching group API, reloads list, refreshes instructions view, and supports hardware/browser back navigation via `popstate`.
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (Zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - Clean JS syntax via `node --check`.
+
+---
+
+### ✅ Milestone 263: Google Classroom Native Mobile Header Alignment & Sticky Bottom Comment Composer Bar
+
+- **User Insight & Clarified Specification**:
+  - *"now fix header also that text box for adding comment stay on screen bottom sticky in mobile screen for easy access and send comments"*
+- **Completed Deliverables**:
+  1. **Google Classroom Native Top Header (Image 4 Alignment)**:
+     - Cleaned `.work-inst-top-nav`: Removed the crowded "100 points" pill from the top navigation bar. Top bar now strictly displays the back arrow `←` on the left and Settings `⚙` / More Options `⋮` on the right, matching Image 4.
+     - Upgraded tab bar to Material Design flat tabs with an active underline indicator (`border-bottom: 3px solid var(--color-primary)`) instead of rounded button pill borders.
+  2. **Native Typography Instructions Header**:
+     - Removed the oversized colored circular icon from the top of instructions.
+     - Structured header to follow Image 4:
+       - **Due Info**: `Due Oct 25, 11:59 PM` (subtle secondary text).
+       - **Policy Note**: `Work cannot be turned in after the due date`.
+       - **Title**: Clean, bold assignment heading (`.work-inst-gc-title`).
+       - **Points**: `100 points • Unit 1 • Assignment` (`.work-inst-gc-points`).
+  3. **Sticky Bottom Comment Composer Bar**:
+     - Added `.work-inst-bottom-bar` pinned to the bottom of the screen (`position: fixed !important; bottom: 0 !important; z-index: 10005;`) on mobile screens.
+     - Styled with rounded pill input (`#work-inst-bottom-comment-input`), placeholder `Add class comment…`, and circular blue airplane send button (`#work-inst-bottom-send-btn`).
+     - Added safe padding-bottom (`5.5rem`) to `.work-inst-container` so instructions and class comments never get hidden behind the sticky bar.
+     - Connected `submitWorkInstActiveComment()` to send comments, prepend to the comments list, clear input, scroll smoothly into view, and display toast notification.
+     - In `switchWorkInstTab(tab)`, the bottom comment bar automatically hides when viewing the Student Work roster tab and reappears on the Instructions tab.
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (Zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - Clean JS syntax via `node --check`.
+
+---
+
+### ✅ Milestone 262: Standalone Student Work Page Mode, Single-Row Filters & Unit Card (Title + Arrow + Dot) Alignment
+
+- **User Insight & Clarified Specification**:
+  - *"student wrok page appering on bottom not as new page fix it also fix collapse btn on same row in filter row also in unit card only title then arrow then dot"*
+- **Completed Deliverables**:
+  1. **Student Work / Instructions Full-Screen Standalone Page Mode**:
+     - Fixed bug where `.cw-layout` was not being hidden because the DOM element was `.classwork-layout`; now accurately hides `.classwork-layout` so the work view no longer appears at the bottom under the classwork cards.
+     - Added `body.work-standalone-page` mode on mobile (`max-width: 768px`) with `position: fixed; inset: 0; z-index: 10000; overflow-y: auto; background: var(--bg-card);`, rendering `#work-instructions-view` as a true full-page screen matching Google Classroom mobile app.
+     - Sticky top sub-header with back arrow `←`, points pill `100 points`, settings `⚙`, and more `⋮` pinned to top; automatically hides bottom navigation bar and mobile FAB while active.
+     - Added seamless browser/hardware back button handling via `popstate` so navigating back cleanly returns to the Classwork list.
+  2. **Single-Row Toolbar with Collapse Button Alongside Filters**:
+     - Styled `.gc-cw-toolbar` on mobile with `flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 0.35rem`.
+     - Topic Filter (`#cw-unit-filter-wrap`), Category Filter (`#cw-cat-filter-wrap`), and the Collapse All button (`#btn-collapse-all-units`) now all sit on the exact same single row without any wrapping.
+  3. **Unit Card Header: Only Title then Arrow then Dot**:
+     - Simplified both syllabus unit sections and General Coursework headers to contain strictly:
+       - **Left**: Unit title (`.unit-main-heading`, e.g., `Unit 1 — Basics and Language Fundamentals` or `General Coursework`).
+       - **Right**: Chevron toggle arrow button (`.unit-toggle-btn`) followed immediately by the three-dot menu button (`.unit-menu-trigger`).
+     - Removed redundant left chevron, subtitle descriptions, and item count chips (`1 items >`, `8 items`) per specification.
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (Zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - `test-student-self-registration.js`: 30/30 passed.
+  - Clean JS syntax via `node --check`.
+
+---
+
+### ✅ Milestone 261: Google Classroom Mobile App UI/UX Alignment — Clean Assignment Card, Active Units Only, 4-Option Menu & Hover FAB
+
+- **User Insight & Clarified Specification**:
+  - *"in mobile app google classroom it show like image 1 then click on assignment open image 2 page so show student record and nav bar from switch between instruction and student work page i our mobile ui ux remain same but in assignment card like image1 only have titel ,date ,three dot we going to add small submit status like date like 6/10 and only show unit card if that hae work active if not only show active and when click on submission & roster btn open student work page and rename btn student work and when click enter marks open page that we have already in marks tab page in mobile move enter marks,student work,edit ,delete btn under three dot and in mobile i only need hover create btn in classwork and fix fitter alignment"*
+- **Completed Deliverables**:
+  1. **Google Classroom Mobile Assignment Card (Image 1)**:
+     - Minimal title and subtitle row on small screens containing only the assignment title, due date, and small submit status pill (`Due 25 Oct, 23:59 • 6/10`), matching Image 1.
+     - Hidden desktop badges (`.work-card-meta-desktop-only`, type badge, max marks, unit badge) on mobile (`max-width: 768px`) to ensure zero visual clutter.
+     - Tapping the assignment card anywhere on mobile directly navigates to the Google Classroom full-page view (`#work-instructions-view`) with the `Student work` roster tab pre-selected (Image 2).
+  2. **Active Units Only Filtering**:
+     - Updated `renderCWList()` in [group-detail-classwork.js](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail/js/group-detail-classwork.js) with `if (groupItems.length === 0) return;` so empty unit cards are automatically skipped; only units with active coursework/tests are shown.
+  3. **Three-Dot Menu (⋮) with All 4 Actions on Mobile**:
+     - Positioned `.work-card-dropdown` with 4 comprehensive actions:
+       - `[ 📊 Enter Marks ]` (opens minimal marks table modal `#modal-enter-marks`)
+       - `[ 👥 Student work ]` (opens student work roster in `#work-instructions-view`)
+       - `[ 📝 Edit ]` (opens edit work modal)
+       - `[ 🗑 Delete ]` (deletes work item)
+     - Renamed "Submissions & Roster" button across desktop and mobile to **"Student work"**.
+  4. **Mobile Hover Create Button (FAB)**:
+     - Hid top inline create button (`.cw-dd-wrap`) on mobile in favor of the floating hover button (`#classwork-mobile-fab`), eliminating toolbar clutter.
+  5. **Filter Alignment in Classwork Toolbar**:
+     - Styled `.gc-cw-toolbar` on mobile with a clean flex layout where `#cw-unit-filter-wrap` (Topic filter) and `#cw-cat-filter-wrap` (Category filter) sit side-by-side splitting the width 50/50 (`flex: 1 1 0; min-width: 0`), sharing uniform 38px height, Material Outline border, and floating labels.
+     - Neatly aligned the Collapse all toggle button on the right with zero overflow.
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (Zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - `test-student-self-registration.js`: 30/30 passed.
+  - Clean JS syntax via `node --check`.
+
+---
+
+### ✅ Milestone 260: Mobile (Small Screen) UI/UX Overflow Fix — Cards & Three-Dot (⋮) Menu Screen Containment
+
+- **Scope**: Fixed small-screen mobile UI/UX overflow issues on Group Detail Classwork and Stream views where cards and their three-dot (⋮) menu buttons were pushed outside the screen.
+- **Root Cause & Fixes**:
+  1. **Root Containment**: Added `max-width: 100%; overflow-x: hidden; box-sizing: border-box;` on `html, body, .classroom-page, .classroom-body, .cw-layout, .cw-main` to eliminate horizontal scroll blowout (`scrollWidth === innerWidth === 360px`).
+  2. **Mobile Class Header Bar**: Converted `.mobile-class-header-bar` from wide `space-between` single-row flex into clean vertical column stack with `word-break: break-word` (Database Management Systems • / Sem 5 • Information Technology), matching Image 4 and eliminating the ~580px width blowout.
+  3. **Consolidated Filter Dropdowns**: Replaced overflowing horizontal category pills (`.cw-pills-scroll`) with a responsive Category Filter dropdown (`#cw-cat-filter-wrap`) in the GC toolbar, synchronized with live counts (`All Work (N)`, `Assignments (N)`, `Lab Practical (N)`, etc.), matching the Material Design outline style of the Topic filter.
+  4. **Sidebar Clean-up**: Removed duplicated syllabus units from sidebar per spec, keeping topics in the central syllabus matrix and dropdown.
+  5. **GC Action Toolbar**: Enabled `+ Create` button (`.cw-dd-wrap`) on mobile with responsive wrapping, allowing topic filter and collapse buttons to stay within screen bounds without blowing out viewport.
+  6. **Syllabus Unit Headers**: Implemented `min-width: 0; overflow: hidden; word-break: break-word` on `.unit-header-left` and `flex-shrink: 0; position: relative` on `.unit-header-right`, keeping `0 items >` and the `⋮` three-dot menu trigger 100% visible inside the screen edge.
+  7. **Work Cards & Three-Dot Menu**: Applied strict `box-sizing: border-box; max-width: 100%; min-width: 0` to `.work-card`, `.work-card-hdr`, and `.work-card-main-content`. Moved due date into the card subtitle row as a compact badge (`.work-due-pill-badge`) with max marks (`Max: 30 marks`), hiding the long `.work-due-text` on small screens so `.work-card-hdr-right` three-dot button (⋮) always stays visible and properly padded inside the card.
+  8. **Three-Dot Dropdown Menu Positioning**: Configured `.work-card-dropdown` to open downwards (`top: calc(100% + 4px); bottom: auto; right: 0; z-index: 500;`) and set `overflow: visible` on `.work-card` to ensure `[ 📝 Edit ]` and `[ 🗑 Delete ]` items pop open seamlessly without being clipped by the card boundary or overflowing the viewport.
+  9. **Image 4 Live Stats Strip**: Updated `.work-expanded-stats` to render the clean 3-metric strip (`1 SUBMITTED | 9 PENDING | 10 STUDENTS`) with dividers and flex space-around distribution.
+  10. **Action Buttons**: Responsive `.work-card-actions` with `[Enter Marks]`, `[Submissions & Roster]`, and compact icon buttons `[ 📝 ]` and `[ 🗑 ]` on mobile, perfectly matching Image 4.
+  11. **Stream Cards**: Added containment to `.stream-post`, `.post-header`, `.post-meta`, and `flex-shrink: 0` to `.post-menu-btn`.
+- **Theme Compliance & Testing**:
+  - Zero hardcoded hex colors added (all use `var(--*)` CSS variables; verified with `Select-String`).
+  - Mobile Viewport Verification: Headless Chrome rendered 360x780 mobile screen, confirming `docWidth: 360`, `winWidth: 360`, `isOverflowing: false`, zero overflowing elements, card triggers at `right: 315` and unit triggers at `right: 343`.
+  - Test suites: 88/88 theme support ✅ · 34/34 RBAC & structure ✅ · 46/46 register consolidation ✅ · 30/30 student self-registration ✅ · 25/25 system flow tests ✅. JS syntax clean across all files ✅.
+
+---
+
+### ✅ Milestone 259: Google Classroom–Style Classwork Redesign (Images 1, 2, 3) – Work Cards + Instructions Full-Page View
+
+- **Scope**: Redesigned the entire `group-detail` Classwork tab to match Google Classroom mockups.
+- **Key Deliverables**:
+  1. **GC Toolbar**: Create pill button + Material outline Topic filter select + Collapse All toggle.
+  2. **Collapsible Work Cards**: `.work-card-hdr` (Image 1 collapsed) / `.work-card-expanded-body` (Image 2 expanded) with "Handed in / Assigned" live stats, instructions description, attachment preview card, and "View instructions" link.
+  3. **Instructions Full-Page View** (`#work-instructions-view`): Slides in to replace classwork list — sticky top nav with back arrow, "Instructions | Student work" tab pills with count badge, edit (⚙) and more (⋮) action buttons. Pane 1 = Instructions (title block, description, attachment, class comments composer). Pane 2 = Student Work roster with All/Handed-in/Assigned filter pills.
+  4. **New JS functions**: `openWorkInstructionsView`, `closeWorkInstructionsView`, `switchWorkInstTab`, `openEditWorkFromInstructions`, `toggleWorkInstMoreMenu`, `loadWorkInstRoster`, `renderWorkInstRoster`, `filterWorkInstRoster`, `submitWorkInstComment`. All exported to `window`.
+  5. **CSS**: ~800 lines of new theme-token-compliant styles. Fixed 2 hardcoded `#ffffff` → `var(--text-white)`. Zero hardcoded hex values remain.
+- **Tests**: 88/88 theme ✅ · 34/34 RBAC ✅ · 46/46 register ✅ · 20/20 marks ✅. JS `--check` syntax clean ✅.
+
+---
+
 ### ✅ Milestone 258: Minimal Mobile Marks Entry Redesign & High-Fidelity UI Alignment (Mockups 2, 3 & Minimal Mobile Marks Modal)
+
+
 
 - **User Insight & Clarified Specification**:
   - *"WHEN CLICK ENTER MARKS THIS TABLE OPEN FOR MOBILE THIS IS MINIMAL FOR MOBILE"*

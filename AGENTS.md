@@ -18,6 +18,31 @@
 
 ---
 
+## 👥 External Contributor & Dev 2 Collaboration Guidelines
+If you are operating as Dev 2 or assisting an external contributor:
+1. **Frontend-Only Scope**: Only edit files inside `frontend/` and documentation (`TODO.md`, `*.md`). Do NOT modify backend logic, routes, or database schemas.
+2. **Pre-Seeded Database**: The database `backend/college_attendance.sqlite` is already tracked in git and pre-seeded. Run `node backend/server.js` on port 3000 to test locally.
+3. **Autonomous Auto Pull & Push Protocol**:
+   - Dev 2's Antigravity must autonomously:
+     1. Sync branch: `git fetch origin main` (or pull on feature branch).
+     2. Implement frontend edits.
+     3. Verify `node backend/scripts/test-theme-support.js`.
+     4. Update `TODO.md` with structured milestone documentation.
+     5. Commit & push: `git add frontend/ TODO.md && git commit -m "..." && git push -u origin feature/<name>`.
+     6. Output the Pull Request link.
+4. See full instructions in [DEV2_ANTIGRAVITY_INSTRUCTIONS.md](file:///d:/uiap/Attendance-System-Simplified/DEV2_ANTIGRAVITY_INSTRUCTIONS.md).
+
+---
+
+## 🔒 Primary Developer Safety Policy: Frontend Push Protection
+To prevent accidentally overwriting or breaking Dev 2's ongoing frontend work:
+- **Primary developer should NOT push unmerged local `frontend/` changes directly to `onebotyt/Vidya.git`**.
+- Dev 2 is the active frontend contributor for this repository.
+- The primary developer only reviews Dev 2's frontend updates via `frontend_dev2/` (`npm run collab:pull <branch>` ➔ `npm run collab:diff` ➔ `npm run collab:preview`), fixes or approves them, and selectively merges with `npm run collab:apply`.
+- When pushing backend/system updates, use `npm run push:backend` or safe commits excluding `frontend/`.
+
+---
+
 ## ⚙️ Core Architectural Invariants (DO NOT BREAK)
 
 1. **Theme Token Compliance (Zero Hardcoded Hex Colors)**:

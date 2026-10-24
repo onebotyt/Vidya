@@ -16,6 +16,9 @@ server-data/
 *.sqlite.bak*
 *.db
 
+# Allow tracked pre-seeded SQLite database for 2nd developer local testing
+!backend/college_attendance.sqlite
+
 # Git standalone caches & backups
 .git_standalone/
 .git_backups/
@@ -77,6 +80,11 @@ backend/scripts/*.jpg
 frontend/standalone/
 **/standalone.html
 **/preview.html
+
+# Local collaboration & preview mirrors (never commit to git)
+frontend_dev2/
+frontend_collab/
+
 
 
 .agents/

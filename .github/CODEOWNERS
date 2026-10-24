@@ -1,0 +1,18 @@
+# Vidya Repository Code Ownership Policy
+# Specifies required reviewers for backend and configuration directories.
+
+# Global default owner
+* @onebotyt
+
+# Backend, Database & Server Architecture (Restricted to Lead Architect)
+/backend/ @onebotyt
+/backend/** @onebotyt
+
+# Repository root configs, workflows, and state logs
+/*.* @onebotyt
+/.github/ @onebotyt
+/TODO.md @onebotyt
+/AGENTS.md @onebotyt
+
+# Frontend directory open for team collaboration (still reviewed by @onebotyt)
+/frontend/ @onebotyt

@@ -1,0 +1,51 @@
+name: Frontend Only PR Guard
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify-frontend-only:
+    name: Verify PR Touches Frontend Only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Modified Files
+        run: |
+          echo "============================================="
+          echo "🔍 Checking modified files in Pull Request..."
+          echo "============================================="
+          
+          # Get list of changed files in this PR
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          echo "Files changed in this PR:"
+          echo "$CHANGED_FILES"
+          echo "---------------------------------------------"
+          
+          DISALLOWED=()
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            # Allow frontend files and documentation updates (.md)
+            if [[ ! "$file" =~ ^frontend/ && ! "$file" =~ \.md$ ]]; then
+              DISALLOWED+=("$file")
+            fi
+          done <<< "$CHANGED_FILES"
+
+          if [ ${#DISALLOWED[@]} -gt 0 ]; then
+            echo "❌ ERROR: PR touches protected backend or system files!"
+            echo "External contributors may only modify files in frontend/ and documentation (*.md)."
+            echo "The following files must be reverted:"
+
+            for f in "${DISALLOWED[@]}"; do
+              echo "  - $f"
+            done
+            exit 1
+          fi
+          
+          echo "✅ All modified files are strictly within frontend/."
+          echo "PR passes frontend path guard."
