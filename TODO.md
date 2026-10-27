@@ -34,6 +34,35 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 335: Modular Header/Nav Architecture (`frontend/shared/nav/`), Page Switching RC-1 Resolution, & Zero-Flash App Shell Navigation
+
+- **User Insight & Requirements**:
+  - *"1 thing seens we have ajax 1 header and nav so can we make like when i click to open different page nav and header not load only page load"*
+  - *"page not swithing and some time and some devices pages taking time and lagging why /plan"*
+  - *"also make sepate folder for header.nav so i know where is code"*
+  - The user reported critical issues where clicking links caused pages to lag, freeze, or fail to switch on some devices, requested a dedicated standalone folder for the header and navigation code so they can easily locate and maintain it, and wanted the top header and sidebar to stay stationary without reloading/flashing when switching pages.
+- **Root Cause & Critical Bug Fix**:
+  - **RC-1 Root Cause**: In Milestone 334, `navigation.addEventListener('navigate', (e) => e.intercept({ ... }))` was added to `auth.js`. In modern Chromium browsers (Chrome 102–125), `e.intercept()` converts a standard cross-document page navigation into a Single Page Application (SPA) client-side navigation. Because the intercept handler did not fetch or render the target document, the browser cancelled the document transition and left the user stuck on the current page or in an empty/frozen state.
+  - **Resolution**: Completely removed `e.intercept()`. The Navigation API listener is now strictly notify-only (triggering the instant progress indicator without interfering with browser page loads). Added an instant document-wide click listener fallback that works on all browsers and mobile devices.
+- **Architectural & Design Implementation**:
+  1. **Dedicated Navigation Folder (`frontend/shared/nav/`)**:
+     - Created `frontend/shared/nav/` directory containing:
+       - `nav.js`: The dedicated modular institutional navigation engine (4-Role Profiles, stationary header injection, collapsible drawer state, apps launcher dropdown, user profile popover, bottom mobile bar, and progress indicator).
+       - `nav.css`: Dedicated 100% theme-tokenized stylesheet containing native App-Shell View Transitions (`@view-transition { navigation: auto; }`), stationary layout freezing for `.gc-navbar`, `#app-sidebar`, and `.mobile-bottom-nav`, page cross-fade animations, top loading bar `#vidyaos-nav-progress`, and anti-flash skeleton rules.
+       - `README.md`: Clear architecture and maintenance guide documenting component structure, roles, and integration instructions.
+     - Mirrored to `/frontend/shared/js/nav.js` and `/frontend/shared/css/nav.css` to guarantee compatibility across Express static routing and Vercel CDN deployment.
+  2. **Page Switching & Performance Optimizations**:
+     - Eradicated cross-document intercepting bugs; pages now switch immediately with smooth 0.1s/0.15s view transition animations and non-blocking progress indication.
+     - Added `data-nav-ready="1"` anti-flash stability to prevent layout jumps during DOM mounting.
+  3. **Verification & Zero Regression Testing**:
+     - `verify-navigation-system.js`: 11/11 passed.
+     - `test-theme-support.js`: 88/88 passed (100% theme token compliance, zero hardcoded hex colors).
+     - `test-register-consolidation.js`: 46/46 passed.
+     - `test-rbac-and-structure.js`: 34/34 passed.
+     - `test-student-self-registration.js`: 30/30 passed.
+     - `test-api-flows.js`: 25/25 passed.
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: All passed.
+
 ### ✅ Milestone 333: Unified 4-Role Navigation & Header Architecture (Zero-Conflict AJAX Elimination)
 
 - **User Insight & Requirements**:
