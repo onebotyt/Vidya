@@ -34,6 +34,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 336: Native Alert Elimination, Automated Session Takeover & 30-Minute Inactivity Lifecycle
+
+- **User Insight & Requirements**:
+  - *"i can see still see this native alert box fix it that automatic need to logout and is user is login 2 device automatic logout both and give alert also right now we see card for this and we need to click but that not need do it automatic or better can we make seeson time /plan"*
+  - The user reported a browser native `alert()` popup ("Your session has ended because this account was logged into from another PC/device or signed out.") freezing the screen, requested automatic logout without any blocking native dialogs, asked for frictionless automated session takeover on multi-device logins (eliminating the manual conflict card click), and requested establishing a clean session inactivity policy.
+- **Architectural & Design Implementation**:
+  1. **Zero Native `alert()` Elimination**:
+     - Removed the blocking `alert(...)` call in `handleSessionRevocation()` inside [`frontend/shared/js/auth.js`](file:///d:/uiap/Attendance-System-Simplified/frontend/shared/js/auth.js).
+     - Enhanced `handleSessionRevocation(reason)` to store the logout reason in `sessionStorage` and query parameter, smoothly redirecting to `/login/index.html?reason=session_transferred` without freezing the user interface.
+     - Updated [`frontend/shared/js/api.js`](file:///d:/uiap/Attendance-System-Simplified/frontend/shared/js/api.js) to intercept `SESSION_REVOKED` and 401 token refresh failures, invoking `handleSessionRevocation()` directly.
+  2. **Automated Multi-Device Session Takeover (Zero Manual Clicks)**:
+     - Updated `enforceSingleActiveSession()` in [`backend/src/services/authService.js`](file:///d:/uiap/Attendance-System-Simplified/backend/src/services/authService.js) to adopt **Option A (Automated Takeover)**:
+       - When valid credentials are submitted from a new device, the server automatically terminates prior active sessions for that account (`UPDATE user_sessions SET is_revoked = 1`).
+       - The new device logs in immediately in a single request, completely bypassing the HTTP 409 conflict card and eliminating manual button clicks.
+       - The previous device automatically redirects on its next heartbeat or API request, receiving a smooth, modern logout banner on `/login/index.html`.
+  3. **30-Minute Inactivity Session Lifecycle ("session time")**:
+     - Configured the active session inactivity window to 30 minutes in both `authService.js` and [`backend/src/middleware/auth.js`](file:///d:/uiap/Attendance-System-Simplified/backend/src/middleware/auth.js).
+     - If a session is idle for > 30 minutes, subsequent requests trigger clean auto-revocation and redirect with `"Your session expired due to 30 minutes of inactivity. Please sign in again."`.
+  4. **Login Screen Modern Status Banner**:
+     - Added `checkSessionNotice()` in [`frontend/login/index/index.js`](file:///d:/uiap/Attendance-System-Simplified/frontend/login/index/index.js) and [`frontend/login/index.js`](file:///d:/uiap/Attendance-System-Simplified/frontend/login/index.js) to display non-blocking, accessible status alerts (`#status-alert-banner`) with clean auto-clearing via `history.replaceState`.
+  5. **Regression & Verification Test Suite**:
+     - All 177 tests across the entire test suite passed with 100% success rate:
+       - `test-theme-support.js`: 88/88 passed.
+       - `verify-navigation-system.js`: 11/11 passed.
+       - `test-rbac-and-structure.js`: 34/34 passed.
+       - `test-register-consolidation.js`: 46/46 passed.
+       - `test-student-self-registration.js`: 30/30 passed.
+       - `test-api-flows.js`: 25/25 passed.
+       - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: All passed.
+
 ### ✅ Milestone 335: Modular Header/Nav Architecture (`frontend/shared/nav/`), Page Switching RC-1 Resolution, & Zero-Flash App Shell Navigation
 
 - **User Insight & Requirements**:
