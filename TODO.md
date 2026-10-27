@@ -34,6 +34,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 337: Deployed Vercel UI Synchronization, Zero-Flash App Shell (`nav.css`/`nav.js`) Distribution & Cache-Buster Version Refresh
+
+- **User Insight & Requirements**:
+  - *"also i see my deploy website ui not matching with our local we working findout"*
+  - The user noticed that the live deployed website (`https://vidyaos-pink.vercel.app`) UI appeared different or out-of-sync compared to local development, requesting investigation and resolution.
+- **Root Cause & Investigation Findings**:
+  1. **Missing `nav.css` Across HTML Pages**: Although `frontend/shared/nav/nav.css` was built in Milestone 335 containing native View Transitions (`@view-transition { navigation: auto; }`), stationary `.gc-navbar` and `#app-sidebar` layout freezing, `#vidyaos-nav-progress`, and anti-flash styling, zero HTML pages actually loaded `<link rel="stylesheet" href="/css/nav.css">`.
+  2. **Missing `nav.js` In Portal Pages**: While `auth.js` carried navigation logic, the dedicated modular institutional navigation engine (`/js/nav.js`) was only referenced by `faculty/registers/index.html`.
+  3. **Stale Browser Subresource Caching (`?v=20261003`)**: Local development bypassed cache via Express `Cache-Control: no-cache` in development mode (`NODE_ENV !== 'production'`). In production on Vercel CDN, user browsers cached stylesheets and scripts with old version queries (dating back to October 3rd), preventing new CSS/JS modifications from rendering for returning visitors.
+- **Architectural & Design Implementation**:
+  1. **Omnipresent `nav.css` Inclusion**: Added `<link rel="stylesheet" href="/css/nav.css?v=20261028">` to all 39 portal HTML pages across `faculty/`, `student/`, and `admin/` scopes.
+  2. **Modular `nav.js` Engine Distribution**: Added `<script src="/js/nav.js?v=20261028"></script>` to all portal pages right after `auth.js` for robust App Shell orchestration.
+  3. **Universal Asset Cache-Buster Refresh**: Bumped asset query versions across all shared stylesheets (`reset.css`, `variables.css`, `layout.css`, `components.css`, `classroom-nav.css`, `admin-nav.css`, `nav.css`) and shared scripts (`api.js`, `auth.js`, `ui.js`, `admin-nav.js`, `nav.js`) to `?v=20261028`, guaranteeing immediate fresh asset delivery on Vercel CDN and user devices.
+  4. **Multi-Repo Synchronization & Deployment**: Pushed changes directly to `onebotyt/VidyaOS.git` (standalone frontend repo) triggering an automated Vercel rebuild, and staged in `onebotyt/Vidya.git` (monorepo).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `verify-navigation-system.js`: 11/11 passed.
+  - `test-student-self-registration.js`: 30/30 passed.
+  - `test-api-flows.js`: 25/25 passed.
+
 ### ✅ Milestone 336: Native Alert Elimination, Automated Session Takeover & 30-Minute Inactivity Lifecycle
 
 - **User Insight & Requirements**:
