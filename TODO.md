@@ -66,14 +66,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Nav items: `Dashboard` active item styled as a soft blue rounded pill (`background: var(--color-primary-light); color: var(--color-primary); font-weight: 600;`).
      - Drawer Footer: `VidyaOS • Admin` and `Sign Out`.
      - Dismissal: Clicking `✕`, tapping backdrop, or pressing `Escape`.
-- **Search & Interactive Enhancements**:
-  - Synchronized search filtering across desktop header search pill, mobile dropdown search, and keyboard shortcut `/` or `Ctrl+K`.
-  - Notification button provides instant feedback.
-- **Synchronized & Verified**:
-  - Updated both `frontend/admin/dashboard/` and `frontend-v2/admin/dashboard/`.
+- **Search Removal & Component Modularization**:
+  - Created rontend/admin/components/sidebar/ (sidebar.html, sidebar.css, sidebar.js) for modular admin components.
+  - Completely removed Search from Admin Dashboard (desktop and mobile).
+  - Guarded rontend/shared/js/nav.js to prevent auto-injecting legacy .gc-navbar and overwriting .admin-sidebar.
+- **Verification**:
   - Theme test: 88/88 passed (0 hardcoded hex colors).
   - RBAC test: 34/34 passed.
   - Registers test: 46/46 passed.
+  - Student self-registration test: 30/30 passed.
   - Student self-registration test: 30/30 passed.
 
 ### ✅ Milestone 385: Cold-Start Sleep Recovery, Faculty User Profile Link, & Admin Nav Polish
