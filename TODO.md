@@ -34,6 +34,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 379: Isolated Creator Studio Navigation Protection (`create.html`)
+
+- **User Insight & Issue**:
+  - *"classwork is broken fix it"* + screenshots of `localhost:3000/faculty/classwork/create.html` (Assignment, Lab Practical, and Class Test).
+  - Screenshots showed unstyled raw text from the universal navbar and drawer sidebar injected directly at the top of the Google Classroom creator studio (`.cw-gclass-nav`).
+- **Root Cause Analysis**:
+  - `classwork/create.html` is an isolated, full-screen assessment creation studio that has its own dedicated top action bar (`.cw-gclass-nav`). It intentionally does not load `nav.css` or `classroom-nav.css`.
+  - While `create.html` set `window.DISABLE_BOTTOM_NAV = true;`, `auth.js`'s `mountNavigationSystem()` only checked for public auth pages (`/login/`, `/register/`, etc.) and blindly injected `.gc-navbar` and `#app-sidebar` into `document.body`.
+  - Since no nav CSS was loaded, the injected navbar and sidebar HTML rendered as raw unstyled block elements at the top of the document.
+- **Fixes Applied**:
+  1. **`frontend/faculty/classwork/create.html`**:
+     - Set explicit isolation flags in the inline head script: `window.DISABLE_NAV = true; window.DISABLE_NAVIGATION = true; window.DISABLE_HEADER = true; window.DISABLE_SIDEBAR = true; window.DISABLE_BOTTOM_NAV = true;`.
+  2. **`frontend/shared/js/auth.js` & `nav.js`**:
+     - Updated `mountNavigationSystem()` with `isIsolatedPage` guard checking for `window.DISABLE_NAV`, `currentPath.includes('/classwork/create')`, `document.querySelector('.cw-gclass-nav')`, and `document.body.classList.contains('cw-create-body')`.
+     - Automatically cleans up any inadvertently injected `.gc-navbar`, `#app-sidebar`, `#sidebar-backdrop`, or `.mobile-bottom-nav` elements if detected on an isolated page.
+     - Added early return guards to `_ensureHeader()`, `_ensureSidebar()`, `_ensureWorkspace()`, and `_ensureMobileBottomNav()`.
+  3. **Synchronized across mirrors**:
+     - `frontend-v2/faculty/classwork/create.html`
+     - `frontend-v2/shared/js/auth.js` & `frontend-v2/shared/js/nav.js`
+     - `frontend/shared/nav/nav.js`
+     - `frontend_dev2/shared/js/auth.js` & `frontend_dev2/shared/nav/nav.js`
+- **Verification**:
+  - `node -c` syntax validation passed cleanly across all scripts.
+  - Regression test suite: **223/223 PASSED** (88 theme, 34 RBAC, 46 registers, 30 student self-reg, 25 API flows).
+  - Isolated studio screens (`/faculty/classwork/create.html`) render cleanly with zero header/sidebar leakage.
+
 ### ✅ Milestone 378: Full-Height Overlay Drawer + Page Badge + Drawer Header — Frontend Nav UX Fix
 
 - **User Insight & Requirements**:
