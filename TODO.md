@@ -34,6 +34,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 387: Admin Dashboard Alignment & Sidebar Stability
+
+- **Issues Addressed**:
+  1. **Admin Sidebar DOM Integrity**: Prevented `nav.js` from purging `#app-sidebar.admin-sidebar` on admin dashboard load.
+  2. **Page Content Alignment**: Removed `margin: 0 auto` centering from `.dashboard-container`; set `margin: 0; max-width: 1320px; padding: 1.75rem 2rem 3.5rem` so content aligns flush beside the sidebar.
+  3. **Faculty Profile Button Clean-up**: Removed nested unclosed button syntax error and verified innerHTML rendering in `faculty/profile/index.html`.
+- **Verification**:
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+
 ### ✅ Milestone 386: Responsive Dual-State Navigation Architecture for Admin Dashboard (PC Mini-Rail & Mobile Drawer)
 
 - **User Requirement & Visual Directives**:
