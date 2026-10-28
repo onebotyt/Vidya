@@ -34,6 +34,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 404: Minimalist Top Header (Theme + Round Profile Avatar) & High-Speed Sidebar Hover Tooltips
+
+- **User Directives**:
+  - "now do clean up header only theme btn and profile also make profile btn round not need that big profilr btn and fix svg in profile and in manu icons in below no name appr on hover fix it" (Ref: `media_1793230467079_1022dac8.png`)
+- **Root Cause & Technical Resolution**:
+  1. **Minimalist Top Header (`header.html`, `header.js`, `header.css`, `dashboard.html`)**:
+     - Removed context group pills ("Institution Console", "Odd Sem 2026-27", "Systems Online") and "Registers Matrix" shortcut button from the top header bar.
+     - Header now exclusively houses: Theme toggle button + Round Profile Avatar button, right-aligned with `justify-content: flex-end`.
+  2. **Round Profile Avatar Button & SVG Fixes (`header.html`, `header.js`, `header.css`, `dashboard.html`)**:
+     - Converted rectangular wide button into a sleek 38px circular avatar button (`.header-profile-round-btn`) with user initials ("SA") and active online indicator.
+     - Fixed corrupted System Settings SVG path in the profile dropdown (replaced distorted polygon path with crisp, standard 8-tooth gear SVG).
+     - Enhanced hover and expanded focus glow states.
+  3. **Sidebar Rail Hover Tooltips Bug Fix (`sidebar.css`)**:
+     - *Cause*: `.sidebar-nav-item` had `overflow: hidden;` and `.sidebar-nav-body` had `overflow-x: hidden;`, causing the browser to clip out the `::after` and `::before` pseudo-elements (the tooltip box and caret arrow) that were positioned outside the 46px rail item width.
+     - *Fix*: Set `.sidebar-nav-item`, `.sidebar-nav-body`, `.sidebar-rail-footer`, and `.rail-footer-btn` to `overflow: visible !important;` in collapsed rail state.
+     - Updated tooltip rules to support `.admin-sidebar:not(.desktop-open)` with instant hover transitions and elevated `z-index: 100000 !important`.
+
 ### ✅ Milestone 403: Full-Space Attendance Overview Grid & Unclipped Floating Expand Arrow Button
 
 - **User Directives**:

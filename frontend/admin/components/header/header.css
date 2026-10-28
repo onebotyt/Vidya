@@ -1,3 +1,4 @@
+on
 /**
  * ══════════════════════════════════════════════════════════════
  * VIDYAOS ADMIN TOP HEADER STYLES (header.css)
@@ -9,12 +10,12 @@
  */
 
 .admin-top-header {
-  height: 64px;
+  height: 60px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end; /* Clean, right-aligned toolbar */
   padding: 0 1.75rem;
   box-sizing: border-box;
   position: sticky;
@@ -29,106 +30,12 @@
 
 @media (max-width: 768px) {
   .admin-top-header {
-    display: none !important; /* Mobile uses .mobile-top-header */
+    display: none !important;
+    /* Mobile uses .mobile-top-header */
   }
 }
 
-/* ── Left Section: Menu Toggle & Context Indicators ── */
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1.15rem;
-  flex: 1;
-}
-
-.header-menu-toggle-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-surface);
-  color: var(--text-main);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.18s ease;
-  flex-shrink: 0;
-}
-
-.header-menu-toggle-btn:hover {
-  background: var(--bg-surface-hover, var(--bg-surface));
-  color: var(--color-primary);
-  border-color: var(--color-primary-light);
-  transform: translateY(-1px);
-}
-
-.header-context-group {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  flex-wrap: wrap;
-}
-
-.header-context-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.header-session-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.header-session-pill svg {
-  color: var(--text-muted);
-}
-
-.header-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.status-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--status-present);
-  box-shadow: 0 0 0 2px hsl(150 75% 42% / 0.25);
-  animation: pulseLiveDot 2.2s infinite ease-in-out;
-}
-
-@keyframes pulseLiveDot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.75; }
-}
-
-/* ── Right Section: Quick Links, Theme Toggle, User Profile ── */
+/* ── Right Section: Theme Toggle & Round Profile Avatar ── */
 .header-right {
   display: flex;
   align-items: center;
@@ -136,33 +43,10 @@
   position: relative;
 }
 
-/* Useful Quick Workspace Button */
-.header-quick-link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.85rem;
-  border-radius: 10px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.18s ease;
-}
-
-.header-quick-link-btn:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary-hover);
-  border-color: var(--color-primary-light);
-  transform: translateY(-1px);
-}
-
 .header-icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   border: 1px solid var(--border-color);
   background: var(--bg-surface);
   color: var(--text-main);
@@ -182,83 +66,54 @@
   transform: translateY(-1px);
 }
 
-/* ── Refined User Profile Pill ── */
-.header-user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.35rem 0.75rem 0.35rem 0.45rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-surface);
-  cursor: pointer;
-  transition: all 0.18s ease;
-  user-select: none;
-}
-
-.header-user-profile:hover {
-  background: var(--bg-surface-hover, var(--bg-surface));
-  border-color: var(--color-primary-light);
-  transform: translateY(-1px);
-}
-
-.user-avatar-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+/* ── Round User Profile Avatar Trigger ── */
+.header-profile-round-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   color: var(--text-white, hsl(0 0% 100%));
-  font-size: 0.85rem;
-  font-weight: 800;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  cursor: pointer;
   position: relative;
-  box-shadow: 0 2px 6px hsl(217 91% 60% / 0.28);
+  padding: 0;
+  outline: none;
+  box-shadow: 0 2px 8px hsl(217 91% 60% / 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.header-profile-round-btn:hover,
+.header-profile-round-btn[aria-expanded="true"] {
+  border-color: var(--color-primary);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 14px hsl(217 91% 60% / 0.4);
+}
+
+.user-avatar-initials {
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--text-white, hsl(0 0% 100%));
+  user-select: none;
 }
 
 .avatar-online-dot {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  bottom: 0px;
+  right: 0px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: var(--status-present);
-  border: 2px solid var(--bg-surface);
-}
-
-.user-info-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.user-name {
-  font-size: 0.86rem;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.01em;
-}
-
-.user-role-chip {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.user-chevron {
-  color: var(--text-muted);
-  transition: transform 0.18s ease, color 0.18s ease;
-  margin-left: 0.15rem;
-}
-
-.header-user-profile[aria-expanded="true"] .user-chevron {
-  transform: rotate(180deg);
-  color: var(--color-primary);
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 1px hsl(0 0% 0% / 0.1);
 }
 
 /* ── Rich Profile Dropdown Menu ── */
@@ -288,6 +143,7 @@
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

@@ -198,9 +198,18 @@
   .admin-app-layout.sidebar-collapsed .sidebar-nav-body,
   body.sidebar-collapsed .sidebar-nav-body,
   html.sidebar-collapsed .sidebar-nav-body,
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-body {
+    padding: 0.65rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    overflow: visible !important;
+  }
+
   body:not(.sidebar-collapsed) .sidebar-nav-body,
   .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-body,
-  html:not(.sidebar-collapsed) .sidebar-nav-body {
+  html:not(.sidebar-collapsed) .sidebar-nav-body,
+  .admin-sidebar.desktop-open .sidebar-nav-body {
     padding: 0.65rem 0;
     display: flex;
     flex-direction: column;
@@ -232,15 +241,19 @@
   /* In collapsed rail: width is 46px (x runs from 13px to 59px, exactly centered in 72px) */
   .admin-app-layout.sidebar-collapsed .sidebar-nav-item,
   body.sidebar-collapsed .sidebar-nav-item,
-  html.sidebar-collapsed .sidebar-nav-item {
+  html.sidebar-collapsed .sidebar-nav-item,
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-item {
     width: 46px;
+    overflow: visible !important;
   }
 
   /* In expanded drawer: width is 234px (260 - 26 = 234px, exactly 13px margin on both sides) */
   body:not(.sidebar-collapsed) .sidebar-nav-item,
   .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-item,
-  html:not(.sidebar-collapsed) .sidebar-nav-item {
+  html:not(.sidebar-collapsed) .sidebar-nav-item,
+  .admin-sidebar.desktop-open .sidebar-nav-item {
     width: 234px;
+    overflow: hidden;
   }
 
   /* Fixed 46x46 Squircle Icon Container: Center LOCKED at x = 36px */
@@ -312,6 +325,7 @@
     align-items: center;
     gap: 0.75rem;
     flex-shrink: 0;
+    overflow: visible !important;
   }
 
   .rail-footer-btn {
@@ -330,91 +344,100 @@
     box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7);
     padding: 0;
     position: relative;
+    overflow: visible !important;
   }
 
   /* ─────────────────────────────────────────────────────────────
      Desktop Collapsed Rail Fast Custom Tooltips (Zero Native Delay)
      Instant hover response with sleek high-contrast styling & pointer caret
      ───────────────────────────────────────────────────────────── */
-  .admin-app-layout.sidebar-collapsed [data-tooltip],
-  body.sidebar-collapsed [data-tooltip],
-  html.sidebar-collapsed [data-tooltip] {
+  .admin-sidebar [data-tooltip] {
     position: relative;
   }
 
-  .admin-app-layout.sidebar-collapsed [data-tooltip]::after,
-  body.sidebar-collapsed [data-tooltip]::after,
-  html.sidebar-collapsed [data-tooltip]::after {
+  /* Tooltip Container */
+  .admin-app-layout.sidebar-collapsed .admin-sidebar [data-tooltip]::after,
+  body.sidebar-collapsed .admin-sidebar [data-tooltip]::after,
+  html.sidebar-collapsed .admin-sidebar [data-tooltip]::after,
+  .admin-sidebar:not(.desktop-open) [data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
-    left: calc(100% + 12px);
+    left: calc(100% + 14px);
     top: 50%;
     transform: translateY(-50%) translateX(-6px);
     background: var(--text-main);
     color: var(--bg-card);
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
     font-family: inherit;
     line-height: 1;
     white-space: nowrap;
-    padding: 0.45rem 0.75rem;
+    padding: 0.45rem 0.8rem;
     border-radius: 8px;
-    box-shadow: 0 4px 16px hsl(0 0% 0% / 0.18), 0 1px 3px hsl(0 0% 0% / 0.1);
+    box-shadow: 0 4px 18px hsl(0 0% 0% / 0.25), 0 2px 5px hsl(0 0% 0% / 0.12);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.12s;
-    z-index: 10005;
+    z-index: 100000 !important;
   }
 
   /* Triangle Pointer Arrow */
-  .admin-app-layout.sidebar-collapsed [data-tooltip]::before,
-  body.sidebar-collapsed [data-tooltip]::before,
-  html.sidebar-collapsed [data-tooltip]::before {
+  .admin-app-layout.sidebar-collapsed .admin-sidebar [data-tooltip]::before,
+  body.sidebar-collapsed .admin-sidebar [data-tooltip]::before,
+  html.sidebar-collapsed .admin-sidebar [data-tooltip]::before,
+  .admin-sidebar:not(.desktop-open) [data-tooltip]::before {
     content: '';
     position: absolute;
-    left: calc(100% + 5px);
+    left: calc(100% + 6px);
     top: 50%;
     transform: translateY(-50%) translateX(-6px);
     width: 0;
     height: 0;
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
-    border-right: 7px solid var(--text-main);
+    border-right: 8px solid var(--text-main);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.12s;
-    z-index: 10005;
+    z-index: 100000 !important;
   }
 
   /* Instant High-Speed Hover Trigger */
-  .admin-app-layout.sidebar-collapsed [data-tooltip]:hover::after,
-  .admin-app-layout.sidebar-collapsed [data-tooltip]:hover::before,
-  body.sidebar-collapsed [data-tooltip]:hover::after,
-  body.sidebar-collapsed [data-tooltip]:hover::before,
-  html.sidebar-collapsed [data-tooltip]:hover::after,
-  html.sidebar-collapsed [data-tooltip]:hover::before {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(-50%) translateX(0);
+  .admin-app-layout.sidebar-collapsed .admin-sidebar [data-tooltip]:hover::after,
+  .admin-app-layout.sidebar-collapsed .admin-sidebar [data-tooltip]:hover::before,
+  body.sidebar-collapsed .admin-sidebar [data-tooltip]:hover::after,
+  body.sidebar-collapsed .admin-sidebar [data-tooltip]:hover::before,
+  html.sidebar-collapsed .admin-sidebar [data-tooltip]:hover::after,
+  html.sidebar-collapsed .admin-sidebar [data-tooltip]:hover::before,
+  .admin-sidebar:not(.desktop-open) [data-tooltip]:hover::after,
+  .admin-sidebar:not(.desktop-open) [data-tooltip]:hover::before {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(-50%) translateX(0) !important;
   }
 
-  /* Completely suppress tooltips when drawer is expanded or on mobile */
-  body:not(.sidebar-collapsed) [data-tooltip]::after,
-  body:not(.sidebar-collapsed) [data-tooltip]::before,
-  .admin-app-layout:not(.sidebar-collapsed) [data-tooltip]::after,
-  .admin-app-layout:not(.sidebar-collapsed) [data-tooltip]::before,
-  html:not(.sidebar-collapsed) [data-tooltip]::after,
-  html:not(.sidebar-collapsed) [data-tooltip]::before {
+  /* Completely suppress tooltips when drawer flyout is expanded or on mobile */
+  body:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::after,
+  body:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::before,
+  .admin-app-layout:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::after,
+  .admin-app-layout:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::before,
+  html:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::after,
+  html:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::before,
+  .admin-sidebar.desktop-open [data-tooltip]::after,
+  .admin-sidebar.desktop-open [data-tooltip]::before,
+  .admin-sidebar.open [data-tooltip]::after,
+  .admin-sidebar.open [data-tooltip]::before {
     display: none !important;
   }
 
   @media (max-width: 768px) {
-    [data-tooltip]::after,
-    [data-tooltip]::before {
+    .admin-sidebar [data-tooltip]::after,
+    .admin-sidebar [data-tooltip]::before {
       display: none !important;
     }
+  }
   }
 
   .rail-footer-btn:hover {
