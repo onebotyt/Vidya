@@ -235,7 +235,7 @@
 
     // ── B. Mount Dual-State Sidebar (#app-sidebar) if missing ──
     if (!document.getElementById('app-sidebar')) {
-      const cubeSvg = getIcon('cube', { width: 28, height: 28, className: 'rail-cube-logo' });
+      const cubeSvg = getIcon('cube', { width: 32, height: 32, className: 'rail-cube-logo' });
       const headerCubeSvg = getIcon('cube', { width: 24, height: 24, className: 'header-cube-logo' });
       const expandChevronSvg = getIcon('chevronRight', { width: 14, height: 14, stroke: 2.5 });
       const collapseChevronSvg = getIcon('chevronLeft', { width: 14, height: 14, stroke: 2.5 });

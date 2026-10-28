@@ -34,6 +34,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 400: Position Circular Expand Arrow Right on Border Seam Beside Logo
+
+- **User Directives**:
+  - "see image how ij want arrow to right to logo" (Referring to `media_1793228929407_ec40afaf.png`)
+- **Implementation**:
+  1. **Centered 3D Cube Logo Aligned with Navigation Icons (`sidebar.css`, `sidebar.js`, `sidebar.html`)**:
+     - Ensured `.rail-logo-link` is horizontally centered in the 72px rail header, placing the 32px 3D cube logo's center at exactly `x = 36px` to align with the centered 46px squircle navigation icons below.
+  2. **Border-Seam Circular Expand Arrow (`sidebar.css`)**:
+     - Positioned `.rail-expand-btn` at `position: absolute; right: -13px; top: 50%; transform: translateY(-50%); z-index: 1005`.
+     - Sits directly to the right of the cube logo, bisecting the vertical border separating the 72px rail and the main page.
+     - Preserves the 15px whitespace gap before the header's "Institution Console" pill, exactly matching the reference composition in `media_1793228929407_ec40afaf.png`.
+- **Verification**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - JSDOM verification confirmed `.rail-brand-row` contains both the centered logo link and the border-seam expand button.
+
 ### ✅ Milestone 399: Side-by-Side Attendance Overview, Reduced Status Cards, Zero-Shift Smooth Sidebar Slide, and Emoji Clean-Up
 
 - **User Directives**:
