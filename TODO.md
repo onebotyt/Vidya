@@ -34,6 +34,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 390: Dynamic Navigation Component Mounting & Dashboard HTML Cleanup
+
+- **User Inquiry & Directive**:
+  - "why in dashboard i can still see manubar code seens we dynamic render from components"
+  - In a modular component architecture, individual page templates (`dashboard/index.html`) should not contain 100+ lines of duplicate hardcoded navigation markup.
+- **Implemented Architectural Clean-Up**:
+  1. **Dynamic Navigation Mounting Engine (`frontend/admin/components/sidebar/sidebar.js`)**:
+     - Built `mountAdminNavigation()` in `sidebar.js` which automatically creates and injects `.admin-top-navbar`, `#app-sidebar` (overlay drawer), and `#sidebar-backdrop` before DOM paint.
+     - Dynamically detects the current page URL and marks the matching module as `.active`.
+     - Integrates SVG vectors from dedicated `window.ADMIN_ICONS`.
+  2. **Page Template Clean-up (`frontend/admin/dashboard/index.html`)**:
+     - Stripped out all hardcoded navigation markup (`.admin-top-navbar`, `#app-sidebar`, `#sidebar-backdrop`).
+     - `dashboard/index.html` now contains purely the page's actual executive dashboard content (`.admin-main-wrap` -> `.dashboard-container`).
+- **Verification**:
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+
 ### ✅ Milestone 389: Admin Top Nav Bar & Zero-Shift Flyout Hamburger Drawer
 
 - **User Directives**:
