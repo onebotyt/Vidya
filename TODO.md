@@ -34,6 +34,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 392: Standardized Modular HTML File Renaming ([folder]/[folder].html) Across All Features
+
+- **User Directives**:
+  - Rename all `index.html` files inside feature subfolders (e.g. `dashboard/dashboard.html` instead of `dashboard/index.html`) so developers can distinguish open editor tabs instantly.
+- **Implemented Architectural Clean-Up**:
+  1. **Folder-to-File Standardized Renaming**:
+     - Renamed 36 modular page templates across `frontend/admin/`, `frontend/faculty/`, `frontend/student/`, `frontend/landing/`, and `frontend/login/` from generic `index.html` to their canonical `[folder].html`:
+       - `admin/dashboard/dashboard.html`, `admin/academic-structure/academic-structure.html`, `admin/faculty/faculty.html`, `admin/reports/reports.html`, `admin/settings/settings.html`, `admin/audit-logs/audit-logs.html`, `admin/profile/profile.html`.
+       - `faculty/registers/registers.html`, `faculty/assignments/assignments.html`, `faculty/tests/tests.html`, `faculty/dashboard/dashboard.html`, `faculty/group-detail/group-detail.html`, etc.
+       - `student/attendance/attendance.html`, `student/dashboard/dashboard.html`, `student/assignments/assignments.html`, `student/scores/scores.html`, etc.
+  2. **Universal Backend Routing Compatibility (`backend/server.js`)**:
+     - Extended Express routes to automatically resolve both `/:section/:page.html` and `/:section/:page/` directly to `${section}/${page}/${page}.html` with fallback to `index.html`.
+     - Preserved canonical 301 trailing slash redirects for bare directories (`/faculty/assignments` -> `/faculty/assignments/`).
+- **Verification**:
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+  - Register consolidation test: 46/46 passed.
+  - Roll Call upgrade test: passed.
+  - Live Check-In Log test: passed.
+
 ### ✅ Milestone 391: Exact Dual-State Sidebar Implementation (Collapsed 72px Icon Rail & 250px Expanded Drawer) & Clean-up
 
 - **User Directives**:

@@ -157,16 +157,46 @@ app.get(['/js/exceljs.min.js', '/shared/js/exceljs.min.js'], (req, res, next) =>
 // Universal Single-Engine Google Classroom Workspace:
 // Route student classroom to the unified Google Classroom workspace engine
 app.get(['/student/group-detail.html', '/student/group-detail', '/student/group-detail/'], (req, res) => {
+  const namedGroupDetail = path.join(frontendBase, 'faculty/group-detail/group-detail.html');
+  if (fs.existsSync(namedGroupDetail)) {
+    return res.sendFile(namedGroupDetail);
+  }
   res.sendFile(path.join(frontendBase, 'faculty/group-detail/index.html'));
 });
 app.use('/student/group-detail', express.static(path.join(frontendBase, 'faculty/group-detail')));
 
-// Universal rewrite for legacy .html requests to modular folder index.html
+// Universal rewrite for legacy and clean .html requests to modular folder named html or index.html
 app.get('/:section/:page.html', (req, res, next) => {
   const { section, page } = req.params;
+  const namedPath = path.join(frontendBase, `${section}/${page}/${page}.html`);
+  if (fs.existsSync(namedPath)) {
+    return res.sendFile(namedPath);
+  }
   const modularPath = path.join(frontendBase, `${section}/${page}/index.html`);
   if (fs.existsSync(modularPath)) {
     return res.sendFile(modularPath);
+  }
+  next();
+});
+
+// Canonical folder redirect & modular loader: /faculty/assignments -> 301 -> /faculty/assignments/ -> assignments.html
+app.get('/:section/:page', (req, res, next) => {
+  const { section, page } = req.params;
+  if (page.includes('.')) return next();
+  const folderPath = path.join(frontendBase, `${section}/${page}`);
+  if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
+    if (!req.path.endsWith('/')) {
+      const q = req.url.includes('?') ? '?' + req.url.split('?')[1] : '';
+      return res.redirect(301, `${req.path}/${q}`);
+    }
+    const namedPath = path.join(folderPath, `${page}.html`);
+    if (fs.existsSync(namedPath)) {
+      return res.sendFile(namedPath);
+    }
+    const modularPath = path.join(folderPath, 'index.html');
+    if (fs.existsSync(modularPath)) {
+      return res.sendFile(modularPath);
+    }
   }
   next();
 });
