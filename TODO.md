@@ -34,6 +34,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 389: Admin Top Nav Bar & Zero-Shift Flyout Hamburger Drawer
+
+- **User Directives**:
+  - Top navigation bar must be visible on PC and Mobile with hamburger menu `☰`, `VidyaOS` brand, `ADMIN CONSOLE` badge, and quick controls (theme toggle, notifications, admin avatar).
+  - Menu bar (sidebar) must open as an overlay hamburger drawer over a dimmed backdrop so the page content does NOT have to shift (`contatent don;t have to seft fix it`).
+  - Page content container must adjust its size gracefully (`max-width: 1240px; margin: 0 auto; padding: 2rem 1.75rem 3.5rem;`).
+- **Implemented Architecture**:
+  1. **Unified Top Navigation Bar (`.admin-top-navbar`)**:
+     - Sticky top bar (`height: 60px`) visible across all screen sizes.
+     - Left: Hamburger button `sidebar-toggle-btn` (`☰`), 3D isometric cube logo, `VidyaOS` title, `ADMIN CONSOLE` cyan badge.
+     - Right: Light/Dark theme toggle button (`#admin-theme-btn`), Notifications bell with badge `1`, and System Administrator avatar badge (`SA`).
+  2. **Zero-Shift Flyout Overlay Drawer (`#app-sidebar.admin-sidebar`)**:
+     - Off-canvas overlay drawer (`width: 280px; position: fixed; z-index: 1300; transform: translateX(-100%); transition: transform 0.28s;`).
+     - Toggling `.open` slides the drawer over the screen without affecting or shifting the main content layout.
+     - Dark dimmed backdrop (`#sidebar-backdrop`) with smooth blur dismissal.
+  3. **Content Size Adjustment**:
+     - `.admin-main-wrap` has `margin-left: 0; width: 100%;`.
+     - `.dashboard-container` has `max-width: 1240px; margin: 0 auto; padding: 2rem 1.75rem 3.5rem; width: 100%;`.
+  4. **Auth Script Isolation**:
+     - Guarded `frontend/shared/js/auth.js` (`mountNavigationSystem()` and `_initSidebarState()`) so it never purges or interferes with `#app-sidebar` on admin routes.
+- **Verification**:
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+
 ### ✅ Milestone 388: Admin Component Isolation, Dedicated SVG Icon Registry & Outside Asset Shielding
 
 - **User Directive**:
