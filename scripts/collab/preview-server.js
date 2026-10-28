@@ -27,21 +27,22 @@ if (!fs.existsSync(dev2Dir)) {
   process.exit(1);
 }
 
-const previewPort = process.env.COLLAB_PORT || 3001;
+const previewPort = process.env.COLLAB_PORT || 3002;
 
 process.env.PORT = previewPort;
 process.env.FRONTEND_DIR = path.relative(path.join(rootDir, 'backend'), dev2Dir);
 
 console.log('\n======================================================');
-console.log('🚀 VIDYA COLLAB: SECONDARY PREVIEW SERVER LAUNCHING');
+console.log('🚀 VIDYA COLLAB: DEV 2 PREVIEW SERVER LAUNCHING');
 console.log('======================================================');
 console.log(`📡 Port          : ${previewPort}`);
 console.log(`📁 Serving Folder: ${dev2Dir}`);
 console.log(`🗄️ Database      : backend/college_attendance.sqlite (Shared)`);
 console.log('------------------------------------------------------');
 console.log(`🔗 Compare live in your browser:`);
-console.log(`   - Your Frontend : http://localhost:3000`);
-console.log(`   - 2nd Dev Copy  : http://localhost:${previewPort}`);
+console.log(`   - V1 Legacy Frontend  : http://localhost:3000`);
+console.log(`   - V2 Modern Frontend  : http://localhost:3001`);
+console.log(`   - Dev 2 Preview Copy  : http://localhost:${previewPort}`);
 console.log('======================================================\n');
 
 // Require main backend server (it will initialize on port 3001 serving frontend_dev2)

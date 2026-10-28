@@ -34,6 +34,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 380: Render Cold-Start Keepalive/Wakeup & Admin Navigation System Overlay Parity
+
+- **User Insight & Issues**:
+  - Render free tier backend sleeps after 15 minutes of inactivity; when visiting `https://vidyaos-pink.vercel.app/login` and submitting credentials, the request failed with "Request failed with status 502" because edge proxy timed out before the sleeping container woke up.
+  - In Admin Dashboard (`/admin/dashboard`), navbar displayed `✕` instead of hamburger `☰`, role badge (`ADMIN CONSOLE`) was hidden, and drawer sidebar was docked under the navbar at `top: 52px` instead of sliding over full-viewport (`top: 0`, `z-index: 1300`, backdrop blur) matching Google Classroom standard.
+  - Updates needed to be pushed to both separate repositories (`VidyaOS_BackEnd.git` on Render and `VidyaOS.git` on Vercel) so production builds immediately deploy.
+- **Root Cause & Architectural Corrections**:
+  1. **Cold-Start Pre-Warming & Intelligent Retry**:
+     - Added background health check ping on login page load to wake sleeping Render instance before user finishes typing.
+     - Implemented `executeLoginWithRetry` in `login/index.js` and `login/index/index.js` (up to 6 retries with 3.5s delay and user-facing status "Waking cloud server...").
+     - Added 10-minute autonomous keepalive self-ping on Render/production in `backend/server.js`.
+  2. **Admin Navigation UI/UX Parity**:
+     - `admin-nav.css`: Replaced `.gc-page-badge { display: none !important; }` with primary-token pill styling; updated drawer to `top: 0 !important; height: 100vh !important; z-index: 1300 !important; width: 285px !important;`; enabled `.gc-drawer-header` at 52px height; aligned backdrop at `z-index: 1290` with `backdrop-filter: blur(2px)`.
+     - `admin-nav.js`: Populated `ADMIN CONSOLE` page badge in `enhanceAdminHeader()`; ensured drawer header button uses hamburger menu SVG.
+     - Updated all static admin HTML files to use institutional hamburger menu SVG.
+     - Synchronized changes to `components.css`, `frontend-v2/`, and backup repositories.
+  3. **Multi-Repo Synchronization**:
+     - Pushed backend to `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Render deployment).
+     - Pushed frontend to `https://github.com/onebotyt/VidyaOS.git` (Vercel deployment).
+     - Pushed monorepo to `https://github.com/onebotyt/Vidya.git`.
+- **Verification**:
+  - `node scripts/test-theme-support.js`: 88/88 Passed.
+  - `node scripts/test-rbac-and-structure.js`: 34/34 Passed.
+  - `node scripts/test-register-consolidation.js`: 46/46 Passed.
+
 ### ✅ Milestone 379: Isolated Creator Studio Navigation Protection (`create.html`)
 
 - **User Insight & Issue**:
