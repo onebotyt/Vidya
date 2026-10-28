@@ -34,6 +34,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 381: User Profile Popover Navigation Link & Classroom Navigation Backdrop Fix
+
+- **User Insight & Issues**:
+  - Clicking on the top-right user profile avatar (`RS` circle) opened the popover, but there was no option to open the user's profile (`/faculty/profile.html`), only `Account Settings` and `Sign Out`.
+  - In `classroom-nav.css`, desktop backdrop had a leftover `.sidebar-backdrop { display: none !important; }` rule that was suppressing the backdrop blur when the drawer was toggled.
+  - Updates must deploy to `https://github.com/onebotyt/VidyaOS.git` (frontend on Vercel) and `https://github.com/onebotyt/VidyaOS_BackEnd.git` (backend on Render).
+- **Fixes Applied**:
+  1. **User Profile Popover Action Link**:
+     - Updated `frontend/shared/js/auth.js`, `frontend/shared/js/nav.js`, and `frontend/shared/nav/nav.js`: `_ensureUserProfilePopover()` now guarantees that a dedicated `"My Profile"` button (`/faculty/profile.html` for faculty/HOD, `/student/profile.html` for students, `/admin/profile.html` for admin) is automatically inserted into `#user-profile-popover` before settings and sign out.
+     - Updated static HTML templates across `frontend/faculty/` (`dashboard/index.html`, `groups/index.html`, `media/index.html`, etc.) so the profile link is present in static markup.
+     - Updated `admin-nav.js` to ensure the admin profile link is also always present in `#user-profile-popover`.
+  2. **`classroom-nav.css` Fixes**:
+     - Removed obsolete `.sidebar-backdrop { display: none !important; }` at line 974 that was suppressing the backdrop on desktop.
+     - Added dedicated child element styling for `.user-profile-popover` (`.gc-user-avatar`, `#popover-user-name`, `#popover-user-email`, `.btn`, `a.btn`).
+  3. **Multi-Repo Deployment**:
+     - Pushed frontend updates to `https://github.com/onebotyt/VidyaOS.git` (`origin/main`) for Vercel deployment.
+     - Verified backend status and pushed monorepo to `https://github.com/onebotyt/Vidya.git`.
+- **Verification**:
+  - `node scripts/test-theme-support.js`: 88/88 Passed.
+  - `node scripts/test-rbac-and-structure.js`: 34/34 Passed.
+  - `node scripts/test-register-consolidation.js`: 46/46 Passed.
+
 ### ✅ Milestone 380: Render Cold-Start Keepalive/Wakeup & Admin Navigation System Overlay Parity
 
 - **User Insight & Issues**:
