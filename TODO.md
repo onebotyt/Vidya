@@ -34,6 +34,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 397: Streamlined Admin Dashboard, Quick Actions Elevation, Useful Top Header & Fixed Sidebar Footer
+
+- **User Directives**:
+  1. "remove Recent Activity and move up Quick Actions"
+  2. "and remove Absent Today and Present Today and Important Notices"
+  3. "and fix this image 1 and profile in header and remove search bar and bell icon make it use full"
+- **Implementation**:
+  1. **Top Header Clean-Up & Utility Upgrade (`frontend/admin/components/header/`)**:
+     - Removed empty search bar with `Ctrl + K` badge and bell icon.
+     - Added institutional context indicators: `Institution Console` badge, `Odd Sem 2026-27` academic session pill, and `Systems Online` live status with pulsing dot (`.status-live-dot`).
+     - Added direct `Registers Matrix` shortcut button (`.header-quick-link-btn`).
+     - Refined user profile pill: Single clean title `System Admin` + `Super Admin` role chip + online indicator dot.
+     - Interactive profile dropdown card with email `admin@college.edu` and action links (`My Profile`, `System Settings`, `Audit Trail & Logs`, `Sign Out`).
+  2. **Image 1 Fix (Expanded Sidebar Footer (`frontend/admin/components/sidebar/`))**:
+     - Replaced raw unstyled text `VidyaOS • Admin` and plain text `Sign Out` with a dedicated `.sidebar-user-card` (avatar squircle with `SA`, `System Administrator` bold title, `VidyaOS Console` subtext).
+     - Added tactile `.sidebar-signout-card-btn` with logout SVG icon and danger red accent.
+  3. **Dashboard KPI & Layout Overhaul (`frontend/admin/dashboard/`)**:
+     - Reduced KPI metrics row to 3 core administrative cards (`Total Students`, `Total Faculty`, `Departments`) in a responsive 3-column grid (`.kpi-3-cards`).
+     - Removed `Absent Today` and `Present Today` cards.
+     - Removed `Recent Activity` timeline and `Important Notices` panels.
+     - Moved `Quick Actions` up into a side-by-side layout with `Today's Attendance Overview` (`.telemetry-actions-grid`).
+- **Verification**:
+  - `node scripts/test-theme-support.js`: 88/88 passed (100% theme tokenized).
+  - `node scripts/test-rbac-and-structure.js`: 34/34 passed.
+  - `node scripts/test-register-consolidation.js`: 46/46 passed.
+  - JSDOM DOM checks: Verified header, KPI cards (3), side-by-side telemetry & quick actions, and sidebar user card.
+
 ### ✅ Milestone 396: Embedded Authentic Nainital Campus Photo in Institutional Showcase Card
 
 - **User Directives**:

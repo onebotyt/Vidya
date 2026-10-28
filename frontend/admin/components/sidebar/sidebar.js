@@ -297,8 +297,19 @@
 
           <!-- D. Sidebar Footers -->
           <div class="sidebar-expanded-footer">
-            <div class="sidebar-brand-credit">VidyaOS &bull; Admin</div>
-            <button type="button" class="sidebar-signout-btn" onclick="adminLogout()" title="Sign Out">Sign Out</button>
+            <div class="sidebar-user-card">
+              <div class="sidebar-user-avatar" aria-hidden="true">
+                <span>SA</span>
+              </div>
+              <div class="sidebar-user-meta">
+                <span class="sidebar-user-name">System Administrator</span>
+                <span class="sidebar-user-sub">VidyaOS Console</span>
+              </div>
+            </div>
+            <button type="button" class="sidebar-signout-card-btn" onclick="adminLogout()" title="Sign Out" aria-label="Sign Out">
+              ${signoutSvg}
+              <span>Sign Out</span>
+            </button>
           </div>
 
           <div class="sidebar-rail-footer" aria-hidden="true">

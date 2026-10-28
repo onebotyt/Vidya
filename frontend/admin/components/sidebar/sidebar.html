@@ -167,10 +167,21 @@
   </nav>
 
   <!-- D. Sidebar Footers -->
-  <!-- 1. Expanded Footer -->
+  <!-- 1. Expanded Footer (Fixed User Session Card & Sign Out Button) -->
   <div class="sidebar-expanded-footer">
-    <div class="sidebar-brand-credit">VidyaOS &bull; Admin</div>
-    <button type="button" class="sidebar-signout-btn" onclick="logout()" title="Sign Out">Sign Out</button>
+    <div class="sidebar-user-card">
+      <div class="sidebar-user-avatar" aria-hidden="true">
+        <span>SA</span>
+      </div>
+      <div class="sidebar-user-meta">
+        <span class="sidebar-user-name">System Administrator</span>
+        <span class="sidebar-user-sub">VidyaOS Console</span>
+      </div>
+    </div>
+    <button type="button" class="sidebar-signout-card-btn" onclick="logout()" title="Sign Out" aria-label="Sign Out">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <span>Sign Out</span>
+    </button>
   </div>
 
   <!-- 2. Rail Footer (Desktop Collapsed Rail) -->

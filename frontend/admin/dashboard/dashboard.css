@@ -220,11 +220,16 @@
   box-shadow: 0 2px 4px hsl(0 0% 0% / 0.04);
 }
 
-/* ── 3. Section B: 5 Key Performance Indicators Row (from Image 3) ── */
+/* ── 3. Section B: Key Performance Indicators Row (3 Core Admin Cards) ── */
 .kpi-cards-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.15rem;
+}
+
+.kpi-cards-grid.kpi-3-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
 }
 
 @media (max-width: 1200px) {
@@ -233,16 +238,11 @@
   }
 }
 
-@media (max-width: 768px) {
-  .kpi-cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .kpi-cards-grid {
+@media (max-width: 860px) {
+  .kpi-cards-grid,
+  .kpi-cards-grid.kpi-3-cards {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 
@@ -411,7 +411,25 @@
   background: hsl(0 78% 54%);
 }
 
-/* ── 4. Section C: Middle 3-Column Analytics & Activity Grid (from Image 3) ── */
+/* ── 4. Section C: Telemetry & Quick Actions (Side-by-Side 2-Column Grid) ── */
+.main-telemetry-actions-section {
+  width: 100%;
+}
+
+.telemetry-actions-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 1100px) {
+  .telemetry-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
 .analytics-activity-grid {
   display: grid;
   grid-template-columns: 1.25fr 1fr 1fr;
@@ -420,6 +438,45 @@
 
 @media (max-width: 1200px) {
   .analytics-activity-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-badge-info {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
+.panel-quick-actions {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-actions-panel-body {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.quick-actions-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .quick-actions-panel-grid {
     grid-template-columns: 1fr;
   }
 }
