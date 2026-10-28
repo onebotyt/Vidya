@@ -34,6 +34,20 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 401: Enlarge Circular Expand Arrow Button & Chevron for Touch/Desktop Ergonomics
+
+- **User Directives**:
+  - "you did how i want but size small fix it size" (Referring to `media_1793229296106_370524f0.png`)
+- **Implementation**:
+  1. **Enlarged Circular Button Dimensions (`sidebar.css`)**:
+     - Increased `.rail-expand-btn` size from `26px x 26px` to `34px x 34px`.
+     - Adjusted horizontal anchor from `right: -13px` to `right: -17px` (`top: 50%; transform: translateY(-50%)`), perfectly bisecting the rail-to-header border seam.
+     - Upgraded box shadow to `0 3px 8px hsl(0 0% 0% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.85)` for enhanced tactile depth.
+  2. **Enlarged & Bolder Chevron Vector (`sidebar.html`, `sidebar.js`)**:
+     - Upgraded the chevron right arrow SVG from `14px x 14px` (`stroke-width: 2.5`) to `16px x 16px` (`stroke-width: 2.6`).
+- **Verification**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
 ### ✅ Milestone 400: Position Circular Expand Arrow Right on Border Seam Beside Logo
 
 - **User Directives**:
