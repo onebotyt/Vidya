@@ -237,7 +237,7 @@
     if (!document.getElementById('app-sidebar')) {
       const cubeSvg = getIcon('cube', { width: 32, height: 32, className: 'rail-cube-logo' });
       const headerCubeSvg = getIcon('cube', { width: 24, height: 24, className: 'header-cube-logo' });
-      const expandChevronSvg = getIcon('chevronRight', { width: 16, height: 16, stroke: 2.6 });
+      const expandChevronSvg = getIcon('chevronRight', { width: 15, height: 15, stroke: 2.8 });
       const collapseChevronSvg = getIcon('chevronLeft', { width: 14, height: 14, stroke: 2.5 });
       const closeSvg = getIcon('close', { width: 18, height: 18, stroke: 2.2 });
       const userSvg = getIcon('user', { width: 20, height: 20, stroke: 2 });

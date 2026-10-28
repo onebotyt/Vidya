@@ -18,8 +18,8 @@
    */
   const ICONS = {
     // 1. VidyaOS 3D Isometric Cube Logo
-    cube: (w = 32, h = 32, cls = 'rail-cube-logo') => `
-      <svg class="${cls}" width="${w}" height="${h}" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    cube: (w = 32, h = 32, stroke = 2, cls = 'rail-cube-logo') => `
+      <svg class="${cls || 'rail-cube-logo'}" width="${w}" height="${h}" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <!-- Top Face (Light Highlight) -->
         <path d="M16 3L28 9.5L16 16L4 9.5L16 3Z" fill="var(--color-primary-light, hsl(215 90% 95%))" stroke="var(--color-primary)" stroke-width="0.8" stroke-linejoin="round"/>
         <!-- Left Face (Midtone Primary) -->

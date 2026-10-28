@@ -34,6 +34,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 402: Mathematical 3D Cube Logo Alignment & High-Contrast Expand Button Ring
+
+- **User Directives**:
+  - "logo not align with bottom nave icons and arrow Blanding to much fix it" (Referring to `media_1793229489479_3f03c488.png`)
+- **Implementation**:
+  1. **Pixel-Perfect Logo Alignment with Navigation Icons (`sidebar.css`, `icons.js`)**:
+     - Locked `.sidebar-rail-header` to `flex-direction: row; justify-content: flex-start`.
+     - Gave `.rail-logo-link` the identical geometric bounds as `.sidebar-nav-item`: `width: 46px; height: 46px; margin: 0 13px !important`.
+     - Center of `.rail-logo-link` is permanently locked at `x = 13 + 23 = 36px`, matching the exact vertical center line of all navigation squircle icons below.
+     - Fixed `ADMIN_ICONS.cube` parameter signature in `icons.js` to preserve `cls = 'rail-cube-logo'`.
+  2. **High-Contrast Anti-Blending Expand Arrow Button (`sidebar.css`, `sidebar.js`, `sidebar.html`)**:
+     - Upgraded `.rail-expand-btn` border to `1.5px solid var(--color-primary)` so it stands out crisply against the light background instead of blending in.
+     - Added a multi-layer colored glow and ambient shadow `0 4px 12px hsl(217 91% 60% / 0.25), 0 2px 4px hsl(0 0% 0% / 0.1)`.
+     - Strengthened the chevron stroke to `stroke-width: 2.8` with `15px x 15px` viewBox.
+     - On hover, button fills with solid primary blue and inverts the chevron to white with `transform: translateY(-50%) scale(1.12)`.
+- **Verification**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - JSDOM verified `.rail-cube-logo` class binding and chevron stroke dimensions.
+
 ### ✅ Milestone 401: Enlarge Circular Expand Arrow Button & Chevron for Touch/Desktop Ergonomics
 
 - **User Directives**:
