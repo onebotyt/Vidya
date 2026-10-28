@@ -4,6 +4,11 @@
   "description": "VidyaOS — Institutional Campus & Academic Operating System",
   "scripts": {
     "start": "cd backend && node server.js",
+    "start:v1": "cd backend && node -e \"process.env.PORT=process.env.PORT||3000; process.env.FRONTEND_DIR='../frontend'; require('./server.js')\"",
+    "start:v2": "cd backend && node -e \"process.env.PORT=process.env.PORT||3001; process.env.FRONTEND_DIR='../frontend-v2'; require('./server.js')\"",
+    "start:dev2": "node scripts/collab/preview-server.js",
+    "start:both": "node scripts/start-both.js",
+    "start:all": "node scripts/start-all.js",
     "collab:pull": "node scripts/collab/pull-dev2.js",
     "collab:diff": "node scripts/collab/diff-dev2.js",
     "collab:apply": "node scripts/collab/apply-dev2.js",

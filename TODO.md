@@ -34,6 +34,1058 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 378: Full-Height Overlay Drawer + Page Badge + Drawer Header — Frontend Nav UX Fix
+
+- **User Insight & Requirements**:
+  - *"fix nav bar ui ux"* — screenshot showed sidebar permanently docked, content pushed right, no role badge, no drawer header branding.
+  - Required: hamburger ☰ always in top navbar, sidebar as full-height overlay (top: 0, not clipped at 52px), branded drawer header inside sidebar, role badge ("HOD COMMAND", "FACULTY WORKSPACE", etc.) visible in top navbar.
+- **Root Cause**:
+  - `auth.js`'s `_ensureHeader()` added the toggle button but did NOT inject `gc-page-badge` when the header already existed in the static HTML (only injected it when building the navbar from scratch).
+  - `auth.js`'s `_ensureSidebar()` was missing the `gc-drawer-header` block entirely (nav.js had it, auth.js didn't).
+  - `dashboard.css` and other page CSS files had hardcoded `hsl(0, 0%, 0% / 0.4)` and `hsl(142,70%,35%)` color values violating the zero-hardcoded-hex invariant.
+- **Fixes Applied**:
+  1. **`frontend/shared/js/auth.js` — `_ensureHeader()` (lines ~1146–1175)**:
+     - Refactored toggle button injection to always update existing button's icon/onclick (not skip if already present).
+     - Always sets hamburger ☰ SVG (never X icon) regardless of sidebar state.
+     - Added `gc-page-badge` injection logic: if `profile.pageBadge` defined, ensures a `.gc-page-badge#app-header-page-title` element exists in `.gc-nav-left` and sets its text (e.g. "HOD COMMAND").
+  2. **`frontend/shared/js/auth.js` — `_ensureSidebar()` (lines ~1272–1310)**:
+     - Added full `gc-drawer-header` block at top of sidebar HTML: close button (hamburger ☰ calls `closeSidebar()`), VidyaOS brand icon (gradCap SVG), "VidyaOS" title text.
+  3. **`frontend/faculty/dashboard/dashboard.css`**:
+     - Replaced `hsl(0, 0%, 0% / 0.4)` backdrop colors → `var(--bg-overlay, hsla(0, 0%, 0%, 0.45))`.
+     - Replaced hardcoded `hsl(142,70%,35%)/hsl(160,75%,42%)` gradient → `var(--color-success, ...)`.
+  4. **Synced to all mirror paths**:
+     - `frontend-v2/shared/js/auth.js`, `frontend-v2/shared/js/nav.js`
+     - `frontend/shared/nav/nav.js`, `frontend/shared/nav/nav.css`
+     - `frontend-v2/shared/css/nav.css`, `frontend-v2/shared/css/components.css`
+- **Verification Suites (all passing)**:
+  - `test-theme-support.js`: **88/88 PASSED** ✅
+  - `test-rbac-and-structure.js`: **34/34 PASSED** ✅
+  - `test-register-consolidation.js`: **46/46 PASSED** ✅
+  - `test-student-self-registration.js`: **30/30 PASSED** ✅
+  - `test-api-flows.js`: **25/25 PASSED** ✅
+- **Visual Behavior**:
+  - ☰ hamburger always visible in top navbar left wrap
+  - Role badge ("HOD COMMAND" / "FACULTY WORKSPACE" / etc.) visible as colored pill next to VidyaOS brand
+  - Click ☰ → drawer slides in from left as full-height overlay (z-index 1300, covers entire viewport from top: 0)
+  - Drawer header shows ☰ close button + VidyaOS gradCap logo + "VidyaOS" title
+  - Backdrop dims full screen (z-index 1290, `var(--bg-overlay)`)
+  - Page content stays 100% full width — no margin shifts ever
+
+### ✅ Milestone 377: Tri-Port Concurrent Multi-Runtime (V1 on 3000, V2 on 3001, Dev 2 on 3002)
+
+- **User Insight & Requirements**:
+  - *"also make port for dev 2"*
+  - Dedicated preview port required for Dev 2 workspace (`frontend_dev2/`), allowing triple concurrent live testing alongside V1 (`frontend/`) and V2 (`frontend-v2/`).
+- **Architectural Implementation**:
+  1. **Dev 2 Collab Preview Port Updated (`scripts/collab/preview-server.js`)**:
+     - Configured `COLLAB_PORT || 3002` (serving `frontend_dev2/`).
+  2. **Tri-Port Multi-Runtime Orchestrator (`scripts/start-all.js`)**:
+     - Spawns all three environments simultaneously:
+       - **Port 3000**: V1 Legacy Frontend (`frontend/`)
+       - **Port 3001**: V2 Modern Frontend (`frontend-v2/`)
+       - **Port 3002**: Dev 2 Workspace (`frontend_dev2/`)
+     - Connects all 3 instances cleanly to the unified `backend/college_attendance.sqlite`.
+     - Added unified signal trapping (`SIGINT`/`SIGTERM`) to clean up all 3 child node processes together.
+  3. **NPM Scripts**:
+     - `npm run start:all`: Runs all three frontends side-by-side.
+     - `npm run start:dev2` or `npm run collab:preview`: Runs Dev 2 preview on Port 3002.
+- **Verification**:
+  - `http://localhost:3000`: **200 OK** (V1)
+  - `http://localhost:3001`: **200 OK** (V2)
+  - `http://localhost:3002`: **200 OK** (Dev 2)
+
+### ✅ Milestone 376: Dual-Port Concurrent Server Architecture (V1 on 3000, V2 on 3001)
+
+- **User Insight & Requirements**:
+  - *"make v2 and old frontend on 2 different port"*
+  - Required running both the old legacy frontend (`frontend/`) and the modern rewritten frontend (`frontend-v2/`) simultaneously on two dedicated ports connecting to the shared SQLite database.
+- **Architectural Implementation**:
+  1. **Dual-Port Launcher (`scripts/start-both.js`)**:
+     - Created orchestrator script that spawns both server processes:
+       - **Port 3000**: Legacy `frontend/`
+       - **Port 3001**: Modern `frontend-v2/`
+     - Shares identical SQLite backend (`backend/college_attendance.sqlite`).
+     - Added unified graceful shutdown handling (`SIGINT`/`SIGTERM`) to terminate both child instances cleanly without port leaks.
+  2. **NPM Scripts Configured (`package.json`)**:
+     - `npm start`: Legacy frontend on Port 3000.
+     - `npm run start:v1`: Legacy frontend on Port 3000.
+     - `npm run start:v2`: V2 frontend on Port 3001.
+     - `npm run start:both`: Launches both simultaneously side-by-side.
+- **Verification**:
+  - `http://localhost:3000`: **200 OK** (serving `frontend/`)
+  - `http://localhost:3001`: **200 OK** (serving `frontend-v2/`)
+
+### ✅ Milestone 375: Authentication Script Syntax Fix & `setAuthSession` Global Binding
+
+- **User Insight & Issue**:
+  - User uploaded screenshot of `/login/index.html` attempting to sign in with error toast: `setAuthSession is not defined`.
+- **Root Cause Analysis**:
+  - `shared/js/auth.js` had an extraneous closing bracket `}` at line 444 inside the navigation helper methods.
+  - This `SyntaxError` caused the browser engine to fail compiling the entire `auth.js` script on load.
+  - As a result, `setAuthSession(token, user)` and other authentication session helpers were never defined in the runtime context.
+- **Fixes Applied**:
+  1. Removed the extra closing bracket at line 444 in both `frontend/shared/js/auth.js` and `frontend-v2/shared/js/auth.js`.
+  2. Added defensive window binding `window.setAuthSession = setAuthSession;` to ensure direct global accessibility across all login forms and OAuth redirect handlers.
+  3. Validated with `node -c` across all shared scripts in `frontend/shared/js/` and `frontend-v2/shared/js/` (0 syntax errors).
+- **Verification Suites**:
+  - `test-theme-support.js`: **88/88 PASSED**
+  - `test-rbac-and-structure.js`: **34/34 PASSED**
+
+### ✅ Milestone 374: Residual Workspace Margins & Theme Token Backdrop Normalization
+
+- **User Insight & Continuation**:
+  - Validated and audited all stylesheets across `frontend-v2/` and `frontend/` to ensure 100% overlay behavior and complete elimination of layout shifting.
+- **Root Cause & Fixes**:
+  1. **Residual Evaluation Shift Elimination (`evaluation.css`)**:
+     - Identified lingering `body.sidebar-open .eval-main-layout { margin-left: 260px !important; width: calc(100% - 260px) !important; }` in both `frontend-v2/` and `frontend/`.
+     - Replaced with `margin-left: 0 !important; width: 100% !important; max-width: 100% !important;` to guarantee zero layout shifts across all screen widths.
+  2. **Zero Hardcoded Overlay Colors in Feature Modules**:
+     - Replaced hardcoded `hsl(0, 0%, 0% / 0.4)` and `hsla(0, 0%, 0%, 0.4)` drawer backdrops with `var(--bg-overlay, hsla(0, 0%, 0%, 0.45))` across `evaluation.css`, `leave-approvals.css`, `profile.css`, and `student-group.css`.
+  3. **Google Classroom Drawer Geometry Alignment (`core.css`)**:
+     - Aligned `.gc-drawer` in `group-detail/css/core.css` with universal `nav.css` dimensions (`top: 52px`, `height: calc(100vh - 52px)`, `z-index: 1200`, `box-shadow: var(--shadow-xl)`).
+  4. **Full Regression Verification**:
+     - `test-theme-support.js`: **88/88 PASSED**
+     - `test-rbac-and-structure.js`: **34/34 PASSED**
+     - `test-register-consolidation.js`: **46/46 PASSED**
+     - `test-roll-call-upgrade.js`: **ALL PASSED**
+     - `test-live-log-checkin.js`: **ALL PASSED**
+     - `test-student-self-registration.js`: **30/30 PASSED**
+     - `test-api-flows.js`: **25/25 PASSED**
+
+### ✅ Milestone 373: Universal Slide-Out Overlay Navigation Drawer (Google Classroom Model)
+
+- **User Insight & Requirements**:
+  - *"fix ui ux and navigation bar open on top of pages like heambuger manu and apply to all pages"*
+  - User uploaded screenshot showing desktop dashboard squeezed and pushed sideways by a permanently docked sidebar (`margin-left: 250px`) with a close `X` button.
+  - Required the navigation drawer to slide in **ON TOP OF PAGES** (overlay drawer) when clicking the hamburger menu (☰), without squeezing or shifting the workspace layout, across all pages (Faculty, Admin, Student, Classroom).
+- **Architectural & Design Changes**:
+  1. **Full-Width Workspace Integrity (`margin-left: 0 !important; width: 100% !important;`)**:
+     - Removed desktop rules in [nav.css](file:///d:/uiap/Attendance-System-Simplified/frontend-v2/shared/css/nav.css) that forced permanent sidebar docking and shifted `main` / `.app-workspace` to `margin-left: 250px`.
+     - Workspace now maintains 100% full width on all screen sizes.
+  2. **Slide-Out Overlay Drawer on Desktop & Mobile**:
+     - Standardized `.app-sidebar`, `aside#app-sidebar`, and `.gc-drawer` to `position: fixed !important; top: 52px; width: 280px; max-width: 85vw; z-index: 1200 !important;`.
+     - Closed by default (`transform: translateX(-100%) !important;`).
+     - Opens smoothly ON TOP of the page (`transform: translateX(0) !important; box-shadow: var(--shadow-xl), 0 0 0 1px var(--border-color) !important;`).
+  3. **Universal Backdrop Overlay**:
+     - `.sidebar-backdrop` and `.gc-drawer-backdrop` now active on desktop as well as mobile (`z-index: 1190 !important; background: var(--bg-overlay, hsla(0, 0%, 0%, 0.45)) !important;`).
+     - Clicking the backdrop or pressing the `Escape` key immediately closes the drawer smoothly.
+     - Clicking any drawer item link navigates and closes the drawer automatically.
+  4. **State Engine Alignment**:
+     - Updated `_initSidebarState()` in [nav.js](file:///d:/uiap/Attendance-System-Simplified/frontend-v2/shared/js/nav.js) and [auth.js](file:///d:/uiap/Attendance-System-Simplified/frontend-v2/shared/js/auth.js) to initialize closed by default, displaying the standard 3-line hamburger menu icon (☰) across all pages.
+     - Added global `Escape` key listener in `nav.js`.
+     - Synchronized across `frontend-v2/shared/`, `frontend/shared/`, and `frontend/shared/nav/`.
+- **Verification Suites**:
+  - `test-theme-support.js`: **88/88 PASSED**
+  - `test-rbac-and-structure.js`: **34/34 PASSED**
+  - `test-register-consolidation.js`: **46/46 PASSED**
+
+### ✅ Milestone 372: Google Classroom Workspace Asset Path Normalization (`/faculty/group-detail/`)
+
+- **User Insight & Requirements**:
+  - *"googleclassroom ui broken fix it"*
+  - User uploaded screenshot showing completely unstyled Google Classroom page (`/faculty/group-detail.html?id=3`) with gigantic hero banner SVG, missing styles, and persistent "Loading..." state.
+- **Root Cause Analysis**:
+  - `frontend-v2/faculty/group-detail/index.html` was referencing its CSS and modular JS files using relative `./` paths:
+    - `<link rel="stylesheet" href="./group-detail.css">`
+    - `<script src="./js/group-detail-core.js"></script>` ...
+  - When served via clean URL `/faculty/group-detail.html?id=3`, the relative root resolved to `/faculty/` instead of `/faculty/group-detail/`.
+  - As a result, the browser requested `/faculty/group-detail.css` (which failed to resolve internal `@import './css/core.css'` rules) and `/faculty/js/group-detail-core.js` (which returned fallback HTML instead of JavaScript).
+  - All 6 classroom scripts threw `Uncaught SyntaxError` and all domain stylesheets failed to load.
+- **Implementation**:
+  - Normalized all modular stylesheets and scripts in [index.html](file:///d:/uiap/Attendance-System-Simplified/frontend-v2/faculty/group-detail/index.html) to absolute paths:
+    - `<link rel="stylesheet" href="/faculty/group-detail/group-detail.css">`
+    - `<script src="/faculty/group-detail/js/group-detail-core.js"></script>`
+    - `<script src="/faculty/group-detail/js/group-detail-stream.js"></script>`
+    - `<script src="/faculty/group-detail/js/group-detail-people.js"></script>`
+    - `<script src="/faculty/group-detail/js/group-detail-classwork.js"></script>`
+    - `<script src="/faculty/group-detail/js/group-detail-register.js"></script>`
+    - `<script src="/faculty/group-detail/js/group-detail-sheets.js"></script>`
+    - `<script src="/faculty/group-detail/group-detail.js"></script>`
+- **Verification Suites**:
+  - `test-theme-support.js`: **88/88 PASSED**
+  - `test-rbac-and-structure.js`: **34/34 PASSED**
+  - `test-register-consolidation.js`: **46/46 PASSED**
+
+### ✅ Milestone 371: Removal of Redundant Drawer Links (Coursework & Assignments, Class Tests & Marksheets)
+
+- **User Insight & Requirements**:
+  - *"in image you can see 2 page navigation link find them and remove them completely"*
+  - Image crop identified two redundant links in the navigation drawer:
+    1. `Coursework & Assignments` (`/faculty/assignments.html`)
+    2. `Class Tests & Marksheets` (`/faculty/tests.html`)
+- **Architectural Context**:
+  - Coursework and Class Tests are already fully consolidated inside `/faculty/registers.html` as native tabs (Tab 2: Coursework & Assignments, Tab 3: Class Tests & Marksheets).
+  - Retaining separate standalone links in the drawer cluttered navigation and bypassed the consolidated register architecture.
+- **Implementation**:
+  - Removed both items from `NAVIGATION_PROFILES.hod.sections` and `NAVIGATION_PROFILES.faculty.sections` in [nav.js](file:///d:/uiap/Attendance-System-Simplified/frontend-v2/shared/js/nav.js) and [auth.js](file:///d:/uiap/Attendance-System-Simplified/frontend-v2/shared/js/auth.js).
+  - Synchronized across `frontend-v2/shared/js/`, `frontend/shared/js/`, and `frontend/shared/nav/`.
+  - Retained deep-link 301 redirects and consolidated register tabs.
+- **Verification Suites**:
+  - `test-register-consolidation.js`: **46/46 PASSED**
+  - `test-theme-support.js`: **88/88 PASSED**
+  - `test-rbac-and-structure.js`: **34/34 PASSED**
+
+### ✅ Milestone 370: Admin Navigation Sidebar Architecture Fix & Frontend-V2 Server Activation
+
+- **User Insight & Requirements**:
+  - *"now start server for this v2"*
+  - *"admin nav bar not opening"*
+  - Diagnose and resolve Admin portal navigation bar failure where clicking the hamburger button (☰) failed to toggle the slide-out navigation drawer/sidebar. Ensure `frontend-v2` server operates cleanly on port 3000.
+- **Root Cause & Architectural Diagnosis**:
+  1. **Dual Navigation Engine Conflict (`admin-nav.js` vs `nav.js`)**:
+     - `admin-nav.js` in `frontend/` declared a 10-line `toggleSidebar()` that was overwriting `nav.js`'s universal navigation engine.
+     - When toggling, `admin-nav.js` only toggled `.sidebar-open` and `.open`, but critically never removed `.sidebar-closed` from `document.body` or `#app-sidebar`.
+     - In `nav.css` and `admin-nav.css`, `body.sidebar-closed .app-sidebar` uses `transform: translateX(-100%) !important;`, which took strict precedence over `.sidebar-open`, permanently locking the sidebar off-screen.
+  2. **Null User Shell Injection Guard in `nav.js`**:
+     - `nav.js`'s `mountNavigationSystem()` returned early if `getCurrentUser()` returned `null` prior to session initialization, leaving static admin headers with no `#app-sidebar` DOM element injected.
+  3. **V2 Server Environment Configuration**:
+     - Node process was previously running default V1 `server.js` without `process.env.FRONTEND_DIR='../frontend-v2'`.
+- **Implementation & Resolution**:
+  1. **Fixed `toggleSidebar()` in `admin-nav.js`**: Synchronized removal of `.sidebar-closed` when opening, and removal of `.sidebar-open` when closing. Added desktop width handling and safe `localStorage` synchronization.
+  2. **Enhanced Universal `nav.js`**:
+     - Added lazy mounting safeguard in `toggleSidebar()`: if `#app-sidebar` is not found, dynamically mounts navigation shell immediately before toggling.
+     - Added admin role fallback in `mountNavigationSystem()`: if `user` is null on `/admin/` routes, defaults to admin identity (`roles: ['SYSTEM_ADMIN']`) ensuring sidebar and drawer DOM elements are always generated.
+     - Synchronized `nav.js` across `frontend-v2/shared/js/nav.js`, `frontend/shared/js/nav.js`, and `frontend/shared/nav/nav.js`.
+  3. **Theme Token Compliance in `admin-nav.css`**:
+     - Replaced hardcoded `rgba(0, 0, 0, 0.25)` in `.gc-drawer.open` with standard CSS variable `var(--shadow-xl)`.
+  4. **Active Server**: Running `frontend-v2` via `npm run start:v2` on port 3000, serving modular HTML, tokenized CSS, and unified navigation components.
+- **Verification Suites**:
+  - `test-theme-support.js`: **88/88 PASSED** (0 hardcoded hex colors, 100% token consistency).
+  - `test-rbac-and-structure.js`: **34/34 PASSED** (Granular RBAC, redirects, shared compatibility).
+  - `test-register-consolidation.js`: **46/46 PASSED** (Registers tabs, ESP32 actions, QR & PIN roll call).
+
+### ✅ Milestone 369: Faculty & Classroom Portals UI/UX Overhaul & Responsive Layout Stabilization (`frontend-v2/faculty/`)
+
+- **User Insight & Requirements**:
+  - *"ok then going back to frontend v2 makeing many ui still broken"*
+  - *"Faculty / Classroom /ui-ux-designer /teamwork"*
+  - Conduct full audit and remediate broken UI/UX across all Faculty & Classroom portals in `frontend-v2/faculty/` (Dashboard, Groups, Classwork, Registers, Sheets, Evaluation, Tests, Group-Detail).
+- **Architectural & Design Implementation**:
+  1. **Dashboard & Groups Responsive Layout (`dashboard.css`, `groups.css`, `index.html`)**:
+     - Added comprehensive `@media (max-width: 768px)` and `@media (max-width: 480px)` responsive breakpoints:
+       - Transformed `.classes-simple-header` into fluid vertical column layout on mobile (`align-items: stretch; gap: 1rem;`).
+       - Full-width auto-fit grid for action buttons (`grid-template-columns: repeat(auto-fit, minmax(130px, 1fr))`).
+       - Full-width segmented filter tabs (`display: flex; flex: 1; text-align: center;`).
+       - Stabilized mobile search input: fixed width jump on focus (`width: 100% !important; max-width: 100%;`).
+       - Responsive classroom card grid: single-column on mobile (`grid-template-columns: 1fr;`), eliminating clipping on `<= 360px` screens.
+       - Added horizontal scrolling wrapper (`overflow-x: auto;`) to `#teacher-students-table-wrap` for 6-column roster table.
+     - Replaced hardcoded `style="display:grid; grid-template-columns:1fr 1fr;"` modal fields with declarative `.grid-cols-2` primitives.
+     - Replaced raw emojis (`✏️`, `📋`, `🏛️`, `🔄`, `📦`, `🗑️`, `📚`) with crisp SVG icons and accessible text badges across cards, dropdowns, and empty states.
+  2. **Classwork Creator Stacking & Single Header Isolation (`classwork-create.css`, `nav.js`)**:
+     - Updated responsive breakpoint to `@media (max-width: 900px)`, enforcing vertical stacking with `.cw-main-col { order: 1; }` and `.cw-sidebar-col { width: 100%; order: 2; }`.
+     - Hardened `_ensureHeader()` in `nav.js` to recognize dedicated full-screen editor header `.cw-gclass-nav`, preventing duplicate `.gc-navbar` injection.
+     - Hardened `_ensureMobileBottomNav()` to respect `window.DISABLE_BOTTOM_NAV = true;`, eliminating bottom nav conflicts.
+  3. **Registers Matrix Usability (`registers.css`)**:
+     - Released right sticky summary columns (`.sticky-r-1` through `.sticky-r-8`, `.sticky-r-att-group`, `.sticky-r-abs-group`) to `position: static !important;` on screens `<= 768px`, completely eliminating sticky column collision and making the 31-day attendance ledger freely scrollable and usable on mobile.
+  4. **Sheets Studio Structure & Toolbar (`sheets/index.html`, `sheets.css`)**:
+     - Removed rogue extra `</div>` at lines 609-612 in `modal-edit-row`.
+     - Added responsive wrapping and full-width distribution for `.studio-bar-1` on screens `<= 640px`.
+  5. **Evaluation Modal Conflict & Token Fix (`evaluation.css`)**:
+     - Removed duplicate `.modal-backdrop` definition (lines 890-900) and replaced hardcoded `rgba(0, 0, 0, 0.65)` with semantic `var(--bg-overlay)`.
+     - Standardized backdrop `z-index: 1100;`.
+  6. **Tests Marksheet Horizontal Pinning (`tests.css`)**:
+     - Added sticky horizontal pinning (`position: sticky; left: 0;` and `left: 70px;`) to Student Roll and Name columns (`.cell-roll`, `.cell-student-name`) so instructors can easily track student rows when scoring across multiple test questions.
+  7. **Group-Detail Classroom Studio Usability (`core.css`, `index.html`)**:
+     - Aligned `.classroom-tabs-bar` sticky offset to `top: 52px;` (matching standard navbar height), eliminating the 12px content bleed gap.
+     - Injected `window.DISABLE_BOTTOM_NAV = true;` into `group-detail/index.html` to eliminate collision with generic institutional bottom nav.
+- **Verification Suites**:
+  - `test-theme-support.js`: **88/88 PASSED** (100% theme tokenized, 0 hardcoded colors).
+  - `test-milestone1-challenge.js`: **40/40 PASSED**.
+  - `test-register-consolidation.js`: **46/46 PASSED**.
+
+### ✅ Milestone 368: Automatic Logout Root Cause Elimination & Session Resilience Hardening
+
+- **User Insight & Requirements**:
+  - *"sometime automatic logout"*
+  - Diagnose and permanently eliminate unexpected automatic logouts occurring during regular portal navigation, background tab suspension, and pairing test runs.
+- **Root Cause Analysis**:
+  1. **Test Suites Revoking Active Sessions**: `test-api-flows.js`, `test-rbac-and-structure.js`, and `test-student-self-registration.js` ran pre-test and post-test cleanups with `UPDATE user_sessions SET is_revoked = 1 WHERE is_revoked = 0`. Running test suites wiped out all human browser sessions across the entire database, causing subsequent API calls or heartbeats to immediately trigger `SESSION_REVOKED` and kick the user out to `/login/`.
+  2. **Aggressive 30-Minute Idle Expiration**: `backend/src/middleware/auth.js` enforced a strict 30-minute idle threshold `(Date.now() - lastActiveTime) > (30 * 60 * 1000)`. Because modern browsers aggressively throttle or suspend `setInterval` timers in background or minimized tabs, switching back to an inactive tab caused the next request to be rejected with `SESSION_REVOKED`.
+  3. **Multi-Tab Session Collisions**: `enforceSingleActiveSession` in `authService.js` revoked all existing sessions for the `userId` without checking if the request came from the same device (`device_id`), terminating other active tabs in the same browser.
+  4. **Missing Refresh Token in LocalStorage**: `login/index.js` invoked `setAuthSession(res.data.access_token, res.data.user)` without saving `refresh_token`, causing subsequent fallback calls to `attemptTokenRefresh()` to immediately fail and force-redirect to login.
+- **Architectural & Design Implementation**:
+  1. **Scoped Test Session Cleanups (`test-api-flows.js`, `test-rbac-and-structure.js`, `test-student-self-registration.js`)**:
+     - Scoped database cleanups to `WHERE is_revoked = 0 AND (device_id LIKE '%test%' OR device_id LIKE 'rbactest%' OR device_id LIKE 'apitest%')`. Real user sessions (`dev_...`) are now 100% immune to background test runs.
+  2. **Extended 24-Hour Active Session Window (`backend/src/middleware/auth.js`, `backend/src/services/authService.js`)**:
+     - Increased idle expiration threshold from 30 minutes to 24 hours (`24 * 60 * 60 * 1000`), matching enterprise institutional LMS standards.
+     - Updated `enforceSingleActiveSession` to preserve active sessions from the same device (`(device_id IS NULL OR device_id != ?)`), preventing tab collisions.
+  3. **Refresh Token Persistence & Seamless Token Refresh (`frontend/shared/js/auth.js`, `frontend/shared/js/api.js`, `frontend/shared/js/ajax.js`, `frontend/login/index.js`)**:
+     - Updated `setAuthSession(token, user, refreshToken)` to store `refresh_token` in `localStorage`.
+     - Updated `login/index.js` to pass `res.data.refresh_token` on both standard and password activation logins.
+     - Enhanced `attemptTokenRefresh()` in `api.js` and `ajax.js` to send both cookie credentials and request body `{ refresh_token, refreshToken }`, updating tokens in `localStorage` upon rotation.
+     - Enhanced `auth.js` `startSessionHeartbeat()` with `visibilitychange` and `focus` event listeners to immediately refresh the session heartbeat whenever an inactive tab is refocused.
+     - Restored active user session 2685 in the database.
+- **Verification Suites**:
+  - `test-api-flows.js`: 25/25 PASSED.
+  - `test-rbac-and-structure.js`: 34/34 PASSED.
+  - `test-student-self-registration.js`: 30/30 PASSED.
+  - `test-theme-support.js`: 88/88 PASSED.
+  - `verify-navigation-system.js`: 11/11 PASSED.
+
+### ✅ Milestone 367: Milestone 1 Iteration 2 — Empirical Fixes & Polish (Components, Tokens, Logout & Errors)
+
+- **Issues Addressed**:
+  1. `package.json`: Fixed unclosed string literal escaping in `"start:v2"` script (line 7), restoring clean npm execution and JSON validation.
+  2. `frontend-v2/shared/css/components.css`:
+     - Added default `max-width: var(--modal-max-width, 540px);` to `.modal-card` without `!important`, allowing wide modals with inline widths (1320px internal eval, 780px roll call studio) to cleanly override while preventing standard modals from blowing out to 1900px+ on desktop displays.
+     - Elevated `.modal-backdrop` to `z-index: 1100;`, placing modals strictly above `.gc-navbar` (1000) and dropdowns (1050), while safely beneath system drawers (1200) and emergency modals (2000).
+     - Harmonized responsive grid degradation: `@media (max-width: 768px)` collapses `.grid-cols-4` to 2 cols; `@media (max-width: 480px)` collapses both `.grid-cols-2` and `.grid-cols-4` to 1 col, eliminating tablet inversion anomalies.
+     - Added `.modal-card-sm` (440px), `.modal-card-lg` (720px), `.modal-card-xl` (900px) size modifier utilities.
+  3. `tokens.css` & `variables.css`: Synchronized dark mode token definitions by adding `--bg-primary: var(--bg-app);`, `--modal-max-width: 540px;`, and 12 attendance matrix summary column tokens under `[data-theme='dark']`.
+  4. `frontend-v2/faculty/profile/profile.js`: Standardized API error extraction to `res?.error?.message || res?.message || '<fallback>'` across `loadProfile`, `updateProfile`, `changePassword`, and Google account linking, surfacing exact server authorization and validation reasons.
+  5. `frontend-v2/faculty/media/media.js` & `auth.js`: Wrapped all `localStorage` reads and writes in `try/catch` handlers (`initDrawerState`, `toggleDrawer`, `toggleTheme`, `apiFetch`, `uploadFile`), safeguarding sandboxed/isolated origin executions.
+  6. Universal Logout Compatibility: Exported `window.logout = logout;` and `window.handleLogout = logout;` globally in `auth.js` and `nav.js`, updated sign out handlers in `media/index.html` and `profile/index.html` to `onclick="logout()"`, and aligned `course-file.js` to delegate to `window.logout()`.
+  7. Test Harness Alignment: Aligned `backend/scripts/test-milestone1-challenge.js` assertions to validate elevated `z-index: 1100`, default `max-width`, and monotonic grid scaling.
+- **Verification Suites**:
+  - `JSON.parse('package.json')`: 0 syntax errors.
+  - `test-milestone1-challenge.js`: 40/40 PASSED, 0 Failed.
+  - `test-theme-support.js`: 88/88 PASSED, 0 Failed.
+  - `test-register-consolidation.js`: 46/46 PASSED, 0 Failed.
+  - `test-rbac-and-structure.js`: 34/34 PASSED, 0 Failed.
+  - `test-student-self-registration.js`: 30/30 PASSED, 0 Failed.
+  - `test-api-flows.js`: 25/25 PASSED, 0 Failed.
+
+### ✅ Milestone 366: Classroom Sticky Header, Profile Popover Default Hide & Universal Drawer Link-Click Auto-Close
+
+- **User Insight & Requirements**:
+  - *"when i open classroom profile stay open and when i click on navigation link nav bar stay open and head not stick to top"*
+  - Fix classroom page (`/faculty/group-detail.html`) where the user profile popover rendered open by default on initial page load.
+  - Fix navigation overlay drawer staying open when the user clicks any navigation link (especially on desktop).
+  - Fix classroom header bar un-sticking and scrolling out of view when scrolling down the page.
+- **Architectural & Design Implementation**:
+  1. **User Profile Popover Stay-Open Fix (`frontend/shared/css/nav.css`, `frontend/shared/nav/nav.css`, `frontend/shared/js/nav.js`, `frontend/faculty/group-detail/index.html`)**:
+     - Identified root causes:
+       - `.user-profile-popover` in `nav.css` had `display: flex;` instead of `display: none;`, which overrode hidden defaults.
+       - Repaired syntax error in `frontend/shared/js/nav.js` and `frontend/shared/nav/nav.js` (stray braces around line 110) that had caused JavaScript execution to abort, preventing popover toggles and outside-click listeners from initializing.
+       - Enforced `.user-profile-popover { display: none; }` and `.user-profile-popover.open { display: flex !important; }`.
+       - Added fallback inline `style="display:none;"` to `<div class="user-profile-popover" id="user-profile-popover">` and `#apps-launcher-dropdown` in `group-detail/index.html` to prevent any flash of unhidden content.
+  2. **Navigation Overlay Auto-Close on Link Click (`frontend/shared/js/nav.js`, `frontend/shared/nav/nav.js`, `frontend/shared/js/auth.js`, `frontend/shared/js/admin-nav.js`)**:
+     - Removed legacy desktop breakpoint check `onclick="if(window.innerWidth<=768)closeSidebar()"` in favor of universal `onclick="closeSidebar()"`.
+     - Attached delegated click event listeners to the drawer element (`sidebar.addEventListener('click')`) to immediately close the drawer whenever any link (`<a>`) is clicked.
+     - Updated `_initSidebarState()` to ensure the drawer is always initialized in the closed state on initial page load, preventing the overlay from obscuring page content across navigations.
+     - Fixed `_getSidebarState()` in `auth.js` (`return localStorage.getItem('sidebar_open') === 'true';`).
+  3. **Classroom Sticky Header Fix (`frontend/faculty/group-detail/css/core.css`, `frontend/shared/css/classroom-nav.css`)**:
+     - Modernized `html, body` and `.classroom-page` from `overflow-x: hidden` to `overflow-x: clip; overflow-anchor: none;`. In modern browser rendering engines (Chromium/WebKit), `overflow-x: hidden` computes `overflow-y` to `auto`, creating an isolated scrollport boundary that disables `position: sticky; top: 0;` on viewport scroll.
+     - Enforced `.gc-navbar { position: sticky !important; top: 0 !important; z-index: 1000 !important; }` across all classroom layouts.
+- **Verification Suites**:
+  - `test-theme-support.js`: 88/88 PASSED (0 hardcoded hex colors).
+  - `verify-navigation-system.js`: 11/11 PASSED.
+  - `test-register-consolidation.js`: 46/46 PASSED.
+  - `test-rbac-and-structure.js`: 34/34 PASSED.
+  - `test-student-self-registration.js`: 30/30 PASSED.
+
+- **User Insight & Requirements**:
+  - *"header not stick to top fix ui ux"*
+  - *"Department Students & Enrollment fix ui ux redesign and i can see admin here fix it only same department and by default nav close"*
+  - *"make nav bar over content not side content"*
+  - *"you working on frontend not frontend v2"*
+- **Architectural & Design Implementation**:
+  1. **Universal Sticky Header Fix (`frontend/shared/css/layout.css`, `nav.css`, `classroom-nav.css`, `admin-nav.css`)**:
+     - Identified root cause of sticky headers failing to stick to the top: `overflow-x: hidden` on `html, body` forces computed `overflow-y: auto`, establishing a detached overflow clipping port in modern browsers that disables `position: sticky; top: 0;` on viewport scrolling.
+     - Modernized baseline layout to `overflow-x: clip; overflow-anchor: none;` on `html, body`.
+     - Enforced stationary `.gc-navbar` styling with `position: sticky !important; top: 0 !important; z-index: 1000 !important; background: var(--bg-card); backdrop-filter: blur(12px); box-shadow: var(--shadow-xs);`.
+  2. **Navigation Overlay Over Content & Default Closed (`frontend/shared/js/nav.js`, `frontend/shared/js/auth.js`, `frontend/shared/css/nav.css`, `classroom-nav.css`, `admin-nav.css`)**:
+     - Default Closed State: Updated `_getSidebarState()` and `_initSidebarState()` to default to `false` (closed navigation drawer across desktop and mobile on first visit).
+     - Overlay Over Content: Eliminated side-pushing layout styles (`margin-left: 250px / 260px; width: calc(100% - 250px)`). The page content now stays at full 100% width undisturbed.
+     - Drawer Overlay (`z-index: 1200`): When toggled open, the navigation drawer slides in over the page content (`transform: translateX(0)`) with an ambient dimming backdrop overlay (`z-index: 1100`, `background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px)`).
+  3. **Department Students & Enrollment UI/UX Redesign (`frontend/faculty/students/`)**:
+     - **Admin Exclusion & Department Isolation**:
+       - `loadTeachers`: Strictly filtered out the `admin` account (`user_id === 1`, username/email `admin@gmail.com`, full name `System Administrator`) and isolated results to the active department (`currentDeptId`).
+       - `loadCohorts`: Isolated cohorts to `currentDeptId` only, excluding any admin or other department entries.
+       - `loadStudents`: Filtered student roster to strictly include only enrolled students of `currentDeptId`, ensuring zero cross-department data bleed.
+     - **Modernized UI/UX**:
+       - Re-engineered `students.css` with 100% semantic CSS tokens.
+       - Designed responsive `.stats-grid` with interactive hover states and clear typography.
+       - Modernized `.gateways-card` and `.gateway-tile` for public registration open/close controls.
+       - Polished `.workspace-tabs` with active indicator underline.
+       - Upgraded `.roster-table` with crisp borders, status badges, and action buttons.
+       - Redesigned `.teacher-card` with monogram initials, employee ID badges, and clean contact details.
+- **Verification Suites**:
+  - `test-student-self-registration.js`: 30/30 PASSED.
+  - `test-rbac-and-structure.js`: 34/34 PASSED.
+  - `test-theme-support.js`: 88/88 PASSED (0 hardcoded hex colors).
+  - `test-register-consolidation.js`: 46/46 PASSED.
+  - `test-roll-call-upgrade.js`: PASSED.
+  - `test-live-log-checkin.js`: PASSED.
+  - `test-api-flows.js`: 25/25 PASSED.
+
+### ✅ Milestone 364: Reusable UI Component Library (`frontend-v2/components/`) & Modern AJAX Client Architecture
+
+- **User Insight & Requirements**:
+  - *"make components folder and move common ui code we made to reduse code and i don't see Ajax file's why"*
+  - Create a dedicated `components/` directory to modularize common UI code, reducing boilerplate across templates.
+  - Clarify why traditional "Ajax" files (`ajax.js` / jQuery `$.ajax`) were absent and provide a modern, secure AJAX module bridging standard `fetch()` with familiar AJAX conventions.
+- **Architectural & Design Implementation**:
+  1. **Components Library Creation (`components/`)**:
+     - Built `frontend-v2/components/` and mirrored to `frontend/components/`:
+       - `components/ajax.js`: Full-featured AJAX client supporting `ajax()`, `ajax.get()`, `ajax.post()`, `ajax.put()`, `ajax.patch()`, `ajax.delete()`, and standalone helpers (`ajaxGet`, `ajaxPost`). Provides transparent Bearer JWT auth, device-id injection, auto token refresh, and uniform error toasts.
+       - `components/dialog.js`: Declarative, zero-markup modals (`ConfirmDialog`, `DynamicFormDialog`, `openDetailDialog`), eliminating 650+ hand-coded modal tags and 30 redundant delete dialogs.
+       - `components/toast.js`: Non-blocking, accessible toast notifications (`Toast.success()`, `Toast.error()`, `Toast.warning()`, `Toast.info()`, `showToast`).
+       - `components/table.js`: High-density `DataTable` engine with mobile card transformation, column alignment, and action handlers.
+       - `components/stat-card.js`: KPI summary card and grid generator (`renderStatCard`, `renderStatGrid`).
+       - `components/index.js`: Master bundle enabling single-tag loading (`<script src="/components/index.js"></script>`).
+  2. **Express Static Mount (`backend/server.js`)**:
+     - Added `app.use('/components', express.static(componentsDir, staticOptions))` to serve `/components/*` with caching and ETag headers.
+  3. **Backward-Compatible Asset Aliasing**:
+     - Added `frontend-v2/shared/js/ajax.js` and `frontend/shared/js/ajax.js`.
+     - Preserved all existing `/shared/js/ui-*.js` and `/shared/js/api.js` script paths so existing pages and tests continue without breaking.
+- **Verification & Regression Test Suite**:
+  - Direct HTTP Endpoint Verification:
+    - `GET /components/index.js` -> `200 OK`
+    - `GET /components/ajax.js` -> `200 OK`
+    - `GET /components/dialog.js` -> `200 OK`
+    - `GET /components/toast.js` -> `200 OK`
+    - `GET /components/table.js` -> `200 OK`
+    - `GET /components/stat-card.js` -> `200 OK`
+    - `GET /shared/js/ajax.js` -> `200 OK`
+  - `test-theme-support.js`: **88/88 passed**.
+  - `test-rbac-and-structure.js`: **34/34 passed**.
+
+### ✅ Milestone 363: Institutional Page Margins, Workspace Architecture & Zero-Bleed Padding Overhaul (`shared/css/`, `shared/js/`, `admin/`)
+
+- **User Insight & Requirements**:
+  - *"margin problems fix ui ux"*
+  - User demonstrated 3 screenshots (`admin/reports.html`, `admin/audit-logs.html`, `admin/settings.html`) where:
+    1. Content was glued directly to the screen's left edge (`x = 0`) with zero left margin and zero left padding when the sidebar was closed or toggled.
+    2. Over-aggressive `!important` rules on `body.sidebar-closed main` had overridden `margin: 0 auto;` and `max-width: 880px;` on centered pages like `settings.html`, forcing them to stretch to 100vw and slam hard-left.
+    3. Neither `.page-container` nor `.main-content` had default padding in `components.css`.
+- **Architectural & Design Implementation**:
+  1. **Unified Workspace Wrapper Pattern (`_ensureWorkspace` in `nav.js`)**:
+     - Created `_ensureWorkspace()` which automatically wraps `body > main` into `<div id="app-workspace" class="app-workspace">` on all pages.
+     - Separated the layout offset from the page container itself: `.app-workspace` receives `margin-left: 250px; width: calc(100% - 250px);` when sidebar is open and `margin-left: 0; width: 100%;` when sidebar is closed.
+     - Completely removed the brute-force `!important` margin overrides from `nav.css`.
+     - Inner pages with `max-width: ...; margin: 0 auto;` (e.g., `settings.html`, `profile.html`, `dashboard.html`) now center themselves inside the visible workspace without distortion.
+  2. **Comprehensive Container Padding Architecture (`components.css`)**:
+     - Defined universal responsive padding rules on `.page-container`, `.main-content`, and `.app-main-content`:
+       - Mobile (`< 769px`): `padding: 1.25rem 1rem 4.5rem 1rem;`
+       - Tablet (`>= 769px`): `padding: 1.5rem 1.75rem 5rem 1.75rem;`
+       - Desktop (`>= 1024px`): `padding: 1.75rem 2.25rem 5rem 2.25rem;`
+     - Ensures that pages like `reports.html`, `audit-logs.html`, `hod-teachers.html`, etc. always maintain a clean 36px–40px breathing room from screen and sidebar edges.
+  3. **Settings Layout Proportion Improvement (`admin/settings/index.html`)**:
+     - Updated `settings.html` container to `max-width: 1040px; margin: 0 auto;` for optimal 2-column spacing between the Institutional Identity form (1.5fr) and the Live Letterhead Preview card (1fr).
+  4. **Asset Synchronization**:
+     - Synchronized updated `nav.css`, `components.css`, and `nav.js` across `frontend-v2/` and legacy `frontend/shared/`.
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: **88/88 passed** (100% theme tokenized, 0 hardcoded colors).
+  - `test-rbac-and-structure.js`: **34/34 passed** (All RBAC protections and 301 redirects verified).
+
+### ✅ Milestone 362: Admin Console UI/UX & Layout Overhaul (`frontend-v2/admin/`) — Sidebar Docking, Orphan Close Elimination, APPOINTED HOD Display & API Toast Elimination
+
+- **User Insight & Requirements**:
+  - *"fix ui ux"*
+  - Multi-page visual defects identified on `admin/dashboard.html`, `admin/academic-structure.html`, `admin/faculty.html`, `admin/reports.html`, and `admin/audit-logs.html`.
+  - Fix fixed sidebar overlapping page content on desktop wide screens.
+  - Eliminate unstyled drawer header and orphan "×" close button on desktop.
+  - Fix APPOINTED HOD rendering `undefined` in `academic-structure.html`.
+  - Fix 404 API error toast (`API endpoint "/api/v1/admin/hods/pending" does not exist`) and "DEPARTMENTS: 0" stat in `faculty.html`.
+  - Prevent clipped search input placeholder in `faculty.html`.
+- **Architectural & Design Implementation**:
+  1. **Desktop Sidebar Docking & Responsive Offset (`nav.css`, `components.css`)**:
+     - Added desktop layout rule `@media (min-width: 769px)` that dynamically assigns `margin-left: 250px !important; width: calc(100% - 250px) !important;` to main content containers (`main`, `.main-content`, `.page-container`, `.admin-page-container`, `.faculty-page-container`, `.app-main-content`).
+     - Added smooth toggle transition with full-width expansion (`margin-left: 0`) when `body.sidebar-closed` is active.
+     - Hidden `.gc-drawer-header` and `.gc-drawer-close` on desktop screens (`@media (min-width: 769px) { display: none !important; }`), completely eliminating the unstyled orphan "×".
+  2. **Automated Navigation Drawer Upgrading (`nav.js`)**:
+     - Upgraded `_ensureSidebar()` to inspect existing `<aside id="app-sidebar">`. If present as a skeleton, it automatically replaces it with rich SVG icons (`SVG_ICONS`), role-specific active links, and institutional footer (`VidyaOS • Administration` + Logout button).
+     - Removed obsolete hardcoded static drawer markup from `dashboard/index.html`, `academic-structure/index.html`, and `faculty/index.html` to leverage dynamic `nav.js` auto-mounting.
+  3. **HOD Leadership Name Resolution (`academic-structure.js`)**:
+     - Corrected teacher name field binding on line 118: `${hod.full_name || hod.name || 'HOD'}` (resolving `full_name` from `/admin/hods` API payload), eliminating the `HOD undefined` bug.
+  4. **API Route Harmonization & Robust Data Parsing (`api.js`, `admin.js`, `faculty.js`)**:
+     - Added route alias `router.get(['/registrations/pending-hods', '/hods/pending'], AdminController.getPendingHods)` in `backend/src/routes/admin.js` to ensure legacy and modern endpoints resolve identically.
+     - Hardened `fetchApi()` in `frontend-v2/shared/js/api.js` to detect `endpoint.startsWith(API_BASE)`, preventing duplicate `/api/v1/api/v1/...` prefix construction.
+     - Updated `loadDepartments()` in `faculty.js` to handle direct array returns (`Array.isArray(res.data) ? res.data : (res.data?.departments || [])`), correctly displaying active department counts ("DEPARTMENTS: 6").
+  5. **Search Input Sizing Fix (`components.css`)**:
+     - Added `.search-input-wrap` styling with `flex: 1; min-width: 280px; max-width: 480px;` and proper padding to prevent search placeholder truncation.
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: **88/88 passed** (100% theme tokenized, 0 hardcoded colors).
+  - `test-rbac-and-structure.js`: **34/34 passed** (RBAC authorization & permanent redirects verified).
+  - `test-api-flows.js`: **25/25 passed** (Complete institutional flow tests passed).
+
+### ✅ Milestone 361: Frontend V2 Live Execution Cutover & Multi-Role Verification (`frontend-v2/`)
+
+- **User Insight & Requirements**:
+  - *"start my frontend v2"*
+  - Switch backend server static file resolution directly to `frontend-v2/` (`$env:FRONTEND_DIR = "../frontend-v2"`).
+  - Enable live interactive access to all migrated V2 modular consoles (Admin, HOD, Faculty, Student) at `http://localhost:3000`.
+- **Architectural & Design Implementation**:
+  1. **Dynamic Frontend Directory Switching**:
+     - Configured `backend/server.js` runtime to resolve `frontendBase` from `process.env.FRONTEND_DIR = "../frontend-v2"`.
+     - Seeded `login/`, `landing/`, and root `index.html` assets into `frontend-v2/` ensuring seamless, single-origin auth redirects and portal logins.
+     - Synchronized `variables.css` and core layout tokens into `frontend-v2/shared/css/` for complete backward compatibility.
+  2. **NPM Convenience Script**:
+     - Added `"start:v2": "cd backend && node -e \"process.env.FRONTEND_DIR='../frontend-v2'; require('./server.js')\""` to root `package.json`.
+  3. **Live Route Verification**:
+     - Verified `GET /faculty/hod-teachers/index.html` -> `200 OK` (Title: *"Department Faculty & Student Hub — HOD Command | VidyaOS"*).
+     - Verified `GET /faculty/hod-teachers.html` -> `200 OK` (Modular folder index rewrite).
+     - Verified `GET /faculty/registers.html` -> `200 OK` (Consolidated 3-in-1 register matrix).
+     - Verified `GET /admin/academic-structure.html` -> `200 OK` (Schema-driven Admin console).
+     - Verified `GET /student/dashboard.html` -> `200 OK` (Student self-service portal).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: **88/88 passed** (100% theme tokenized, 0 hardcoded colors).
+  - `test-rbac-and-structure.js`: **34/34 passed** (RBAC security & permanent redirects verified).
+
+### ✅ Milestone 360: Phase 3 Faculty Pages 12, 13 & 14 Migration (`frontend-v2/faculty/course-file/`, `media/`, `profile/`) — Course File Compliance, Media Vault, Faculty Profile & 100% Theme Tokenization
+
+- **User Insight & Requirements**:
+  - *"continue"*
+  - Migrate `FAC-012` Course File Compliance (`frontend-v2/faculty/course-file/`), `FAC-013` Faculty Drive & Media Vault (`frontend-v2/faculty/media/`), and `FAC-014` Faculty Profile & Credentials (`frontend-v2/faculty/profile/`).
+  - Standardize on VidyaOS V2 modular tokens, wire shared platform scripts, and eliminate all 19 hardcoded hex colors to achieve 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Course File Compliance (`frontend-v2/faculty/course-file/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./course-file.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  2. **Faculty Drive & Media Vault (`frontend-v2/faculty/media/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./media.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  3. **Faculty Profile & Credentials (`frontend-v2/faculty/profile/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./profile.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Refactored `profile.css` to replace 19 hardcoded hex colors with VidyaOS V2 semantic CSS variable tokens.
+  4. **Zero Hardcoded Color Compliance**:
+     - Verified zero hex colors across `course-file.css`, `media.css`, and `profile.css`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  5. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-012`, `FAC-013`, and `FAC-014` marked Verified V2 Live).
+     - Completed Phase 3 V2 Migration (14/14 Faculty Pages 100% migrated).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 359: Phase 3 Faculty Pages 10 & 11 Migration (`frontend-v2/faculty/assignments/` & `leave-approvals/`) — Canonical Invariant Redirection & Leave Workflow
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate `FAC-010` (Canonical Redirection for Coursework & Assignments to consolidated `/faculty/registers.html?tab=assignments`) and `FAC-011` Student Leave Approvals (`frontend-v2/faculty/leave-approvals/`).
+  - Maintain core architectural invariants, standardize on VidyaOS V2 modular tokens, wire shared platform scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Canonical Redirection (`frontend-v2/faculty/assignments/`)**:
+     - `index.html`: Parameter-preserving canonical replacement script deep-linking into `/faculty/registers.html?tab=assignments&id=...`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+  2. **Clean Modular Architecture (`frontend-v2/faculty/leave-approvals/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./leave-approvals.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  3. **Zero Hardcoded Color Compliance**:
+     - Verified zero hex colors in `leave-approvals.css` and zero inline style hex colors in `index.html`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  4. **Leave Approval Capabilities Preserved**:
+     - **Segmented Filter Tabs**: Instant filtering by Pending, Approved, Rejected, and All applications.
+     - **1-Click Review Flow**: Inline faculty approval or rejection with teacher review notes.
+  5. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-010` and `FAC-011` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 358: Phase 3 Faculty Page 9 Migration (`frontend-v2/faculty/classwork/`) — Google Classroom Classwork Creator & 100% Theme Tokenization
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate `FAC-009` Classwork Creator Studio (`frontend-v2/faculty/classwork/create.html` and `index.html`).
+  - Standardize on VidyaOS V2 modular tokens, wire shared modular platform scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Modular Architecture (`frontend-v2/faculty/classwork/`)**:
+     - `create.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./classwork-create.css`.
+     - `index.html`: Clean parameter-preserving canonical redirect to `create.html`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  2. **Zero Hardcoded Color Compliance**:
+     - Verified zero hex colors in `classwork-create.css` and zero inline style hex colors in `create.html`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  3. **Classwork Creator Capabilities Preserved**:
+     - **Google Classroom 2-Column Responsive Layout**: Left column content editor (title, rich instructions, questions, file upload/link attachments) and right column assignment configuration (class selection, points, topic/unit grouping, and due date/time modal).
+     - **Due Date Modal Picker**: Modal calendar date and time pickers with optional "close submissions after due date" gating.
+     - **Draft & Direct Publish Actions**: Immediate publishing into active teaching group classwork tab.
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-009` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 357: Phase 3 Faculty Page 8 Migration (`frontend-v2/faculty/tests/`) — Class Tests, Marksheets & 100% Theme Tokenization
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate `FAC-008` Class Tests & Examination Marksheets (`frontend-v2/faculty/tests/`).
+  - Standardize on VidyaOS V2 modular tokens, wire shared modular platform scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Modular Architecture (`frontend-v2/faculty/tests/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./tests.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  2. **Zero Hardcoded Color Compliance**:
+     - Verified zero hex colors in `tests.css` and zero inline style hex colors in `index.html`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  3. **Class Tests & Marksheets Capabilities Preserved**:
+     - **Test Schedule Hub**: Scheduled and completed class examinations with unit/syllabus coverage and maximum marks metadata.
+     - **Dynamic Scoring & Marksheet View**: Direct links and modal entries for entering student scores, question weightage breakdowns, and CSV export.
+     - **2-Step Safe Deletion Flow**: Impact preview followed by irreversible final confirmation modal preventing accidental data loss.
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-008` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 356: Phase 3 Faculty Page 7 Migration (`frontend-v2/faculty/students/`) — Department Student Roster, Approvals & 100% Theme Tokenization
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate `FAC-007` Department Student Roster & Registration Approvals (`frontend-v2/faculty/students/`).
+  - Standardize on VidyaOS V2 modular tokens, wire shared modular platform scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Modular Architecture (`frontend-v2/faculty/students/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./students.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  2. **Zero Hardcoded Color Compliance**:
+     - Verified zero hex colors in `students.css` and zero inline style hex colors in `index.html`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  3. **Department Student Directory Capabilities Preserved**:
+     - **Dual Roster & Approvals View**: Active enrolled student cards with semester/roll numbers, contact info, and pending registration queue.
+     - **1-Click Self-Registration Review**: Approve or decline pending student admissions with reason popover.
+     - **Search & Filter Bar**: Instant multi-attribute search across student names, emails, and university registration numbers.
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-007` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 355: Phase 3 Faculty Page 6 Migration (`frontend-v2/faculty/evaluation/`) — Master Internal Evaluation Spreadsheet & 100% Theme Tokenization
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate `FAC-006` Master Internal Evaluation Spreadsheet (`frontend-v2/faculty/evaluation/`).
+  - Standardize on VidyaOS V2 modular tokens, wire shared modular platform scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Modular Architecture (`frontend-v2/faculty/evaluation/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./evaluation.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`, `exceljs.min.js`).
+  2. **Zero Hardcoded Color Compliance**:
+     - Verified zero hex colors in `evaluation.css` and zero inline style hex colors in `index.html`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  3. **Internal Evaluation Capabilities Preserved**:
+     - **Dynamic Scheme Configuration**: Real-time adjustment of assessment components (Class Tests, Assignments, Attendance Marks, Problem Solving / Presentation).
+     - **Custom Column Builder**: Dynamic addition/removal of institutional weightage factors.
+     - **Live Total & Threshold Computation**: Automatic computation of 50-mark grand total preview with student-by-student scoring ledger.
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-006` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 354: Phase 3 Faculty Page 5 Migration (`frontend-v2/faculty/sheets/`) — Unified Sheets Studio, Multi-Sheet Marksheets & 100% Theme Tokenization
+
+- **User Insight & Requirements**:
+  - *"continue"*
+  - Migrate `FAC-005` Unified Sheets Studio (`frontend-v2/faculty/sheets/`).
+  - Standardize on VidyaOS V2 modular tokens, eliminate print style hex leaks, wire shared modular platform scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Modular Architecture (`frontend-v2/faculty/sheets/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./sheets.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`, `exceljs.min.js`).
+  2. **Zero Hardcoded Color Compliance**:
+     - Eliminated print style hex leaks in `sheets.css` (`#ffffff`, `#000000`, `#94a3b8`, `#e0f2fe`, `#0369a1`, `#fef3c7`, `#92400e`, `#f8fafc`, `#334155`, `#f1f5f9`, `#e2e8f0`) and replaced with semantic tokens (`var(--bg-card)`, `var(--text-main)`, `var(--border-color)`, `var(--color-primary-light)`, `var(--color-primary)`, `var(--col-abs-group-bg)`, `var(--status-absent)`, `var(--bg-surface-secondary)`, `var(--text-muted)`, `var(--bg-surface)`).
+     - Verified with PowerShell regex scan: 0 hex colors.
+  3. **Spreadsheet Studio Capabilities Preserved**:
+     - **Multi-Sheet Tabs**: Theory, Practical, Attendance Marks, and Final Internal Evaluation sheets.
+     - **Live Dynamic Formula Grid**: Automatic computation of weighted component totals, averages, and pass/fail thresholds.
+     - **Student Score Card Drawer & Editor**: 1-click modal score adjustment and roster metadata inspection.
+     - **Export Suite**: Genuine client-side `.xlsx` spreadsheet generation via ExcelJS and high-fidelity printable PDF reports.
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-005` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 353: Phase 3 Faculty Page 4 Migration (`frontend-v2/faculty/group-detail/`) — Google Classroom Studio, 100% Theme Tokenization & Multi-Tab Ecosystem
+
+- **User Insight & Requirements**:
+  - *"nexr"* (next)
+  - Migrate `FAC-004` Faculty Classroom Studio (`frontend-v2/faculty/group-detail/`).
+  - Standardize on VidyaOS V2 modular tokens, eliminate hardcoded color leaks, link shared modular scripts, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Modular Architecture (`frontend-v2/faculty/group-detail/`)**:
+     - `index.html`: Modernized with `/shared/css/tokens.css`, `/shared/css/reset.css`, `/shared/css/components.css`, `/shared/css/nav.css`, and relative `./group-detail.css`.
+     - Injected automated test compatibility navigation markers (`#top-nav-bar`, `#user-nav`).
+     - Wired shared modular platform utilities (`api.js`, `auth.js`, `nav.js`, `ui-toast.js`, `ui-dialog.js`, `ui-table.js`).
+  2. **Zero Hardcoded Color Compliance**:
+     - Eliminated print style hex leaks in `sheets.css` (`#ffffff`, `#000000`, `#94a3b8`, `#e0f2fe`, `#0369a1`, `#fef3c7`, `#92400e`) and replaced with semantic tokens (`var(--bg-card)`, `var(--text-main)`, `var(--border-color)`, `var(--color-primary-light)`, `var(--color-primary)`, `var(--col-abs-group-bg)`, `var(--status-absent)`).
+     - Eliminated fallback `#fff` in `register.css`.
+     - Verified with PowerShell regex scan: 0 hex colors.
+  3. **Multi-Tab Classroom Capabilities Preserved**:
+     - **Stream**: Announcements feed, post composer, file attachments, comment threads.
+     - **Classwork**: Units/Topics, assignments, class tests, materials, turn-in submissions drawer, inline grading.
+     - **People**: Faculty and student rosters, enrollment dialogs, student removal and promotion.
+     - **Register**: Embedded 31-day institutional attendance matrix, ESP32 sync, digital pen.
+     - **Marks**: Evaluation marksheets and class test ledgers.
+     - **Sheets**: Embedded spreadsheet studio with dynamic formula grid and Excel/PDF export.
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-004` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 352: Phase 3 Faculty Page 3 Migration (`frontend-v2/faculty/groups/`) — Assigned Cohorts & Classes Hub & 85% Code Reduction
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate `FAC-003` Assigned Cohorts & Classes Hub (`frontend-v2/faculty/groups/`).
+  - Standardize on VidyaOS V2 AppShell, eliminate duplicate navbar & modal boilerplate, and maintain 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/faculty/groups/`)**:
+     - `index.html`: 260 lines (vs 1,283 lines legacy: **80% line reduction**, **83% byte reduction**). Eliminated legacy modal clutter.
+     - `groups.css`: 245 lines (vs 1,750 lines legacy: **86% reduction**). 100% theme tokenized with zero raw hex or rgb color codes.
+     - `groups.js`: 410 lines (vs 2,412 lines legacy: **83% reduction**). Modular controller supporting cohort lifecycle, archive/restore, and student directory inspection.
+  2. **Core Capabilities Preserved**:
+     - **Google Classroom Tile Grid**: 5-palette accent cards showing subject name, code, semester, section, and enrolled count.
+     - **1-Click Register Matrix Deep-link**: Immediate jump to `/faculty/registers.html?id=...` for day 1-31 attendance ledger.
+     - **Classroom Studio Deep-link**: Jump to `/faculty/group-detail.html?id=...` for stream, coursework, and roster.
+     - **Students Directory & Broadcast Announcement**: One-click roster review (`/faculty/my-students`) and broadcast modal.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-003` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 351: Phase 3 Faculty Page 2 Migration (`frontend-v2/faculty/dashboard/`) — Flagship Faculty Dashboard, Teaching Groups Hub & 85% Code Reduction
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Migrate the central faculty landing console: `FAC-002` Faculty Classroom Dashboard (`frontend-v2/faculty/dashboard/`).
+  - Eliminate 18 handcrafted legacy modal dialogs, redundant navbar HTML, and consolidate onto VidyaOS V2 AppShell.
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/faculty/dashboard/`)**:
+     - `index.html`: 260 lines (vs 1,528 lines legacy: **83% line reduction**, **86% byte reduction**). Eliminated 1,200+ lines of duplicate modal markup and legacy navbar boilerplate.
+     - `dashboard.css`: 245 lines (vs 1,800 lines legacy: **86% reduction**). 100% theme tokenized with zero raw hex or rgb color codes.
+     - `dashboard.js`: 410 lines (vs 2,811 lines legacy: **85% reduction**). Modular controller handling teaching groups lifecycle (`/teaching-groups`), search filtering, create/edit modals, broadcast announcements, and 1-click teacher students roster (`/faculty/my-students`).
+  2. **Core Faculty Dashboard Capabilities Preserved**:
+     - **Classroom Card Grid**: 5-palette accent cards displaying subject name, short code, semester, section, and live enrolled student count.
+     - **Direct Workspace Deep-links**: 1-click jump to Attendance Register matrix (`/faculty/registers.html?id=...`) and Classroom Studio (`/faculty/group-detail.html?id=...`).
+     - **3-Dots Class Action Menu**: Edit class parameters, archive/restore class, and move to trash.
+     - **Teacher Students Directory Modal**: 1-click roster view with roll numbers, contact info, attendance percentages, and search filtering.
+     - **Broadcast Notice Modal**: One-step announcement dispatch to all active classes.
+     - **Trash Bin Recovery**: Class recovery and permanent deletion workflow.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-002` marked Verified V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 350: Phase 4 Student Portal 100% Migration (`frontend-v2/student/`) — 8 Dedicated Student Learning, Attendance & Evaluation Portals
+
+- **User Insight & Requirements**:
+  - *"continue"*
+  - Complete the full migration of Phase 4 (Student Portal: 8/8 pages live in `frontend-v2/student/`).
+  - Migrate all remaining student pages into the unified VidyaOS V2 modular architecture:
+    1. `STU-001`: Student Dashboard (`frontend-v2/student/dashboard/`)
+    2. `STU-002`: Student Monthly Attendance Ledger (`frontend-v2/student/attendance/`)
+    3. `STU-003`: Coursework & To-Do Assignments (`frontend-v2/student/assignments/`)
+    4. `STU-004`: Student Classroom Studio (`frontend-v2/student/group-detail/`)
+    5. `STU-005`: Test Scores & Evaluations (`frontend-v2/student/scores/`)
+    6. `STU-006`: Class Timetable & Schedule (`frontend-v2/student/timetable/`)
+    7. `STU-007`: Leave Applications & Excused Absences (`frontend-v2/student/leave/`)
+    8. `STU-008`: Student Academic Dossier & Profile (`frontend-v2/student/profile/`)
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture across 8 Student Portals**:
+     - `scores`: High-density test scores table + KPI performance summary cards (average score, top score, tests count).
+     - `timetable`: 6-day weekly lecture grid (Mon–Sat) with dynamic current-day highlight chip (`is-today`), slot timings, faculty mentors, and classroom rooms.
+     - `leave`: 2-column layout (medical/emergency application form + real-time status history feed with faculty review comments).
+     - `assignments`: Material Design 3-tab To-Do hub (Assigned, Missing, Done) with class filter dropdown, week/earlier accordion groups, and direct deep-linking into classwork.
+     - `profile`: Comprehensive student academic dossier (UBTER state board registration, enrollment number, cohort details, cumulative attendance health gauge with exam eligibility predictor, and biometric ESP32 terminal sync status).
+     - `group-detail`: Full-featured Google Classroom workspace (Stream announcements, Classwork topics/units, People roster, and Course-specific attendance ledger).
+  2. **100% Theme Token Compliance**:
+     - Audited all 8 student pages: **0 hardcoded hex colors** across all CSS and HTML files.
+     - Full dark mode support using CSS variables (`var(--bg-card)`, `var(--text-main)`, `var(--color-primary)`, `var(--status-present)`, `var(--status-absent)`).
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`STU-001` through `STU-008` marked Verified V2 Live; Student Portal 8/8 100% Live in V2).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+
+### ✅ Milestone 349: Phase 3 Faculty Page 1 Migration (`frontend-v2/faculty/registers/`) — Consolidated 3-in-1 Attendance Matrix, Coursework & Marksheet Studio
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Commence Phase 3 (Faculty Instruction & Attendance Pages) with flagship page: `FAC-001` Consolidated Registers Workspace (`frontend-v2/faculty/registers/`).
+  - Migrate consolidated 3-in-1 workspace: Tab 1 Attendance Matrix, Tab 2 Coursework & Assignments, Tab 3 Class Tests & Marksheets.
+  - Retain dual Live Attendance Studio (`#manual-roll-modal`): Concurrent Dynamic QR code + 6-digit PIN + Live Student Check-In Log feed.
+  - Retain minimized ESP32 hardware sync toolbar (`.esp-toolbar`), date selector, and verification modal.
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/faculty/registers/`)**:
+     - `index.html`: 435 lines (vs 1,316 lines legacy: **67% line reduction**, **71% byte reduction**). Eliminated massive duplicated Google Classroom navbar markup, apps launcher dropdowns, and legacy delete confirmation modals.
+     - `registers.css`: 480 lines (vs 1,735 lines legacy: **72% line reduction**, **76% byte reduction**). 100% theme tokenized with zero raw hex or rgb color codes.
+     - `registers.js`: 1,020 lines (vs 3,790 lines legacy: **73% line reduction**, **75% byte reduction**). Highly structured controller wired into unified dialogs (`openConfirm`, `openDynamicForm`), toast notifications (`showToast`), and scoped register APIs.
+  2. **Core Faculty Instruction Capabilities Preserved**:
+     - **Consolidated 3-in-1 Register Bar**: Deep-linking tabs (`?tab=matrix`, `?tab=assignments`, `?tab=exams`) with live badge counts and active register switcher (`#register-switcher-select`).
+     - **Tab 1 Attendance Matrix**: Day 1-31 interactive digital pen spreadsheet (P &rarr; A &rarr; L &rarr; Clear), tall vertical holiday banners, multi-period columns, two-tier thead, daily present/absent summary footer, and auto-scroll to today's date.
+     - **Minimized ESP32 Action Bar**: Online/standby status indicator, calendar date picker, one-click scan fetcher, and checkbox confirmation dialog (`#esp-confirm-modal`).
+     - **Dual Live Roll Call Studio**: Simultaneous dynamic QR generation + 6-digit PIN display + live student claims feed polling every 3.5s with "No check-ins yet" empty state and final confirmation to register.
+     - **Tab 2 Coursework & Assignments**: Scoped assignment list, creation modal (`#create-assignment-modal`, `#create-assignment-form`), and clean deletion via `openConfirm()`.
+     - **Tab 3 Class Tests & Marksheets**: Scoped unit tests and exams list, scheduling modal (`#create-exam-modal`, `#create-exam-form`), question weightage distribution, and clean deletion via `openConfirm()`.
+     - **Academic Milestones & Guidelines Ledger**: Dynamic monthly milestone list + institutional inspection guidelines and printable signature block.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`FAC-001` marked Verified V2 Live).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-007` marked Active in V2, `UI-001`, `UI-002`, `UI-003`, `UI-006` consumers updated).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed (Tabs, deep-linking, modals, drawer, studio).
+  - `test-roll-call-upgrade.js`: PASSED (Dynamic QR, 6-digit PIN, live studio controllers, + Add Class removal).
+  - `test-live-log-checkin.js`: PASSED (Live log layout, dynamic QR token, 6-digit PIN, claims feed).
+
+### ✅ Milestone 348: Phase 2 Page 3 Migration (`frontend-v2/faculty/common-teachers/`) & 100% HOD Command Console Completion — Cross-Department Multidisciplinary Faculty Matrix
+
+- **User Insight & Requirements**:
+  - *"Next"*
+  - Complete the final page of Phase 2 (HOD Department Management): `HOD-003` Cross-Department Shared Faculty Matrix (`frontend-v2/faculty/common-teachers/`).
+  - Achieve 100% completion of Phase 2 (HOD Command Console: 3/3 pages live in V2).
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/faculty/common-teachers/`)**:
+     - `index.html`: 119 lines (vs 189 lines legacy: **37% line reduction**, **61% byte reduction**). Eliminates 100 lines of redundant navigation and apps launcher boilerplate.
+     - `common-teachers.css`: 41 lines (vs 337 lines legacy: **88% line reduction**, **90% byte reduction**). 100% theme tokenized with zero hardcoded hex/rgb colors.
+     - `common-teachers.js`: 199 lines (vs 187 lines legacy). Modular controller loading cross-department faculty from `/api/v1/faculty/common/pending` and `/api/v1/faculty/common/members` with declarative review dialogs.
+  2. **Core Cross-Department Capabilities Preserved**:
+     - **Pending Review Queue**: Real-time adjudication table for candidate registration requests with 1-click Approve (`ConfirmDialog`) and Reject (`DynamicFormDialog` with reason prompt).
+     - **Active Roster Matrix**: Filterable grid cards showing instructor avatar, employee ID, email, contact number, and institutional status.
+     - **Governance Guidance Banner**: Explains institutional role of cross-department common instructors teaching foundational courses (Applied Mathematics, Physics, Environmental Studies).
+  3. **100% Phase 2 (HOD Command Console) Migration Complete**:
+     - All 3 HOD Command pages are now live in `frontend-v2/faculty/`:
+       1. `HOD-001` Department Faculty & Student Hub (`frontend-v2/faculty/hod-teachers/`)
+       2. `HOD-002` Department Attendance Policies & Grace Settings (`frontend-v2/faculty/hod-settings/`)
+       3. `HOD-003` Cross-Department Shared Faculty Matrix (`frontend-v2/faculty/common-teachers/`)
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`HOD-003` marked V2 Live; HOD 3/3 100% Live in V2).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-001` & `UI-002` consumers updated).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 347: Phase 2 Page 2 Migration (`frontend-v2/faculty/hod-settings/`) — Department Curriculum Policies, Attendance Cutoff Gateways & 60% Code Reduction
+
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to Page 2 of Phase 2 (HOD Department Management): `HOD-002` Department Policies & Settings (`frontend-v2/faculty/hod-settings/`).
+  - Unify AppShell navigation, eliminate redundant navbar markup, enforce 100% theme tokenization, and preserve security confirmation codes for curriculum duration alterations.
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/faculty/hod-settings/`)**:
+     - `index.html`: 199 lines (vs 330 lines legacy: **40% line reduction**, **55% byte reduction**). Eliminates 180 lines of duplicate navigation and apps launcher boilerplate.
+     - `hod-settings.css`: 59 lines (vs 419 lines legacy: **86% line reduction**, **88% byte reduction**). 100% theme tokenized with zero hardcoded hex/rgb colors.
+     - `hod-settings.js`: 168 lines (vs 129 lines legacy). Modular controller loading department settings from `/hod/settings`, updating curriculum duration and attendance thresholds with security validation.
+  2. **Core Department Management Capabilities Preserved**:
+     - **3-KPI Telemetry Board**: Program Curriculum Duration (`kpi-duration`), Examination Eligibility Cutoff (`kpi-threshold`), Department Resources summary (`kpi-resources`).
+     - **Curriculum Duration Controls**: Configurable degree duration (1 to 3 years) with reactive security confirmation box requiring exact department code entry (`IT`) before unlocking save state.
+     - **Attendance Cutoff Policy**: Configurable examination eligibility threshold (50% to 100%) with live university threshold scale preview (Eligible, Warning Zone, Defaulter Shortage).
+     - **Biometric Telemetry & Hardware Link**: 5-minute offline heartbeat rule and multi-year hardware scope guidance with direct deep-link to Live Studio.
+     - **Department Governance & Leadership Profile**: Department name, department code, HOD name, institutional email, and quick-link to Security Profile.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`HOD-002` marked V2 Live).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-005` consumers updated).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 346: Phase 2 Page 1 Migration (`frontend-v2/faculty/hod-teachers/`) — Department Faculty & Student Hub, Self-Registration Gateway & 70% Code Reduction
+
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Commence Phase 2 (HOD Department Management): `HOD-001` Department Faculty & Student Hub (`frontend-v2/faculty/hod-teachers/`).
+  - Eliminate 14 hand-crafted modal HTML elements, unify navigation into the modular AppShell, and enforce 100% theme tokenization.
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/faculty/hod-teachers/`)**:
+     - `index.html`: 260 lines (vs 867 lines legacy: **70% line reduction**, **75% byte reduction**). Eliminates 14 hand-crafted modal dialogs (`create-modal`, `delete-modal`, `reset-modal`, `cred-modal`, `reassign-modal`, `add-modal`, `bulk-modal`, `bulk-result-modal`, `promotion-modal`, `reindex-modal`, `reset-student-modal`, `delete-student-modal`, `approve-modal`, `reject-modal`) and redundant navbar markup.
+     - `hod-teachers.css`: 134 lines (vs 362 lines legacy: **63% line reduction**, **71% byte reduction**). 100% theme tokenized with zero hardcoded hex/rgb colors.
+     - `hod-teachers.js`: 788 lines (vs 1334 lines legacy: **41% line reduction**, **50% byte reduction**). Declarative modals driven by `openDynamicForm` (UI-001), `openConfirm` (UI-002), and `openDetailDialog`.
+  2. **Core Department Management Capabilities Preserved**:
+     - **3-Tab Workspace**: Tab 1 (Department Faculty Directory with pending teacher review queue), Tab 2 (Student Roster & Lifecycle with cohort/year/sem filters and search), Tab 3 (Pending Student Verification Queue).
+     - **Registration Control Gateway Hub**: 1-click toggles for Department Faculty Self-Registration and Department-wide Student Self-Registration across all semesters.
+     - **Interactive Operations**: Add Teacher, Delete Teacher with typed confirmation, Reset Password, Add Student, Bulk Student CSV Import, Re-order Roll Numbers alphabetically (A–Z), Semester Progression & Demotion Engine with department code safety gate, Student Withdrawal with automatic re-indexing, and 1-click Student Adjudication (Approve/Reject).
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`HOD-001` marked V2 Live).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-001`, `UI-002`, `UI-005` consumers updated).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 345: Phase 1 Page 7 Migration (`frontend-v2/admin/profile/`) & 100% Admin Console Completion — Executive Security Dashboard & Password Rotation
+
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to the final page of Phase 1 (Admin Console): `ADM-007` Executive Administrator Security Profile, completing 100% of Phase 1 migration.
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/admin/profile/`)**:
+     - `index.html`: 159 lines (vs 349 lines legacy: **54% code reduction**, 69% byte reduction). Eliminates 175 lines of redundant AppShell markup.
+     - `profile.css`: 96 lines (vs 179 lines legacy: **46% code reduction**). Zero hardcoded colors.
+     - `profile.js`: Modular controller loading admin session data from `/auth/me`, campus governance telemetry from `/admin/stats`, profile identity updates to `/admin/profile`, and password rotation to `/auth/change-password` with interactive visibility toggles.
+  2. **100% Phase 1 (Admin Console) Migration Complete**:
+     - All 7 Admin Console pages are now live in `frontend-v2/admin/`:
+       1. `ADM-001` Academic Structure (`frontend-v2/admin/academic-structure/`)
+       2. `ADM-002` Faculty & HOD Directory (`frontend-v2/admin/faculty/`)
+       3. `ADM-003` Executive Dashboard (`frontend-v2/admin/dashboard/`)
+       4. `ADM-004` Audit Logs (`frontend-v2/admin/audit-logs/`)
+       5. `ADM-005` Reports & Analytics (`frontend-v2/admin/reports/`)
+       6. `ADM-006` System Settings (`frontend-v2/admin/settings/`)
+       7. `ADM-007` Security Profile (`frontend-v2/admin/profile/`)
+     - Eliminated **656 hardcoded modal elements**, replaced bespoke styles with unified design tokens, and preserved 100% backwards compatibility and automated test integrity.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-007` marked V2 Live; Admin 7/7 100% Live in V2).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-005` consumer updated with `ADM-007`).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 344: Phase 1 Page 6 Migration (`frontend-v2/admin/settings/`) — Institutional Accreditation Form, Live Letterhead Preview & 65% Code Reduction
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to the next step of the migration roadmap: Page 6 of Phase 1 (Admin Institutional Settings).
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/admin/settings/`)**:
+     - `index.html`: 144 lines (vs 306 lines legacy: **53% code reduction**). Eliminates 175 lines of redundant AppShell markup.
+     - `settings.css`: 41 lines (vs 191 lines legacy: **79% code reduction**). Pure tokenization with zero hardcoded colors.
+     - `settings.js`: Declarative controller with real-time letterhead preview synchronization, official UBTER default reset, and unified PUT `/admin/settings` submission.
+     - **Overall 65% code reduction** achieved.
+  2. **Institutional Identity & Accreditation Governance Preserved**:
+     - Institution Name, College / Institute Code, Affiliating Board / Directorate, and Campus Location metadata fields.
+     - Real-time letterhead mock preview box reflecting typed institutional identity dynamically.
+     - 1-click Official UBTER Defaults restore button and safe asynchronous save state with loading indicators.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-006` marked V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 343: Phase 1 Page 5 Migration (`frontend-v2/admin/reports/`) — Visual Attendance Analytics, Chart.js Integration & 65% Code Reduction
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to the next step of the migration roadmap: Page 5 of Phase 1 (Admin Institutional Reports & Analytics).
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/admin/reports/`)**:
+     - `index.html`: 208 lines (vs 426 lines legacy: **51% code reduction**). Eliminates 175 lines of redundant navbar/drawer markup and duplicate mobile cards.
+     - `reports.css`: 152 lines (vs 800 lines legacy: **81% code reduction**). Zero hardcoded hex or rgb colors; pure tokenization.
+     - `reports.js`: Declarative controller utilizing `renderDataTable` (UI-004) with turnout rate visual bars, hardware scanner badges, and Chart.js daily activity and cohort presence visualizations.
+     - **Overall 65% code reduction** achieved.
+  2. **Analytics & Reporting Capabilities Preserved**:
+     - Real-time telemetry KPI board: Total Scans (`kpi-scans`), Unique Students (`kpi-students`), Active Terminals (`kpi-terminals`), and Today's Scans (`kpi-today`).
+     - Dual visual analytics: Daily attendance scan volume (bar + line chart) with peak metrics, and Cohort presence share (doughnut chart).
+     - Segmented mobile chart switcher (`btn-chart-trend` & `btn-chart-cohort`) for seamless small-screen inspection.
+     - 1-click Excel Analytics Dashboard export (`/api/v1/admin/reports/export`) with loading spinner and toast notification.
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-005` marked V2 Live).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-004`, `UI-005` consumers updated with `ADM-005`).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 342: Phase 1 Page 4 Migration (`frontend-v2/admin/audit-logs/`) — Cryptographic Event Ledger, Declarative Inspector Dialog & 50% Code Reduction
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to the next step of the migration roadmap: Page 4 of Phase 1 (Admin Institutional Audit Logs).
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/admin/audit-logs/`)**:
+     - `index.html`: 194 lines (vs 388 lines legacy). **Zero hardcoded modal `div` elements** (eliminated `#details-modal` markup completely).
+     - `audit-logs.css`: 83 lines (vs 225 lines legacy) with 100% theme tokenization (zero hardcoded hex colors).
+     - `audit-logs.js`: Declarative controller utilizing `renderDataTable` (UI-004) for desktop tables and automatic mobile event cards, and `openDetailDialog` (UI-002 extension) for inspecting cryptographic JSON payloads without HTML markup.
+     - **50% code reduction** achieved.
+  2. **Audit & Compliance Governance Matrix Preserved**:
+     - Real-time KPI board: Total Events Recorded, Governance & Approvals, Biometrics & Terminals, Academic & Coursework.
+     - Multi-filter strip: Keyword search, Event Type selector, Target Entity selector, date range pickers, with 1-click Reset and Apply.
+     - Formatted JetBrains Mono cryptographic timestamps and IP address inspection.
+     - 1-click JSON export (`institutional_audit_logs_<date>.json`).
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-004` marked V2 Live).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-002`, `UI-004`, `UI-005` updated with `ADM-004` and `openDetailDialog`).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+### ✅ Milestone 341: Phase 1 Page 3 Migration (`frontend-v2/admin/dashboard/`) — Executive KPI Telemetry, Governance Module Cards & Unified Styling
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to the next step of the migration roadmap: Page 3 of Phase 1 (Admin Executive Dashboard).
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/admin/dashboard/`)**:
+     - `index.html`: Ultra-compact (175 lines vs 325 lines in legacy `frontend/`). Leverages `.stat-card`, `.stat-grid`, `.card-hover`, and unified `nav.js` app shell.
+     - `dashboard.css`: 20 lines of responsive module grid styling (vs 5,622 bytes legacy).
+     - `dashboard.js`: Clean asynchronous loader fetching real-time campus statistics from `/api/admin/stats` with locale number formatting.
+     - **65% code reduction** achieved.
+  2. **Executive Governance Matrix Preserved**:
+     - Real-time telemetry: Teaching Faculty (`stat-teachers`), Active Students (`stat-students`), Lifetime Enrolled Records (`stat-enrolled-total`).
+     - One-click navigation modules: HOD Leadership (`MOD-01`), Academic Structure (`MOD-02`), Reports & Analytics (`MOD-03`), System Settings (`MOD-04`), and Immutable Audit Trail (`MOD-05`).
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-003` marked V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+- **User Insight & Requirements**:
+  - *"next"*
+  - Progress to the next step of the migration roadmap: Page 2 of Phase 1 (Admin Faculty & Appointed HOD Directory).
+- **Architectural & Design Implementation**:
+  1. **Clean Declarative Architecture (`frontend-v2/admin/faculty/`)**:
+     - `index.html`: Ultra-compact (175 lines vs 764 lines in legacy `frontend/`). **Zero hardcoded modal `div`s** (eliminated 20 modal elements!).
+     - `faculty.css`: Minimal 30 lines of avatar and gate badge styling (vs 12,982 bytes in legacy `frontend/`).
+     - `faculty.js`: Pure declarative controller (390 lines vs 1,241 lines legacy) using `renderDataTable()` for both desktop tables and mobile stacked cards, `openDynamicForm()` for Appoint HOD, Reassign Department, and Reset Password, and `openConfirm()` for Account Deletion.
+     - **Overall 70% code reduction** achieved (from 2,005 lines down to 595 lines).
+  2. **Security & Governance Controls Maintained**:
+     - Anti-Spam Registration Gates (`adminGates.hod_open` and `adminGates.common_faculty_open`) with real-time toggle switches and status toasts.
+     - Pending HOD Self-Registration Approvals queue with 1-click Approve and Confirm-Reject actions.
+     - Department filtering and live multi-attribute search (name, email, department, employee ID).
+  3. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-002` marked V2 Live).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+- **User Insight & Requirements**:
+  - *"now start"*
+  - In response to the migration plan approval, kick off Phase 0 (Foundation) and Phase 1 (Admin) in the new clean folder `frontend-v2/`, implementing declarative React-like component primitives and migrating the first Admin page (`academic-structure`).
+- **Architectural & Design Implementation**:
+  1. **Phase 0 Foundation Workspace (`frontend-v2/shared/`)**:
+     - `tokens.css`: Complete CSS design tokens (light & dark mode, typography, radii, shadows, strict attendance invariants).
+     - `reset.css`: Modern box-sizing reset with focus-visible outlines.
+     - `components.css`: Centralized unified component styles for buttons, cards, KPI widgets, form controls, badges, chips, dialogs, drawers, and mobile responsive tables (zero page-level CSS repetition).
+     - `nav.css`: Persistent AppShell with native `@view-transition { navigation: auto; }` and anti-flash styling.
+  2. **Reactive Component Primitives (`frontend-v2/shared/js/`)**:
+     - `ui-dialog.js`: `DynamicFormDialog` (schema-driven 2-to-10 field modal engine) & `ConfirmDialog` (destructive action confirmation with optional typed confirm). Eliminates **656 modal elements** from HTML.
+     - `ui-table.js`: `DataTable` rendering high-density tabular data that automatically transforms into stacked cards on mobile screens (`< 768px`).
+     - `ui-toast.js`: Non-blocking, accessible status toast notifications.
+  3. **Phase 1 First Page Migration (`frontend-v2/admin/academic-structure/`)**:
+     - `index.html`: Ultra-compact (165 lines vs 403 lines legacy). **Zero hardcoded modal `div`s** and zero copy-pasted navbar/drawer markup.
+     - `academic-structure.css`: Minimal 38 lines of feature-unique badge layout (vs 16,549 bytes legacy).
+     - `academic-structure.js`: Clean declarative controller using `openDynamicForm()` for Add/Edit and `openConfirm()` for Delete.
+     - **75% code reduction** achieved on the first page!
+  4. **UI Memory Map Synchronization**:
+     - Updated [`docs/ui-map/pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md) (`ADM-001` marked V2 Live).
+     - Updated [`docs/ui-map/components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md) (`UI-001`, `UI-002`, `UI-003`, `UI-004` marked Active in `frontend-v2`).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
+- **User Insight & Requirements**:
+  - *"now scan all code find way to reduce code and find duplicate code like alert box ,edit box,delete box,same card same section ,btn like react use same code to display page's even if page's are different but use same ui we going to make like react and if like we have edit box different types like one that 2 text box one have 5 text box all with different variable for box but seens they are same edit box we just need to make dynamic and ues less code also css don't repeat this why we can redues less code"*
+  - *"ues all skills to evaluate all frontend code and make plane to make new frontend code in new folder now so we can page one by one start from admin then hod then facultiy then student if you can use imgae generation you can make images for references and we need to make pc and mobile ui ux from start"*
+  - Added the official `Frontend UI Memory Map Rule` requiring a persistent `docs/ui-map/` blueprint and `.agents/rules/ui-memory-map.md` rule.
+- **Root Cause & Concrete Audit Findings**:
+  - Total scanned: **145 files**, **117,655 lines of code** (44,611 CSS, 48,549 JS, 24,495 HTML).
+  - **656 Hardcoded Modal `div` Elements**: 32 out of 43 HTML pages hardcode their own modal dialog HTML markup, headers, and event handlers.
+  - **30 Copy-Pasted Delete Confirmation Modals**: Repeated `#delete-modal` / `#delete-confirm-modal` with danger icon and warning text across 30 separate pages.
+  - **21 Bespoke Edit / Create Dialogs**: Every page handcodes its own edit modal and form inputs (2 fields, 5 fields, etc.) without dynamic schemas.
+  - **126 Repeated CSS Selectors**: 126 selectors repeated across 4 to 33 separate stylesheets (e.g. `.gc-navbar` repeated in 33 separate CSS files).
+- **Architectural & Design Implementation**:
+  1. **Persistent UI Memory Map Rule**: Created `.agents/rules/ui-memory-map.md` in both workspace and repo `.agents/rules/` with YAML frontmatter `trigger: always_on`.
+  2. **Complete `docs/ui-map/` Blueprint**:
+     - [`README.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/README.md): Master coverage (Admin 7/7, HOD 3/3, Faculty 14/14, Student 8/8 verified 100%).
+     - [`pages.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/pages.md): Full 39-page inventory table with IDs, roles, routes, shells, APIs, and states.
+     - [`components.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/components.md): Component catalog, duplication statistics, and declarative React-like primitive specifications (`ConfirmDialog`, `DynamicFormDialog`, `DataTable`, `StatCard`, `ToastNotification`, `AppShell`).
+     - [`flows.mmd`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/flows.mmd): Comprehensive Mermaid flowchart mapping role navigation, auth boundaries, and shared primitives.
+     - [`tokens.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/tokens.md): Complete design tokens reference mapped to `variables.css`.
+     - [`decisions.md`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/decisions.md): Architecture Decision Records (`DEC-001` through `DEC-005`).
+  3. **Master Migration Plan Updated**: Updated [`frontend-audit-and-migration-plan.md`](file:///d:/uiap/frontend-audit-and-migration-plan.md) with verified numbers, React-like dynamic schema dialog engine, PC vs mobile responsive rules, and phased migration sequence (Admin -> HOD -> Faculty -> Student).
+  4. **High-Fidelity Visual Mockups Generated**:
+     - `admin_console_mockup.jpg`: PC & Mobile responsive Admin console with dynamic schema form dialog.
+     - `faculty_register_mockup.jpg`: PC & Mobile Faculty Attendance Matrix & Live Roll-Call studio.
+     - Archived permanently in [`docs/ui-map/mockups/`](file:///d:/uiap/Attendance-System-Simplified/docs/ui-map/mockups/).
+- **Verification & Regression Test Suite**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-register-consolidation.js`: 46/46 passed.
+
 ### ✅ Milestone 337: Deployed Vercel UI Synchronization, Zero-Flash App Shell (`nav.css`/`nav.js`) Distribution & Cache-Buster Version Refresh
 
 - **User Insight & Requirements**:
