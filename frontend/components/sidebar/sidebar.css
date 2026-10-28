@@ -1,0 +1,439 @@
+/**
+ * ══════════════════════════════════════════════════════════════
+ * VIDYAOS UNIVERSAL REUSABLE SIDEBAR STYLES (sidebar.css)
+ * Location: /components/sidebar/sidebar.css
+ * 
+ * Shared styles for the institutional collapsible navigation sidebar.
+ * Used across Admin, Faculty, and Student portals.
+ * 100% Theme Tokenized — Zero Hardcoded Hex Colors.
+ * ══════════════════════════════════════════════════════════════
+ */
+
+/* ── 1. Drawer Backdrop Overlay ── */
+.gc-drawer-backdrop,
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: hsl(0 0% 0% / 0.45);
+  z-index: 9990;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.gc-drawer-backdrop.open,
+.gc-drawer-backdrop.active,
+.sidebar-backdrop.open,
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+  display: block;
+}
+
+/* ── 2. Sidebar Drawer Shell ── */
+.app-sidebar,
+aside.app-sidebar.gc-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
+  width: 290px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  z-index: 9995;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  box-sizing: border-box;
+}
+
+.app-sidebar.open,
+.app-sidebar.sidebar-open,
+aside.app-sidebar.gc-drawer.open,
+aside.app-sidebar.gc-drawer.sidebar-open {
+  transform: translateX(0);
+}
+
+/* ── 3. Sidebar Header ── */
+.app-sidebar .gc-drawer-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border-color);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.app-sidebar .gc-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--text-main);
+  flex: 1;
+  min-width: 0;
+}
+
+.app-sidebar .gc-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: var(--text-white, hsl(0 0% 100%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.app-sidebar .gc-brand-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.app-sidebar .gc-brand-title-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.app-sidebar .gc-brand-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.app-sidebar .gc-brand-sub {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+  text-transform: uppercase;
+}
+
+.app-sidebar .gc-drawer-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.app-sidebar .gc-drawer-close-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.app-sidebar .gc-drawer-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── 4. Sidebar Body ── */
+.app-sidebar .gc-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.75rem 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.app-sidebar .gc-drawer-body::-webkit-scrollbar {
+  width: 5px;
+}
+.app-sidebar .gc-drawer-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+/* ── 5. Top Standalone Items List ── */
+.gc-top-links {
+  margin-bottom: 0.35rem;
+}
+
+.gc-drawer-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+/* ── 6. Collapsible Menu Groups ── */
+.gc-drawer-group {
+  margin-bottom: 0.5rem;
+}
+
+.gc-drawer-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1.15rem;
+  background: transparent;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+  text-align: left;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.gc-drawer-group-header:hover {
+  background: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.gc-drawer-group-header:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.gc-drawer-group-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Chevron indicator with smooth rotational animation */
+.gc-drawer-chevron {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  transform: rotate(0deg); /* default expanded points down */
+}
+
+.gc-drawer-group:not(.expanded) .gc-drawer-chevron,
+.gc-drawer-group-header[aria-expanded="false"] .gc-drawer-chevron {
+  transform: rotate(-90deg); /* collapsed points right */
+}
+
+/* Accordion Smooth Expansion with CSS Grid (Zero-Jank Animation) */
+.gc-drawer-group-content {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gc-drawer-group:not(.expanded) .gc-drawer-group-content,
+.gc-drawer-group-header[aria-expanded="false"] + .gc-drawer-group-content {
+  grid-template-rows: 0fr;
+}
+
+.gc-drawer-group-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Non-collapsible section label fallback */
+.gc-drawer-sec-title {
+  padding: 0.55rem 1.15rem 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* ── 7. Navigation Links, Action Buttons & Badges ── */
+.gc-drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 1.25rem;
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 0 999px 999px 0;
+  margin-right: 0.75rem;
+  transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease;
+  position: relative;
+  background: transparent;
+  border: none;
+  width: calc(100% - 0.75rem);
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.gc-drawer-link:hover {
+  background: var(--bg-surface);
+  color: var(--color-primary);
+}
+
+.gc-drawer-link.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.gc-drawer-link.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 4px;
+  background: var(--color-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.gc-drawer-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.gc-drawer-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gc-drawer-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+/* Action button variation */
+.gc-drawer-action-btn {
+  font-weight: 600;
+}
+
+/* Class Initials Avatar Pill */
+.gc-class-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--text-white, hsl(0 0% 100%));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Notification / Pending Count Badge */
+.gc-drawer-badge {
+  margin-left: auto;
+  background: var(--status-absent);
+  color: var(--text-white, hsl(0 0% 100%));
+  border-radius: 9999px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+/* Nested level-2 and level-3 item styling */
+.gc-drawer-link.level-2 {
+  padding-left: 2.25rem;
+  font-size: 0.84rem;
+}
+
+.gc-drawer-link.level-3 {
+  padding-left: 3rem;
+  font-size: 0.8rem;
+}
+
+/* ── 8. Sidebar Footer ── */
+.app-sidebar .gc-drawer-footer {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+
+.app-sidebar .gc-drawer-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-sidebar .gc-drawer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-present);
+  flex-shrink: 0;
+}
+
+.app-sidebar .gc-drawer-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--status-absent);
+  background: var(--status-absent-bg, transparent);
+  color: var(--status-absent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.app-sidebar .gc-drawer-logout-btn:hover {
+  background: var(--status-absent);
+  color: var(--text-white, hsl(0 0% 100%));
+}
+
+.app-sidebar .gc-drawer-logout-btn:focus-visible {
+  outline: 2px solid var(--status-absent);
+  outline-offset: 2px;
+}
+
+.app-sidebar .gc-drawer-logout-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}

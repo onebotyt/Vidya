@@ -46,6 +46,18 @@ The server will boot on **`http://localhost:3000`**.
      ```
 2. **Responsive Parity**:
    - Test both PC Desktop resolution (`1920x1080` / `min-width: 769px`) and Mobile resolution (`max-width: 768px`).
+3. **Protected / Frozen Modules (DO NOT TOUCH)**:
+   - The following 9 frontend directories are **completely frozen** and must NOT be edited, modified, or refactored by Dev 2:
+     - `frontend/faculty/assignments/`
+     - `frontend/faculty/evaluation/`
+     - `frontend/faculty/group-detail/`
+     - `frontend/faculty/groups/`
+     - `frontend/faculty/registers/`
+     - `frontend/faculty/sheets/`
+     - `frontend/faculty/students/`
+     - `frontend/faculty/tests/`
+     - `frontend/student/group-detail/`
+   - See [FROZEN_MODULES.md](file:///c:/Users/hp/.gemini/antigravity-ide/scratch/Vidya/FROZEN_MODULES.md). Any pull request altering files in these folders will be rejected.
 
 ---
 

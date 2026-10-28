@@ -7,24 +7,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/reset.css?v=20261028">
-  <link rel="stylesheet" href="/css/variables.css?v=20261028">
-  <link rel="stylesheet" href="/css/layout.css?v=20261028">
-  <link rel="stylesheet" href="/css/components.css?v=20261028">
-  <link rel="stylesheet" href="/css/classroom-nav.css?v=20261028">
-  <link rel="stylesheet" href="/css/nav.css?v=20261028">
+  <link rel="stylesheet" href="/css/reset.css?v=20261003">
+  <link rel="stylesheet" href="/css/variables.css?v=20261003">
+  <link rel="stylesheet" href="/css/layout.css?v=20261003">
+  <link rel="stylesheet" href="/css/components.css?v=20261003">
+  <link rel="stylesheet" href="/css/classroom-nav.css?v=20261003">
+  <link rel="stylesheet" href="/components/sidebar/sidebar.css">
   
-  <link rel="stylesheet" href="/faculty/dashboard/dashboard.css?v=20261028">
+  <link rel="stylesheet" href="/faculty/dashboard/dashboard.css?v=20261011_nba">
 </head>
 <body class="page-layout">
+  <!-- Reusable Universal Sidebar Mount -->
+  <div id="sidebar-mount"></div>
+
   <!-- Google Classroom Navbar -->
     
   <header class="gc-navbar">
     <div class="gc-nav-left">
       <button type="button" class="gc-menu-btn" id="btn-menu-toggle" onclick="toggleDrawer()" title="Main Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
-      <a href="/faculty/groups.html" class="gc-brand-link" title="VidyaOS Academic Workspace">
+      <a href="/faculty/groups.html" class="gc-brand-link">
         <div class="gc-brand-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></div>
-        <div class="gc-brand-title">VidyaOS</div>
+        <div class="gc-brand-title">Classroom</div>
+        <span class="gc-brand-sub">VidyaOS</span>
       </a>
     </div>
     <div class="gc-nav-right">
@@ -81,7 +85,6 @@
           <div class="app-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg></div>
           <span>HOD Faculty</span>
         </a>
-        <a href="/faculty/profile.html" class="btn btn-secondary btn-sm" id="popover-profile-link" style="width:100%;margin-bottom:.5rem;text-decoration:none;justify-content:center;display:flex;align-items:center;gap:0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>My Profile</span></a>
         <a href="/faculty/hod-settings.html" class="app-tile hod-only-tile">
           <div class="app-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
           <span>HOD Settings</span>
@@ -101,20 +104,18 @@
   </header>
 
   <main class="page-main-container container" style="max-width:1380px;padding-top:1.5rem;">
-    <!-- Hidden Compatibility Container (Dashboard Command Center Removed per user requirement) -->
-    <div style="display: none !important;" aria-hidden="true">
-      <!-- HOD Role View Switcher -->
-      <div id="hod-view-switcher-bar" class="hod-switcher-container" style="display: none;">
+    <!-- HOD Role View Switcher -->
+    <div id="hod-view-switcher-bar" class="hod-switcher-container" style="display: none;">
       <div class="hod-segmented-tabs">
-        <button type="button" class="hod-tab-btn active" id="btn-tab-classes" onclick="switchDashboardTab('CLASSES')">
-          <span style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-          <span>My Teaching Classes</span>
-          <span class="tab-count-badge" id="badge-teaching-count">0</span>
-        </button>
         <button type="button" class="hod-tab-btn" id="btn-tab-dept" onclick="switchDashboardTab('DEPT')">
           <span style="display:inline-flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg></span>
           <span>Department Command Center</span>
           <span class="tab-pulse-dot" id="dept-pending-dot" style="display:none;" title="Pending approvals or alerts"></span>
+        </button>
+        <button type="button" class="hod-tab-btn active" id="btn-tab-classes" onclick="switchDashboardTab('CLASSES')">
+          <span style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+          <span>My Teaching Classes</span>
+          <span class="tab-count-badge" id="badge-teaching-count">0</span>
         </button>
       </div>
       <div class="hod-dept-context-pill">
@@ -128,17 +129,74 @@
       <!-- Department Executive Header -->
       <div class="hod-command-header">
         <div class="hod-command-title-wrap">
-          <div class="hod-command-badge" style="display:inline-flex;align-items:center;gap:0.35rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg><span>Executive Department Console</span></div>
+          <div class="hod-command-badge">FACULTY PORTAL</div>
           <h2 class="hod-command-title" id="dept-command-title">Department Overview</h2>
-          <div class="hod-command-sub" id="dept-command-sub">Live monitoring of department faculty, subject registers, hardware terminals, and cohort attendance.</div>
+          <div class="hod-command-sub" id="dept-command-sub">Manage your classes, take attendance, and track student coursework.</div>
         </div>
-        <div class="hod-command-header-actions">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="loadHodDashboardData()" title="Refresh live telemetry">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> <span>Refresh Metrics</span>
-          </button>
-          <a href="/faculty/reports.html" class="btn btn-primary btn-sm">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> <span>Consolidated Attendance Ledger</span>
-          </a>
+
+        <!-- Central Campus Architectural Illustration -->
+        <div class="hod-hero-illustration" aria-hidden="true">
+          <svg viewBox="0 0 260 140" width="220" height="120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background Clouds -->
+            <path d="M40 75c0-12 10-22 22-22 3 0 6 .6 9 1.8 4-8 12-13.8 21-13.8 11 0 20 7.5 22 17.5 3-1 6-1.5 9-1.5 12 0 22 10 22 22 0 1-.1 2-.3 3H40.3c-.2-1-.3-2-.3-3z" fill="hsl(214 90% 93% / 0.8)"/>
+            <path d="M145 85c0-9 7.5-16.5 16.5-16.5 2.2 0 4.5.5 6.7 1.4 3-6 9-10.4 15.8-10.4 8.3 0 15 5.6 16.5 13.1 2.3-.7 4.5-1.1 6.8-1.1 9 0 16.5 7.5 16.5 16.5 0 .8-.1 1.5-.2 2.2h-78.4c-.2-.7-.2-1.5-.2-2.2z" fill="hsl(214 85% 91% / 0.7)"/>
+            <!-- Ground Line -->
+            <line x1="15" y1="126" x2="245" y2="126" stroke="hsl(214 70% 84%)" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Steps -->
+            <rect x="75" y="121" width="110" height="5" rx="1.5" fill="hsl(214 65% 82%)"/>
+            <rect x="85" y="116" width="90" height="5" rx="1.5" fill="hsl(214 70% 86%)"/>
+            <!-- Main Building Base -->
+            <rect x="58" y="55" width="144" height="61" rx="2" fill="hsl(214 85% 96%)" stroke="hsl(214 65% 80%)" stroke-width="2"/>
+            <!-- Central Portico / Entrance -->
+            <rect x="95" y="44" width="70" height="72" rx="2" fill="hsl(0 0% 100%)" stroke="hsl(214 65% 75%)" stroke-width="2"/>
+            <!-- Triangular Pediment -->
+            <polygon points="130,16 88,44 172,44" fill="hsl(214 85% 90%)" stroke="hsl(214 65% 75%)" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Pediment Emblem -->
+            <circle cx="130" cy="33" r="4.5" fill="hsl(214 75% 70%)"/>
+            <!-- Classical Pillars -->
+            <rect x="103" y="48" width="5.5" height="56" rx="1" fill="hsl(214 55% 84%)"/>
+            <rect x="117" y="48" width="5.5" height="56" rx="1" fill="hsl(214 55% 84%)"/>
+            <rect x="137" y="48" width="5.5" height="56" rx="1" fill="hsl(214 55% 84%)"/>
+            <rect x="151" y="48" width="5.5" height="56" rx="1" fill="hsl(214 55% 84%)"/>
+            <!-- Central Arched Doorway -->
+            <path d="M122 116v-22a8 8 0 0 1 16 0v22z" fill="hsl(214 75% 72%)"/>
+            <!-- Wing Windows Left -->
+            <rect x="66" y="66" width="9" height="15" rx="4.5" fill="hsl(214 70% 75%)"/>
+            <rect x="80" y="66" width="9" height="15" rx="4.5" fill="hsl(214 70% 75%)"/>
+            <rect x="66" y="91" width="9" height="15" rx="2" fill="hsl(214 70% 75%)"/>
+            <rect x="80" y="91" width="9" height="15" rx="2" fill="hsl(214 70% 75%)"/>
+            <!-- Wing Windows Right -->
+            <rect x="171" y="66" width="9" height="15" rx="4.5" fill="hsl(214 70% 75%)"/>
+            <rect x="185" y="66" width="9" height="15" rx="4.5" fill="hsl(214 70% 75%)"/>
+            <rect x="171" y="91" width="9" height="15" rx="2" fill="hsl(214 70% 75%)"/>
+            <rect x="185" y="91" width="9" height="15" rx="2" fill="hsl(214 70% 75%)"/>
+            <!-- Cupola / Dome Top -->
+            <path d="M124 16c0-6 6-10 6-10s6 4 6 10z" fill="hsl(214 70% 68%)"/>
+            <line x1="130" y1="6" x2="130" y2="2" stroke="hsl(214 70% 55%)" stroke-width="1.5"/>
+            <path d="M130 2l5 2.5-5 2.5z" fill="hsl(214 80% 55%)"/>
+          </svg>
+        </div>
+
+        <!-- Right Side: Department Badge Card & Actions -->
+        <div class="hod-command-right-wrap">
+          <div class="hod-dept-card-badge">
+            <div class="hod-dept-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg>
+            </div>
+            <div class="hod-dept-card-details">
+              <span class="hod-dept-card-label">Department</span>
+              <strong class="hod-dept-card-name" id="dept-card-name">Computer Science &amp; Engineering</strong>
+              <span class="hod-dept-card-meta" id="dept-card-meta">Faculty ID: F001 | Role: Faculty</span>
+            </div>
+          </div>
+          <div class="hod-command-header-actions">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadHodDashboardData()" title="Refresh live telemetry">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> <span>Refresh Metrics</span>
+            </button>
+            <a href="/faculty/reports.html" class="btn btn-primary btn-sm">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> <span>Consolidated Reports</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -147,9 +205,9 @@
         <!-- 1-Click Faculty -->
         <div class="hod-one-click-card" onclick="openHodFacultyModal()" role="button" tabindex="0">
           <div>
-            <div class="one-click-badge">1-Click Direct View</div>
-            <div class="one-click-card-header" style="margin-top:0.5rem;">
-              <div class="one-click-icon" style="background: var(--chip-faculty-bg); color: var(--color-primary);">
+            <div class="one-click-badge">1-CLICK DIRECT VIEW</div>
+            <div class="one-click-card-header">
+              <div class="one-click-icon icon-faculty">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               </div>
               <div>
@@ -158,17 +216,19 @@
               </div>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm one-click-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Quick See Faculty Under Me</span>
+          <button type="button" class="btn btn-primary one-click-btn-solid">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Quick See Faculty Under Me</span>
+            <span class="btn-chevron">&gt;</span>
           </button>
         </div>
 
         <!-- 1-Click Students -->
         <div class="hod-one-click-card" onclick="openHodStudentsModal()" role="button" tabindex="0">
           <div>
-            <div class="one-click-badge">1-Click Direct View</div>
-            <div class="one-click-card-header" style="margin-top:0.5rem;">
-              <div class="one-click-icon" style="background: var(--status-present-bg); color: var(--status-present);">
+            <div class="one-click-badge">1-CLICK DIRECT VIEW</div>
+            <div class="one-click-card-header">
+              <div class="one-click-icon icon-students">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
               </div>
               <div>
@@ -177,17 +237,19 @@
               </div>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm one-click-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Quick See Students Under Me</span>
+          <button type="button" class="btn btn-primary one-click-btn-solid">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Quick See Students Under Me</span>
+            <span class="btn-chevron">&gt;</span>
           </button>
         </div>
 
         <!-- 1-Click Subject Classes & Attendance -->
         <div class="hod-one-click-card" onclick="openHodClassesModal()" role="button" tabindex="0">
           <div>
-            <div class="one-click-badge">1-Click Direct View</div>
-            <div class="one-click-card-header" style="margin-top:0.5rem;">
-              <div class="one-click-icon" style="background: var(--col-att-group-bg); color: var(--col-att-group-color);">
+            <div class="one-click-badge">1-CLICK DIRECT VIEW</div>
+            <div class="one-click-card-header">
+              <div class="one-click-icon icon-classes">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
               </div>
               <div>
@@ -196,8 +258,10 @@
               </div>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm one-click-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Quick See Department Classes</span>
+          <button type="button" class="btn btn-primary one-click-btn-solid">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Quick See Department Classes</span>
+            <span class="btn-chevron">&gt;</span>
           </button>
         </div>
       </div>
@@ -205,105 +269,164 @@
       <!-- 5-Metric Executive KPI Strip -->
       <div class="hod-kpi-grid">
         <div class="hod-kpi-card">
-          <div class="hod-kpi-icon" style="background: hsl(220, 90%, 96%); color: var(--color-primary); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+          <div class="hod-kpi-icon icon-kpi-faculty">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
           <div class="hod-kpi-info">
-            <div class="hod-kpi-label">Department Faculty</div>
-            <div class="hod-kpi-value" id="kpi-dept-teachers">—</div>
-            <div class="hod-kpi-meta"><a href="/faculty/hod-teachers.html">Manage Allocations &rarr;</a></div>
+            <div class="hod-kpi-label">DEPARTMENT FACULTY</div>
+            <div class="hod-kpi-value" id="kpi-dept-teachers">0</div>
+            <div class="hod-kpi-subtext">Total faculty members</div>
           </div>
         </div>
 
         <div class="hod-kpi-card">
-          <div class="hod-kpi-icon" style="background: hsl(142, 71%, 95%); color: var(--status-present); display:flex; align-items:center; justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></div>
+          <div class="hod-kpi-icon icon-kpi-students">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+          </div>
           <div class="hod-kpi-info">
-            <div class="hod-kpi-label">Enrolled Students</div>
-            <div class="hod-kpi-value" id="kpi-dept-students">—</div>
-            <div class="hod-kpi-meta"><a href="/faculty/students.html">Cohort Directory &rarr;</a></div>
+            <div class="hod-kpi-label">ENROLLED STUDENTS</div>
+            <div class="hod-kpi-value" id="kpi-dept-students">0</div>
+            <div class="hod-kpi-subtext">Across all cohorts</div>
           </div>
         </div>
 
         <div class="hod-kpi-card">
-          <div class="hod-kpi-icon" style="background: hsl(215, 80%, 96%); color: var(--status-pending); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+          <div class="hod-kpi-icon icon-kpi-attendance">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
           <div class="hod-kpi-info">
-            <div class="hod-kpi-label">Department Attendance</div>
+            <div class="hod-kpi-label">DEPARTMENT ATTENDANCE</div>
             <div class="hod-kpi-value" id="kpi-dept-att-pct">—%</div>
-            <div class="hod-kpi-meta" id="kpi-dept-att-badge"><span class="badge badge-present" style="display:inline-flex;align-items:center;gap:0.25rem;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Target &gt;= 75%</span></span></div>
+            <div class="hod-kpi-subtext" id="kpi-dept-att-badge">Department average</div>
           </div>
         </div>
 
         <div class="hod-kpi-card">
-          <div class="hod-kpi-icon" style="background: hsl(280, 80%, 96%); color: hsl(280, 70%, 50%); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
+          <div class="hod-kpi-icon icon-kpi-registers">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
           <div class="hod-kpi-info">
-            <div class="hod-kpi-label">Active Registers</div>
-            <div class="hod-kpi-value" id="kpi-dept-registers">—</div>
-            <div class="hod-kpi-meta"><a href="/faculty/registers.html">Official Ledgers &rarr;</a></div>
+            <div class="hod-kpi-label">ACTIVE REGISTERS</div>
+            <div class="hod-kpi-value" id="kpi-dept-registers">0</div>
+            <div class="hod-kpi-subtext">Official attendance</div>
           </div>
         </div>
 
         <div class="hod-kpi-card">
-          <div class="hod-kpi-icon" style="background: hsl(38, 92%, 95%); color: var(--status-late); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5M12 12h.01M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path></svg></div>
+          <div class="hod-kpi-icon icon-kpi-term">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
           <div class="hod-kpi-info">
-            <div class="hod-kpi-label">Academic Terms</div>
-            <div class="hod-kpi-value" id="kpi-dept-devices">AY 25-26</div>
-            <div class="hod-kpi-meta"><a href="/faculty/hod-settings.html">Term Config &rarr;</a></div>
+            <div class="hod-kpi-label">ACADEMIC TERM</div>
+            <div class="hod-kpi-value" id="kpi-dept-devices">0/0</div>
+            <div class="hod-kpi-subtext">Term Config</div>
           </div>
         </div>
       </div>
 
-      <!-- Department Quick Actions Strip (Consolidated to HOD exclusive and shared faculty tools) -->
+      <!-- Department Management Section Header & Quick Actions -->
+      <div class="hod-mgmt-section-header">
+        <h3 class="hod-mgmt-title">Department Management</h3>
+        <div class="hod-mgmt-quick-action-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Quick Actions</span>
+        </div>
+      </div>
+
+      <!-- Department 5-Column Quick Action Tiles -->
       <div class="hod-actions-strip">
         <a href="/faculty/hod-teachers.html" class="hod-action-tile">
-          <div class="hod-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
-          <div class="hod-action-text">
-            <strong>Faculty Management</strong>
-            <span>HOD Faculty Hub &amp; teaching allocations</span>
+          <div class="hod-action-icon icon-action-faculty">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </div>
+          <div class="hod-action-text">
+            <strong>Faculty &amp; Assignments</strong>
+            <span>Manage faculty and teaching responsibilities</span>
+          </div>
+          <span class="hod-action-arrow">&gt;</span>
         </a>
-        <a href="/faculty/students.html" class="hod-action-tile">
-          <div class="hod-action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></div>
-          <div class="hod-action-text">
-            <strong>Student Roster &amp; Cohorts</strong>
-            <span>Manage student registrations &amp; batches</span>
-          </div>
-        </a>
-        <a href="/faculty/reports.html" class="hod-action-tile">
-          <div class="hod-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></div>
-          <div class="hod-action-text">
-            <strong>Department Analytics &amp; Reports</strong>
-            <span>UBTER monthly consolidated attendance ledgers</span>
-          </div>
-        </a>
-        <a href="/faculty/registers.html" class="hod-action-tile">
-          <div class="hod-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
-          <div class="hod-action-text">
-            <strong>Attendance Registers</strong>
-            <span>Day 1-31 physical matrix ledgers</span>
-          </div>
-        </a>
-        <a href="/faculty/hod-settings.html" class="hod-action-tile">
-          <div class="hod-action-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
-          <div class="hod-action-text">
-            <strong>HOD Settings</strong>
-            <span>Thresholds, terms &amp; institutional preferences</span>
-          </div>
-        </a>
-        <button type="button" class="hod-action-tile" onclick="openBroadcastNoticeModal()" style="border:1px solid var(--border-color); text-align:left; cursor:pointer; width:100%; font:inherit;">
-          <div class="hod-action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-          <div class="hod-action-text">
-            <strong>Broadcast Dept Notice</strong>
-            <span>Dispatches to all enrolled departmental groups</span>
-          </div>
-        </button>
-      </div>
 
+        <a href="/faculty/students.html" class="hod-action-tile">
+          <div class="hod-action-icon icon-action-students">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+          </div>
+          <div class="hod-action-text">
+            <strong>Students &amp; Cohorts</strong>
+            <span>Student rosters and class groups</span>
+          </div>
+          <span class="hod-action-arrow">&gt;</span>
+        </a>
+
+        <a href="/faculty/registers.html" class="hod-action-tile">
+          <div class="hod-action-icon icon-action-registers">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
+          <div class="hod-action-text">
+            <strong>Subjects &amp; Registers</strong>
+            <span>Subject classes and attendance records</span>
+          </div>
+          <span class="hod-action-arrow">&gt;</span>
+        </a>
+
+        <a href="/faculty/reports.html" class="hod-action-tile">
+          <div class="hod-action-icon icon-action-analytics">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
+          <div class="hod-action-text">
+            <strong>Analytics &amp; Reports</strong>
+            <span>Attendance summaries and reports</span>
+          </div>
+          <span class="hod-action-arrow">&gt;</span>
+        </a>
+
+        <a href="/faculty/hod-settings.html" class="hod-action-tile">
+          <div class="hod-action-icon icon-action-settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+          <div class="hod-action-text">
+            <strong>Academic Settings</strong>
+            <span>Academic year and semester configuration</span>
+          </div>
+          <span class="hod-action-arrow">&gt;</span>
+        </a>
+      </div>
     </section>
+
+    <!-- Faculty Welcome Hero Banner (Intuitive daily summary) -->
+    <div id="faculty-welcome-hero" class="faculty-welcome-hero">
+      <div class="fwh-left">
+        <div class="fwh-avatar">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+        </div>
+        <div class="fwh-text-wrap">
+          <h1 class="fwh-title" id="faculty-greeting-name">Welcome, Professor 👋</h1>
+          <p class="fwh-subtitle" id="faculty-greeting-sub">Manage your subject classes, take daily attendance, and track student coursework.</p>
+        </div>
+      </div>
+      <div class="fwh-actions">
+        <button id="btn-create-group" class="btn btn-primary btn-sm fwh-btn" onclick="openModal('create-group-modal')" title="Create a new class">
+          <span style="font-size:1.15rem;line-height:1;font-weight:700;">+</span> <span>Create Class</span>
+        </button>
+        <a href="/faculty/registers.html" class="btn btn-secondary btn-sm fwh-btn" title="Open official attendance matrix">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span>Take Attendance</span>
+        </a>
+        <button id="btn-my-students-roster" type="button" class="btn btn-secondary btn-sm fwh-btn" onclick="openTeacherStudentsModal()" title="View full details of all students under your classes in 1-click">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Students Roster</span>
+        </button>
+        <a href="/faculty/timetable.html" class="btn btn-secondary btn-sm fwh-btn" title="View lecture schedule">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Timetable</span>
+        </a>
+      </div>
     </div>
 
     <!-- Teaching Classes View (Google Classroom Workspace) -->
     <div id="teaching-classes-view">
-      <!-- Clean Classes Section Header & Controls -->
+      <!-- Clean Classes Section Header & Controls (Two-Tier Layout) -->
       <div class="classes-simple-header">
-        <div class="classes-header-left">
+        <div class="classes-top-row">
           <h2 class="classes-main-title">
             <span>Subject Classes</span>
             <span class="classes-count-badge" id="count-classes-badge">0</span>
@@ -323,21 +446,23 @@
           </div>
         </div>
 
-        <div class="classes-header-right">
-          <div class="segmented-filter">
-            <button id="filter-active" class="active" onclick="setGroupFilter('ACTIVE')">
-              Active (<span id="count-active">0</span>)
-            </button>
-            <button id="filter-archived" onclick="setGroupFilter('ARCHIVED')">
-              Archived (<span id="count-archived">0</span>)
-            </button>
-            <button id="filter-trash" onclick="openTrashBinModal()">
-              Trash (<span id="count-trash">0</span>)
+        <div class="classes-filter-row">
+          <div class="classes-filter-left">
+            <div class="segmented-filter">
+              <button id="filter-active" class="active" onclick="setGroupFilter('ACTIVE')">
+                Active (<span id="count-active">0</span>)
+              </button>
+              <button id="filter-archived" onclick="setGroupFilter('ARCHIVED')">
+                Archived (<span id="count-archived">0</span>)
+              </button>
+              <button id="filter-trash" onclick="openTrashBinModal()">
+                Trash (<span id="count-trash">0</span>)
+              </button>
+            </div>
+            <button id="btn-auto-archive-check" class="btn btn-secondary btn-sm" onclick="triggerAutoArchiveCheck()" title="Auto-Archive Expired Sessions" style="display:inline-flex;align-items:center;gap:0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>Auto-Archive</span>
             </button>
           </div>
-          <button id="btn-auto-archive-check" class="btn btn-secondary btn-sm" onclick="triggerAutoArchiveCheck()" title="Auto-Archive Expired Sessions" style="display:inline-flex;align-items:center;gap:0.35rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>Auto-Archive</span>
-          </button>
           <div class="search-input-wrap">
             <span class="search-icon-decor" style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
             <input type="text" id="search-groups" placeholder="Search subject or class..." oninput="filterGroupsLocally()">
@@ -1518,11 +1643,12 @@
   </div>
 
   <!-- Standard Scripts -->
-  <script src="/js/api.js?v=20261028"></script>
-  <script src="/js/auth.js?v=20261028"></script>
-  <script src="/js/nav.js?v=20261028"></script>
-  <script src="/js/ui.js?v=20261028"></script>
+  <script src="/js/api.js?v=20261003"></script>
+  <script src="/js/auth.js?v=20261003"></script>
+  <script src="/js/ui.js?v=20261003"></script>
+  <script src="/components/sidebar/sidebar-config.js"></script>
+  <script src="/components/sidebar/sidebar.js"></script>
   
-  <script src="/faculty/dashboard/dashboard.js?v=20261028"></script>
+  <script src="/faculty/dashboard/dashboard.js?v=20261011_nba"></script>
 </body>
 </html>

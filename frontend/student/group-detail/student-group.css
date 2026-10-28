@@ -18,7 +18,20 @@ body.classroom-page {
   overflow-x: hidden;
 }
 
-/* Sidebar styles delegated to shared classroom-nav.css */
+#app-sidebar,
+.app-sidebar,
+.sidebar-backdrop,
+body.classroom-page #app-sidebar,
+body.classroom-page .app-sidebar,
+body.classroom-page .sidebar-backdrop {
+  display: none !important;
+}
+
+body.sidebar-open,
+body.classroom-page.sidebar-open {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
 
 /* Root Layout Container */
 .student-classroom-container {
@@ -913,7 +926,7 @@ body.viewing-work-details #student-work-details-view {
 .gc-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--bg-overlay, hsla(0, 0%, 0%, 0.45));
+  background: hsla(0, 0%, 0%, 0.4);
   z-index: 10000;
   opacity: 0;
   visibility: hidden;

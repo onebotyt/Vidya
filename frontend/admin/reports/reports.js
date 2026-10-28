@@ -710,7 +710,7 @@ async function exportReport(format = 'excel') {
     if (typeof showToast === 'function') {
       showToast(`Export failed: ${err.message}`, 'error');
     } else {
-      console.error(`Export failed: ${err.message}`);
+      alert(`Export failed: ${err.message}`);
     }
   } finally {
     if (exportBtn) {

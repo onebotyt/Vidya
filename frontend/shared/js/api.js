@@ -36,13 +36,9 @@ async function fetchApi(endpoint, options = {}) {
       if (response.status === 401) {
         if (data?.error?.code === 'SESSION_REVOKED') {
           if (typeof handleSessionRevocation === 'function') {
-            handleSessionRevocation('session_transferred');
+            handleSessionRevocation();
             return;
           }
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
-          window.location.href = '/login/index.html?reason=session_transferred';
-          return;
         }
         if (!endpoint.includes('/auth/')) {
           // Attempt token refresh
@@ -53,24 +49,13 @@ async function fetchApi(endpoint, options = {}) {
             const retryRes = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
             return await retryRes.json();
           } else {
-            if (typeof handleSessionRevocation === 'function') {
-              handleSessionRevocation('session_expired');
-              return;
-            }
             localStorage.removeItem('access_token');
             localStorage.removeItem('user');
-            window.location.href = '/login/index.html?reason=session_expired';
-            return;
+            window.location.href = '/index.html';
           }
         }
       }
-      const errObj = (data && data.error) ? Object.assign(data.error, { status: response.status }) : {
-        message: (response.status === 502 || response.status === 504)
-          ? 'Cloud server is waking up from idle sleep (Render cold start). Retrying connection...'
-          : `Request failed with status ${response.status}`,
-        status: response.status
-      };
-      throw errObj;
+      throw data.error || { message: `Request failed with status ${response.status}` };
     }
 
     return data;
@@ -84,20 +69,15 @@ async function fetchApi(endpoint, options = {}) {
 
 async function attemptTokenRefresh() {
   try {
-    const refreshToken = localStorage.getItem('refresh_token');
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ refresh_token: refreshToken, refreshToken })
+      credentials: 'include'
     });
     if (!res.ok) return false;
     const data = await res.json();
-    const newAccess = data.data?.access_token || data.data?.accessToken;
-    const newRefresh = data.data?.refresh_token || data.data?.refreshToken;
-    if (newAccess) {
-      localStorage.setItem('access_token', newAccess);
-      if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
+    if (data.success && data.data?.access_token) {
+      localStorage.setItem('access_token', data.data.access_token);
       return true;
     }
     return false;
@@ -120,5 +100,4 @@ if (typeof window !== 'undefined') {
   window.fetchApi = fetchApi;
   window.apiRequest = apiRequest;
   window.apiFetch = apiFetch;
-  window.attemptTokenRefresh = attemptTokenRefresh;
 }

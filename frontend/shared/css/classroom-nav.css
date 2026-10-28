@@ -4,92 +4,46 @@
  * 100% Theme Tokenized — Zero Hardcoded Hex Colors
  */
 
-/* ══════════════════════════════════════════════════════════════
-   MINIMAL UNIVERSAL HEADER BAR (.gc-navbar)
-   Contains strictly: Logo, VidyaOS, Tools, Profile
-   Zero hardcoded colors — 100% Theme Tokenized
-   ══════════════════════════════════════════════════════════════ */
 .gc-navbar {
-  height: 52px !important;
-  min-height: 52px !important;
-  max-height: 52px !important;
+  height: 64px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem !important;
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 1000 !important;
+  padding: 0 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   box-shadow: var(--shadow-xs, var(--shadow-sm));
   box-sizing: border-box;
-}
-
-/* Explicitly hide obsolete secondary tags/buttons per minimal header design */
-.gc-navbar .gc-brand-sub,
-.gc-navbar .gc-create-btn {
-  display: none !important;
-}
-
-.gc-navbar .gc-page-badge {
-  display: inline-flex !important;
-  align-items: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  background: var(--color-primary-soft, var(--bg-surface));
-  color: var(--color-primary);
-  border: 1px solid var(--border-color);
-  text-transform: uppercase;
-  margin-left: 0.5rem;
-  line-height: 1;
-}
-
-/* Ensure hamburger menu toggle button is always accessible and visible */
-.gc-navbar .gc-menu-btn,
-.gc-navbar #sidebar-toggle-btn,
-.gc-navbar #btn-menu-toggle,
-.gc-navbar .sidebar-toggle-btn,
-.gc-menu-btn,
-#sidebar-toggle-btn,
-#btn-menu-toggle,
-.sidebar-toggle-btn {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-  padding: 0;
-}
-
-.gc-navbar .gc-menu-btn:hover,
-.gc-navbar #sidebar-toggle-btn:hover,
-.gc-navbar #btn-menu-toggle:hover,
-.gc-navbar .sidebar-toggle-btn:hover,
-.gc-menu-btn:hover,
-#sidebar-toggle-btn:hover,
-#btn-menu-toggle:hover,
-.sidebar-toggle-btn:hover {
-  background: var(--bg-surface-hover, var(--bg-surface));
-  border-color: var(--border-color);
-  color: var(--color-primary);
 }
 
 .gc-nav-left {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.85rem;
   min-width: 0;
+}
+
+.gc-menu-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.gc-menu-btn:hover {
+  background: var(--bg-surface-hover, var(--bg-surface));
 }
 
 .gc-brand-link {
@@ -98,102 +52,131 @@
   gap: 0.65rem;
   text-decoration: none;
   color: var(--text-main);
-  user-select: none;
   flex-shrink: 0;
 }
 
 .gc-brand-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
   background: linear-gradient(135deg, hsl(142, 70%, 35%) 0%, hsl(160, 75%, 42%) 100%);
   color: var(--text-white, hsl(0, 0%, 100%));
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.35rem;
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
-.gc-brand-icon svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-}
-
 .gc-brand-title {
-  font-size: 1.18rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-main);
-  line-height: 1;
   white-space: nowrap;
 }
 
 .gc-brand-sub {
-  display: none !important;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-left: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
-/* Page badge kept visible for clear role recognition */
+.gc-page-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light, var(--bg-surface));
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
 
 .gc-nav-right {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.6rem;
   position: relative;
   flex-shrink: 0;
 }
 
 .gc-icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 1px solid transparent;
+  border: none;
   background: transparent;
   color: var(--text-main);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  font-size: 1.15rem;
+  transition: background 0.15s ease;
   flex-shrink: 0;
 }
 
 .gc-icon-btn:hover {
   background: var(--bg-surface-hover, var(--bg-surface));
-  border-color: var(--border-color);
 }
 
 .gc-create-btn {
-  display: none !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--text-white, hsl(0, 0%, 100%));
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.gc-create-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .gc-user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--text-white, hsl(0, 0%, 100%));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
   border: 2px solid var(--border-color);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s;
   flex-shrink: 0;
 }
 
 .gc-user-avatar:hover {
   transform: scale(1.05);
-  box-shadow: var(--shadow-sm);
 }
 
 /* Apps Launcher Grid Menu */
 .apps-launcher-dropdown {
   position: absolute;
-  top: 48px;
+  top: 54px;
   right: 48px;
   width: 310px;
   background: var(--bg-card);
@@ -242,7 +225,7 @@
 /* User Profile Popover */
 .user-profile-popover {
   position: absolute;
-  top: 48px;
+  top: 54px;
   right: 0;
   width: 270px;
   background: var(--bg-card);
@@ -262,44 +245,6 @@
   display: flex !important;
 }
 
-.user-profile-popover .gc-user-avatar {
-  width: 56px;
-  height: 56px;
-  font-size: 1.35rem;
-  margin-bottom: 0.5rem;
-}
-
-.user-profile-popover #popover-user-name,
-.user-profile-popover .popover-user-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text-main);
-  line-height: 1.2;
-}
-
-.user-profile-popover #popover-user-email,
-.user-profile-popover .popover-user-email {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-bottom: 0.85rem;
-  word-break: break-all;
-}
-
-.user-profile-popover .btn,
-.user-profile-popover a.btn,
-.user-profile-popover button.btn {
-  width: 100%;
-  margin-bottom: 0.5rem;
-  text-decoration: none;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  box-sizing: border-box;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
 /* Google Classroom Slide-out Drawer */
 .gc-drawer-backdrop {
   position: fixed;
@@ -312,12 +257,9 @@
 }
 
 .gc-drawer-backdrop.open,
-.gc-drawer-backdrop.active,
-.sidebar-backdrop.open,
-.sidebar-backdrop.active {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  display: block !important;
+.gc-drawer-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .gc-drawer {
@@ -792,284 +734,9 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PC / DESKTOP SIDEBAR MENU ARCHITECTURE (>= 769px)
-   On PC, navigation is a permanent docked sidebar (NOT hamburger)
-   ══════════════════════════════════════════════════════════════ */
-@media (min-width: 769px) {
-  /* Full-height slide-out drawer on PC with branded header */
-  .app-sidebar,
-  aside#app-sidebar,
-  aside#gc-drawer,
-  .gc-drawer {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    bottom: 0 !important;
-    width: 285px !important;
-    max-width: 85vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    transform: translateX(-100%) !important;
-    z-index: 1300 !important;
-    box-shadow: none !important;
-    border-right: 1px solid var(--border-color) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: var(--bg-card) !important;
-    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease !important;
-  }
-
-  body:has(.app-header) .app-sidebar,
-  body:has(.app-header) aside#app-sidebar,
-  body.has-app-header .app-sidebar,
-  body.has-app-header aside#app-sidebar {
-    top: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-  }
-
-  /* When sidebar is open on PC: Slide OVER content */
-  body.sidebar-open .app-sidebar,
-  body.sidebar-open aside#app-sidebar,
-  body.sidebar-open aside#gc-drawer,
-  body.sidebar-open .gc-drawer,
-  .app-sidebar.sidebar-open,
-  .app-sidebar.open,
-  aside#app-sidebar.sidebar-open,
-  aside#app-sidebar.open,
-  aside#gc-drawer.sidebar-open,
-  aside#gc-drawer.open,
-  .gc-drawer.sidebar-open,
-  .gc-drawer.open {
-    transform: translateX(0) !important;
-    box-shadow: var(--shadow-xl), 0 0 0 1px var(--border-color) !important;
-  }
-
-  /* When sidebar is closed on PC (default state) */
-  body.sidebar-closed .app-sidebar,
-  body.sidebar-closed aside#app-sidebar,
-  body.sidebar-closed aside#gc-drawer,
-  body.sidebar-closed .gc-drawer,
-  .app-sidebar.sidebar-closed,
-  aside#app-sidebar.sidebar-closed,
-  aside#gc-drawer.sidebar-closed,
-  .gc-drawer.sidebar-closed {
-    transform: translateX(-100%) !important;
-    box-shadow: none !important;
-  }
-
-  /* Universal Stationary Header Bar: stays fixed at top across full 100% width (never covered, never shifted) */
-  .gc-navbar,
-  body .gc-navbar,
-  body.has-sidebar .gc-navbar,
-  body:not(.sidebar-closed) .gc-navbar,
-  body.sidebar-closed .gc-navbar {
-    position: sticky !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    margin-left: 0 !important;
-    z-index: 1000 !important;
-    background: var(--bg-card) !important;
-    box-shadow: var(--shadow-xs, var(--shadow-sm)) !important;
-    box-sizing: border-box !important;
-    transition: none !important;
-  }
-
-  /* Single Logo Rule: The brand logo in navbar is ALWAYS displayed (1 logo on screen) */
-  .gc-navbar .gc-brand-link {
-    display: flex !important;
-    align-items: center !important;
-  }
-
-  /* Three-lines / Close toggle button in navbar is ALWAYS displayed */
-  .gc-navbar .gc-menu-btn,
-  .gc-navbar #sidebar-toggle-btn,
-  .gc-navbar #btn-menu-toggle,
-  .gc-navbar .sidebar-toggle-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-  }
-
-  /* Google Classroom drawer top header */
-  .gc-drawer-header,
-  .app-sidebar .gc-drawer-header,
-  aside#app-sidebar .gc-drawer-header,
-  aside#gc-drawer .gc-drawer-header,
-  .gc-drawer > .gc-drawer-header {
-    height: 52px !important;
-    min-height: 52px !important;
-    max-height: 52px !important;
-    padding: 0 1rem !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    box-sizing: border-box !important;
-    flex-shrink: 0 !important;
-    background: var(--bg-card) !important;
-  }
-
-  /* Page content NEVER shifts sideways — remains 100% full width */
-  body main,
-  body .page-main-container,
-  body .container,
-  body .classroom-body,
-  body .classroom-banner,
-  body .student-classroom-container,
-  body .todo-container,
-  body:not(.sidebar-closed) main,
-  body:not(.sidebar-closed) .page-main-container,
-  body:not(.sidebar-closed) .container,
-  body:not(.sidebar-closed) .classroom-body,
-  body:not(.sidebar-closed) .classroom-banner,
-  body:not(.sidebar-closed) .student-classroom-container,
-  body:not(.sidebar-closed) .todo-container,
-  body.sidebar-closed main,
-  body.sidebar-closed .page-main-container,
-  body.sidebar-closed .container,
-  body.sidebar-closed .classroom-body,
-  body.sidebar-closed .classroom-banner,
-  body.sidebar-closed .student-classroom-container,
-  body.sidebar-closed .todo-container {
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    box-sizing: border-box !important;
-    transition: none !important;
-  }
-
-  /* Desktop Overlay Backdrop: dims entire screen smoothly when sidebar is opened */
-  .gc-drawer-backdrop,
-  .sidebar-backdrop {
-    position: fixed !important;
-    inset: 0 !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    z-index: 1290 !important;
-    background: var(--bg-overlay, hsla(0, 0%, 0%, 0.45)) !important;
-    backdrop-filter: blur(2px) !important;
-    -webkit-backdrop-filter: blur(2px) !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transition: opacity 0.24s ease !important;
-    display: block !important;
-  }
-
-  body.sidebar-open .gc-drawer-backdrop,
-  body.sidebar-open .sidebar-backdrop,
-  .gc-drawer-backdrop.active,
-  .gc-drawer-backdrop.open,
-  .sidebar-backdrop.active,
-  .sidebar-backdrop.open {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
    MOBILE & RESPONSIVE NAVBAR SYSTEM (<= 768px & <= 420px)
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Mobile: Hamburger/Close menu button in navbar */
-  .gc-navbar .gc-menu-btn,
-  .gc-navbar #sidebar-toggle-btn,
-  .gc-navbar #btn-menu-toggle,
-  .gc-navbar .sidebar-toggle-btn {
-    display: inline-flex !important;
-  }
-
-  /* Single Logo Rule: The brand logo in navbar is ALWAYS displayed */
-  .gc-navbar .gc-brand-link {
-    display: flex !important;
-    align-items: center !important;
-  }
-
-  .app-sidebar,
-  aside#app-sidebar,
-  aside#gc-drawer,
-  .gc-drawer {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    bottom: 0 !important;
-    width: min(290px, 86vw) !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    transform: translateX(-100%) !important;
-    z-index: 1300 !important;
-    box-shadow: var(--shadow-xl) !important;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  }
-
-  body:has(.app-header) .app-sidebar,
-  body:has(.app-header) aside#app-sidebar {
-    top: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-  }
-
-  .app-sidebar.sidebar-open,
-  .app-sidebar.open,
-  .gc-drawer.sidebar-open,
-  .gc-drawer.open,
-  aside#gc-drawer.open,
-  aside#app-sidebar.sidebar-open {
-    transform: translateX(0) !important;
-  }
-
-  .gc-navbar,
-  main,
-  .page-main-container,
-  .container,
-  .classroom-body,
-  .classroom-banner,
-  .student-classroom-container,
-  .todo-container {
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-  }
-
-  .gc-drawer-backdrop.open,
-  .gc-drawer-backdrop.active,
-  .sidebar-backdrop.open,
-  .sidebar-backdrop.active {
-    position: fixed !important;
-    inset: 0 !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    display: block !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    background: var(--bg-overlay, hsla(0, 0%, 0%, 0.45)) !important;
-    z-index: 1290 !important;
-  }
-    right: 0 !important;
-    bottom: 0 !important;
-    height: calc(100vh - 52px) !important;
-    display: block !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    z-index: 940 !important;
-  }
-
-  body:has(.app-header) .sidebar-backdrop.open,
-  body:has(.app-header) .sidebar-backdrop.active {
-    top: 60px !important;
-    height: calc(100vh - 60px) !important;
-  }
-
   .gc-navbar {
     height: 58px;
     padding: 0 0.75rem;

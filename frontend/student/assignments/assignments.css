@@ -17,7 +17,20 @@ body.classroom-page {
   overflow-x: hidden;
 }
 
-/* Sidebar styles delegated to shared classroom-nav.css */
+#app-sidebar,
+.app-sidebar,
+.sidebar-backdrop,
+body.classroom-page #app-sidebar,
+body.classroom-page .app-sidebar,
+body.classroom-page .sidebar-backdrop {
+  display: none !important;
+}
+
+body.sidebar-open,
+body.classroom-page.sidebar-open {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
 
 /* Main Container */
 .todo-container {

@@ -91,46 +91,30 @@
   // Opens/closes the slide-out navigation drawer and synchronizes
   // body scrolling and backdrop visibility.
   // ─────────────────────────────────────────────────────────────
-  function toggleSidebar(forceState) {
-    const sidebar = document.getElementById('app-sidebar') || document.getElementById('classroom-drawer') || document.getElementById('gc-drawer');
-    const backdrop = document.getElementById('sidebar-backdrop') || document.getElementById('classroom-drawer-backdrop') || document.getElementById('gc-drawer-backdrop');
+  function toggleSidebar() {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
     if (!sidebar) return;
-
-    const isDesktop = window.innerWidth >= 769;
-    const isCurrentlyOpen = isDesktop
-      ? !document.body.classList.contains('sidebar-closed') && (sidebar.classList.contains('sidebar-open') || sidebar.classList.contains('open'))
-      : (sidebar.classList.contains('sidebar-open') || sidebar.classList.contains('open'));
-
-    const shouldOpen = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
-
-    if (shouldOpen) {
-      sidebar.classList.add('sidebar-open', 'open');
-      sidebar.classList.remove('sidebar-closed');
-      document.body.classList.add('sidebar-open');
-      document.body.classList.remove('sidebar-closed');
-      if (backdrop) {
-        backdrop.classList.add('active', 'open');
-      }
-    } else {
-      sidebar.classList.remove('sidebar-open', 'open');
-      sidebar.classList.add('sidebar-closed');
-      document.body.classList.remove('sidebar-open');
-      document.body.classList.add('sidebar-closed');
-      if (backdrop) {
-        backdrop.classList.remove('active', 'open');
-      }
+    const isOpen = sidebar.classList.toggle('sidebar-open');
+    sidebar.classList.toggle('open', isOpen);
+    document.body.classList.toggle('sidebar-open', isOpen);
+    if (backdrop) {
+      backdrop.classList.toggle('active', isOpen);
+      backdrop.classList.toggle('open', isOpen);
     }
-
-    try {
-      localStorage.setItem('sidebar_open', shouldOpen ? 'true' : 'false');
-    } catch (_) {}
-
-    const btn = document.getElementById('sidebar-toggle-btn') || document.getElementById('btn-menu-toggle');
-    if (btn) btn.setAttribute('aria-pressed', shouldOpen ? 'true' : 'false');
+    const btn = document.getElementById('sidebar-toggle-btn');
+    if (btn) btn.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
   }
 
   function closeSidebar() {
-    toggleSidebar(false);
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (!sidebar) return;
+    sidebar.classList.remove('sidebar-open', 'open');
+    document.body.classList.remove('sidebar-open');
+    if (backdrop) backdrop.classList.remove('active', 'open');
+    const btn = document.getElementById('sidebar-toggle-btn');
+    if (btn) btn.setAttribute('aria-pressed', 'false');
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -276,35 +260,10 @@
     const popoverEmail = document.getElementById('popover-user-email');
     if (popoverEmail) popoverEmail.textContent = email;
 
-    const popover = document.getElementById('user-profile-popover');
-    if (popover && !popover.querySelector('a[href*="profile.html"]')) {
-      const profileLink = document.createElement('a');
-      profileLink.id = 'popover-profile-link';
-      profileLink.href = '/admin/profile.html';
-      profileLink.className = 'btn btn-secondary btn-sm';
-      profileLink.style.cssText = 'width:100%;margin-bottom:.5rem;text-decoration:none;justify-content:center;display:flex;align-items:center;gap:0.35rem;';
-      profileLink.innerHTML = `<span style="display:inline-flex;align-items:center;">${ADMIN_ICONS.profile}</span><span>My Profile</span>`;
-      const divider = popover.querySelector('div[style*="height:1px"], .popover-divider');
-      const firstAction = popover.querySelector('a, button');
-      if (divider && divider.nextSibling) {
-        popover.insertBefore(profileLink, divider.nextSibling);
-      } else if (firstAction) {
-        popover.insertBefore(profileLink, firstAction);
-      } else {
-        popover.appendChild(profileLink);
-      }
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    if (toggleBtn && !toggleBtn.querySelector('svg')) {
+      toggleBtn.innerHTML = ADMIN_ICONS.menu;
     }
-
-    // Set role page badge in navbar
-    const badgeEl = document.getElementById('admin-header-page-title') || document.querySelector('.gc-navbar .gc-page-badge');
-    if (badgeEl) {
-      badgeEl.textContent = 'ADMIN CONSOLE';
-    }
-
-    // Enforce Minimal Universal Header Bar (Logo, VidyaOS, Tools, Profile)
-    document.querySelectorAll('.gc-navbar .gc-brand-title').forEach(el => {
-      el.textContent = 'VidyaOS';
-    });
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -314,11 +273,15 @@
   // ─────────────────────────────────────────────────────────────
   function mountAdminSidebar() {
     if (document.getElementById('app-sidebar')) return;
+    if (typeof window.mountSidebar === 'function') {
+      window.mountSidebar();
+      return;
+    }
 
     const linksHtml = ADMIN_MODULES.map(item => {
       const active = isRouteActive(item.href);
       return `
-        <a href="${item.href}" class="gc-drawer-link ${active ? 'active' : ''}" onclick="window.closeSidebar()">
+        <a href="${item.href}" class="gc-drawer-link ${active ? 'active' : ''}" onclick="if(window.innerWidth<=768)window.closeSidebar()">
           <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;">${item.icon}</span>
           <span>${safeAttr(item.label)}</span>
         </a>
@@ -336,7 +299,7 @@
             </div>
           </a>
           <button type="button" class="gc-menu-btn" onclick="window.closeSidebar()" aria-label="Close menu" title="Close menu">
-            ${ADMIN_ICONS.menu}
+            ${ADMIN_ICONS.close}
           </button>
         </div>
         <div class="gc-drawer-body">
@@ -392,11 +355,10 @@
     document.body.insertAdjacentHTML('beforeend', navHtml);
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // 8. MASTER INITIALIZER
+  // ─────────────────────────────────────────────────────────────
   function initAdminNav() {
-    if (typeof window.mountNavigationSystem === 'function') {
-      window.mountNavigationSystem({ role: 'admin' });
-      return;
-    }
     mountAdminSidebar();
     mountAdminBottomNav();
     enhanceAdminHeader();

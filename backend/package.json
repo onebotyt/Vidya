@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "start:dev2": "node ../scripts/collab/preview-server.js",
     "dev": "node --watch server.js",
     "test": "node scripts/test-api-flows.js && node scripts/test-rbac-and-structure.js && node scripts/test-student-self-registration.js && node scripts/test-register-consolidation.js",
     "test:api": "node scripts/test-api-flows.js",
@@ -35,9 +34,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.9.7",
-    "pdf-parse": "^2.4.5",
-    "qrcode": "^1.5.4",
-    "tesseract.js": "^7.0.0"
+    "qrcode": "^1.5.4"
   },
   "author": "Backend Engineer",
   "license": "ISC"

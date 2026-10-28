@@ -7,131 +7,80 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/reset.css?v=20261028">
-  <link rel="stylesheet" href="/css/variables.css?v=20261028">
-  <link rel="stylesheet" href="/css/layout.css?v=20261028">
-  <link rel="stylesheet" href="/css/components.css?v=20261028">
-  <link rel="stylesheet" href="/css/classroom-nav.css?v=20261028">
-  <link rel="stylesheet" href="/css/nav.css?v=20261028">
+  <link rel="stylesheet" href="/css/reset.css?v=20261003">
+  <link rel="stylesheet" href="/css/variables.css?v=20261003">
+  <link rel="stylesheet" href="/css/layout.css?v=20261003">
+  <link rel="stylesheet" href="/css/components.css?v=20261003">
+  <link rel="stylesheet" href="/components/sidebar/sidebar.css">
   
   <link rel="stylesheet" href="/student/dashboard/dashboard.css?v=20261028">
 </head>
 <body class="classroom-page">
-  <!-- Google Classroom Top Navigation Bar -->
+  <!-- Top Navigation Bar -->
   <header class="gc-navbar">
     <div class="gc-nav-left">
-      <button type="button" class="gc-menu-btn" id="btn-menu-toggle" onclick="toggleDrawer()" title="Main Menu" aria-label="Toggle Navigation Drawer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <button type="button" class="gc-menu-btn" id="btn-menu-toggle" onclick="if(typeof toggleSidebar==='function'){toggleSidebar();}else if(typeof toggleDrawer==='function'){toggleDrawer();}" title="Main Navigation Menu" aria-label="Toggle Navigation Drawer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
-      <a href="/student/dashboard.html" class="gc-brand-link" title="VidyaOS Student Workspace">
+
+      <a href="/student/dashboard.html" class="gc-brand-link" title="Student Classroom Hub">
         <div class="gc-brand-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
             <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
           </svg>
         </div>
-        <div class="gc-brand-title">VidyaOS</div>
+        <div class="gc-brand-title">Classroom</div>
+        <span class="gc-brand-sub">VidyaOS</span>
       </a>
       <span class="gc-page-badge" style="background:var(--col-att-group-bg);color:var(--status-present);border-color:var(--status-present);">STUDENT</span>
+
+      <!-- Modern Search Box -->
+      <div class="gc-search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="admin-module-search" placeholder="Search courses, attendance, tasks..." oninput="handleGlobalSearch(this.value)">
+      </div>
     </div>
 
     <div class="gc-nav-right">
-      <button type="button" class="gc-create-btn" onclick="openStudentJoinModal()" title="Join class using 6-character invite code">
-        <span style="font-size:1.15rem;line-height:1;font-weight:700;">+</span> <span>Join Class</span>
-      </button>
-      <button type="button" class="gc-icon-btn" onclick="toggleAppsLauncher()" title="Student Academic Modules" aria-label="Apps Launcher">
+      <!-- Notification Bell -->
+      <button type="button" class="gc-bell-btn" title="Academic Notifications" aria-label="Notifications">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
         </svg>
+        <span class="notification-count-badge">2</span>
       </button>
+
+      <!-- Theme Toggle -->
       <button type="button" class="gc-icon-btn" onclick="toggleTheme()" id="btn-theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
         </svg>
       </button>
-      <div class="gc-user-avatar" id="gc-user-avatar" onclick="toggleUserProfile()" title="Student Account">ST</div>
 
-      <!-- Apps Launcher Dropdown -->
-      <div class="apps-launcher-dropdown" id="apps-launcher-dropdown" style="display:none;">
-        <a href="/student/dashboard.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-          </div>
-          <span>Classes Hub</span>
-        </a>
-        <a href="/student/attendance.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-          </div>
-          <span>Attendance</span>
-        </a>
-        <a href="/student/assignments.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-            </svg>
-          </div>
-          <span>Coursework</span>
-        </a>
-        <a href="/student/scores.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 11 12 14 22 4"></polyline>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-            </svg>
-          </div>
-          <span>Test Scores</span>
-        </a>
-        <a href="/student/timetable.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </div>
-          <span>Timetable</span>
-        </a>
-        <a href="/student/leave.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-          </div>
-          <span>Leaves</span>
-        </a>
-        <a href="/student/profile.html" class="app-tile">
-          <div class="app-tile-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="7" r="4"></circle>
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            </svg>
-          </div>
-          <span>My Profile</span>
-        </a>
+      <!-- Student Profile Pill -->
+      <div class="gc-student-profile-pill" onclick="toggleUserProfile()" title="Student Account">
+        <div class="gc-student-avatar" id="gc-user-avatar">ST</div>
+        <div class="gc-student-details">
+          <span class="gc-student-name" id="header-student-display-name">Student</span>
+          <span class="gc-student-role" id="header-student-role">Student</span>
+        </div>
+        <svg class="gc-student-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
       </div>
 
       <!-- Student Profile Popover -->
       <div class="user-profile-popover" id="user-profile-popover" style="display:none;">
-        <div class="gc-user-avatar" id="popover-avatar" style="width:58px;height:58px;font-size:1.35rem;margin-bottom:0.5rem;">ST</div>
+        <div class="gc-student-avatar" id="popover-avatar" style="width:58px;height:58px;font-size:1.35rem;margin-bottom:0.5rem;">ST</div>
         <div style="font-weight:800;font-size:0.95rem;color:var(--text-main);" id="popover-user-name">Student Member</div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;" id="popover-user-email">student@college.edu</div>
         <div id="popover-reg-badge" style="margin-bottom:0.85rem;">
@@ -157,116 +106,11 @@
     </div>
   </header>
 
-  <!-- Google Classroom Slide-out Drawer -->
-  <div class="gc-drawer-backdrop" id="gc-drawer-backdrop" onclick="toggleDrawer(false)"></div>
-  <aside class="gc-drawer" id="gc-drawer" aria-label="Student Navigation Drawer">
-    <div class="gc-drawer-header">
-      <button type="button" class="gc-menu-btn" onclick="toggleDrawer(false)" title="Close Drawer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <a href="/student/dashboard.html" class="gc-brand-link">
-        <div class="gc-brand-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-          </svg>
-        </div>
-        <div class="gc-brand-title" style="font-size:1.15rem;">Classroom</div>
-      </a>
-    </div>
-
-    <div class="gc-drawer-body">
-      <a href="/student/dashboard.html" class="gc-drawer-link active">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        <span>Enrolled Classes</span>
-      </a>
-      <a href="/student/attendance.html" class="gc-drawer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-        <span>Attendance &amp; Calendar</span>
-      </a>
-      <a href="/student/assignments.html" class="gc-drawer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-        </svg>
-        <span>Coursework &amp; Submissions</span>
-      </a>
-      <a href="/student/scores.html" class="gc-drawer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 11 12 14 22 4"></polyline>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-        </svg>
-        <span>Class Tests &amp; Scores</span>
-      </a>
-      <a href="/student/timetable.html" class="gc-drawer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        <span>Timetable &amp; Schedule</span>
-      </a>
-      <a href="/student/leave.html" class="gc-drawer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-        </svg>
-        <span>Leave Applications</span>
-      </a>
-      <a href="/student/profile.html" class="gc-drawer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="7" r="4"></circle>
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        </svg>
-        <span>Student Dossier</span>
-      </a>
-
-      <div class="gc-drawer-divider"></div>
-      <div class="gc-drawer-sec-title">Enrolled Classes</div>
-      <div id="drawer-classes-list">
-        <div style="padding: 0.5rem 1.5rem; font-size: 0.8rem; color: var(--text-muted);">Loading courses...</div>
-      </div>
-
-      <div class="gc-drawer-divider"></div>
-      <div class="gc-drawer-sec-title">Actions &amp; Settings</div>
-      <button type="button" class="gc-drawer-link" onclick="openStudentJoinModal(); toggleDrawer(false);" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Join Class with Code</span>
-      </button>
-      <button type="button" class="gc-drawer-link" onclick="toggleTheme()" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-        <span>Toggle Theme</span>
-      </button>
-      <button type="button" class="gc-drawer-link" onclick="logout()" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;color:var(--status-absent);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-        <span>Sign Out</span>
-      </button>
-    </div>
-  </aside>
+  <!-- Reusable Universal Sidebar Mount -->
+  <div id="sidebar-mount"></div>
 
   <!-- Main Container -->
-  <main class="page-main-container container" style="max-width:1380px;padding-top:1.5rem;padding-bottom:3.5rem;">
+  <main class="student-dashboard-container">
     <!-- Active Classroom Live Attendance Alert Banner -->
     <div id="active-session-banner" class="card" style="display: none; background: var(--color-primary-light); border-color: var(--color-primary); margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -285,39 +129,193 @@
       </div>
     </div>
 
-    <!-- Student Identity & Academic Cohort Hero Strip -->
-    <section class="student-hero-banner">
+    <!-- Welcome Hero Banner -->
+    <section class="student-welcome-hero">
       <div class="student-hero-left">
-        <h1 id="student-name">Welcome, Student</h1>
-        <p id="student-cohort-info">Loading academic cohort details...</p>
+        <div class="student-hero-icon-badge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div class="student-hero-text-wrap">
+          <h1 class="student-hero-title">
+            Welcome, <span id="student-name">Student</span> 👋
+          </h1>
+          <p class="student-hero-subtitle" id="student-hero-subtext">
+            Here's what's happening with your courses and attendance today.
+          </p>
+          <!-- Compatibility contract anchors -->
+          <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.25rem;">
+            <span id="student-cohort-info" style="font-size:0.78rem;color:var(--text-muted);">Information Technology • Current Session</span>
+            <span id="student-roll-badge" class="badge badge-present" style="font-size:0.75rem;padding:0.15rem 0.5rem;">Roll: -- • UBTER Reg: --</span>
+            <span id="header-student-name" style="display:none;" aria-hidden="true">Student Portal</span>
+          </div>
+        </div>
       </div>
-      <div class="student-hero-badges">
-        <span id="student-roll-badge" class="badge badge-present" style="font-size: 0.88rem; padding: 0.45rem 0.95rem; font-weight: 700;">
-          Roll: -- • UBTER Reg: --
-        </span>
+
+      <div class="student-hero-actions">
+        <a href="/student/timetable.html" class="btn-hero-timetable">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>View Timetable</span>
+        </a>
+        <a href="/student/leave.html" class="btn-hero-leave">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Apply for Leave</span>
+        </a>
       </div>
-      <!-- Backward compatibility contract element -->
-      <span id="header-student-name" style="display:none;" aria-hidden="true">Student Portal</span>
+
+      <!-- Campus Architectural Illustration -->
+      <div class="student-hero-illustration" aria-hidden="true">
+        <svg viewBox="0 0 220 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Neoclassical Dome & Pediment -->
+          <path d="M110 8 C95 8 92 24 92 28 L128 28 C128 24 125 8 110 8 Z" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1.8"/>
+          <line x1="110" y1="2" x2="110" y2="8" stroke="var(--color-primary)" stroke-width="2"/>
+          <circle cx="110" cy="2" r="1.5" fill="var(--color-primary)"/>
+          <polygon points="110,24 60,38 160,38" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1.8"/>
+          <!-- Pediment frieze line -->
+          <line x1="58" y1="38" x2="162" y2="38" stroke="var(--color-primary)" stroke-width="2"/>
+          <line x1="54" y1="41" x2="166" y2="41" stroke="var(--color-primary)" stroke-width="2"/>
+          <!-- Columns -->
+          <rect x="66" y="42" width="7" height="34" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="1"/>
+          <rect x="83" y="42" width="7" height="34" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="1"/>
+          <rect x="100" y="42" width="7" height="34" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="1"/>
+          <rect x="113" y="42" width="7" height="34" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="1"/>
+          <rect x="130" y="42" width="7" height="34" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="1"/>
+          <rect x="147" y="42" width="7" height="34" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="1"/>
+          <!-- Main Arch Entry -->
+          <path d="M103 76 L103 62 C103 58 117 58 117 62 L117 76 Z" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1.5"/>
+          <!-- Side Wings -->
+          <rect x="25" y="48" width="36" height="28" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="2"/>
+          <rect x="32" y="54" width="7" height="10" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1" rx="1"/>
+          <rect x="46" y="54" width="7" height="10" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1" rx="1"/>
+          
+          <rect x="159" y="48" width="36" height="28" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.6" rx="2"/>
+          <rect x="167" y="54" width="7" height="10" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1" rx="1"/>
+          <rect x="181" y="54" width="7" height="10" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1" rx="1"/>
+          <!-- Base Steps -->
+          <line x1="15" y1="76" x2="205" y2="76" stroke="var(--color-primary)" stroke-width="2"/>
+          <line x1="10" y1="80" x2="210" y2="80" stroke="var(--color-primary)" stroke-width="2"/>
+          <!-- Little Trees -->
+          <path d="M15 76 C12 70 8 68 8 64 C8 60 18 60 18 64 C18 68 15 70 15 76" fill="var(--status-present-bg)" stroke="var(--status-present)" stroke-width="1.2"/>
+          <path d="M205 76 C202 70 198 68 198 64 C198 60 208 60 208 64 C208 68 205 70 205 76" fill="var(--status-present-bg)" stroke="var(--status-present)" stroke-width="1.2"/>
+        </svg>
+      </div>
     </section>
 
-    <!-- Google Classroom Classes Section -->
-    <section style="margin-bottom: 2rem;">
+    <!-- 4-Column Horizontal KPI Metrics Grid -->
+    <div class="student-kpi-grid">
+      <!-- KPI 1: Attendance Percentage -->
+      <a href="/student/attendance.html" class="student-kpi-card" title="View Detailed Attendance Register">
+        <div class="student-kpi-left">
+          <div class="student-kpi-icon-badge badge-green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="student-kpi-info">
+            <span class="student-kpi-label">Attendance Percentage</span>
+            <span class="student-kpi-value" id="metric-percentage">--%</span>
+            <span class="student-kpi-sub">
+              <span class="status-pill status-ontrack" id="metric-percentage-pill">● On Track</span> Req: 75%
+            </span>
+          </div>
+        </div>
+        <svg class="student-kpi-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+
+      <!-- KPI 2: Attended Sessions -->
+      <a href="/student/attendance.html" class="student-kpi-card" title="View Attended Lectures & Labs">
+        <div class="student-kpi-left">
+          <div class="student-kpi-icon-badge badge-blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div class="student-kpi-info">
+            <span class="student-kpi-label">Attended Sessions</span>
+            <span class="student-kpi-value" id="metric-attended">0</span>
+            <span class="student-kpi-sub" id="metric-attended-sub">Present: 0 | Late: 0</span>
+          </div>
+        </div>
+        <svg class="student-kpi-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+
+      <!-- KPI 3: Absent Sessions -->
+      <a href="/student/attendance.html" class="student-kpi-card" title="View Absent Records">
+        <div class="student-kpi-left">
+          <div class="student-kpi-icon-badge badge-red">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="student-kpi-info">
+            <span class="student-kpi-label">Absent Sessions</span>
+            <span class="student-kpi-value" id="metric-absent">0</span>
+            <span class="student-kpi-sub">Missed classes this term</span>
+          </div>
+        </div>
+        <svg class="student-kpi-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+
+      <!-- KPI 4: Total Conducted Classes -->
+      <a href="/student/attendance.html" class="student-kpi-card" title="View Finalized Course Sessions">
+        <div class="student-kpi-left">
+          <div class="student-kpi-icon-badge badge-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </div>
+          <div class="student-kpi-info">
+            <span class="student-kpi-label">Total Classes</span>
+            <span class="student-kpi-value" id="metric-conducted">0</span>
+            <span class="student-kpi-sub">Finalized course sessions</span>
+          </div>
+        </div>
+        <svg class="student-kpi-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Enrolled Classes Section -->
+    <section style="margin-bottom: 2.5rem;">
       <div class="classes-section-header">
         <div class="classes-title-group">
           <h2 class="classes-section-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-            </svg>
             <span>My Enrolled Classes</span>
             <span class="classes-count-badge" id="count-classes-badge">0</span>
           </h2>
-          <button type="button" class="btn btn-primary btn-sm" onclick="openStudentJoinModal()" style="display:inline-flex;align-items:center;gap:0.35rem;">
-            <span style="font-weight:700;font-size:1.1rem;line-height:1;">+</span> <span>Join Class</span>
+          <button type="button" class="btn btn-primary btn-sm" onclick="openStudentJoinModal()" style="display:inline-flex;align-items:center;gap:0.35rem;border-radius:var(--radius-full, 9999px);padding:0.4rem 0.95rem;">
+            <span style="font-weight:700;font-size:1.05rem;line-height:1;">+</span> <span>Join Class</span>
           </button>
         </div>
 
         <div class="classes-controls-right">
+          <!-- Segmented Filter -->
           <div class="segmented-filter">
             <button id="filter-all" class="active" onclick="setClassesFilter('ALL')">
               All (<span id="count-all">0</span>)
@@ -329,14 +327,14 @@
               Practical (<span id="count-practical">0</span>)
             </button>
           </div>
-          <div class="search-input-wrap">
-            <span class="search-icon-decor">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </span>
-            <input type="text" id="search-classes" placeholder="Search classes, subjects or teachers..." oninput="handleClassesSearch(this.value)">
+
+          <!-- Section Search Input -->
+          <div class="classes-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);flex-shrink:0;">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-classes" placeholder="Search classes or faculty..." oninput="handleClassesSearch(this.value)">
           </div>
         </div>
       </div>
@@ -358,95 +356,86 @@
 
     <!-- Institutional Telemetry & Attendance Predictor Section -->
     <section class="analytics-section">
-      <div class="analytics-header">
-        <h3 class="analytics-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <span>Attendance Analytics &amp; Examination Eligibility</span>
-        </h3>
-      </div>
+      <h2 class="analytics-section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <span>Attendance Analytics &amp; Examination Eligibility</span>
+      </h2>
 
-      <!-- Attendance Metrics Grid -->
-      <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Attendance Percentage</div>
-          <div id="metric-percentage" style="font-size: 2.2rem; font-weight: 800; color: var(--status-present);">--%</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">Threshold: 75%</div>
-        </div>
+      <div class="analytics-dual-grid">
+        <!-- Left: Subject Breakdown & Eligibility Card -->
+        <div class="analytics-card">
+          <div>
+            <div class="analytics-card-header">
+              <h3 class="analytics-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span>Subject-Wise Attendance Breakdown</span>
+              </h3>
+              <a href="/student/attendance.html" class="btn-view-all">Full Calendar →</a>
+            </div>
 
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Attended Sessions</div>
-          <div id="metric-attended" style="font-size: 2.2rem; font-weight: 800; color: var(--text-main);">0</div>
-          <div id="metric-attended-sub" style="font-size: 0.75rem; color: var(--text-muted);">Present: 0 | Late: 0</div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Absent Sessions</div>
-          <div id="metric-absent" style="font-size: 2.2rem; font-weight: 800; color: var(--status-absent);">0</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">Missed classes</div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Total Conducted</div>
-          <div id="metric-conducted" style="font-size: 2.2rem; font-weight: 800; color: var(--text-main);">0</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">Finalized sessions</div>
-        </div>
-      </div>
-
-      <!-- Institutional Attendance Compliance Standing Widget -->
-      <div id="predictor-card" class="predictor-box predictor-safe" style="margin-bottom: 1.5rem;">
-        <div id="predictor-icon" style="display:flex;align-items:center;justify-content:center;">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-        </div>
-        <div style="flex: 1;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-            <strong id="predictor-headline" style="font-size: 1.08rem;">Good Standing (Eligible)</strong>
-            <span id="predictor-status-badge" class="badge badge-present">Eligible for Exams</span>
+            <!-- Subject Progress List -->
+            <div id="subjects-container" class="subjects-progress-list">
+              <p style="color: var(--text-muted); font-size: 0.875rem;">Loading courses...</p>
+            </div>
           </div>
-          <p id="predictor-message" style="font-size: 0.92rem; margin-top: 0.35rem; color: var(--text-main); margin-bottom: 0;">
-            Checking attendance compliance...
-          </p>
-        </div>
-      </div>
 
-      <!-- Subject Breakdown & History Sections -->
-      <div class="grid-cols-2" style="margin-bottom: 2rem;">
-        <!-- Subject-Wise Breakdown -->
-        <div class="card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="card-title" style="font-size: 1.05rem;">Subject-Wise Attendance Matrix</h2>
-            <a href="/student/attendance.html" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">Full Calendar →</a>
-          </div>
-          <div id="subjects-container">
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Loading courses...</p>
+          <!-- Institutional Attendance Compliance Standing Widget -->
+          <div id="predictor-card" class="eligibility-box">
+            <div id="predictor-icon" class="eligibility-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.4rem;">
+                <h4 id="predictor-headline" class="eligibility-title">Good Standing (Eligible)</h4>
+                <span id="predictor-status-badge" class="status-pill status-ontrack" style="font-size:0.7rem;padding:0.15rem 0.5rem;">Eligible for Exams</span>
+              </div>
+              <p id="predictor-message" class="eligibility-desc">
+                Your attendance satisfies institutional guidelines (>= 75%). Keep it up!
+              </p>
+            </div>
           </div>
         </div>
 
-        <!-- Recent History Log -->
-        <div class="card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="card-title" style="font-size: 1.05rem;">Recent Session Log</h2>
-            <a href="/student/attendance.html" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">View All →</a>
-          </div>
-          <div class="table-wrapper">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Subject</th>
-                  <th>Status</th>
-                  <th>Source</th>
-                </tr>
-              </thead>
-              <tbody id="history-tbody">
-                <tr>
-                  <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading history...</td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Right: Recent Session Log Table -->
+        <div class="analytics-card">
+          <div>
+            <div class="analytics-card-header">
+              <h3 class="analytics-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Recent Session Log</span>
+              </h3>
+              <a href="/student/attendance.html" class="btn-view-all">View All →</a>
+            </div>
+
+            <div class="session-table-wrap">
+              <table class="session-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody id="history-tbody">
+                  <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading history...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -511,7 +500,7 @@
       <div class="modal-header">
         <h3 class="modal-title" style="display:flex;align-items:center;gap:0.4rem;font-size:1.1rem;font-weight:700;color:var(--text-main);margin:0;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0 4 4v2"></path>
             <circle cx="8.5" cy="7" r="4"></circle>
             <line x1="20" y1="8" x2="20" y2="14"></line>
             <line x1="23" y1="11" x2="17" y2="11"></line>
@@ -583,7 +572,7 @@
         <span class="gc-fab-action-label">Join Class</span>
         <span class="gc-fab-action-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0 4 4v2"></path>
             <circle cx="8.5" cy="7" r="4"></circle>
             <line x1="20" y1="8" x2="20" y2="14"></line>
             <line x1="23" y1="11" x2="17" y2="11"></line>
@@ -600,12 +589,13 @@
     </button>
   </div>
 
-  <script src="/js/api.js?v=20261028"></script>
-  <script src="/js/auth.js?v=20261028"></script>
-  <script src="/js/nav.js?v=20261028"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js?v=2.2"></script>
   <script src="/js/utils.js"></script>
   <script src="/js/ui.js?v=20261028"></script>
   
+  <script src="/components/sidebar/sidebar-config.js"></script>
+  <script src="/components/sidebar/sidebar.js"></script>
   <script src="/student/dashboard/dashboard.js?v=20261028"></script>
 </body>
 </html>

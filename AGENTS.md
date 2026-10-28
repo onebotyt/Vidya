@@ -76,6 +76,19 @@ To prevent accidentally overwriting or breaking Dev 2's ongoing frontend work:
    - Test scripts (`scripts/test-*.js`, `scripts/verify-*.js`, `scripts/simulate-*.js`, etc.) and test screenshots (`*.png`, `*.jpg`) are strictly local development tools and must NEVER be tracked in Git or pushed to GitHub.
    - Enforced by `.gitignore` and Git hooks (`pre-commit`, `pre-push`). All test files remain on local disk to run regression test suites, but must never be committed or pushed to remote repositories.
 
+7. **Protected / Frozen Frontend Folders (Strict Read-Only — DO NOT EDIT)**:
+   - The following 9 frontend directories are permanently frozen and must NEVER be modified, edited, renamed, or refactored:
+     1. `frontend/faculty/assignments/`
+     2. `frontend/faculty/evaluation/`
+     3. `frontend/faculty/group-detail/`
+     4. `frontend/faculty/groups/`
+     5. `frontend/faculty/registers/`
+     6. `frontend/faculty/sheets/`
+     7. `frontend/faculty/students/`
+     8. `frontend/faculty/tests/`
+     9. `frontend/student/group-detail/`
+   - See [FROZEN_MODULES.md](file:///c:/Users/hp/.gemini/antigravity-ide/scratch/Vidya/FROZEN_MODULES.md) for full authoritative register. All future tasks must leave these modules completely intact.
+
 ---
 
 ## 🧪 Verification & Regression Test Suite

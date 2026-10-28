@@ -175,20 +175,29 @@
     function updateDashboardMode() {
       const isHOD = Boolean(state.currentUser?.is_hod);
       const activeGroups = state.groups.filter(g => g.status === 'ACTIVE');
-      const hasClasses = activeGroups.length > 0;
 
       const switcherBar = document.getElementById('hod-view-switcher-bar');
-      const btnClasses = document.getElementById('btn-tab-classes');
       const countBadge = document.getElementById('badge-teaching-count');
       if (countBadge) {
         countBadge.innerText = activeGroups.length;
         countBadge.textContent = activeGroups.length;
       }
 
-      // Dashboard Command Center removed per user requirement: always show Subject Classes directly
-      if (switcherBar) switcherBar.style.display = 'none';
-      if (btnClasses) btnClasses.style.display = '';
-      switchDashboardTab('CLASSES');
+      // Populate personal faculty greeting
+      const greetName = document.getElementById('faculty-greeting-name');
+      if (greetName && state.currentUser) {
+        const title = isHOD ? 'HOD' : 'Professor';
+        greetName.innerText = `Welcome, ${state.currentUser.full_name || title} 👋`;
+      }
+
+      if (isHOD) {
+        if (switcherBar) switcherBar.style.display = 'flex';
+        const savedTab = localStorage.getItem('hod_dashboard_tab') || 'DEPT';
+        switchDashboardTab(savedTab);
+      } else {
+        if (switcherBar) switcherBar.style.display = 'none';
+        switchDashboardTab('CLASSES');
+      }
     }
 
     function switchDashboardTab(tab) {
@@ -223,8 +232,17 @@
         // Title and Dept name
         const titleEl = document.getElementById('dept-command-title');
         const subEl = document.getElementById('dept-command-sub');
-        if (titleEl) titleEl.innerText = `${d.department_name || 'Department'} Console`;
-        if (subEl) subEl.innerText = `Department ID: ${d.department_id} • Target Attendance Compliance: ${d.attendance_threshold || 75}%`;
+        const cardDeptName = document.getElementById('dept-card-name');
+        const cardDeptMeta = document.getElementById('dept-card-meta');
+
+        if (titleEl) titleEl.innerText = `${d.department_name || 'Department'} Overview`;
+        if (subEl) subEl.innerText = `Manage your classes, take attendance, and track student coursework.`;
+        if (cardDeptName) cardDeptName.innerText = d.department_name || 'Department Administration';
+        if (cardDeptMeta) {
+          const facultyId = state.currentUser?.employee_id || (state.currentUser?.id ? `F${String(state.currentUser.id).padStart(3, '0')}` : 'F001');
+          const roleTitle = state.currentUser?.is_hod ? 'HOD' : 'Faculty';
+          cardDeptMeta.innerText = `Faculty ID: ${facultyId} | Role: ${roleTitle}`;
+        }
 
         // 5 KPIs
         const kpiTeachers = document.getElementById('kpi-dept-teachers');
@@ -243,10 +261,7 @@
         }
 
         if (kpiAttBadge) {
-          const isCompliant = (d.avg_attendance_pct || 0) >= (d.attendance_threshold || 75);
-          kpiAttBadge.innerHTML = isCompliant
-            ? `<span class="badge badge-present" style="display:inline-flex;align-items:center;gap:0.25rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Target &gt;= ${d.attendance_threshold || 75}%</span></span>`
-            : `<span class="badge badge-absent" style="display:inline-flex;align-items:center;gap:0.25rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span>Target &lt; ${d.attendance_threshold || 75}%</span></span>`;
+          kpiAttBadge.innerText = 'Department average';
         }
 
         // Radar indicator dot on tab
@@ -604,10 +619,8 @@
         const regParam = g.register_id ? `?id=${g.register_id}` : '';
         const bgGradient = GC_CARD_GRADIENTS[idx % GC_CARD_GRADIENTS.length];
         const cardAccent = GC_CARD_ACCENTS[idx % GC_CARD_ACCENTS.length];
-        const teacherInitial = (state.currentUser?.full_name || g.name || 'T').charAt(0).toUpperCase();
 
-        const attLabel = g.avg_attendance_pct != null ? `${g.avg_attendance_pct}% attendance` : 'No sessions held';
-        const subjectTitle = g.subject_name || g.name;
+        const subjectTitle = g.subject_name || g.name || 'Information Security';
         let classSubtitle = '';
         if (g.subject_name && g.name && g.name !== g.subject_name) {
           if (g.name.toLowerCase().startsWith(g.subject_name.toLowerCase())) {
@@ -618,21 +631,57 @@
         }
         const codeDisplay = g.subject_code || g.invite_code || '';
 
+        // Dynamic Initials Avatar
+        let initials = '';
+        if (g.subject_code) {
+          const codeLetters = g.subject_code.replace(/[^a-zA-Z]/g, '');
+          if (codeLetters.length >= 2) initials = codeLetters.slice(0, 2).toUpperCase();
+        }
+        if (!initials) {
+          const words = subjectTitle.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean);
+          if (words.length >= 2) {
+            initials = (words[0][0] + words[1][0]).toUpperCase();
+          } else if (words.length === 1) {
+            initials = words[0].slice(0, 2).toUpperCase();
+          } else {
+            initials = 'IS';
+          }
+        }
+
+        const attPct = g.avg_attendance_pct != null ? parseFloat(g.avg_attendance_pct) : null;
+        const isCompliant = attPct != null ? (attPct >= 75) : true;
+        const pctColor = attPct != null ? (attPct >= 75 ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)') : 'hsl(215, 80%, 55%)';
+        const strokeDash = attPct != null ? Math.min(100, Math.max(0, Math.round(attPct))) : 0;
+
         return `
           <div class="gc-class-card ${isArchived ? 'is-archived' : ''}" style="--card-accent: ${cardAccent};">
-            <!-- Header Banner -->
+            <!-- Redesigned Header Banner -->
             <div class="gc-card-header" style="background: ${bgGradient};">
-              <div class="gc-card-header-top">
-                <div class="gc-card-title-col" style="flex: 1; min-width: 0; padding-right: 0.5rem;">
+              <div class="gc-card-header-inner">
+                <div class="gc-avatar-circle" title="${escapeHtml(subjectTitle)}">${initials}</div>
+                <div class="gc-card-title-col">
                   <a href="/faculty/group-detail.html?id=${g.id}" class="gc-card-title" title="${escapeHtml(subjectTitle)}">
                     ${escapeHtml(subjectTitle)}
                   </a>
-                  ${classSubtitle ? `<div class="gc-card-sub-name" title="${escapeHtml(classSubtitle)}">${escapeHtml(classSubtitle)}</div>` : ''}
+                  <div class="gc-component-pill-wrap">
+                    <span class="gc-component-pill">${escapeHtml(g.component || 'Theory')}</span>
+                  </div>
+                  <div class="gc-card-meta-row">
+                    <span class="gc-meta-item">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      <span>Sem ${g.semester || 5}</span>
+                    </span>
+                    <span class="gc-meta-divider">|</span>
+                    <span class="gc-meta-item">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      <span>AY 2026-27</span>
+                    </span>
+                  </div>
                 </div>
-                <div class="gc-card-header-right-meta" style="display:flex;align-items:center;gap:0.35rem;flex-shrink:0;">
+                <div class="gc-card-header-right-meta">
                   ${codeDisplay ? `<span class="gc-card-code-tag">${escapeHtml(codeDisplay)}</span>` : ''}
                   <button type="button" class="gc-action-icon gc-header-dots-btn" onclick="toggleCardMenu(event, 'header-${g.id}')" title="Class Options" aria-label="Class Options">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
                   </button>
                   <div class="gc-menu-dropdown gc-menu-header" id="card-menu-header-${g.id}">
                     <a href="/faculty/course-file.html?group_id=${g.id}${g.register_id ? '&register_id=' + g.register_id : ''}" class="gc-menu-item">
@@ -655,34 +704,53 @@
                   </div>
                 </div>
               </div>
-              <div class="gc-card-meta-row">
-                <span>Sem ${g.semester}</span>
-                <span>•</span>
-                <span class="gc-component-tag">${escapeHtml(g.component || 'THEORY')}</span>
-                <span>•</span>
-                <span>AY 2026-27</span>
-              </div>
-              <div class="gc-card-avatar" title="${escapeHtml(state.currentUser?.full_name || 'Faculty')}">${teacherInitial}</div>
             </div>
 
-            <!-- Simple Body: Direct Stats (No log clutter) -->
-            <div class="gc-card-body">
-              <div class="gc-card-stats-row">
-                <span class="gc-stat-item">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                  <strong>${g.member_count || 0}</strong> Students
-                </span>
-                <span class="gc-stat-dot">•</span>
-                <span class="gc-stat-item">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                  <span class="badge ${g.avg_attendance_pct != null && g.avg_attendance_pct >= 75 ? 'badge-present' : (g.avg_attendance_pct != null ? 'badge-absent' : 'badge-sem')}" style="font-weight:700;">
-                    ${attLabel}
+            <!-- Redesigned 3-Column Stats Strip -->
+            <div class="gc-card-stats-strip">
+              <!-- Column 1: Students -->
+              <div class="gc-stat-col">
+                <div class="gc-stat-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <div class="gc-stat-data">
+                  <strong class="gc-stat-number">${g.member_count || 0}</strong>
+                  <span class="gc-stat-label">Students</span>
+                </div>
+              </div>
+
+              <!-- Column 2: Attendance Gauge Donut -->
+              <div class="gc-stat-col">
+                <div class="gc-stat-gauge-wrap">
+                  <svg viewBox="0 0 36 36" class="circular-chart" width="34" height="34">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="hsl(150 25% 90%)" stroke-width="3"/>
+                    <path class="circle" stroke-dasharray="${strokeDash}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${pctColor}" stroke-width="3.2" stroke-linecap="round"/>
+                    <text x="18" y="20.5" class="circle-chart-text" text-anchor="middle" font-size="8.5" font-weight="800" fill="var(--text-main)">${attPct != null ? Math.round(attPct) + '%' : '—'}</text>
+                  </svg>
+                  <div class="gc-stat-data">
+                    <strong class="gc-stat-number">${attPct != null ? attPct + '%' : '—'}</strong>
+                    <span class="gc-stat-label">Attendance</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Column 3: Status Badge -->
+              <div class="gc-stat-col gc-stat-badge-col">
+                ${isCompliant ? `
+                  <span class="badge-on-track">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>On Track</span>
                   </span>
-                </span>
+                ` : `
+                  <span class="badge-needs-attention">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span>Needs Attention</span>
+                  </span>
+                `}
               </div>
             </div>
 
-            <!-- Primary Direct Action Buttons (1-Click Class Management) -->
+            <!-- Primary 2x2 Action Buttons Grid -->
             <div class="gc-card-primary-actions">
               <a href="/faculty/group-detail.html?id=${g.id}&tab=register&action=rollcall" class="gc-card-btn primary" title="Launch instant attendance roll call">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -702,24 +770,27 @@
               </a>
             </div>
 
-            <!-- Course File: 18 Document Cards (Quick Access) -->
+            <!-- Course File: Document Cards (Quick Access) -->
             <div class="cf-quick-panel" id="cf-panel-${g.id}">
               <div class="cf-quick-header">
                 <button type="button" class="cf-quick-toggle" onclick="toggleCfPanel(${g.id})" title="Toggle Course File Document Cards">
                   <span class="cf-toggle-left">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    <span>Course File (NBA/NAAC)</span>
-                    <span class="cf-summary-badge">18 Documents</span>
+                    <div class="cf-doc-icon">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    </div>
+                    <div class="cf-title-block">
+                      <strong class="cf-title-text">Course File <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);">(NBA/NAAC)</span></strong>
+                      <span class="cf-summary-badge">12 Documents</span>
+                    </div>
                   </span>
                   <span class="cf-toggle-right">
-                    <span class="cf-avail-badge" id="cf-avail-badge-${g.id}"></span>
-                    <svg class="cf-toggle-chevron-svg" id="cf-chevron-${g.id}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <span class="cf-avail-badge ready" id="cf-avail-badge-${g.id}">8/12 Ready</span>
+                    <span class="cf-open-nba-pill">
+                      <span>Open NBA</span>
+                      <svg class="cf-toggle-chevron-svg" id="cf-chevron-${g.id}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </span>
                   </span>
                 </button>
-                <a href="/faculty/course-file.html?group_id=${g.id}${g.register_id ? '&register_id=' + g.register_id : ''}" class="cf-open-nba-btn" title="Open Full NBA/NAAC Course File Dossier">
-                  <span>Open NBA</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                </a>
               </div>
               <div class="cf-quick-body" id="cf-body-${g.id}" style="display:none;">
                 <div class="cf-doc-cards-grid" id="cf-grid-${g.id}">
@@ -736,13 +807,13 @@
 
             <!-- Clean Footer: Code + Actions -->
             <div class="gc-card-footer">
-              <div class="gc-card-code-wrap" onclick="navigator.clipboard && navigator.clipboard.writeText('${escapeHtml(g.invite_code || '')}').then(() => showToast('Class code copied!', 'success'))" title="Click to copy class code" role="button" tabindex="0">
-                <span style="font-size:0.75rem; color:var(--text-muted);">Code:</span>
-                <span class="gc-invite-code-pill">${escapeHtml(g.invite_code || '--')}</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <div class="gc-card-code-wrap" onclick="navigator.clipboard && navigator.clipboard.writeText('${escapeHtml(codeDisplay || '')}').then(() => showToast('Class code copied!', 'success'))" title="Click to copy class code" role="button" tabindex="0">
+                <span class="gc-code-lbl">Code:</span>
+                <span class="gc-invite-code-pill">${escapeHtml(codeDisplay || '--')}</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gc-copy-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </div>
               <div class="gc-footer-actions">
-                <button type="button" class="gc-action-icon" onclick="toggleCardMenu(event, 'footer-${g.id}')" title="Class Settings &amp; Archive Options">
+                <button type="button" class="gc-action-icon gc-footer-dots-btn" onclick="toggleCardMenu(event, 'footer-${g.id}')" title="Class Settings &amp; Archive Options">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
                 </button>
 

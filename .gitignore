@@ -84,7 +84,7 @@ frontend/standalone/
 # Local collaboration & preview mirrors (never commit to git)
 frontend_dev2/
 frontend_collab/
-
-
+frontend_backup_v1/
+frontend_temp_before_revert/
 
 .agents/

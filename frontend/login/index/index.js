@@ -25,100 +25,6 @@
   /* ── State ── */
   let currentActivationToken = null;
 
-  /* ── Check for session revocation or logout notice ── */
-  (function checkSessionNotice() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const reason = params.get('reason');
-      let notice = '';
-      try {
-        notice = sessionStorage.getItem('vidya_logout_notice') || '';
-        sessionStorage.removeItem('vidya_logout_notice');
-      } catch (_) {}
-
-      if (!notice && reason) {
-        if (reason === 'session_transferred') {
-          notice = 'Your session has ended because this account was logged into from another device.';
-        } else if (reason === 'session_expired') {
-          notice = 'Your session expired due to 30 minutes of inactivity. Please sign in again.';
-        }
-      }
-
-      if (notice) {
-        const sb = document.getElementById('status-alert-banner');
-        if (sb) {
-          const titleEl = document.getElementById('status-alert-title');
-          const bodyEl = document.getElementById('status-alert-body');
-          const linkEl = document.getElementById('status-alert-link');
-          if (titleEl) titleEl.textContent = reason === 'session_expired' ? 'Session Expired' : 'Session Transferred';
-          if (bodyEl) bodyEl.textContent = notice;
-          if (linkEl) linkEl.style.display = 'none';
-          sb.style.display = 'block';
-        }
-        if (window.history && window.history.replaceState && reason) {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
-    } catch (_) {}
-  })();
-
-  /* ── Background Server Wake-Up Pre-Warming (Cloud Cold-Start Prevention) ── */
-  (function wakeUpServerPreWarm() {
-    try {
-      fetch('/api/v1/health', { cache: 'no-store' }).catch(() => {});
-      fetch('https://vidyaos-backend.onrender.com/api/v1/health', { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
-    } catch (_) {}
-  })();
-
-  /* ── Cold-Start Retry Engine (Handles Render 15-min idle sleep gracefully) ── */
-  async function executeLoginWithRetry(payload, maxAttempts = 6) {
-    const text = document.getElementById('submit-text');
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        if (attempt > 1) {
-          if (text) text.textContent = `Waking up server (${attempt}/${maxAttempts})...`;
-          fetch('https://vidyaos-backend.onrender.com/api/v1/health', { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
-        }
-        const res = await fetchApi('/auth/login', {
-          method: 'POST',
-          suppressToast: true,
-          body: JSON.stringify(payload)
-        });
-        return res;
-      } catch (err) {
-        const isColdStart =
-          err?.status === 502 ||
-          err?.status === 503 ||
-          err?.status === 504 ||
-          (err?.message && (
-            err.message.includes('502') ||
-            err.message.includes('503') ||
-            err.message.includes('504') ||
-            err.message.includes('Failed to fetch') ||
-            err.message.includes('Network') ||
-            err.message.includes('waking up')
-          ));
-
-        if (isColdStart && attempt < maxAttempts) {
-          if (text) text.textContent = `Waking cloud server (${attempt}/${maxAttempts})...`;
-          const sb = document.getElementById('status-alert-banner');
-          if (sb) {
-            const titleEl = document.getElementById('status-alert-title');
-            const bodyEl = document.getElementById('status-alert-body');
-            const linkEl = document.getElementById('status-alert-link');
-            if (titleEl) titleEl.textContent = 'Server Waking Up';
-            if (bodyEl) bodyEl.textContent = 'The institutional cloud backend is spinning up from idle sleep (Render instance). Reconnecting automatically...';
-            if (linkEl) linkEl.style.display = 'none';
-            sb.style.display = 'block';
-          }
-          await new Promise(r => setTimeout(r, 3500));
-          continue;
-        }
-        throw err;
-      }
-    }
-  }
-
   /* ── Role compatibility (Unified single login for all roles) ── */
   function setRole(role) {
     hideBanners();
@@ -187,18 +93,18 @@
 
     try {
       const deviceId = getVidyaDeviceId();
-      const res = await executeLoginWithRetry({
-        email: id, phone: id, credential: id,
-        identifier: id, username: id, enrollment_no: id,
-        password: pw,
-        device_id: deviceId
+      const res = await fetchApi('/auth/login', {
+        method: 'POST',
+        suppressToast: true,
+        body: JSON.stringify({
+          email: id, phone: id, credential: id,
+          identifier: id, username: id, enrollment_no: id,
+          password: pw,
+          device_id: deviceId
+        })
       });
 
       if (res.success) {
-        const sb = document.getElementById('status-alert-banner');
-        if (sb && document.getElementById('status-alert-title')?.textContent === 'Server Waking Up') {
-          sb.style.display = 'none';
-        }
         if (res.data.must_change_password) {
           currentActivationToken = res.data.activation_token;
           document.getElementById('act-name').textContent  = res.data.user?.full_name || res.data.user?.email || 'Faculty';
@@ -207,7 +113,7 @@
           resetSubmitBtn();
           return;
         }
-        setAuthSession(res.data.access_token, res.data.user, res.data.refresh_token);
+        setAuthSession(res.data.access_token, res.data.user);
         try { if (typeof showToast === 'function') showToast('Login successful! Redirecting…', 'success'); } catch(_) {}
         setTimeout(() => redirectAfterLogin(res.data.user), 350);
       }
@@ -263,19 +169,19 @@
     btn.textContent = 'Disconnecting…';
 
     try {
-      const res = await executeLoginWithRetry({
-        email: id, phone: id, credential: id,
-        identifier: id, username: id, enrollment_no: id,
-        password: pw,
-        device_id: getVidyaDeviceId(),
-        force_logout: true
+      const res = await fetchApi('/auth/login', {
+        method: 'POST',
+        suppressToast: true,
+        body: JSON.stringify({
+          email: id, phone: id, credential: id,
+          identifier: id, username: id, enrollment_no: id,
+          password: pw,
+          device_id: getVidyaDeviceId(),
+          force_logout: true
+        })
       });
       if (res.success) {
-        const sb = document.getElementById('status-alert-banner');
-        if (sb && document.getElementById('status-alert-title')?.textContent === 'Server Waking Up') {
-          sb.style.display = 'none';
-        }
-        setAuthSession(res.data.access_token, res.data.user, res.data.refresh_token);
+        setAuthSession(res.data.access_token, res.data.user);
         try { if (typeof showToast === 'function') showToast('Previous session disconnected. Signing in…', 'success'); } catch(_) {}
         setTimeout(() => redirectAfterLogin(res.data.user), 350);
       }
@@ -313,7 +219,7 @@
       }).then(x => x.json());
 
       if (r.success) {
-        setAuthSession(r.data.access_token, r.data.user, r.data.refresh_token);
+        setAuthSession(r.data.access_token, r.data.user);
         try { if (typeof showToast === 'function') showToast('Account activated! Welcome to VidyaOS.', 'success'); } catch(_) {}
         setTimeout(() => redirectAfterLogin(r.data.user), 600);
       } else {
@@ -355,7 +261,7 @@
     if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
       const { payload } = event.data;
       if (payload?.access_token) {
-        setAuthSession(payload.access_token, payload.user, payload.refresh_token);
+        setAuthSession(payload.access_token, payload.user);
         try { if (typeof showToast === 'function') showToast('Google login successful!', 'success'); } catch(_) {}
         setTimeout(() => redirectAfterLogin(payload.user), 400);
       }

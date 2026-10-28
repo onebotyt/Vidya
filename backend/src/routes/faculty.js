@@ -84,19 +84,9 @@ router.post('/registers/:id/sessions', [
   param('id').isInt(),
   body('session_date').isDate().withMessage('Valid date required (YYYY-MM-DD)'),
   body('period_number').optional().isInt({ min: 1, max: 10 }),
-  body('session_type').optional().isIn(['THEORY', 'PRACTICAL', 'TUTORIAL', 'CUSTOM']),
+  body('session_type').optional().isIn(['THEORY', 'PRACTICAL', 'TUTORIAL']),
   validate
 ], FacultyController.createSession);
-
-// @route   DELETE /api/v1/faculty/registers/:id/sessions/:sessionId
-// @desc    Delete a class attendance session
-// @access  Protected (TEACHER, SYSTEM_ADMIN)
-// @handler FacultyController.deleteSession() -> FacultyModel.deleteSession()
-router.delete('/registers/:id/sessions/:sessionId', [
-  param('id').isInt(),
-  param('sessionId').isInt(),
-  validate
-], FacultyController.deleteSession);
 
 // @route   GET /api/v1/faculty/cohorts
 // @desc    Retrieve cohorts assigned to the teacher or department
@@ -193,12 +183,6 @@ router.post('/registers/:id/export/internal-evaluation-excel', [param('id').isIn
 // @access  Protected (TEACHER, SYSTEM_ADMIN)
 // @handler FacultyController.exportUnitTestsSummaryExcel() -> excelExportService
 router.post(['/registers/:id/export/unit-tests-summary-excel', '/registers/:id/export/all-tests-excel'], [param('id').isInt(), validate], FacultyController.exportUnitTestsSummaryExcel);
-
-// @route   POST /api/v1/faculty/registers/:id/export/attendance
-// @desc    Export attendance register ledger in Excel, PDF, or Word Doc format
-// @access  Protected (TEACHER, SYSTEM_ADMIN)
-// @handler FacultyController.exportAttendanceRegister() -> FacultyModel.getRegisterAttendanceExportData() -> excelExportService
-router.post('/registers/:id/export/attendance', [param('id').isInt(), validate], FacultyController.exportAttendanceRegister);
 
 // @route   POST /api/v1/faculty/export/table-to-excel
 // @desc    Export custom client table rows into authentic Microsoft Excel (.xlsx) workbook
