@@ -103,6 +103,7 @@
     justify-content: center;
     text-decoration: none;
     transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
   }
 
   .rail-logo-link:hover {
@@ -134,6 +135,7 @@
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     padding: 0;
     box-shadow: 0 2px 5px hsl(0 0% 0% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.8);
+    position: relative;
   }
 
   .rail-expand-btn:hover {
@@ -234,6 +236,92 @@
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7);
     padding: 0;
+    position: relative;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Desktop Collapsed Rail Fast Custom Tooltips (Zero Native Delay)
+     Instant hover response with sleek high-contrast styling & pointer caret
+     ───────────────────────────────────────────────────────────── */
+  .admin-app-layout.sidebar-collapsed [data-tooltip],
+  body.sidebar-collapsed [data-tooltip],
+  html.sidebar-collapsed [data-tooltip] {
+    position: relative;
+  }
+
+  .admin-app-layout.sidebar-collapsed [data-tooltip]::after,
+  body.sidebar-collapsed [data-tooltip]::after,
+  html.sidebar-collapsed [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-6px);
+    background: var(--text-main);
+    color: var(--bg-card);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    line-height: 1;
+    white-space: nowrap;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px hsl(0 0% 0% / 0.18), 0 1px 3px hsl(0 0% 0% / 0.1);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.12s;
+    z-index: 10005;
+  }
+
+  /* Triangle Pointer Arrow */
+  .admin-app-layout.sidebar-collapsed [data-tooltip]::before,
+  body.sidebar-collapsed [data-tooltip]::before,
+  html.sidebar-collapsed [data-tooltip]::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 5px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-6px);
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 7px solid var(--text-main);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.12s;
+    z-index: 10005;
+  }
+
+  /* Instant High-Speed Hover Trigger */
+  .admin-app-layout.sidebar-collapsed [data-tooltip]:hover::after,
+  .admin-app-layout.sidebar-collapsed [data-tooltip]:hover::before,
+  body.sidebar-collapsed [data-tooltip]:hover::after,
+  body.sidebar-collapsed [data-tooltip]:hover::before,
+  html.sidebar-collapsed [data-tooltip]:hover::after,
+  html.sidebar-collapsed [data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  /* Completely suppress tooltips when drawer is expanded or on mobile */
+  body:not(.sidebar-collapsed) [data-tooltip]::after,
+  body:not(.sidebar-collapsed) [data-tooltip]::before,
+  .admin-app-layout:not(.sidebar-collapsed) [data-tooltip]::after,
+  .admin-app-layout:not(.sidebar-collapsed) [data-tooltip]::before,
+  html:not(.sidebar-collapsed) [data-tooltip]::after,
+  html:not(.sidebar-collapsed) [data-tooltip]::before {
+    display: none !important;
+  }
+
+  @media (max-width: 768px) {
+    [data-tooltip]::after,
+    [data-tooltip]::before {
+      display: none !important;
+    }
   }
 
   .rail-footer-btn:hover {

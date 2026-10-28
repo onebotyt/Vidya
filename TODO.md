@@ -34,6 +34,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 398: Instant Custom Tooltips, Razor-Clean 3D Isometric SVGs & Zero-Scroll Compact Viewport Fit
+
+- **User Directives**:
+  - "you see when hover over icon show name nut not look good fix it style it and fast response and icon are best but svg inside them not clean make clean but don't break that 3d look and try to fit all in window so user don't have to scroll dashboard"
+- **Implementation**:
+  1. **Instant High-Speed Custom CSS Tooltips (`sidebar.css`, `sidebar.js`, `sidebar.html`)**:
+     - Stripped native `title="..."` attributes from all rail icons, buttons, and footers to eliminate the delayed, clunky black OS browser tooltip.
+     - Added CSS pseudo-element tooltips via `[data-tooltip]::after` with a directional pointer triangle (`::before`).
+     - Snappy, micro-second hover transition (`0.12s cubic-bezier(0.16, 1, 0.3, 1)`) with subtle drop shadow, high-contrast dark surface, and rounded corners.
+     - Automatically suppressed when the navigation drawer is expanded or on mobile screens.
+  2. **Clean & Crisp 3D Isometric SVG Vector Geometry (`icons.js`, `sidebar.js`, `sidebar.html`)**:
+     - Redesigned and mathematically aligned the 3D isometric SVG assets for `dashboard`, `academicStructure`, `hodManagement`, `reports`, `settings`, `audit`, `user`, and `logout`.
+     - Preserved the rich 3D isometric lighting, multi-facet shading, and depth while eliminating jagged, overlapping polygons or misaligned gear teeth.
+  3. **Zero-Scroll Viewport Optimization (`dashboard.css`)**:
+     - Compacted `.dashboard-container` padding (`0.85rem 1.75rem 1rem`) and section gaps (`0.75rem`).
+     - Tightened `.admin-welcome-hero` padding (`0.85rem 1.35rem`) and scaled hero title (`1.28rem`), subtitle (`0.82rem`), and campus showcase card (`min-height: 88px`).
+     - Compacted KPI cards (`0.75rem 1.15rem; gap: 0.45rem`) and squircle dimensions (`36px`).
+     - Streamlined attendance overview (95px donut, 60px department bars) and quick action cards (`0.65rem 0.85rem; 34px icon squircles`).
+     - The entire executive dashboard now fits comfortably within 1080p, 1440p, and standard laptop viewports without any vertical scrolling!
+- **Verification**:
+  - `node scripts/test-theme-support.js`: 88/88 passed (100% theme tokenized, 0 hardcoded colors).
+  - `node scripts/test-rbac-and-structure.js`: 34/34 passed.
+  - `node scripts/test-register-consolidation.js`: 46/46 passed.
+  - JSDOM validation: confirmed `title: null` on all rail items and `data-tooltip` populated across all navigation endpoints.
+
 ### ✅ Milestone 397: Streamlined Admin Dashboard, Quick Actions Elevation, Useful Top Header & Fixed Sidebar Footer
 
 - **User Directives**:
