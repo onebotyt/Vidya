@@ -34,6 +34,29 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 388: Admin Component Isolation, Dedicated SVG Icon Registry & Outside Asset Shielding
+
+- **User Directive**:
+  - Admin components must reside strictly inside `frontend/admin/components/`.
+  - Do NOT use outside JS and CSS in admin pages; block outside scripts and styles so they cannot conflict or break UI/UX.
+  - Track all admin components systematically for clean-up and future migrations.
+  - Separate SVG icons into a dedicated JS file inside admin components containing only the icons admin uses.
+- **Implemented Architectural Enhancements**:
+  1. **Dedicated Admin SVG Icon Registry (`frontend/admin/components/icons.js`)**:
+     - Built pure SVG builder registry `window.ADMIN_ICONS` containing only icons required by admin (`cube`, `menu`, `pause`, `chevronLeft`, `chevronRight`, `chevronDown`, `close`, `bell`, `dashboard`, `academicStructure`, `hodManagement`, `reports`, `settings`, `audit`, `user`, `logout`, `institution`, `arrowRight`, `shieldLock`, `userCheck`, `users`, `check`).
+     - Added `window.getAdminIcon(name, options)` helper and auto-hydration engine `window.renderAdminIcons()`.
+     - Mirrored to `frontend/admin/components/icons/icons.js`.
+  2. **Outside Asset Shielding & Strict Execution Block**:
+     - In `frontend/shared/js/nav.js`: Added hard guard in `mountNavigationSystem()` and `_initSidebarState()` aborting execution immediately when current path is `/admin/*` or `.admin-sidebar`/`.admin-app-layout` is present.
+     - In `frontend/shared/js/admin-nav.js`: Guarded `initAdminNav()` to prevent legacy navbar or drawer DOM mounting over modern admin components.
+     - In `frontend/admin/dashboard/index.html`: Removed outside `/css/layout.css`, `/css/components.css`, and `/js/ui.js`. Loaded only `/admin/components/icons.js`, `/admin/components/sidebar/sidebar.js`, and `/admin/dashboard/dashboard.js`.
+  3. **Admin Component Inventory & UI Memory Map**:
+     - Created `frontend/admin/components/README.md` tracking architecture, component states, isolation boundaries, and rollout schedule.
+     - Updated `docs/ui-map/components.md` registering `UI-ADM-001` (AdminDualStateSidebar) and `UI-ADM-002` (AdminSvgIcons).
+- **Verification**:
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+
 ### ✅ Milestone 387: Admin Dashboard Alignment & Sidebar Stability
 
 - **Issues Addressed**:
