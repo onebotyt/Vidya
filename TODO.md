@@ -34,6 +34,48 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 386: Responsive Dual-State Navigation Architecture for Admin Dashboard (PC Mini-Rail & Mobile Drawer)
+
+- **User Requirement & Visual Directives**:
+  - Implement pixel-accurate dashboard layout and responsive navigation behavior matching provided mockups (`media_1793217476227_ef6d74ed.png` for PC and `media_1793217476236_d8ce277c.png` for Mobile).
+  - Scope: Admin Dashboard first (`/admin/dashboard.html`), to be replicated across other portals after review.
+- **Implemented PC Navigation Architecture (≥ 769px)**:
+  1. **Expanded Condition (250px)**:
+     - Full sidebar (250px width).
+     - Sidebar Header: Hamburger icon `☰` + `VidyaOS Console` + floating circular button with pause `||` in light blue circle (`var(--color-primary-light)`).
+     - Navigation items: `Dashboard` active item styled as a solid blue elongated rounded pill (`var(--color-primary)`) with white icon and white text. Inactive items: `Academic Structure`, `HOD Management`, `Reports & Analytics`, `System Settings`, `Audit Logs`.
+     - Footer: `VidyaOS • Admin` and `Sign Out`.
+     - Main content: Starts directly with Welcome Hero card (no top navbar spanning PC), offset by 250px with smooth transition.
+  2. **Collapsed Condition (Mini-Rail: 72px)**:
+     - Sidebar collapses to narrow 72px rail.
+     - Header: 3D isometric blue cube logo SVG at top, with hamburger `☰` and circular expand chevron `<` / `>` button.
+     - Navigation items: Labels hidden, icons centered. `Dashboard` active item is a solid blue 44x44 circular/squircle button (`var(--color-primary)`) with white home icon.
+     - Footer: Centered profile icon button (`👤`) and sign-out button (`⎋`).
+     - Main content: Expands smoothly to fill remaining screen width (`margin-left: 72px`).
+     - Preference persisted in `localStorage.setItem('admin_sidebar_collapsed', 'true'|'false')` with instant zero-layout-shift script in `<head>`.
+     - Keyboard shortcut: `Ctrl+B` / `Cmd+B` toggles sidebar.
+- **Implemented Mobile Navigation Architecture (≤ 768px)**:
+  1. **Collapsed Condition (Default)**:
+     - Sticky top mobile header bar (`.mobile-top-header`): Dark rounded hamburger button on left, centered `VidyaOS` with campus icon, search icon (`🔍`) and bell notification icon (`🔔`) with red badge `1` on right.
+     - Sidebar is hidden completely off-canvas (`transform: translateX(-100%)`).
+     - Main content takes 100% viewport width starting right below top header.
+  2. **Expanded Condition (Slide-out Drawer: 280px)**:
+     - Tapping dark hamburger button slides out drawer (`transform: translateX(0)`).
+     - Blurred dimmed backdrop overlay (`#sidebar-backdrop`) prevents interaction with underlying page.
+     - Drawer Header: Hamburger `☰` + `VidyaOS Console` + Close button `✕` on right edge.
+     - Nav items: `Dashboard` active item styled as a soft blue rounded pill (`background: var(--color-primary-light); color: var(--color-primary); font-weight: 600;`).
+     - Drawer Footer: `VidyaOS • Admin` and `Sign Out`.
+     - Dismissal: Clicking `✕`, tapping backdrop, or pressing `Escape`.
+- **Search & Interactive Enhancements**:
+  - Synchronized search filtering across desktop header search pill, mobile dropdown search, and keyboard shortcut `/` or `Ctrl+K`.
+  - Notification button provides instant feedback.
+- **Synchronized & Verified**:
+  - Updated both `frontend/admin/dashboard/` and `frontend-v2/admin/dashboard/`.
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+  - Registers test: 46/46 passed.
+  - Student self-registration test: 30/30 passed.
+
 ### ✅ Milestone 385: Cold-Start Sleep Recovery, Faculty User Profile Link, & Admin Nav Polish
 
 - **User Problems Addressed**:
