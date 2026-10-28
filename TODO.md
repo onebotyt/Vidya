@@ -34,6 +34,40 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 383: Student Demographic Dossier (KYC) & First-Time Login Profile Completion Modal
+
+- **Requirements**:
+  - Add extra student details: `address`, `aadhar_number`, `father_name`, `mother_name`, `dob`, `gender`, `category`.
+  - Initial student registration retains streamlined essential fields without blocking registration with extra details.
+  - When students log in for the first time (or if demographic profile is incomplete), display a pop-up modal prompting them to complete their profile.
+  - In `/student/profile.html`, add full demographic and KYC dossier view/edit section.
+- **Implemented Architecture**:
+  1. **Database Schema & Migrations (`backend/src/config/db.js` & SQLite)**:
+     - Added columns to `students` table: `address TEXT`, `aadhar_number TEXT`, `father_name TEXT`, `mother_name TEXT`, `dob TEXT`, `gender TEXT`, `category TEXT`, `profile_completed INTEGER DEFAULT 0`.
+     - Embedded automatic `ALTER TABLE` statements in `db.js` so fresh and Render deployments automatically migrate seamlessly.
+  2. **Data Access & API Layer (`studentModel.js`, `studentController.js`, `routes/students.js`, `authService.js`)**:
+     - `StudentModel.getProfile()` now selects all demographic fields plus `profile_completed`.
+     - Added `StudentModel.updateStudentDetails()` to safely update allowed demographic fields.
+     - `StudentController.updateProfile()` now handles updating demographic fields, checks completeness, and auto-marks `profile_completed = 1` once all statutory fields are filled.
+     - `routes/students.js` extended with optional validation rules for `address`, `aadhar_number`, `father_name`, `mother_name`, `dob`, `gender`, `category`, `phone`.
+     - `authService.js` updated to include demographic fields and `profile_completed` in login payloads and `getMe()`.
+  3. **Student Profile Dossier (`frontend/student/profile/index.html` & `profile.js`)**:
+     - Added `Personal & Demographic Dossier` card with compliance callout and completion status badge (`Complete & Verified` vs `Incomplete Dossier`).
+     - Added form fields for Father's Name, Mother's Name, Date of Birth, Gender, Social Category, Aadhar Number, Student Phone, and Residential Address.
+     - Added async submission handler saving to `PUT /api/v1/students/me` with feedback and automatic status badge updates.
+     - Added deep link support for `?complete=1` to auto-scroll and highlight the dossier card.
+  4. **First-Time / Incomplete Profile Modal (`frontend/student/dashboard/index.html` & `dashboard.js`)**:
+     - Added `#complete-profile-modal` pop-up modal in student dashboard.
+     - In `dashboard.js`, on dashboard load, checks if `!s.profile_completed`: triggers pop-up modal automatically.
+     - Modal provides immediate in-place form completion with Father/Mother names, DOB, Gender, Category, Aadhar, Address, and "Save & Complete Profile" action without needing to navigate away.
+  5. **Synchronization**:
+     - Synced `frontend/student/profile/` and `frontend/student/dashboard/` to `frontend-v2/student/`.
+     - All 88 theme tests, 34 RBAC tests, 46 register tests, and 30 student self-registration tests pass.
+
+### ✅ Milestone 382: Mobile Backdrop Syntax Fix & Profile Google Button Icon Fix
+- Fixed malformed orphan CSS block in `classroom-nav.css` around lines 1058-1065.
+- Fixed `btn.innerText` -> `btn.innerHTML` in `faculty/profile/profile.js` for Google sign-in button SVG rendering.
+
 ### ✅ Milestone 381: User Profile Popover Navigation Link & Classroom Navigation Backdrop Fix
 
 - **User Insight & Issues**:
