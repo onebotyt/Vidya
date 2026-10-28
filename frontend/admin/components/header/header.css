@@ -1,0 +1,312 @@
+/**
+ * ══════════════════════════════════════════════════════════════
+ * VIDYAOS ADMIN TOP HEADER STYLES (header.css)
+ * Location: /frontend/admin/components/header/header.css
+ * 
+ * 100% Theme Tokenized — Zero Hardcoded Hex Colors
+ * Seamless integration with the 72px rail & floating flyout drawer
+ * ══════════════════════════════════════════════════════════════
+ */
+
+.admin-top-header {
+  height: 64px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 100;
+  user-select: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .admin-top-header {
+    display: none !important; /* Mobile uses .mobile-top-header */
+  }
+}
+
+/* ── Left Section: Menu Toggle & Search Bar ── */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  max-width: 600px;
+}
+
+.header-menu-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.header-menu-toggle-btn:hover {
+  background: var(--bg-surface-hover, var(--bg-surface));
+  color: var(--color-primary);
+  border-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.header-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 480px;
+}
+
+.header-search-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.16s ease;
+}
+
+.header-search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 5.25rem 0 2.65rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 400;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.header-search-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.header-search-input:focus {
+  background: var(--bg-card);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.header-search-input:focus ~ .header-search-icon {
+  color: var(--color-primary);
+}
+
+.search-kbd-badge {
+  position: absolute;
+  right: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  pointer-events: none;
+  line-height: 1.2;
+}
+
+/* ── Right Section: Theme Toggle, Notifications, User Profile ── */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  position: relative;
+}
+
+.header-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  transition: all 0.18s ease;
+}
+
+.header-icon-btn:hover {
+  background: var(--bg-surface-hover, var(--bg-surface));
+  color: var(--color-primary);
+  border-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.header-bell-badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 16px;
+  height: 16px;
+  background: var(--status-absent);
+  color: var(--text-white, hsl(0 0% 100%));
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid var(--bg-card);
+}
+
+/* ── User Profile Pill ── */
+.header-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.65rem 0.35rem 0.4rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.header-user-profile:hover {
+  background: var(--bg-surface-hover, var(--bg-surface));
+  border-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.user-avatar-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--text-white, hsl(0 0% 100%));
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px hsl(217 91% 60% / 0.25);
+}
+
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.user-role {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.user-chevron {
+  color: var(--text-muted);
+  transition: transform 0.18s ease, color 0.18s ease;
+  margin-left: 0.15rem;
+}
+
+.header-user-profile[aria-expanded="true"] .user-chevron {
+  transform: rotate(180deg);
+  color: var(--color-primary);
+}
+
+/* ── Profile Dropdown Menu ── */
+.header-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px hsl(0 0% 0% / 0.12);
+  padding: 0.5rem;
+  display: none;
+  flex-direction: column;
+  gap: 0.2rem;
+  z-index: 1000;
+  animation: dropdownSlideIn 0.15s ease forwards;
+}
+
+.header-profile-dropdown.open {
+  display: flex;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+  text-decoration: none;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.profile-dropdown-item:hover {
+  background: var(--bg-surface-hover, var(--bg-surface));
+  color: var(--color-primary);
+}
+
+.profile-dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.3rem 0;
+}
+
+.profile-dropdown-item.dropdown-logout-btn {
+  color: var(--status-absent);
+}
+
+.profile-dropdown-item.dropdown-logout-btn:hover {
+  background: var(--status-absent-bg);
+}

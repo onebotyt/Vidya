@@ -34,6 +34,37 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 395: Top Header Component & Complete Image 3 Content Extraction for Admin Dashboard
+
+- **User Directives**:
+  - "i don't see header and in image 3 see what you can extract and made for our page content area"
+- **Architectural & Design Implementation**:
+  1. **Admin Top Header Component (`frontend/admin/components/header/`)**:
+     - `header.html`: Clean semantic header containing hamburger menu toggle, pill search bar with `Ctrl + K` shortcut badge, theme toggle button, notification bell with unread badge `3`, and user profile trigger pill with dropdown menu.
+     - `header.css`: 100% theme-tokenized styles (`height: 64px; position: sticky; top: 0; z-index: 100;`).
+     - `header.js`: Controller engine handling dynamic mounting inside `.admin-main-wrap`, `Ctrl + K` global keyboard shortcut focus, light/dark theme switching, profile dropdown popover toggle with outside-click dismissal, and user name/initials synchronization.
+  2. **Page Content Area Complete Extraction from Image 3 (`dashboard.html`, `dashboard.css`, `dashboard.js`)**:
+     - **Hero Banner & Institutional Showcase**:
+       - Left: Welcome back headline with personalized admin name, subtitle, and dynamic live Date pill (`Tuesday, 28 October 2026`) and live ticking digital clock (`12:15 PM`).
+       - Right: Institutional Showcase Card for *Government Polytechnic Nainital*, subtitle *Knowledge • Skills • Better Tomorrow*, building icon badge, and quote badge *“Education creates opportunities.”*.
+     - **5 Key Performance Indicator Cards (Row of 5)**:
+       - 1. Total Students: `248` active enrolled students (`+12%` trend, 3D blue users icon).
+       - 2. Total Faculty: `18` teaching staff (`+2%` trend, 3D green faculty icon).
+       - 3. Departments: `6` active departments (sparkline trend, 3D purple building icon).
+       - 4. Present Today: `196 / 248` (`79%` pill badge, amber progress bar).
+       - 5. Absent Today: `52 / 248` (`21%` pill badge, red progress bar).
+     - **Middle 3-Column Analytics & Activity Grid**:
+       - *Column 1 (Today's Attendance Overview)*: Department selector dropdown, SVG donut progress ring (`79% Present`) with legend breakdown (Present 196, Absent 52, Leave 8, Not Marked 0), and 6-department comparison bar chart (`IT: 82%`, `CE: 76%`, `EE: 80%`, `ME: 71%`, `EC: 85%`, `AP: 78%`).
+       - *Column 2 (Recent Activity)*: Vertical activity feed with colored icon bullets, event headlines, details, and timestamps (`10:32 AM`, `09:14 AM`, `Yesterday`, etc.).
+       - *Column 3 (Important Notices)*: Notice items with colored bullet dots, dates (`28 Oct`, `26 Oct`, etc.), and category badges (`Important`, `Finance`, `General`, `Event`, `Academic`).
+     - **Quick Actions Row (6 Cards)**:
+       - Manage Students (`/admin/academic-structure.html?tab=students`), Manage Faculty (`/admin/faculty.html`), Mark Attendance (`/faculty/registers.html`), Create Notice (modal), Schedule Event (modal), and View Reports (`/admin/reports.html`).
+- **Verification**:
+  - JSDOM validation confirmed: Top Header present, search input present, theme toggle present, user profile present, hero banner with live date/time, campus card, 5 KPI cards, Attendance Overview panel with donut chart & department bars, 5 recent activity items, 5 important notices, 6 quick actions.
+  - Theme test: 88/88 passed (100% CSS variable tokens, 0 raw hex colors).
+  - RBAC test: 34/34 passed.
+  - Register consolidation test: 46/46 passed.
+
 ### ✅ Milestone 394: Hamburger Overlay Flyout Drawer (Zero Page Shift), Arrow-Only Rail & 3D Nav Icons
 
 - **User Directives**:
