@@ -105,15 +105,18 @@
   color: var(--color-primary);
 }
 
-/* Institutional Showcase Card (Right Side of Banner) */
+/* Institutional Showcase Card (Right Side of Banner) with Real Campus Photo */
 .hero-campus-card {
-  background: linear-gradient(135deg, var(--bg-surface), var(--color-primary-light));
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 1.25rem 1.5rem;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 124px;
+  box-shadow: 0 2px 6px hsl(0 0% 0% / 0.04);
 }
 
 .campus-card-content {
@@ -122,6 +125,47 @@
   gap: 0.85rem;
   position: relative;
   z-index: 2;
+  padding: 1.25rem 1.5rem;
+  max-width: 60%;
+}
+
+@media (max-width: 640px) {
+  .campus-card-content {
+    max-width: 100%;
+  }
+}
+
+.campus-image-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 52%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.campus-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 35%;
+  transition: transform 0.4s ease;
+}
+
+.hero-campus-card:hover .campus-photo {
+  transform: scale(1.04);
+}
+
+.campus-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--bg-surface) 0%, hsl(0 0% 0% / 0) 65%);
+}
+
+[data-theme='dark'] .campus-photo-overlay {
+  background: linear-gradient(90deg, var(--bg-surface) 0%, hsl(222 47% 11% / 0.45) 100%);
 }
 
 .campus-card-header {

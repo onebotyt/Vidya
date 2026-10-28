@@ -34,6 +34,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 396: Embedded Authentic Nainital Campus Photo in Institutional Showcase Card
+
+- **User Directives**:
+  - "this 2 image add on this place" (attaching card position screenshot and authentic photograph of Government Polytechnic Nainital campus building).
+- **Implementation**:
+  1. **Image Asset Integration (`frontend/admin/dashboard/campus-nainital.jpg`)**:
+     - Imported the high-resolution photograph of the Government Polytechnic Nainital academic block.
+     - Allowed `!frontend/admin/dashboard/campus-nainital.jpg` in `.gitignore`.
+  2. **Card Layout & Visual Overlay (`dashboard.html` & `dashboard.css`)**:
+     - Rendered `.campus-image-wrap` with `.campus-photo` and a soft directional gradient overlay (`.campus-photo-overlay`).
+     - Fades seamlessly from `var(--bg-surface)` on the left to transparent on the right, ensuring 100% text contrast and readability for *Government Polytechnic Nainital* title, *Knowledge • Skills • Better Tomorrow* motto, and quote pill *“Education creates opportunities.”*.
+     - Added smooth hover zoom (`scale(1.04)`) transition on `.hero-campus-card:hover`.
+- **Verification**:
+  - Theme test: 88/88 passed (100% CSS variable tokens).
+  - RBAC test: 34/34 passed.
+  - Register consolidation test: 46/46 passed.
+
 ### ✅ Milestone 395: Top Header Component & Complete Image 3 Content Extraction for Admin Dashboard
 
 - **User Directives**:

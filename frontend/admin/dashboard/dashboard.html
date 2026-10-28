@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,9 @@
   <meta name="description" content="Institutional Management Console — Configure academic structure, monitor real-time campus attendance, and manage faculty & students.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/css/reset.css?v=20261029">
   <link rel="stylesheet" href="/css/variables.css?v=20261029">
   <link rel="stylesheet" href="/admin/components/sidebar/sidebar.css?v=20261029">
@@ -20,10 +23,11 @@
         if (window.innerWidth >= 769) {
           document.documentElement.classList.add('sidebar-collapsed');
         }
-      } catch (_) {}
+      } catch (_) { }
     })();
   </script>
 </head>
+
 <body class="admin-dashboard-page">
   <div class="admin-app-layout" id="admin-app-layout">
 
@@ -128,7 +132,7 @@
             </div>
           </div>
 
-          <!-- Institutional Identity Card with Scenic Backdrop -->
+          <!-- Institutional Identity Card with Real Campus Photo -->
           <div class="hero-campus-card" aria-label="Institution Profile">
             <div class="campus-card-content">
               <div class="campus-card-header">
@@ -143,6 +147,10 @@
               <div class="campus-quote-badge">
                 <span>&ldquo;Education creates opportunities.&rdquo;</span>
               </div>
+            </div>
+            <div class="campus-image-wrap" aria-hidden="true">
+              <img src="/admin/dashboard/campus-nainital.jpg" alt="Government Polytechnic Nainital Campus" class="campus-photo">
+              <div class="campus-photo-overlay"></div>
             </div>
           </div>
         </section>
@@ -573,4 +581,5 @@
   <script src="/admin/components/header/header.js?v=20261029"></script>
   <script src="/admin/dashboard/dashboard.js?v=20261029"></script>
 </body>
+
 </html>
