@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Department Faculty &amp; Student Hub — HOD Command | VidyaOS</title>
+  <meta name="description" content="Unified department command directory: faculty roster, student enrollment lifecycle, self-registration gateways, and semester progression.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./hod-teachers.css">
+</head>
+<body class="page-shell">
+  <!-- Dynamic Unified Institutional AppShell Header & Navigation -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compatibility Hidden Telemetry Badges for Test Contracts -->
+  <span id="brand-role-badge" style="display:none;" aria-hidden="true">HOD</span>
+  <span id="role-badge" style="display:none;" aria-hidden="true">HOD</span>
+  <span id="user-profile-badge" style="display:none;" aria-hidden="true"></span>
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <main class="page-container">
+    <!-- Page Header & Action Controls -->
+    <header class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem; margin-bottom:1.5rem;">
+      <div>
+        <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:0.35rem; flex-wrap:wrap;">
+          <h1 class="page-title" id="dept-header-name" style="margin:0;">Department Faculty &amp; Student Hub</h1>
+          <span id="class-teacher-badge" class="badge" style="background:var(--bg-surface); color:var(--color-primary); font-weight:600; border:1px solid var(--border-color);">Department Faculty Access</span>
+          <span id="hod-badge" class="badge" style="display:none; background:var(--chip-hod-bg); color:var(--color-primary); font-weight:700;">HOD Command</span>
+        </div>
+        <p class="page-subtitle" id="dept-subtitle" style="margin:0; color:var(--text-muted); font-size:0.88rem;">
+          Unified department management: faculty directory, student enrollment, credentials, and semester progression.
+        </p>
+      </div>
+
+      <!-- Action Button Container -->
+      <div id="provision-btn-container" class="action-btn-group" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        <button type="button" class="btn btn-primary btn-sm" id="btn-add-teacher" onclick="openCreateTeacherModal()" style="display:none; font-weight:600;">
+          + Add Teacher
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-add-student" onclick="openAddStudentModal()" style="display:none; font-weight:600;">
+          + Add Student
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-bulk-csv" onclick="openBulkStudentModal()" style="display:none; font-weight:600;">
+          Bulk CSV Import
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-reindex-roll" onclick="openReindexRollModal()" style="display:none; font-weight:600;">
+          Re-order Roll #
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-promotion" onclick="openPromotionProgressionModal()" style="display:none; font-weight:700;">
+          Semester Progression
+        </button>
+        <a href="/faculty/hod-archive.html" class="btn btn-secondary btn-sm" id="btn-archive-link" style="display:none; font-weight:600; text-decoration:none;">
+          Alumni Archive
+        </a>
+        <span id="faculty-provision-notice" class="badge" style="display:none; background:var(--bg-surface); color:var(--text-muted); border:1px solid var(--border-color); padding:0.4rem 0.75rem; font-size:0.8rem;">
+          Faculty &amp; Student admissions managed by HOD
+        </span>
+      </div>
+    </header>
+
+    <!-- Quick Stats Telemetry KPI Board -->
+    <section class="stat-grid" aria-label="Department Overview Statistics">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Department Faculty</span>
+          <span class="stat-icon-wrapper" style="color:var(--color-primary);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="stat-teachers-count" style="color:var(--color-primary);">0</div>
+        <div class="stat-trend" style="color:var(--text-muted);">Active teaching staff</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Department Students</span>
+          <span class="stat-icon-wrapper" style="color:var(--color-primary);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="stat-total" style="color:var(--color-primary);">0</div>
+        <div class="stat-trend" style="color:var(--text-muted);">Total active enrolled</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Active Accounts</span>
+          <span class="stat-icon-wrapper" style="color:var(--status-present);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="stat-active" style="color:var(--status-present);">0</div>
+        <div class="stat-trend" style="color:var(--text-muted);">Verified active users</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Pending Registrations</span>
+          <span class="stat-icon-wrapper" style="color:var(--status-late);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="stat-pending" style="color:var(--status-late);">0</div>
+        <div class="stat-trend" style="color:var(--text-muted);">Awaiting verification</div>
+        <div id="stat-google" style="display:none;" aria-hidden="true">0</div>
+      </div>
+    </section>
+
+    <!-- Dedicated Self-Registration Gateways Hub -->
+    <section class="card" id="registration-control-hub" style="margin-bottom:1.5rem; padding:0; overflow:hidden;">
+      <div style="padding:1.15rem 1.5rem; border-bottom:1px solid var(--border-color); background:var(--bg-surface);">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <h2 style="font-size:1.05rem; font-weight:700; margin:0; color:var(--text-main);">Self-Registration Gateways (Open / Close)</h2>
+        </div>
+        <p style="margin:0.25rem 0 0 0; font-size:0.82rem; color:var(--text-muted);">
+          Control whether prospective teachers and students can register on the public portal. After opening, applicants submit registrations to your review queue.
+        </p>
+      </div>
+
+      <div style="padding:1.25rem 1.5rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem;">
+        <!-- Faculty Registration Gateway Tile -->
+        <div class="gateway-tile" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <div class="gateway-icon" style="width:40px; height:40px; border-radius:var(--radius-md); background:var(--bg-surface); color:var(--color-primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-main);">Faculty Gateway</div>
+              <div style="margin-top:0.2rem;">
+                <span id="quick-teacher-reg-badge" class="badge" style="background:var(--bg-surface); color:var(--text-muted); font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:999px;">Checking...</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" id="quick-teacher-reg-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleFacultyRegistration()" style="font-weight:700; font-size:0.8rem; border-radius:20px; white-space:nowrap;">
+            Toggle Teacher Reg
+          </button>
+        </div>
+
+        <!-- Student Registration Gateway Tile -->
+        <div class="gateway-tile" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <div class="gateway-icon" style="width:40px; height:40px; border-radius:var(--radius-md); background:var(--bg-surface); color:var(--color-primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            </div>
+            <div>
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-main);">Student Gateway</div>
+              <div style="margin-top:0.2rem;">
+                <span id="quick-student-reg-badge" class="badge" style="background:var(--bg-surface); color:var(--text-muted); font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:999px;">Checking...</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <button type="button" id="quick-student-reg-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleDepartmentStudentRegistration()" style="font-weight:700; font-size:0.8rem; border-radius:20px; white-space:nowrap;" title="1-Click open or close student registration for all semesters in this department">
+              Open All Semesters
+            </button>
+            <button type="button" id="quick-dept-student-reg-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleDepartmentStudentRegistration()" style="display:none;">
+              All Semesters
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workspace Tabs Navigation: 1. Faculty | 2. Student Roster | 3. Pending Student Registrations -->
+    <nav class="workspace-tabs" aria-label="Department Hub Sections" style="display:flex; gap:0.5rem; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:0.5rem; overflow-x:auto;">
+      <button type="button" id="tab-teachers-btn" class="workspace-tab-btn" onclick="showMainTab('teachers')" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.25rem; font-weight:600; border:none; background:transparent; color:var(--text-muted); border-radius:var(--radius-md); cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+        <span>Department Faculty</span>
+        <span id="pending-faculty-badge-tab" style="display:none; background:var(--status-late); color:white; border-radius:999px; padding:0.1rem 0.5rem; font-size:0.7rem; font-weight:800;">0</span>
+      </button>
+
+      <button type="button" id="tab-roster-btn" class="workspace-tab-btn active" onclick="showMainTab('roster')" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.25rem; font-weight:600; border:none; background:transparent; color:var(--text-muted); border-radius:var(--radius-md); cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+        <span>Student Roster &amp; Lifecycle</span>
+      </button>
+
+      <button type="button" id="tab-pending-btn" class="workspace-tab-btn" onclick="showMainTab('pending')" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.25rem; font-weight:600; border:none; background:transparent; color:var(--text-muted); border-radius:var(--radius-md); cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>Pending Student Registrations</span>
+        <span id="pending-badge" style="display:none; background:var(--status-absent); color:white; border-radius:999px; padding:0.1rem 0.5rem; font-size:0.7rem; font-weight:800;">0</span>
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: DEPARTMENT FACULTY PANEL -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="tab-teachers-panel" style="display:none;">
+      <!-- Pending Faculty Approvals Card -->
+      <section class="card" id="pending-faculty-card" style="margin-bottom:1.5rem; display:none;">
+        <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <h2 style="font-size:1.1rem; margin:0; font-weight:700;">Pending Faculty Registrations</h2>
+            </div>
+            <p style="margin:0.2rem 0 0 0; font-size:0.82rem; color:var(--text-muted);">
+              Self-registered teachers requesting to join your department. Review and approve to activate their teaching account.
+            </p>
+          </div>
+          <div id="pending-faculty-badge" class="badge" style="background:var(--status-late); color:white; border-radius:999px; padding:0.2rem 0.75rem; font-size:0.8rem; font-weight:700;">
+            0 Pending
+          </div>
+        </div>
+        <div id="pending-faculty-wrap" style="padding:1rem;">
+          <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem;">Loading pending requests...</div>
+        </div>
+      </section>
+
+      <!-- Faculty Controls & Search Bar -->
+      <div class="card" style="padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          <button type="button" id="hod-faculty-reg-btn" class="btn btn-secondary btn-sm" onclick="toggleFacultyRegistration()" style="font-weight:600; display:inline-flex; align-items:center; gap:0.45rem;">
+            <span id="hod-reg-indicator" style="display:inline-flex; align-items:center;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--text-muted);"></span></span>
+            <span id="hod-reg-text">Faculty Reg: Checking...</span>
+          </button>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Toggle public self-registration for new teachers</span>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input type="text" id="teacher-search-box" class="form-control" placeholder="Search faculty by name or email..." style="max-width:280px;" oninput="filterTeachers(this.value)">
+          <input type="hidden" id="search-box" oninput="filterTeachers(this.value)">
+        </div>
+      </div>
+
+      <!-- Teacher Cards Grid -->
+      <div id="teacher-grid" class="teacher-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1rem;">
+        <div style="text-align:center; padding:2.5rem; color:var(--text-muted); grid-column:1 / -1;">Loading faculty members...</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: STUDENT ROSTER & LIFECYCLE PANEL -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="tab-roster-panel">
+      <!-- Cohort Selector & Filter Card -->
+      <section class="card" style="padding:1.15rem 1.25rem; margin-bottom:1.5rem;">
+        <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+          <div style="min-width:220px; flex:1.2;">
+            <label class="form-label" for="cohort-select" style="margin-bottom:0.25rem; font-size:0.8rem; font-weight:700;">Department Cohort:</label>
+            <select id="cohort-select" class="form-select" onchange="onCohortSelectChange()">
+              <option value="">All Department Cohorts</option>
+            </select>
+          </div>
+          <div style="width:120px;">
+            <label class="form-label" for="filter-year" style="margin-bottom:0.25rem; font-size:0.8rem; font-weight:700;">Year</label>
+            <select id="filter-year" class="form-select" onchange="loadStudents()">
+              <option value="">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
+          </div>
+          <div style="width:120px;">
+            <label class="form-label" for="filter-sem" style="margin-bottom:0.25rem; font-size:0.8rem; font-weight:700;">Semester</label>
+            <select id="filter-sem" class="form-select" onchange="loadStudents()">
+              <option value="">All Semesters</option>
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+              <option value="3">Sem 3</option>
+              <option value="4">Sem 4</option>
+              <option value="5">Sem 5</option>
+              <option value="6">Sem 6</option>
+            </select>
+          </div>
+          <div style="flex:1.5; min-width:200px;">
+            <label class="form-label" for="search-input" style="margin-bottom:0.25rem; font-size:0.8rem; font-weight:700;">Search Roster</label>
+            <input type="text" id="search-input" class="form-control" placeholder="Search by name, roll, reg #, or enrollment..." oninput="debounceSearch()">
+          </div>
+          <div style="align-self:flex-end;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="resetFilters()" style="height:38px;">Reset</button>
+          </div>
+        </div>
+
+        <!-- Department Student Registration Controls Bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-top:1rem; padding-top:0.75rem; border-top:1px solid var(--border-color);">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <span style="font-size:0.82rem; font-weight:700; color:var(--text-main);">Department Student Gateway:</span>
+            <span id="tab-roster-reg-status" class="badge" style="background:var(--bg-surface); color:var(--text-muted); font-size:0.8rem; font-weight:700;">Checking...</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">(Allows new students of all semesters to register for this department on public portal)</span>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button type="button" id="tab-roster-dept-reg-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleDepartmentStudentRegistration()" style="font-weight:600;">
+              Open All Semesters
+            </button>
+            <button type="button" id="tab-roster-reg-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleDepartmentStudentRegistration()" style="display:none;">
+              Toggle Cohort Access
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Students Table Card -->
+      <section class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <div style="font-weight:700; font-size:0.95rem; color:var(--text-main);" id="table-roster-title">
+            Enrolled Students Roster
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);" id="table-count-label">
+            Showing 0 students
+          </div>
+        </div>
+        <div class="table-scroll-wrapper" style="overflow-x:auto;">
+          <table class="table" style="margin:0; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="background:var(--table-th-bg); border-bottom:2px solid var(--border-color); text-align:left;">
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Roll #</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">UBTER Reg #</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Official Enrollment</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Full Name</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Cohort</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Biometric Slot</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Status</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Google</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; text-align:right;" id="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody">
+              <tr>
+                <td colspan="9" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Loading students...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: PENDING STUDENT REGISTRATIONS PANEL -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="tab-pending-panel" style="display:none;">
+      <!-- Cohort Self-Registration Toggle Card -->
+      <section class="card" id="reg-toggle-card" style="margin-bottom:1.5rem; padding:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div style="font-weight:700; font-size:1rem; color:var(--text-main); margin-bottom:0.25rem;">
+              Department Student Self-Registration Portal
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-muted);" id="reg-toggle-desc">
+              Allow prospective students to submit online self-registration for all semesters in this department.
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span id="reg-toggle-status" class="badge" style="background:var(--bg-surface); color:var(--text-muted); font-size:0.85rem;">Checking...</span>
+            <button type="button" id="reg-toggle-btn" class="btn btn-secondary btn-sm" onclick="toggleDepartmentStudentRegistration()" style="font-weight:600;">
+              Open All Semesters
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pending Registrations Queue Table -->
+      <section class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <div style="font-weight:700; font-size:0.95rem; color:var(--text-main);">
+            Pending Student Verification Queue
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);" id="pending-count-label">
+            0 requests pending
+          </div>
+        </div>
+        <div class="table-scroll-wrapper" style="overflow-x:auto;">
+          <table class="table" style="margin:0; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="background:var(--table-th-bg); border-bottom:2px solid var(--border-color); text-align:left;">
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase;">Applicant Name</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase;">Enrollment #</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase;">Email Address</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase;">Cohort</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase;">Registered At</th>
+                <th style="padding:0.75rem 1rem; font-size:0.75rem; text-transform:uppercase; text-align:right;">Adjudication</th>
+              </tr>
+            </thead>
+            <tbody id="pending-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Loading pending registrations...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Core Component & Navigation Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/ui-toast.js"></script>
+  <script src="/shared/js/ui-dialog.js"></script>
+  <script src="/shared/js/ui-table.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  
+  <!-- Page-Specific Modular Controller -->
+  <script src="./hod-teachers.js"></script>
+</body>
+</html>

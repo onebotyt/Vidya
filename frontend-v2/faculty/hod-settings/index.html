@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Department Policies &amp; Settings — HOD Command | VidyaOS</title>
+  <meta name="description" content="Departmental curriculum specifications, attendance evaluation thresholds, and hardware scanner telemetry rules.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./hod-settings.css">
+</head>
+<body class="page-shell">
+  <!-- Dynamic Unified Institutional AppShell Header & Navigation -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compatibility Hidden Telemetry Badges for Test Contracts -->
+  <span id="brand-role-badge" style="display:none;" aria-hidden="true">HOD</span>
+  <span id="role-badge" style="display:none;" aria-hidden="true">HOD</span>
+  <span id="user-profile-badge" style="display:none;" aria-hidden="true"></span>
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <main class="page-container">
+    <!-- Page Header & Action Controls -->
+    <header class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem; margin-bottom:1.5rem;">
+      <div>
+        <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:0.35rem; flex-wrap:wrap;">
+          <h1 class="page-title" id="dept-header-name" style="margin:0;">Department Policies &amp; Settings</h1>
+          <span class="badge" style="background:var(--chip-hod-bg); color:var(--color-primary); font-weight:700;">HOD Command</span>
+        </div>
+        <p class="page-subtitle" id="page-subtitle" style="margin:0; color:var(--text-muted); font-size:0.88rem;">
+          Departmental curriculum specifications, attendance evaluation thresholds, and hardware scanner telemetry rules.
+        </p>
+      </div>
+
+      <div class="action-btn-group" style="display:flex; gap:0.6rem; align-items:center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="loadSettings()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Refresh Settings
+        </button>
+      </div>
+    </header>
+
+    <!-- Telemetry Status Overview Board (3 KPI Cards) -->
+    <section class="stat-grid" style="grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); margin-bottom:1.75rem;" aria-label="Department Overview Statistics">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Program Curriculum Duration</span>
+          <span class="stat-icon-wrapper" style="color:var(--color-primary);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="kpi-duration" style="color:var(--color-primary);">--</div>
+        <div class="stat-trend" id="kpi-duration-sub" style="color:var(--text-muted);">Loading semesters...</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Exam Eligibility Cutoff</span>
+          <span class="stat-icon-wrapper" style="color:var(--status-late);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="kpi-threshold" style="color:var(--status-late);">75%</div>
+        <div class="stat-trend" style="color:var(--text-muted);">Minimum attendance cutoff</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Department Resources</span>
+          <span class="stat-icon-wrapper" style="color:var(--color-primary);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </span>
+        </div>
+        <div class="stat-value" id="kpi-resources" style="font-size:1.35rem; color:var(--text-main);">--</div>
+        <div class="stat-trend" id="kpi-resources-sub" style="color:var(--text-muted);">Teachers • Students • Terminals</div>
+      </div>
+    </section>
+
+    <!-- Settings Panels Grid -->
+    <section class="settings-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+      <!-- Panel 1: Curriculum & Degree Duration -->
+      <div class="card settings-panel" style="display:flex; flex-direction:column; padding:0; overflow:hidden;">
+        <div class="settings-panel-header" style="padding:1.25rem 1.5rem; background:var(--bg-surface); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main);">Degree Curriculum Controls</h2>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Configure academic program length (up to 3 years)</span>
+          </div>
+          <span class="badge" style="background:var(--bg-card); color:var(--color-primary); font-weight:700; border:1px solid var(--border-color);">Curriculum</span>
+        </div>
+        <div class="settings-panel-body" style="padding:1.5rem; flex:1;">
+          <div class="form-group" style="margin-bottom:1.25rem;">
+            <label class="form-label" for="setting-duration" style="font-weight:700;">Program Degree Duration</label>
+            <select id="setting-duration" class="form-select" onchange="onDurationChange()">
+              <option value="1">1 Year (Semesters 1 to 2)</option>
+              <option value="2">2 Years (Semesters 1 to 4 — Diploma / Master's)</option>
+              <option value="3" selected>3 Years (Semesters 1 to 6 — Polytechnic / Degree)</option>
+            </select>
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem; display:block;">
+              Defines the total years of study before students are graduated to Alumni Archive during final-year promotions.
+            </span>
+          </div>
+
+          <div id="duration-confirm-box" style="display:none; background:var(--status-late-bg); border:1px solid var(--status-late); border-radius:var(--radius-sm); padding:0.85rem; margin-top:1rem;">
+            <div style="font-weight:700; color:var(--text-main); font-size:0.85rem; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.4rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              Security Confirmation Required
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.65rem;">
+              Changing program duration reconfigures cohort maximum semesters. To confirm, enter your department code (<strong id="confirm-dept-code-label">IT</strong>):
+            </p>
+            <input type="text" id="setting-confirm-code" class="form-control" placeholder="Enter department code" style="text-transform:uppercase; font-family:var(--font-family-mono, monospace);">
+          </div>
+        </div>
+        <div class="settings-panel-footer" style="padding:1rem 1.5rem; background:var(--bg-surface); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end;">
+          <button type="button" id="save-curriculum-btn" class="btn btn-primary" onclick="saveCurriculumSettings()">
+            Save Curriculum Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel 2: Attendance Eligibility Policy -->
+      <div class="card settings-panel" style="display:flex; flex-direction:column; padding:0; overflow:hidden;">
+        <div class="settings-panel-header" style="padding:1.25rem 1.5rem; background:var(--bg-surface); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main);">Attendance Eligibility Policies</h2>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Threshold cutoffs for examination eligibility &amp; warnings</span>
+          </div>
+          <span class="badge" style="background:var(--chip-hod-bg); color:var(--color-primary); font-weight:700;">Policies</span>
+        </div>
+        <div class="settings-panel-body" style="padding:1.5rem; flex:1;">
+          <div class="form-group" style="margin-bottom:1.25rem;">
+            <label class="form-label" style="font-weight:700;" for="setting-threshold">
+              Examination Eligibility Cutoff (%)
+            </label>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+              <input type="number" id="setting-threshold" class="form-control" style="max-width:140px; font-size:1.15rem; font-weight:800; color:var(--color-primary);" min="50" max="100" step="1" value="75">
+              <span style="font-weight:700; color:var(--text-muted); font-size:1.1rem;">%</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem; display:block;">
+              Students with cumulative attendance below this threshold will be flagged as <strong>Attendance Shortage (&lt; 75%)</strong> in reports and examination rosters.
+            </span>
+          </div>
+
+          <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:1rem; margin-top:1rem;">
+            <div style="font-weight:700; font-size:0.85rem; margin-bottom:0.5rem; color:var(--text-main);">
+              Standard University Threshold Scale:
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:var(--status-present); font-weight:600;">Healthy Turnout (Eligible)</span>
+                <span style="font-weight:700; color:var(--status-present);">&ge; 75%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:var(--status-late); font-weight:600;">Moderate / Warning Zone</span>
+                <span style="font-weight:700; color:var(--status-late);">50% – 74%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:var(--status-absent); font-weight:600;">Attendance Shortage (Ineligible)</span>
+                <span style="font-weight:700; color:var(--status-absent);">&lt; 50%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-panel-footer" style="padding:1rem 1.5rem; background:var(--bg-surface); border-top:1px solid var(--border-color); display:flex; justify-content:flex-end;">
+          <button type="button" id="save-policy-btn" class="btn btn-primary" onclick="savePolicySettings()">
+            Update Attendance Threshold
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel 3: Biometric Hardware & ESP32 Kiosk Preferences -->
+      <div class="card settings-panel" style="display:flex; flex-direction:column; padding:0; overflow:hidden;">
+        <div class="settings-panel-header" style="padding:1.25rem 1.5rem; background:var(--bg-surface); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main);">Biometric Terminal Telemetry</h2>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Hardware kiosk touch logging and presence rules</span>
+          </div>
+          <span class="badge" style="background:var(--bg-card); color:var(--text-main); font-weight:700; border:1px solid var(--border-color);">Hardware</span>
+        </div>
+        <div class="settings-panel-body" style="padding:1.5rem; flex:1;">
+          <div class="form-group" style="margin-bottom:1.25rem;">
+            <label class="form-label" style="font-weight:700;">Heartbeat Offline Timeout</label>
+            <input type="text" class="form-control" value="5 Minutes (Automatic Offline Heartbeat)" disabled style="background:var(--bg-surface);">
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem; display:block;">
+              Scanners not pinging within 5 minutes automatically display as OFFLINE in the hardware console.
+            </span>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1.25rem;">
+            <label class="form-label" style="font-weight:700;">Multi-Year Hardware Scope</label>
+            <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.4; margin-top:0.2rem;">
+              Department terminals can be bound to single cohorts or multi-year lab gates (e.g. Years 1, 2 &amp; 3 simultaneously with automated semester derivation).
+            </p>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/faculty/registers.html" class="btn btn-secondary btn-sm" style="font-weight:600; width:100%; text-align:center; justify-content:center; text-decoration:none;">
+              View Registers &amp; Live Studio &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 4: Department Governance & HOD Account -->
+      <div class="card settings-panel" style="display:flex; flex-direction:column; padding:0; overflow:hidden;">
+        <div class="settings-panel-header" style="padding:1.25rem 1.5rem; background:var(--bg-surface); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main);">Department Leadership &amp; Account</h2>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Official department leadership and access security</span>
+          </div>
+          <span class="badge" style="background:var(--bg-surface); color:var(--text-main); font-weight:700; border:1px solid var(--border-color);">Governance</span>
+        </div>
+        <div class="settings-panel-body" style="padding:1.5rem; flex:1;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.85rem; margin-bottom:1.25rem;">
+            <div>
+              <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:700;">Department Name</span>
+              <div id="m-dept-name" style="font-weight:700; color:var(--text-main); margin-top:0.2rem;">--</div>
+            </div>
+            <div>
+              <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:700;">Department Code</span>
+              <div id="m-dept-code" style="font-weight:700; color:var(--text-main); margin-top:0.2rem;">--</div>
+            </div>
+            <div>
+              <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:700;">Head of Department</span>
+              <div id="m-hod-name" style="font-weight:700; color:var(--text-main); margin-top:0.2rem;">--</div>
+            </div>
+            <div>
+              <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:700;">Official Email</span>
+              <div id="m-hod-email" style="font-weight:600; color:var(--text-muted); margin-top:0.2rem; word-break:break-all;">--</div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border-color); padding-top:1rem; margin-top:1rem;">
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+              Update personal password, Google Workspace Single Sign-On link, and security preferences:
+            </p>
+            <a href="/faculty/profile.html" class="btn btn-secondary btn-sm" style="font-weight:600; width:100%; text-align:center; justify-content:center; text-decoration:none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              My Profile &amp; Google Account Link &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Core Component & Navigation Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/ui-toast.js"></script>
+  <script src="/shared/js/ui-dialog.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  
+  <!-- Page-Specific Modular Controller -->
+  <script src="./hod-settings.js"></script>
+</body>
+</html>

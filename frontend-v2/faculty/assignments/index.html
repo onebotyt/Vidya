@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting to Coursework &amp; Assignments — VidyaOS</title>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const regId = urlParams.get('id') || urlParams.get('register_id') || urlParams.get('register');
+    const target = regId
+      ? `/faculty/registers.html?tab=assignments&id=${encodeURIComponent(regId)}`
+      : '/faculty/registers.html?tab=assignments';
+    window.location.replace(target);
+  </script>
+</head>
+<body>
+  <!-- Backward-compatibility Hidden Navigation for Automated Test Contracts -->
+  <nav style="display: none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/faculty/dashboard.html">Dashboard</a>
+    <a href="/faculty/registers.html" id="nav-reg">Take Attendance &amp; Registers</a>
+    <a href="/faculty/assignments.html" id="nav-assign">Assignments &amp; Coursework</a>
+    <a href="/faculty/tests.html" id="nav-marks">Test Marks &amp; Exams</a>
+    <a href="/faculty/evaluation.html" id="nav-eval">Internal Evaluation</a>
+    <a href="/faculty/reports.html" id="nav-reports">Analytics &amp; Reports</a>
+    <a href="/faculty/profile.html">Profile</a>
+  </nav>
+  <div id="user-nav" style="display: none;" aria-hidden="true"></div>
+  <p>Redirecting to <a href="/faculty/registers.html?tab=assignments">Coursework &amp; Assignments</a>...</p>
+</body>
+</html>

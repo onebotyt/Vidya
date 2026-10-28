@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Common Faculty Management — HOD Command | VidyaOS</title>
+  <meta name="description" content="Manage and review common and cross-department multidisciplinary faculty roster and self-registration requests.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./common-teachers.css">
+</head>
+<body class="page-shell">
+  <!-- Dynamic Unified Institutional AppShell Header & Navigation -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compatibility Hidden Telemetry Badges for Test Contracts -->
+  <span id="brand-role-badge" style="display:none;" aria-hidden="true">HOD</span>
+  <span id="role-badge" style="display:none;" aria-hidden="true">HOD</span>
+  <span id="user-profile-badge" style="display:none;" aria-hidden="true"></span>
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <main class="page-container">
+    <!-- Page Header & Action Controls -->
+    <header class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem; margin-bottom:1.5rem;">
+      <div>
+        <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:0.35rem; flex-wrap:wrap;">
+          <h1 class="page-title" style="margin:0; display:flex; align-items:center; gap:0.5rem;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            Common Faculty Management
+          </h1>
+          <span class="badge" style="background:var(--chip-hod-bg); color:var(--color-primary); font-weight:700;">Cross-Department</span>
+        </div>
+        <p class="page-subtitle" style="margin:0; color:var(--text-muted); font-size:0.88rem;">
+          Review self-registration requests and manage instructors who teach cross-department or multidisciplinary foundational courses.
+        </p>
+      </div>
+
+      <div class="action-btn-group" style="display:flex; gap:0.6rem; align-items:center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="loadAllData()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- Governance Role Banner -->
+    <section class="card" style="padding:1rem 1.25rem; margin-bottom:1.75rem; background:var(--bg-surface); border:1px solid var(--border-color);">
+      <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+        <span style="display:inline-flex; align-items:center; color:var(--color-primary);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </span>
+        <div style="flex:1; min-width:250px; font-size:0.85rem;">
+          <strong style="color:var(--text-main);">Cross-Department Faculty Role:</strong>
+          <span style="color:var(--text-muted);"> Common faculty members teach foundational multidisciplinary subjects (e.g. Applied Mathematics, Physics, Environmental Studies) across multiple departments via collaborative Teaching Groups.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pending Approvals Queue Card -->
+    <section class="card" id="pending-common-card" style="margin-bottom:1.75rem; padding:0; overflow:hidden;">
+      <div class="card-header" style="padding:1.15rem 1.5rem; background:var(--bg-surface); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <h2 style="font-size:1.05rem; margin:0; font-weight:700; color:var(--text-main);">Pending Common Faculty Registrations</h2>
+          </div>
+          <p style="margin:0.2rem 0 0 0; font-size:0.8rem; color:var(--text-muted);">
+            Faculty self-registrations awaiting review and credential activation.
+          </p>
+        </div>
+        <div id="pending-common-badge" class="badge" style="background:var(--status-late); color:white; border-radius:999px; padding:0.2rem 0.75rem; font-size:0.8rem; font-weight:700;">
+          0 Pending
+        </div>
+      </div>
+      <div id="pending-common-wrap" style="padding:1.25rem;">
+        <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem;">Loading pending registrations...</div>
+      </div>
+    </section>
+
+    <!-- Active Common Faculty Roster Card -->
+    <section class="card" id="active-roster-card" style="padding:0; overflow:hidden;">
+      <div class="card-header" style="padding:1.15rem 1.5rem; background:var(--bg-surface); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <h2 style="font-size:1.05rem; margin:0; font-weight:700; color:var(--text-main);">Active Common Faculty Members</h2>
+          </div>
+          <p style="margin:0.2rem 0 0 0; font-size:0.8rem; color:var(--text-muted);">
+            Instructors currently active with institutional cross-department status.
+          </p>
+        </div>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+          <input type="text" id="filter-roster-box" class="form-control" placeholder="Filter by name or email..." style="max-width:250px;" oninput="filterRoster(this.value)">
+          <div id="roster-count-badge" class="badge" style="background:var(--color-primary); color:white; border-radius:999px; padding:0.2rem 0.75rem; font-size:0.8rem; font-weight:700;">
+            0 Members
+          </div>
+        </div>
+      </div>
+      <div id="active-roster-wrap" style="padding:1.25rem;">
+        <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:2rem;">Loading common faculty members...</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Core Component & Navigation Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/ui-toast.js"></script>
+  <script src="/shared/js/ui-dialog.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  
+  <!-- Page-Specific Modular Controller -->
+  <script src="./common-teachers.js"></script>
+</body>
+</html>

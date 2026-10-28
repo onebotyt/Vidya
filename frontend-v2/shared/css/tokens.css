@@ -1,0 +1,215 @@
+/**
+ * VidyaOS Design System — CSS Custom Properties & Design Tokens
+ * Location: /shared/css/tokens.css
+ */
+
+:root {
+  /* Typography */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+
+  /* Brand Palette */
+  --color-primary: hsl(220, 90%, 56%);
+  --color-primary-hover: hsl(220, 90%, 48%);
+  --color-primary-light: hsl(220, 90%, 96%);
+  --color-primary-subtle: rgba(37, 99, 235, 0.12);
+
+  /* Attendance Status Palette (Strict Invariant) */
+  --status-present: hsl(142, 71%, 45%);
+  --status-present-bg: hsl(142, 71%, 95%);
+  --status-absent: hsl(0, 84%, 60%);
+  --status-absent-bg: hsl(0, 84%, 96%);
+  --status-late: hsl(38, 92%, 50%);
+  --status-late-bg: hsl(38, 92%, 95%);
+  --status-pending: hsl(215, 80%, 55%);
+  --status-pending-bg: hsl(215, 80%, 96%);
+
+  /* Neutral Shades (Light Mode) */
+  --bg-primary: var(--bg-app);
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-surface: #f1f5f9;
+  --bg-surface-secondary: #f8fafc;
+  --bg-surface-hover: #e2e8f0;
+  --bg-card-hover: #ffffff;
+  --bg-header-book: linear-gradient(135deg, #ffffff 60%, #f0f9ff 100%);
+  --bg-header-glow: radial-gradient(ellipse at top right, rgba(37,99,235,0.06) 0%, transparent 70%);
+  --bg-overlay: rgba(15, 23, 42, 0.55);
+
+  --border-color: #e2e8f0;
+  --border-focus: #94a3b8;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-white: #ffffff;
+  --text-on-primary: #ffffff;
+
+  /* Spacing & Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --modal-max-width: 540px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Table & Ledger Tokens */
+  --table-bg: #ffffff;
+  --table-border: #cbd5e1;
+  --table-border-subtle: #e2e8f0;
+  --table-border-strong: #475569;
+  --table-th-bg: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  --table-th-color: #1e293b;
+  --table-sticky-bg: #ffffff;
+  --table-sticky-th-bg: #f1f5f9;
+  --table-stripe-bg: #f8fafc;
+  --table-stripe-sticky-bg: #fafbfc;
+  --table-hover-bg: #eff6ff;
+
+  /* Summary Matrix Columns */
+  --col-att-group-bg: #e0f2fe;
+  --col-att-group-color: #0369a1;
+  --col-abs-group-bg: #fee2e2;
+  --col-abs-group-color: #b91c1c;
+  --col-att-mo-bg: #f0fdf4;
+  --col-att-mo-color: #166534;
+  --col-att-pr-bg: #f8fafc;
+  --col-att-pr-color: #475569;
+  --col-att-tt-bg: #dcfce7;
+  --col-att-tt-color: #15803d;
+  --col-abs-mo-bg: #fef2f2;
+  --col-abs-mo-color: #991b1b;
+  --col-abs-pr-bg: #f8fafc;
+  --col-abs-pr-color: #475569;
+  --col-abs-tt-bg: #fee2e2;
+  --col-abs-tt-color: #b91c1c;
+
+  /* Holiday & Calendar Tokens */
+  --col-holiday-bg: #fef2f2;
+  --col-holiday-color: #dc2626;
+
+  /* Role Badges */
+  --chip-admin-bg: #fee2e2;
+  --chip-admin-color: #991b1b;
+  --chip-hod-bg: #fef3c7;
+  --chip-hod-color: #92400e;
+  --chip-classteacher-bg: #dbeafe;
+  --chip-classteacher-color: #1e40af;
+  --chip-faculty-bg: #ede9fe;
+  --chip-faculty-color: #6b21a8;
+  --chip-student-bg: #dcfce7;
+  --chip-student-color: #166534;
+
+  /* Remarks Tokens */
+  --remark-badge-bg: #ffffff;
+  --remark-regular-bg: #f0fdf4;
+  --remark-regular-dot: #16a34a;
+  --remark-short-bg: #fefce8;
+  --remark-short-dot: #ca8a04;
+  --remark-defaulter-bg: #fef2f2;
+  --remark-defaulter-dot: #dc2626;
+  --remark-transferred-bg: #f5f3ff;
+  --remark-transferred-dot: #7c3aed;
+  --remark-dropped-bg: #f1f5f9;
+  --remark-dropped-dot: #64748b;
+  --remark-popover-bg: #ffffff;
+}
+
+/* Dark Mode Overrides */
+[data-theme='dark'] {
+  --bg-primary: var(--bg-app);
+  --modal-max-width: 540px;
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --bg-surface: #334155;
+  --bg-surface-secondary: #1e293b;
+  --bg-surface-hover: #475569;
+  --bg-card-hover: #243048;
+  --bg-header-book: linear-gradient(135deg, #1e293b 60%, #0f172a 100%);
+  --bg-header-glow: radial-gradient(ellipse at top right, rgba(59,130,246,0.12) 0%, transparent 70%);
+
+  --border-color: #334155;
+  --border-focus: #64748b;
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-white: #ffffff;
+  --text-on-primary: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.75);
+
+  --color-primary: hsl(220, 90%, 62%);
+  --color-primary-hover: hsl(220, 90%, 55%);
+  --color-primary-light: rgba(59, 130, 246, 0.15);
+  --color-primary-subtle: rgba(59, 130, 246, 0.2);
+
+  --status-present: #22c55e;
+  --status-present-bg: rgba(34, 197, 94, 0.18);
+  --status-absent: #ef4444;
+  --status-absent-bg: rgba(239, 68, 68, 0.18);
+  --status-late: #f59e0b;
+  --status-late-bg: rgba(245, 158, 11, 0.18);
+  --status-pending: #60a5fa;
+  --status-pending-bg: rgba(96, 165, 250, 0.18);
+
+  --table-bg: #1e293b;
+  --table-border: #334155;
+  --table-border-subtle: #1e293b;
+  --table-border-strong: #64748b;
+  --table-th-bg: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  --table-th-color: #f1f5f9;
+  --table-sticky-bg: #1e293b;
+  --table-sticky-th-bg: #0f172a;
+  --table-stripe-bg: #182234;
+  --table-stripe-sticky-bg: #182234;
+  --table-hover-bg: #27354f;
+
+  --col-att-group-bg: rgba(3, 105, 161, 0.25);
+  --col-att-group-color: #38bdf8;
+  --col-abs-group-bg: rgba(185, 28, 28, 0.25);
+  --col-abs-group-color: #f87171;
+  --col-holiday-bg: rgba(220, 38, 38, 0.2);
+  --col-holiday-color: #fca5a5;
+
+  --col-att-mo-bg: rgba(34, 197, 94, 0.12);
+  --col-att-mo-color: #4ade80;
+  --col-att-pr-bg: #151e2e;
+  --col-att-pr-color: #9ca3af;
+  --col-att-tt-bg: rgba(34, 197, 94, 0.22);
+  --col-att-tt-color: #86efac;
+
+  --col-abs-mo-bg: rgba(239, 68, 68, 0.12);
+  --col-abs-mo-color: #f87171;
+  --col-abs-pr-bg: #151e2e;
+  --col-abs-pr-color: #9ca3af;
+  --col-abs-tt-bg: rgba(239, 68, 68, 0.22);
+  --col-abs-tt-color: #fca5a5;
+
+  --chip-admin-bg: rgba(239, 68, 68, 0.2);
+  --chip-admin-color: #fca5a5;
+  --chip-hod-bg: rgba(245, 158, 11, 0.2);
+  --chip-hod-color: #fcd34d;
+  --chip-classteacher-bg: rgba(59, 130, 246, 0.2);
+  --chip-classteacher-color: #93c5fd;
+  --chip-faculty-bg: rgba(147, 51, 234, 0.2);
+  --chip-faculty-color: #d8b4fe;
+  --chip-student-bg: rgba(34, 197, 94, 0.2);
+  --chip-student-color: #86efac;
+
+  --remark-badge-bg: #1e293b;
+  --remark-regular-bg: rgba(22, 163, 74, 0.2);
+  --remark-regular-dot: #4ade80;
+  --remark-short-bg: rgba(202, 138, 4, 0.2);
+  --remark-short-dot: #facc15;
+  --remark-defaulter-bg: rgba(220, 38, 38, 0.2);
+  --remark-defaulter-dot: #f87171;
+  --remark-transferred-bg: rgba(124, 58, 237, 0.2);
+  --remark-transferred-dot: #a78bfa;
+  --remark-dropped-bg: rgba(100, 116, 139, 0.2);
+  --remark-dropped-dot: #94a3b8;
+  --remark-popover-bg: #1e293b;
+}

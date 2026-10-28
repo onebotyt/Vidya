@@ -1,0 +1,74 @@
+/* ══════════════════════════════════════════════════════════════
+   HOD-002: DEPARTMENT POLICIES & SETTINGS STYLES
+   frontend-v2/faculty/hod-settings/hod-settings.css
+   100% Theme Tokenized — Zero Hardcoded Hex/RGB Colors
+   ══════════════════════════════════════════════════════════════ */
+
+/* Settings Panels Grid */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.settings-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-panel-header {
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-panel-body {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.settings-panel-footer {
+  padding: 1rem 1.5rem;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Term Badges */
+.term-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.term-odd {
+  background: var(--status-present-bg);
+  color: var(--status-present);
+}
+
+.term-even {
+  background: var(--chip-classteacher-bg);
+  color: var(--chip-classteacher-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}

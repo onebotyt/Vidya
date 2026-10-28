@@ -1,0 +1,161 @@
+/* ══════════════════════════════════════════════════════════════
+   HOD-001: DEPARTMENT FACULTY & STUDENT HUB STYLES
+   frontend-v2/faculty/hod-teachers/hod-teachers.css
+   100% Theme Tokenized — Zero Hardcoded Hex/RGB Colors
+   ══════════════════════════════════════════════════════════════ */
+
+/* Workspace Tab Navigation */
+.workspace-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.workspace-tab-btn {
+  padding: 0.7rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  margin-bottom: -2px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.workspace-tab-btn.active {
+  background: var(--bg-card);
+  color: var(--color-primary);
+  border-color: var(--border-color);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.workspace-tab-btn:hover:not(.active) {
+  color: var(--text-main);
+  background: var(--bg-surface);
+}
+
+/* Teacher Directory Cards & Grid */
+.teacher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.teacher-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  position: relative;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.teacher-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.tc-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--color-primary);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.tc-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-main);
+  margin-bottom: 0.15rem;
+}
+
+.tc-empid {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-family-mono, monospace);
+}
+
+.tc-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tc-meta > div {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.tc-actions {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* Gateway Hub Tiles */
+.gateway-tile {
+  transition: border-color 0.15s ease;
+}
+
+.gateway-tile:hover {
+  border-color: var(--color-primary);
+}
+
+/* Responsive Rules for Small Devices */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-btn-group {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .action-btn-group .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .teacher-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -34,6 +34,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 385: Cold-Start Sleep Recovery, Faculty User Profile Link, & Admin Nav Polish
+
+- **User Problems Addressed**:
+  1. **Render Idle Sleep & Cold-Start Login**: When backend slept after 15m idle on Render free tier, login requests returned HTTP 502 Bad Gateway and aborted.
+  2. **Faculty Profile Link Missing**: User could not see any option to open "My Profile" from the faculty avatar popover (it only had "Account Settings").
+  3. **Faculty Profile Bugs**: Banner avatar initials calculated "DS" instead of "RS" for "Dr. Rajesh Sharma" (did not strip honorifics), and Google 1-Click button had raw SVG string formatting.
+  4. **Admin Nav & Drawer Close Icon**: Drawer header close button used menu icon instead of close `X`.
+- **Delivered Solutions**:
+  1. **Resilient Cold-Start Recovery Engine**:
+     - `backend/server.js`: Added high-performance health & ping routes (`/health`, `/ping`, `/api/v1/health`, `/api/v1/ping`) responding immediately with 200 without database hits.
+     - `frontend/login/index.js`: Proactive background pre-warming (`fetch('/api/v1/health')` and direct Render health check) runs on DOM ready and continuously every 2 minutes.
+     - Extended retry loop to 15 attempts (~50s) with live countdown progress on the submit button (`Server waking up (12s)...`) and prominent alert banner explaining the Render cloud boot process.
+     - `frontend/shared/js/api.js`: Formatted 502/503/504 errors into friendly cold-start notices, suppressing intrusive toasts during active login retries.
+  2. **Universal Faculty Profile Navigation**:
+     - Added `<a href="/faculty/profile.html" class="btn btn-secondary btn-sm" id="popover-profile-link">...<span>My Profile</span></a>` to all 16 faculty page popovers.
+     - Verified `nav.js` dynamic fallback safeguard ensures "My Profile" is automatically prepended whenever user popover is mounted.
+  3. **Faculty Profile Polish**:
+     - `frontend/faculty/profile/profile.js`: Stripped titles `^(prof\.|dr\.|mr\.|ms\.|mrs\.)\s+` so "Dr. Rajesh Sharma" yields "RS" matching the top navigation bar.
+     - Formatted Google 1-Click button and badges to safely use `.innerHTML` with SVG icon spans, preventing literal SVG tag strings.
+  4. **Admin Drawer Polish**:
+     - `frontend/shared/js/admin-nav.js`: Replaced `${ADMIN_ICONS.menu}` with `${ADMIN_ICONS.close}` in drawer header close button.
+  5. **Verification**:
+     - Theme test: 88/88 passed (0 hardcoded hex colors).
+     - RBAC test: 34/34 passed.
+     - Registers test: 46/46 passed.
+     - Student self-registration: 30/30 passed.
+
 ### ✅ Milestone 384: Selective Integration of Dev 2 Executive Admin Dashboard (Main Content Only)
 
 - **Requirement**:
