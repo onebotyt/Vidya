@@ -37,14 +37,6 @@
       <!-- 1. TOP HEADER BAR (Clean, Useful & Without Search/Bell Clutter) -->
       <header class="admin-top-header" id="admin-top-header" aria-label="Admin Header Bar">
         <div class="header-left">
-          <button type="button" class="header-menu-toggle-btn" id="header-sidebar-toggle-btn" onclick="toggleDesktopSidebar()" title="Toggle Navigation Menu" aria-label="Toggle Navigation Menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-
           <!-- Useful Context Badges -->
           <div class="header-context-group">
             <span class="header-context-badge" title="Campus Management Console">
@@ -130,7 +122,7 @@
         <!-- ══════════════════════════════════════════════════════════ -->
         <section class="admin-welcome-hero" aria-label="Welcome Overview">
           <div class="hero-left-content">
-            <h1 class="hero-title">Welcome back, <span id="admin-hero-name">System Administrator</span> 👋</h1>
+            <h1 class="hero-title">Welcome back, <span id="admin-hero-name">System Administrator</span></h1>
             <p class="hero-subtitle">Manage your college, monitor academic activities, track attendance, and keep everything running smoothly.</p>
             
             <div class="hero-live-badges">
@@ -209,7 +201,7 @@
                 <div class="kpi-icon-squircle icon-purple" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="22.01"></line><line x1="15" y1="22" x2="15" y2="22.01"></line><line x1="9" y1="6" x2="9" y2="6.01"></line><line x1="15" y1="6" x2="15" y2="6.01"></line><line x1="9" y1="10" x2="9" y2="10.01"></line><line x1="15" y1="10" x2="15" y2="10.01"></line><line x1="9" y1="14" x2="9" y2="14.01"></line><line x1="15" y1="14" x2="15" y2="14.01"></line><line x1="9" y1="18" x2="9" y2="18.01"></line><line x1="15" y1="18" x2="15" y2="18.01"></line></svg>
                 </div>
-                <span class="kpi-sparkline" aria-hidden="true">📈</span>
+                <span class="kpi-trend-pill trend-purple">Active</span>
               </div>
               <div class="kpi-card-body">
                 <span class="kpi-label">Departments</span>
@@ -244,93 +236,102 @@
               </div>
 
               <div class="panel-body attendance-overview-body">
-                <!-- Circular Donut Visualization -->
-                <div class="donut-chart-wrap">
-                  <div class="donut-svg-container">
-                    <svg class="donut-svg" viewBox="0 0 120 120">
-                      <!-- Base track -->
-                      <circle cx="60" cy="60" r="48" fill="none" stroke="var(--bg-surface)" stroke-width="14"/>
-                      <!-- Absent segment (red: 21%) -->
-                      <circle cx="60" cy="60" r="48" fill="none" stroke="var(--status-absent)" stroke-width="14" stroke-dasharray="301.6" stroke-dashoffset="63.3" transform="rotate(-90 60 60)"/>
-                      <!-- Present segment (green: 79%) -->
-                      <circle cx="60" cy="60" r="48" fill="none" stroke="var(--status-present)" stroke-width="14" stroke-dasharray="301.6" stroke-dashoffset="63.3" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                    </svg>
-                    <div class="donut-center-label">
-                      <span class="donut-pct">79%</span>
-                      <span class="donut-sub">Present</span>
+                <!-- Left Pane: Donut Metric & Status Breakdown -->
+                <div class="attendance-donut-pane">
+                  <div class="donut-chart-wrap">
+                    <div class="donut-svg-container">
+                      <svg class="donut-svg" viewBox="0 0 120 120">
+                        <!-- Base track -->
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="var(--bg-surface)" stroke-width="14"/>
+                        <!-- Absent segment (red: 21%) -->
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="var(--status-absent)" stroke-width="14" stroke-dasharray="301.6" stroke-dashoffset="63.3" transform="rotate(-90 60 60)"/>
+                        <!-- Present segment (green: 79%) -->
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="var(--status-present)" stroke-width="14" stroke-dasharray="301.6" stroke-dashoffset="63.3" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                      </svg>
+                      <div class="donut-center-label">
+                        <span class="donut-pct">79%</span>
+                        <span class="donut-sub">Present</span>
+                      </div>
                     </div>
-                  </div>
 
-                  <!-- Donut Legend -->
-                  <div class="donut-legend-list">
-                    <div class="legend-row">
-                      <span class="legend-bullet bullet-present"></span>
-                      <span class="legend-text">Present</span>
-                      <span class="legend-val">196</span>
-                    </div>
-                    <div class="legend-row">
-                      <span class="legend-bullet bullet-absent"></span>
-                      <span class="legend-text">Absent</span>
-                      <span class="legend-val">52</span>
-                    </div>
-                    <div class="legend-row">
-                      <span class="legend-bullet bullet-leave"></span>
-                      <span class="legend-text">Leave</span>
-                      <span class="legend-val">8</span>
-                    </div>
-                    <div class="legend-row">
-                      <span class="legend-bullet bullet-unmarked"></span>
-                      <span class="legend-text">Not Marked</span>
-                      <span class="legend-val">0</span>
+                    <!-- Donut Legend -->
+                    <div class="donut-legend-list">
+                      <div class="legend-row">
+                        <span class="legend-bullet bullet-present"></span>
+                        <span class="legend-text">Present</span>
+                        <span class="legend-val">196</span>
+                      </div>
+                      <div class="legend-row">
+                        <span class="legend-bullet bullet-absent"></span>
+                        <span class="legend-text">Absent</span>
+                        <span class="legend-val">52</span>
+                      </div>
+                      <div class="legend-row">
+                        <span class="legend-bullet bullet-leave"></span>
+                        <span class="legend-text">Leave</span>
+                        <span class="legend-val">8</span>
+                      </div>
+                      <div class="legend-row">
+                        <span class="legend-bullet bullet-unmarked"></span>
+                        <span class="legend-text">Unmarked</span>
+                        <span class="legend-val">0</span>
+                      </div>
                     </div>
                   </div>
+                  <div class="overview-total-subtext">Total Enrolled: 248 Students</div>
                 </div>
 
-                <div class="overview-total-subtext">Total Students: 248</div>
+                <!-- Center Hairline Divider -->
+                <div class="attendance-pane-divider" aria-hidden="true"></div>
 
-                <!-- Department Comparison Bar Chart -->
-                <div class="dept-bars-container">
-                  <div class="dept-bar-col">
-                    <span class="dept-bar-pct">82%</span>
-                    <div class="dept-bar-track">
-                      <div class="dept-bar-fill" style="height: 82%;"></div>
-                    </div>
-                    <span class="dept-bar-code">IT</span>
+                <!-- Right Pane: Department Comparison Bar Chart (Moved to Right Side) -->
+                <div class="attendance-dept-pane">
+                  <div class="dept-pane-header">
+                    <span class="dept-pane-title">Dept Breakdown</span>
                   </div>
-                  <div class="dept-bar-col">
-                    <span class="dept-bar-pct">76%</span>
-                    <div class="dept-bar-track">
-                      <div class="dept-bar-fill" style="height: 76%;"></div>
+                  <div class="dept-bars-container">
+                    <div class="dept-bar-col">
+                      <span class="dept-bar-pct">82%</span>
+                      <div class="dept-bar-track">
+                        <div class="dept-bar-fill" style="height: 82%;"></div>
+                      </div>
+                      <span class="dept-bar-code">IT</span>
                     </div>
-                    <span class="dept-bar-code">CE</span>
-                  </div>
-                  <div class="dept-bar-col">
-                    <span class="dept-bar-pct">80%</span>
-                    <div class="dept-bar-track">
-                      <div class="dept-bar-fill" style="height: 80%;"></div>
+                    <div class="dept-bar-col">
+                      <span class="dept-bar-pct">76%</span>
+                      <div class="dept-bar-track">
+                        <div class="dept-bar-fill" style="height: 76%;"></div>
+                      </div>
+                      <span class="dept-bar-code">CE</span>
                     </div>
-                    <span class="dept-bar-code">EE</span>
-                  </div>
-                  <div class="dept-bar-col">
-                    <span class="dept-bar-pct">71%</span>
-                    <div class="dept-bar-track">
-                      <div class="dept-bar-fill" style="height: 71%;"></div>
+                    <div class="dept-bar-col">
+                      <span class="dept-bar-pct">80%</span>
+                      <div class="dept-bar-track">
+                        <div class="dept-bar-fill" style="height: 80%;"></div>
+                      </div>
+                      <span class="dept-bar-code">EE</span>
                     </div>
-                    <span class="dept-bar-code">ME</span>
-                  </div>
-                  <div class="dept-bar-col">
-                    <span class="dept-bar-pct">85%</span>
-                    <div class="dept-bar-track">
-                      <div class="dept-bar-fill" style="height: 85%;"></div>
+                    <div class="dept-bar-col">
+                      <span class="dept-bar-pct">71%</span>
+                      <div class="dept-bar-track">
+                        <div class="dept-bar-fill" style="height: 71%;"></div>
+                      </div>
+                      <span class="dept-bar-code">ME</span>
                     </div>
-                    <span class="dept-bar-code">EC</span>
-                  </div>
-                  <div class="dept-bar-col">
-                    <span class="dept-bar-pct">78%</span>
-                    <div class="dept-bar-track">
-                      <div class="dept-bar-fill" style="height: 78%;"></div>
+                    <div class="dept-bar-col">
+                      <span class="dept-bar-pct">85%</span>
+                      <div class="dept-bar-track">
+                        <div class="dept-bar-fill" style="height: 85%;"></div>
+                      </div>
+                      <span class="dept-bar-code">EC</span>
                     </div>
-                    <span class="dept-bar-code">AP</span>
+                    <div class="dept-bar-col">
+                      <span class="dept-bar-pct">78%</span>
+                      <div class="dept-bar-track">
+                        <div class="dept-bar-fill" style="height: 78%;"></div>
+                      </div>
+                      <span class="dept-bar-code">AP</span>
+                    </div>
                   </div>
                 </div>
               </div>

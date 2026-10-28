@@ -34,6 +34,35 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 399: Side-by-Side Attendance Overview, Reduced Status Cards, Zero-Shift Smooth Sidebar Slide, and Emoji Clean-Up
+
+- **User Directives**:
+  - "in Today's Attendance Overview charts is below move in right side in card and no emoji and can redue status card size and improve manu bar opning not smooth i want like when click expane btn all icons not seft it look need to look like manu bar slideing but icons stay thir place and test appear smooth and move arrow btn on side logo and remove three line from header"
+- **Implementation**:
+  1. **Side-by-Side Attendance Overview Layout (`dashboard.html`, `dashboard.css`)**:
+     - Transformed `.attendance-overview-body` from a stacked column into a crisp side-by-side layout:
+       - Left pane: `.attendance-donut-pane` (SVG donut chart + dynamic legend + enrolled active stats).
+       - Center: `.attendance-pane-divider` (subtle 1px vertical hairline).
+       - Right pane: `.attendance-dept-pane` (department attendance breakdown with 6 column bars and percentages).
+  2. **Strict Zero-Emoji Policy**:
+     - Removed `👋` wave emoji from welcome hero banner in `dashboard.html`.
+     - Replaced `📈` emoji in departments KPI card with `<span class="kpi-trend-pill trend-purple">Active</span>`.
+  3. **Reduced Status Card Footprint (`dashboard.css`)**:
+     - Compacted `.kpi-card` padding to `0.65rem 1rem`, squircle icons to `32px`, metric values to `1.25rem`, labels to `0.72rem`, and micro-trends to `0.68rem`.
+  4. **Zero-Shift Stationary Icons & Smooth Menu Sliding (`sidebar.css`, `sidebar.js`, `sidebar.html`)**:
+     - Locked `.sidebar-nav-item` geometry across both collapsed (72px) and expanded (260px) states to `margin: 0.2rem 13px !important`.
+     - Locked `.sidebar-nav-icon` at fixed dimensions `46px x 46px` with center permanently anchored at `x = 36px` from screen edge.
+     - As the sidebar expands from 72px to 260px, items widen smoothly from `46px` to `234px` (`transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1)`).
+     - Icons do not shift or jump; only the sidebar background slides out and labels fade/glide into view smoothly (`opacity: 0 -> 1; transform: translateX(-8px) -> 0`).
+  5. **Header & Rail Control Modernization**:
+     - Removed obsolete three-line hamburger button from `header.html` and `dashboard.html`.
+     - Integrated horizontal `.rail-brand-row` in `sidebar.html` and `sidebar.js` placing the 28px 3D cube logo and the circular expand arrow button side-by-side.
+- **Verification**:
+  - `test-theme-support.js`: 88/88 passed (100% tokenized, 0 hardcoded colors).
+  - `test-rbac-and-structure.js`: 34/34 passed.
+  - `test-register-consolidation.js`: 46/46 passed.
+  - JSDOM DOM verification confirmed side-by-side attendance panes, zero header hamburger, zero emojis, and stationary icon rail geometry.
+
 ### ✅ Milestone 398: Instant Custom Tooltips, Razor-Clean 3D Isometric SVGs & Zero-Scroll Compact Viewport Fit
 
 - **User Directives**:
