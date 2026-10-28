@@ -7,7 +7,8 @@
  *   1. .mobile-top-header (Mobile only, <= 768px)
  *   2. #app-sidebar (Desktop 72px rail / 250px expanded / Mobile 280px drawer)
  *   3. #sidebar-backdrop (Mobile drawer overlay)
- * - Restores and persists desktop collapsed rail state (localStorage: admin_sidebar_collapsed)
+ * - Always starts CLOSED on page open/load (72px collapsed rail on desktop)
+ * - 100% self-contained SVG icon registry with inline fallbacks
  * - Zero layout shift on navigation
  * - Keyboard shortcuts: Ctrl+B (Toggle), Escape (Dismiss)
  * ══════════════════════════════════════════════════════════════
@@ -15,6 +16,25 @@
 
 (function () {
   'use strict';
+
+  // Reliable inline SVGs for all admin controls and modules
+  const FALLBACK_ICONS = {
+    dashboard: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+    academicStructure: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`,
+    hodManagement: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+    reports: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`,
+    settings: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+    audit: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`,
+    cube: `<svg class="rail-cube-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 3L28 9.5L16 16L4 9.5L16 3Z" fill="var(--color-primary-light, hsl(215 90% 95%))"/><path d="M4 9.5L16 16V29L4 22.5V9.5Z" fill="var(--color-primary, hsl(217 91% 60%))"/><path d="M16 16L28 9.5V22.5L16 29V16Z" fill="var(--color-primary-hover, hsl(224 76% 48%))"/></svg>`,
+    menu: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
+    chevronRight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
+    pause: `<svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="10" y1="5" x2="10" y2="19"></line><line x1="14" y1="5" x2="14" y2="19"></line></svg>`,
+    close: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+    user: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+    logout: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`,
+    bell: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`,
+    institution: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg>`
+  };
 
   // Navigation module registry for Admin portal
   const ADMIN_NAV_ITEMS = [
@@ -27,34 +47,39 @@
   ];
 
   /**
-   * Helper to fetch SVG from window.ADMIN_ICONS or return inline fallback
+   * Helper to retrieve rendered SVG markup with automatic fallback
    */
   function getIcon(name, options = {}) {
-    if (window.ADMIN_ICONS && typeof window.ADMIN_ICONS.get === 'function') {
-      const svg = window.ADMIN_ICONS.get(name, options);
+    if (typeof window.getAdminIcon === 'function') {
+      const svg = window.getAdminIcon(name, options);
       if (svg) return svg;
     }
-    return '';
+    if (window.ADMIN_ICONS) {
+      if (typeof window.ADMIN_ICONS.get === 'function') {
+        const svg = window.ADMIN_ICONS.get(name, options);
+        if (svg) return svg;
+      }
+      if (typeof window.ADMIN_ICONS[name] === 'function') {
+        const w = options.width || options.w || 20;
+        const h = options.height || options.h || w;
+        const s = options.stroke || options.strokeWidth || 2;
+        const c = options.className || options.cls || '';
+        return window.ADMIN_ICONS[name](w, h, s, c);
+      }
+    }
+    return FALLBACK_ICONS[name] || '';
   }
 
   /**
-   * 1. Initialize Desktop Sidebar State (Instant / Zero Layout Shift)
+   * 1. Initialize Desktop Sidebar State (Always default to CLOSED / 72px collapsed rail on open)
    */
   function initDesktopState() {
     try {
-      const saved = localStorage.getItem('admin_sidebar_collapsed');
-      // Default to collapsed (72px rail) if unset or true
-      const shouldCollapse = (saved === null || saved === 'true');
-      if (shouldCollapse && window.innerWidth >= 769) {
+      if (window.innerWidth >= 769) {
         document.documentElement.classList.add('sidebar-collapsed');
         document.body.classList.add('sidebar-collapsed');
         const layout = document.getElementById('admin-app-layout');
         if (layout) layout.classList.add('sidebar-collapsed');
-      } else if (saved === 'false') {
-        document.documentElement.classList.remove('sidebar-collapsed');
-        document.body.classList.remove('sidebar-collapsed');
-        const layout = document.getElementById('admin-app-layout');
-        if (layout) layout.classList.remove('sidebar-collapsed');
       }
     } catch (_) {}
   }
@@ -71,18 +96,16 @@
                                  document.body.classList.contains('sidebar-collapsed') ||
                                  layout.classList.contains('sidebar-collapsed');
 
-    const nextState = !isCurrentlyCollapsed;
+    const nextCollapsed = !isCurrentlyCollapsed;
 
-    if (nextState) {
+    if (nextCollapsed) {
       document.documentElement.classList.add('sidebar-collapsed');
       document.body.classList.add('sidebar-collapsed');
       layout.classList.add('sidebar-collapsed');
-      localStorage.setItem('admin_sidebar_collapsed', 'true');
     } else {
       document.documentElement.classList.remove('sidebar-collapsed');
       document.body.classList.remove('sidebar-collapsed');
       layout.classList.remove('sidebar-collapsed');
-      localStorage.setItem('admin_sidebar_collapsed', 'false');
     }
   }
 
@@ -95,7 +118,6 @@
       return;
     }
     const sidebar = document.getElementById('app-sidebar');
-    const backdrop = document.getElementById('sidebar-backdrop');
     if (!sidebar) return;
 
     const isOpen = sidebar.classList.contains('open') || sidebar.classList.contains('sidebar-open');
@@ -163,14 +185,9 @@
 
     // ── A. Mount Mobile Top Header (<= 768px only) if missing ──
     if (!document.getElementById('mobile-top-header')) {
-      const menuSvg = getIcon('menu', { width: 20, height: 20, stroke: 2.2 }) ||
-        `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
-
-      const instSvg = getIcon('institution', { width: 18, height: 18, stroke: 2 }) ||
-        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg>`;
-
-      const bellSvg = getIcon('bell', { width: 18, height: 18, stroke: 2 }) ||
-        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`;
+      const menuSvg = getIcon('menu', { width: 20, height: 20, stroke: 2.2 });
+      const instSvg = getIcon('institution', { width: 18, height: 18, stroke: 2 });
+      const bellSvg = getIcon('bell', { width: 18, height: 18, stroke: 2 });
 
       const mobileHeaderHtml = `
         <header class="mobile-top-header" id="mobile-top-header">
@@ -198,26 +215,13 @@
 
     // ── B. Mount Dual-State Sidebar (#app-sidebar) if missing ──
     if (!document.getElementById('app-sidebar')) {
-      const cubeSvg = getIcon('cube', { width: 32, height: 32, className: 'rail-cube-logo' }) ||
-        `<svg class="rail-cube-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L28 9.5L16 16L4 9.5L16 3Z" fill="var(--color-primary-light, hsl(215 90% 95%))"/><path d="M4 9.5L16 16V29L4 22.5V9.5Z" fill="var(--color-primary, hsl(217 91% 60%))"/><path d="M16 16L28 9.5V22.5L16 29V16Z" fill="var(--color-primary-hover, hsl(224 76% 48%))"/></svg>`;
-
-      const railMenuSvg = getIcon('menu', { width: 18, height: 18, stroke: 2 }) ||
-        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
-
-      const expandChevronSvg = getIcon('chevronRight', { width: 14, height: 14, stroke: 2.5 }) ||
-        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
-
-      const pauseSvg = getIcon('pause', { width: 14, height: 14, stroke: 2.5 }) ||
-        `<svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="10" y1="5" x2="10" y2="19"></line><line x1="14" y1="5" x2="14" y2="19"></line></svg>`;
-
-      const closeSvg = getIcon('close', { width: 18, height: 18, stroke: 2.2 }) ||
-        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-
-      const userSvg = getIcon('user', { width: 20, height: 20, stroke: 2 }) ||
-        `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-
-      const signoutSvg = getIcon('logout', { width: 20, height: 20, stroke: 2 }) ||
-        `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`;
+      const cubeSvg = getIcon('cube', { width: 32, height: 32, className: 'rail-cube-logo' });
+      const railMenuSvg = getIcon('menu', { width: 18, height: 18, stroke: 2 });
+      const expandChevronSvg = getIcon('chevronRight', { width: 14, height: 14, stroke: 2.5 });
+      const pauseSvg = getIcon('pause', { width: 14, height: 14, stroke: 2.5 });
+      const closeSvg = getIcon('close', { width: 18, height: 18, stroke: 2.2 });
+      const userSvg = getIcon('user', { width: 20, height: 20, stroke: 2 });
+      const signoutSvg = getIcon('logout', { width: 20, height: 20, stroke: 2 });
 
       // Render Navigation items
       const navItemsHtml = ADMIN_NAV_ITEMS.map(item => {
@@ -226,10 +230,10 @@
                          (item.key === 'dashboard' && (currentPath === '/admin/' || currentPath.endsWith('/admin') || currentPath.endsWith('/admin/dashboard.html') || currentPath.endsWith('/admin/dashboard')));
 
         const activeCls = isActive ? ' active' : '';
-        const itemSvg = getIcon(item.icon, { width: 20, height: 20, stroke: 2 }) || '';
+        const itemSvg = getIcon(item.icon, { width: 20, height: 20, stroke: 2 });
 
         return `
-          <a href="${item.href}" class="sidebar-nav-item${activeCls}" data-nav="${item.key}" data-tooltip="${item.label}" title="${item.label}" onclick="if(window.innerWidth<=768)closeSidebar()">
+          <a href="${item.href}" class="sidebar-nav-item${activeCls}" data-nav="${item.key}" data-tooltip="${item.label}" title="${item.label}">
             <span class="sidebar-nav-icon">${itemSvg}</span>
             <span class="sidebar-nav-label">${item.label}</span>
           </a>
@@ -305,13 +309,17 @@
    * 7. Global Keyboard Event Listeners
    */
   document.addEventListener('keydown', function (e) {
-    // Escape closes mobile drawer or collapses desktop sidebar
     if (e.key === 'Escape') {
       if (window.innerWidth <= 768) {
         closeSidebar();
+      } else {
+        // Pressing Escape collapses desktop sidebar back to 72px rail
+        const layout = document.getElementById('admin-app-layout') || document.body;
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        if (layout) layout.classList.add('sidebar-collapsed');
       }
     }
-    // Ctrl+B or Cmd+B toggles sidebar
     if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
       e.preventDefault();
       if (window.innerWidth >= 769) {

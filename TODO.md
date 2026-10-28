@@ -34,6 +34,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 393: Admin Nav Icon Registry Fix & Guaranteed Default-Closed Sidebar on Page Open
+
+- **User Directives**:
+  - Fix missing icons inside navigation buttons in the 72px rail and 250px expanded sidebar ("we have small nav but no icons").
+  - Ensure the menu bar always starts CLOSED (collapsed 72px rail) when opening any admin page, rather than persisting open from previous expansion ("when i open page manu bar stay open but need to close").
+- **Root Cause & Architectural Resolution**:
+  1. **Icon Registry Function Binding & Multi-Tier Fallbacks (`icons.js` & `sidebar.js`)**:
+     - `sidebar.js` attempted to invoke `window.ADMIN_ICONS.get()`, which was not exported on `ADMIN_ICONS`.
+     - Bound `ICONS.get = getAdminIcon;` in `icons.js`.
+     - Embedded a complete `FALLBACK_ICONS` inline dictionary inside `sidebar.js` to guarantee all 6 module SVG vectors (Dashboard, Academic Structure, HOD Management, Reports, Settings, Audit Logs) and rail controls render with 100% reliability.
+     - Added explicit SVG stroke CSS rules (`stroke: var(--text-white, #ffffff)` for active item; `stroke: var(--text-muted)` for inactive; `stroke: var(--color-primary)` on hover) for crisp contrast.
+  2. **Guaranteed Default-Closed State on Page Open**:
+     - Updated `initDesktopState()` to unconditionally add `sidebar-collapsed` on desktop (`>= 769px`), ensuring every fresh page open or tab load begins in the compact 72px mini-rail without staying open.
+     - Synchronized pre-paint script in `dashboard.html` `<head>` for zero layout shift.
+- **Verification**:
+  - JSDOM unit test confirmed 6/6 nav items have valid SVGs (`SVG length > 300`) and `sidebar-collapsed: true`.
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+  - Register consolidation test: 46/46 passed.
+
 ### ✅ Milestone 392: Standardized Modular HTML File Renaming ([folder]/[folder].html) Across All Features
 
 - **User Directives**:

@@ -13,11 +13,10 @@
   <link rel="stylesheet" href="/admin/components/sidebar/sidebar.css?v=20261029">
   <link rel="stylesheet" href="/admin/dashboard/dashboard.css?v=20261029">
   <script>
-    /* Restore saved desktop sidebar collapsed rail state instantly before paint */
+    /* Always start closed (72px collapsed mini-rail) when page opens */
     (function () {
       try {
-        const saved = localStorage.getItem('admin_sidebar_collapsed');
-        if ((saved === null || saved === 'true') && window.innerWidth >= 769) {
+        if (window.innerWidth >= 769) {
           document.documentElement.classList.add('sidebar-collapsed');
         }
       } catch (_) {}
