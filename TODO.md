@@ -34,6 +34,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 384: Selective Integration of Dev 2 Executive Admin Dashboard (Main Content Only)
+
+- **Requirement**:
+  - Update Admin Dashboard (`/admin/dashboard.html`) with Dev 2's executive redesign while strictly preserving our tested full-height overlay drawer sidebar (`#app-sidebar` / `gc-drawer`) and excluding Dev 2's standalone sidebar component.
+- **Implemented Architecture**:
+  1. **Main Content Refresh (`frontend/admin/dashboard/index.html`)**:
+     - Preserved our full-height overlay drawer sidebar (`#app-sidebar`), brand badges, header, and backdrop (`#sidebar-backdrop`).
+     - Added `.gc-search-box` with `#admin-module-search` to navbar for quick search.
+     - Updated `<main class="dashboard-container">` with:
+       - **Welcome Hero Banner (`.admin-welcome-hero`)**: Personalized greeting (`#admin-hero-name`), subtitle, and fully tokenized campus architecture SVG vector illustration.
+       - **Interactive KPI Cards (`.stats-kpi-grid`)**: Real-time stats for Faculty, Active Students, and Enrolled Total Students with status badges, chevron arrows, and direct module navigation.
+       - **Core Governance Modules Grid (`#admin-modules-container`)**: Modern executive cards for HOD Governance, Reports & Analytics, Master Curriculum / Academic Structure, System Settings, and Immutable Audit Trail.
+  2. **Styles & Tokenization (`dashboard.css`)**:
+     - Integrated Dev 2's 100% theme-tokenized CSS (0 hardcoded hex colors) styling the hero banner, vector art, KPI cards, module tags, action buttons, and responsive breakpoints.
+  3. **Controllers & Search Logic (`dashboard.js`)**:
+     - Real-time statistics loading for all 3 KPI metrics from `/api/v1/admin/stats`.
+     - User identity personalization across the hero banner and popover.
+     - Instant live search filtering with keyboard shortcuts (`/` and `Ctrl+K`), keyword matching, and empty state handling.
+  4. **Multi-Directory Synchronization**:
+     - Synchronized to `frontend-v2/admin/dashboard/`.
+     - Verified with `test-theme-support.js` (88/88 passed) and `test-rbac-and-structure.js` (34/34 passed).
+
 ### ✅ Milestone 383: Student Demographic Dossier (KYC) & First-Time Login Profile Completion Modal
 
 - **Requirements**:
