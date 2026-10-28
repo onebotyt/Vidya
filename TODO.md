@@ -34,6 +34,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 391: Exact Dual-State Sidebar Implementation (Collapsed 72px Icon Rail & 250px Expanded Drawer) & Clean-up
+
+- **User Directives**:
+  - Match desktop collapsed view from Image 3 (`localhost:3001/admin/dashboard.html`): narrow 72px icon rail with cube logo at top, hamburger `☰` and `<` expand toggle, centered squircle icon buttons (Dashboard active blue squircle), admin profile & sign-out at bottom.
+  - Zero top navbar on desktop; page content (`.admin-main-wrap`) begins directly flush beside the 72px rail.
+  - Smooth expansion to 250px with `VidyaOS Console` header and circular pause `||` collapse button.
+  - Mobile view (≤ 768px): clean 56px top header (`.mobile-top-header`) with hamburger, opening 280px drawer overlay over dimmed backdrop.
+  - Clean up all orphan code in `frontend/admin/dashboard/`.
+- **Implemented Changes**:
+  1. **Dual-State Component Architecture (`frontend/admin/components/sidebar/`)**:
+     - `sidebar.html`: Semantic markup containing `.mobile-top-header` (mobile-only), `.admin-sidebar` with dual `.sidebar-rail-header`/`.sidebar-rail-footer` and `.sidebar-expanded-header`/`.sidebar-expanded-footer`, and `#sidebar-backdrop`.
+     - `sidebar.css`: 100% theme-tokenized styles for desktop 72px rail (`.sidebar-collapsed`) and 250px expanded state, zero desktop top navbar, 280px mobile drawer with off-canvas transition.
+     - `sidebar.js`: Controller engine handling instant pre-paint state detection (`admin_sidebar_collapsed` defaulting to collapsed rail on fresh load), `toggleDesktopSidebar()`, `toggleSidebar()`, and keyboard shortcuts (`Escape`, `Ctrl+B`).
+  2. **Page Template Clean-up (`frontend/admin/dashboard/index.html` & `dashboard.css`)**:
+     - Zero hardcoded navigation markup or orphan classes.
+     - Zero desktop layout shift; `.dashboard-container` sits flush next to the 72px/250px sidebar with standard padding.
+- **Verification**:
+  - Theme test: 88/88 passed (0 hardcoded hex colors).
+  - RBAC test: 34/34 passed.
+
 ### ✅ Milestone 390: Dynamic Navigation Component Mounting & Dashboard HTML Cleanup
 
 - **User Inquiry & Directive**:

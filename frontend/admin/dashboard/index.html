@@ -16,7 +16,8 @@
     /* Restore saved desktop sidebar collapsed rail state instantly before paint */
     (function () {
       try {
-        if (localStorage.getItem('admin_sidebar_collapsed') === 'true' && window.innerWidth >= 769) {
+        const saved = localStorage.getItem('admin_sidebar_collapsed');
+        if ((saved === null || saved === 'true') && window.innerWidth >= 769) {
           document.documentElement.classList.add('sidebar-collapsed');
         }
       } catch (_) {}
@@ -26,7 +27,7 @@
 <body class="admin-dashboard-page">
   <div class="admin-app-layout" id="admin-app-layout">
 
-        <!-- Navigation (Top Navbar, Overlay Flyout Drawer, Backdrop) is dynamically rendered by /admin/components/sidebar/sidebar.js -->
+    <!-- Navigation (Dual-State Rail Sidebar, Mobile Top Header, Overlay Backdrop) is dynamically rendered by /admin/components/sidebar/sidebar.js -->
 
 
 
