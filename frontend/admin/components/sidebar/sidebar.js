@@ -5,11 +5,13 @@
  * 
  * - Dynamically mounts:
  *   1. .mobile-top-header (Mobile only, <= 768px)
- *   2. #app-sidebar (Desktop 72px rail / 250px expanded / Mobile 280px drawer)
- *   3. #sidebar-backdrop (Mobile drawer overlay)
- * - Always starts CLOSED on page open/load (72px collapsed rail on desktop)
- * - 100% self-contained SVG icon registry with inline fallbacks
- * - Zero layout shift on navigation
+ *   2. #app-sidebar (Desktop 72px rail / 260px flyout overlay drawer / Mobile 280px drawer)
+ *   3. #sidebar-backdrop (Desktop flyout & mobile drawer overlay)
+ * - Zero desktop layout shift: page content stays permanently at margin-left: 72px
+ * - Menu bar expands as a floating hamburger overlay drawer without squishing content
+ * - Rail header has ONLY the expand arrow button (three lines removed)
+ * - 3D Isometric navigation vectors with multi-facet lighting & tactile squircle depth
+ * - Always starts CLOSED on page load/open
  * - Keyboard shortcuts: Ctrl+B (Toggle), Escape (Dismiss)
  * ══════════════════════════════════════════════════════════════
  */
@@ -17,21 +19,21 @@
 (function () {
   'use strict';
 
-  // Reliable inline SVGs for all admin controls and modules
+  // Reliable inline 3D isometric SVGs for all admin controls and modules
   const FALLBACK_ICONS = {
-    dashboard: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
-    academicStructure: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`,
-    hodManagement: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
-    reports: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`,
-    settings: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
-    audit: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`,
-    cube: `<svg class="rail-cube-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 3L28 9.5L16 16L4 9.5L16 3Z" fill="var(--color-primary-light, hsl(215 90% 95%))"/><path d="M4 9.5L16 16V29L4 22.5V9.5Z" fill="var(--color-primary, hsl(217 91% 60%))"/><path d="M16 16L28 9.5V22.5L16 29V16Z" fill="var(--color-primary-hover, hsl(224 76% 48%))"/></svg>`,
-    menu: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
+    cube: `<svg class="rail-cube-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 3L28 9.5L16 16L4 9.5L16 3Z" fill="var(--color-primary-light, hsl(215 90% 95%))" stroke="var(--color-primary)" stroke-width="0.8" stroke-linejoin="round"/><path d="M4 9.5L16 16V29L4 22.5V9.5Z" fill="var(--color-primary, hsl(217 91% 60%))" stroke="var(--color-primary-hover)" stroke-width="0.8" stroke-linejoin="round"/><path d="M16 16L28 9.5V22.5L16 29V16Z" fill="var(--color-primary-hover, hsl(224 76% 48%))" stroke="var(--color-primary-hover)" stroke-width="0.8" stroke-linejoin="round"/><path d="M16 16L16 28" stroke="hsl(0 0% 100% / 0.35)" stroke-width="1.2" stroke-linecap="round"/><path d="M16 16L27 10" stroke="hsl(0 0% 100% / 0.28)" stroke-width="1.2" stroke-linecap="round"/></svg>`,
     chevronRight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
-    pause: `<svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="10" y1="5" x2="10" y2="19"></line><line x1="14" y1="5" x2="14" y2="19"></line></svg>`,
+    chevronLeft: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>`,
+    menu: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
     close: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
-    user: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
-    logout: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`,
+    dashboard: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 21 7 12 12 3 7" fill="currentColor" fill-opacity="0.32" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="3 7 12 12 12 21 3 16" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="12 12 21 7 21 16 12 21" fill="currentColor" fill-opacity="0.48" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="12 15 15.5 13 15.5 18 12 20" fill="currentColor" fill-opacity="0.75" stroke="none"/><polyline points="8.5 14 8.5 19 12 21" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+    academicStructure: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 20 6 12 10 4 6" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="4 6 12 10 12 11.5 4 7.5" fill="currentColor" fill-opacity="0.2" stroke="none"/><polygon points="12 10 20 6 20 7.5 12 11.5" fill="currentColor" fill-opacity="0.55" stroke="none"/><polygon points="12 8 20 12 12 16 4 12" fill="currentColor" fill-opacity="0.26" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="4 12 12 16 12 17.5 4 13.5" fill="currentColor" fill-opacity="0.2" stroke="none"/><polygon points="12 16 20 12 20 13.5 12 17.5" fill="currentColor" fill-opacity="0.55" stroke="none"/><polygon points="12 14 20 18 12 22 4 18" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polyline points="4 18 12 22 20 18" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
+    hodManagement: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L20 5.5V11.5C20 16.5 16.5 20.5 12 22C7.5 20.5 4 16.5 4 11.5V5.5L12 2Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 2L20 5.5V11.5C20 16.5 16.5 20.5 12 22V2Z" fill="currentColor" fill-opacity="0.28" stroke="none"/><circle cx="12" cy="8.5" r="2.8" fill="currentColor" fill-opacity="0.5" stroke="currentColor" stroke-width="1.4"/><path d="M7.5 16C7.5 13.5 9.5 12.5 12 12.5C14.5 12.5 16.5 13.5 16.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="2.5" x2="12" y2="21.5" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.6"/></svg>`,
+    reports: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 15 8 13.5 8 19 5 20.5" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.4"/><polygon points="8 13.5 10 14.5 10 20 8 19" fill="currentColor" fill-opacity="0.45" stroke="currentColor" stroke-width="1.4"/><polygon points="5 15 7 14 10 14.5 8 15.5" fill="currentColor" fill-opacity="0.32" stroke="none"/><polygon points="10 11 13 9.5 13 18 10 19.5" fill="currentColor" fill-opacity="0.24" stroke="currentColor" stroke-width="1.4"/><polygon points="13 9.5 15 10.5 15 19 13 18" fill="currentColor" fill-opacity="0.52" stroke="currentColor" stroke-width="1.4"/><polygon points="10 11 12 10 15 10.5 13 11.5" fill="currentColor" fill-opacity="0.35" stroke="none"/><polygon points="15 6 18 4.5 18 16 15 17.5" fill="currentColor" fill-opacity="0.26" stroke="currentColor" stroke-width="1.4"/><polygon points="18 4.5 20 5.5 20 17 18 16" fill="currentColor" fill-opacity="0.58" stroke="currentColor" stroke-width="1.4"/><polygon points="15 6 17 5 20 5.5 18 6.5" fill="currentColor" fill-opacity="0.38" stroke="none"/><polyline points="4 14 10 8 14 10 21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 3 21 3 21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    settings: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="11" r="7" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2"/><path d="M5 11C5 14.5 8.1 17 12 17C15.9 17 19 14.5 19 11V13.5C19 17 15.9 19.5 12 19.5C8.1 19.5 5 17 5 13.5V11Z" fill="currentColor" fill-opacity="0.48" stroke="currentColor" stroke-width="1.4"/><path d="M12 2V5M12 17V20M2 11H5M19 11H22M5.6 4.6L7.8 6.8M16.2 15.2L18.4 17.4M18.4 4.6L16.2 6.8M7.8 15.2L5.6 17.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="11" r="2.5" fill="currentColor" fill-opacity="0.75" stroke="currentColor" stroke-width="1.2"/></svg>`,
+    audit: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 4 15 2 20 6 10 8" fill="currentColor" fill-opacity="0.32" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="10 8 20 6 20 18 10 20" fill="currentColor" fill-opacity="0.52" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polygon points="5 4 10 8 10 20 5 16" fill="currentColor" fill-opacity="0.22" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="11" x2="18" y2="9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="12" y1="14" x2="18" y2="12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="12" y1="17" x2="16" y2="15.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+    user: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.5" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="2"/><path d="M4.5 19.5C4.5 15.5 8 14 12 14C16 14 19.5 15.5 19.5 19.5" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><ellipse cx="12" cy="19.5" rx="7.5" ry="2" fill="currentColor" fill-opacity="0.38"/></svg>`,
+    logout: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="4 3 13 5 13 21 4 19" fill="currentColor" fill-opacity="0.22" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><polyline points="13 5 18 5 18 19 13 19" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="10" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="18 8 22 12 18 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     bell: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`,
     institution: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg>`
   };
@@ -88,7 +90,8 @@
   initDesktopState();
 
   /**
-   * 2. Toggle Desktop Sidebar (72px Rail <-> 250px Expanded)
+   * 2. Toggle Desktop Sidebar Flyout Overlay (72px Rail <-> 260px Overlay Drawer)
+   * The page content (.admin-main-wrap) remains fixed at margin-left: 72px without any layout shift.
    */
   function toggleDesktopSidebar() {
     const layout = document.getElementById('admin-app-layout') || document.body;
@@ -96,16 +99,23 @@
                                  document.body.classList.contains('sidebar-collapsed') ||
                                  layout.classList.contains('sidebar-collapsed');
 
-    const nextCollapsed = !isCurrentlyCollapsed;
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sidebar = document.getElementById('app-sidebar');
 
-    if (nextCollapsed) {
-      document.documentElement.classList.add('sidebar-collapsed');
-      document.body.classList.add('sidebar-collapsed');
-      layout.classList.add('sidebar-collapsed');
-    } else {
+    if (isCurrentlyCollapsed) {
+      // OPEN overlay flyout drawer
       document.documentElement.classList.remove('sidebar-collapsed');
       document.body.classList.remove('sidebar-collapsed');
       layout.classList.remove('sidebar-collapsed');
+      if (sidebar) sidebar.classList.add('desktop-open');
+      if (backdrop) backdrop.classList.add('active', 'open');
+    } else {
+      // CLOSE back to mini-rail
+      document.documentElement.classList.add('sidebar-collapsed');
+      document.body.classList.add('sidebar-collapsed');
+      layout.classList.add('sidebar-collapsed');
+      if (sidebar) sidebar.classList.remove('desktop-open');
+      if (backdrop) backdrop.classList.remove('active', 'open');
     }
   }
 
@@ -143,13 +153,23 @@
   function closeSidebar() {
     const sidebar = document.getElementById('app-sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
+    
+    // Close mobile drawer
     if (sidebar) {
-      sidebar.classList.remove('open', 'sidebar-open');
+      sidebar.classList.remove('open', 'sidebar-open', 'desktop-open');
     }
     if (backdrop) {
       backdrop.classList.remove('open', 'active');
     }
     document.body.style.overflow = '';
+
+    // If on desktop and expanded, collapse back to 72px rail
+    if (window.innerWidth >= 769) {
+      document.documentElement.classList.add('sidebar-collapsed');
+      document.body.classList.add('sidebar-collapsed');
+      const layout = document.getElementById('admin-app-layout');
+      if (layout) layout.classList.add('sidebar-collapsed');
+    }
   }
 
   /**
@@ -216,14 +236,14 @@
     // ── B. Mount Dual-State Sidebar (#app-sidebar) if missing ──
     if (!document.getElementById('app-sidebar')) {
       const cubeSvg = getIcon('cube', { width: 32, height: 32, className: 'rail-cube-logo' });
-      const railMenuSvg = getIcon('menu', { width: 18, height: 18, stroke: 2 });
+      const headerCubeSvg = getIcon('cube', { width: 24, height: 24, className: 'header-cube-logo' });
       const expandChevronSvg = getIcon('chevronRight', { width: 14, height: 14, stroke: 2.5 });
-      const pauseSvg = getIcon('pause', { width: 14, height: 14, stroke: 2.5 });
+      const collapseChevronSvg = getIcon('chevronLeft', { width: 14, height: 14, stroke: 2.5 });
       const closeSvg = getIcon('close', { width: 18, height: 18, stroke: 2.2 });
       const userSvg = getIcon('user', { width: 20, height: 20, stroke: 2 });
       const signoutSvg = getIcon('logout', { width: 20, height: 20, stroke: 2 });
 
-      // Render Navigation items
+      // Render 3D Navigation items
       const navItemsHtml = ADMIN_NAV_ITEMS.map(item => {
         const isActive = currentPath.endsWith(item.href) ||
                          currentPath.endsWith(item.href.replace('.html', '')) ||
@@ -248,23 +268,22 @@
               ${cubeSvg}
             </a>
             <div class="rail-controls">
-              <button type="button" class="rail-menu-icon" onclick="toggleDesktopSidebar()" aria-label="Menu" title="Menu">
-                ${railMenuSvg}
-              </button>
-              <button type="button" class="rail-expand-btn" onclick="toggleDesktopSidebar()" title="Expand sidebar" aria-label="Expand sidebar">
+              <!-- Only circular arrow button, three lines removed -->
+              <button type="button" class="rail-expand-btn" onclick="toggleDesktopSidebar()" title="Open Navigation Menu" aria-label="Open Navigation Menu">
                 ${expandChevronSvg}
               </button>
             </div>
           </div>
 
-          <!-- B. Expanded Header (Desktop Expanded & Mobile Drawer) -->
+          <!-- B. Expanded Header (Desktop Flyout Drawer & Mobile Drawer) -->
           <div class="sidebar-expanded-header">
             <div class="sidebar-header-left">
-              <span class="sidebar-header-menu-icon" aria-hidden="true">${railMenuSvg}</span>
+              <span class="sidebar-header-cube-icon" aria-hidden="true">${headerCubeSvg}</span>
               <span class="sidebar-header-title">VidyaOS Console</span>
             </div>
-            <button type="button" class="sidebar-desktop-collapse-btn" onclick="toggleDesktopSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar">
-              ${pauseSvg}
+            <!-- Desktop Collapse Button: Chevron Left < -->
+            <button type="button" class="sidebar-desktop-collapse-btn" onclick="toggleDesktopSidebar()" title="Collapse navigation" aria-label="Collapse navigation">
+              ${collapseChevronSvg}
             </button>
             <button type="button" class="sidebar-mobile-close-btn" onclick="closeSidebar()" title="Close menu" aria-label="Close menu">
               ${closeSvg}
@@ -292,7 +311,8 @@
           </div>
         </aside>
 
-        <div id="sidebar-backdrop" class="gc-drawer-backdrop sidebar-backdrop" onclick="closeSidebar()"></div>
+        <!-- Backdrop Overlay for Desktop Flyout & Mobile Drawer -->
+        <div id="sidebar-backdrop" class="gc-drawer-backdrop sidebar-backdrop" onclick="toggleDesktopSidebar()"></div>
       `;
 
       // Insert sidebar immediately before .admin-main-wrap or append
@@ -303,51 +323,62 @@
         layout.insertAdjacentHTML('beforeend', sidebarHtml);
       }
     }
+
+    // ── C. Ensure Tooltip Attribute & Highlight Active Item ──
+    const navItems = document.querySelectorAll('.sidebar-nav-item');
+    navItems.forEach(item => {
+      const href = (item.getAttribute('href') || '').toLowerCase();
+      const key = item.getAttribute('data-nav');
+      const isMatch = (href && (currentPath.endsWith(href) || currentPath.endsWith(href.replace('.html', '')))) ||
+                      (key === 'dashboard' && (currentPath === '/admin/' || currentPath.endsWith('/admin') || currentPath.endsWith('/admin/dashboard.html') || currentPath.endsWith('/admin/dashboard')));
+
+      if (isMatch) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
   }
 
   /**
-   * 7. Global Keyboard Event Listeners
+   * 7. Global Keyboard Accessibility
    */
-  document.addEventListener('keydown', function (e) {
+  document.addEventListener('keydown', (e) => {
+    // ESC to close drawer or flyout
     if (e.key === 'Escape') {
-      if (window.innerWidth <= 768) {
+      const sidebar = document.getElementById('app-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      const isMobileOpen = sidebar && (sidebar.classList.contains('open') || sidebar.classList.contains('sidebar-open'));
+      const isDesktopExpanded = !document.documentElement.classList.contains('sidebar-collapsed');
+
+      if (isMobileOpen) {
         closeSidebar();
-      } else {
-        // Pressing Escape collapses desktop sidebar back to 72px rail
-        const layout = document.getElementById('admin-app-layout') || document.body;
-        document.documentElement.classList.add('sidebar-collapsed');
-        document.body.classList.add('sidebar-collapsed');
-        if (layout) layout.classList.add('sidebar-collapsed');
+      } else if (isDesktopExpanded && window.innerWidth >= 769) {
+        toggleDesktopSidebar();
       }
     }
+    // Ctrl + B or Cmd + B to toggle navigation
     if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
       e.preventDefault();
-      if (window.innerWidth >= 769) {
-        toggleDesktopSidebar();
-      } else {
-        toggleSidebar();
-      }
+      toggleSidebar();
     }
   });
 
-  // Export functions to window
-  window.toggleDesktopSidebar = toggleDesktopSidebar;
+  // Attach methods to window for inline onclick handlers & outside access
   window.toggleSidebar = toggleSidebar;
   window.openSidebar = openSidebar;
   window.closeSidebar = closeSidebar;
+  window.toggleDesktopSidebar = toggleDesktopSidebar;
   window.toggleNotifications = toggleNotifications;
   window.adminLogout = adminLogout;
   window.mountAdminNavigation = mountAdminNavigation;
 
-  // Mount navigation as soon as DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      initDesktopState();
+  // Mount components when DOM is loaded
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', mountAdminNavigation);
+    } else {
       mountAdminNavigation();
-    });
-  } else {
-    initDesktopState();
-    mountAdminNavigation();
+    }
   }
-
 })();

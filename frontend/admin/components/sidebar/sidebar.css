@@ -3,9 +3,13 @@
  * VIDYAOS ADMIN DUAL-STATE SIDEBAR & MOBILE HEADER (sidebar.css)
  * Location: /frontend/admin/components/sidebar/sidebar.css
  * 
- * 1. Desktop Rail (72px collapsed) & Expanded (250px)
- * 2. Mobile Drawer (280px slideout) & Mobile Top Header (56px)
- * 3. 100% Theme Tokenized — Zero Hardcoded Hex Colors
+ * 1. Desktop Rail (72px collapsed) & Floating Overlay Drawer (260px)
+ * 2. Zero Layout Shift: Page content stays permanently at margin-left: 72px
+ * 3. Hamburger Flyout Model: Menu opens OVER the page with soft backdrop
+ * 4. Only Expand Arrow in Rail (three lines removed)
+ * 5. 3D Tactile Squircles & 3D Isometric Vectors
+ * 6. Mobile Drawer (280px slideout) & Mobile Top Header (56px)
+ * 7. 100% Theme Tokenized — Zero Hardcoded Hex Colors
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -33,31 +37,253 @@
   flex-direction: column;
   box-sizing: border-box;
   user-select: none;
-  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── 3. Desktop Sidebar Styles (>= 769px) ── */
+/* ── 3. Desktop Styles (>= 769px) ── */
 @media (min-width: 769px) {
-  /* Default Expanded State (250px) */
-  .admin-sidebar {
-    width: 250px;
-    transform: none;
-  }
-
+  /* 
+   * ZERO CONTENT LAYOUT SHIFT INVARIANT:
+   * .admin-main-wrap sits PERMANENTLY at margin-left: 72px!
+   * Opening the menu bar NEVER adjusts or shrinks page content.
+   */
   .admin-main-wrap {
-    margin-left: 250px;
-    transition: margin-left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-left: 72px !important;
     min-height: 100vh;
     box-sizing: border-box;
+    transition: none; /* No layout shifts */
   }
 
-  /* Hide rail elements by default in expanded state */
-  .sidebar-rail-header,
-  .sidebar-rail-footer {
+  /* 
+   * Default Desktop State: Collapsed 72px Mini-Rail
+   */
+  .admin-sidebar {
+    width: 72px;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* When collapsed: show rail header & rail footer */
+  .admin-app-layout.sidebar-collapsed .sidebar-rail-header,
+  .admin-app-layout.sidebar-collapsed .sidebar-rail-footer,
+  body.sidebar-collapsed .sidebar-rail-header,
+  body.sidebar-collapsed .sidebar-rail-footer,
+  html.sidebar-collapsed .sidebar-rail-header,
+  html.sidebar-collapsed .sidebar-rail-footer {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* When collapsed: hide expanded headers & footers */
+  .admin-app-layout.sidebar-collapsed .sidebar-expanded-header,
+  .admin-app-layout.sidebar-collapsed .sidebar-expanded-footer,
+  body.sidebar-collapsed .sidebar-expanded-header,
+  body.sidebar-collapsed .sidebar-expanded-footer,
+  html.sidebar-collapsed .sidebar-expanded-header,
+  html.sidebar-collapsed .sidebar-expanded-footer {
     display: none !important;
   }
 
-  /* Expanded Header */
+  /* ─────────────────────────────────────────────────────────────
+     Desktop Collapsed Rail Components (72px)
+     ───────────────────────────────────────────────────────────── */
+  .sidebar-rail-header {
+    padding: 1.15rem 0 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .rail-logo-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .rail-logo-link:hover {
+    transform: scale(1.08) rotate(2deg);
+  }
+
+  .rail-cube-logo {
+    filter: drop-shadow(0 2px 6px hsl(217 91% 60% / 0.35));
+  }
+
+  .rail-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Circular 3D Expand Arrow Button: ONLY item to open (3 lines removed) */
+  .rail-expand-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    color: var(--color-primary);
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0;
+    box-shadow: 0 2px 5px hsl(0 0% 0% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.8);
+  }
+
+  .rail-expand-btn:hover {
+    background: var(--color-primary-light);
+    color: var(--color-primary-hover);
+    transform: scale(1.1);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 4px 10px hsl(217 91% 60% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.9);
+  }
+
+  /* Rail Navigation Body */
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-body,
+  body.sidebar-collapsed .sidebar-nav-body,
+  html.sidebar-collapsed .sidebar-nav-body {
+    padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  /* 3D Tactile Squircles for Rail Navigation Items */
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item,
+  body.sidebar-collapsed .sidebar-nav-item,
+  html.sidebar-collapsed .sidebar-nav-item {
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    margin: 0.2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7);
+    color: var(--text-muted);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item:hover,
+  body.sidebar-collapsed .sidebar-nav-item:hover,
+  html.sidebar-collapsed .sidebar-nav-item:hover {
+    transform: translateY(-2px);
+    background: var(--bg-surface-hover, var(--bg-surface));
+    border-color: var(--color-primary-light);
+    box-shadow: 0 4px 10px hsl(217 91% 60% / 0.16), inset 0 1px 0 hsl(0 0% 100% / 0.9);
+    color: var(--color-primary);
+  }
+
+  /* Active Nav Item: 3D Raised Squircle with Vibrant Gradient & Bevel Rim */
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active,
+  body.sidebar-collapsed .sidebar-nav-item.active,
+  html.sidebar-collapsed .sidebar-nav-item.active {
+    background: linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%));
+    border: 1px solid hsl(217 91% 54%);
+    color: var(--text-white, hsl(0 0% 100%));
+    box-shadow: 0 4px 14px hsl(217 91% 60% / 0.42), inset 0 1px 1px hsl(0 0% 100% / 0.5), inset 0 -2px 3px hsl(224 76% 36% / 0.45);
+    transform: translateY(-1px);
+  }
+
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg,
+  body.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg,
+  html.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg {
+    stroke: var(--text-white, hsl(0 0% 100%)) !important;
+    filter: drop-shadow(0 1px 2px hsl(224 76% 30% / 0.45));
+  }
+
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-label,
+  body.sidebar-collapsed .sidebar-nav-label,
+  html.sidebar-collapsed .sidebar-nav-label {
+    display: none !important;
+  }
+
+  /* Collapsed Rail Footer */
+  .sidebar-rail-footer {
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .rail-footer-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7);
+    padding: 0;
+  }
+
+  .rail-footer-btn:hover {
+    transform: translateY(-2px);
+    background: var(--bg-surface-hover, var(--bg-surface));
+    color: var(--color-primary);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 4px 10px hsl(217 91% 60% / 0.16);
+  }
+
+  .rail-signout-btn:hover {
+    color: var(--status-absent);
+    border-color: var(--status-absent-bg);
+    box-shadow: 0 4px 10px hsl(0 84% 60% / 0.16);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Desktop Expanded Flyout Drawer State (260px Floating Overlay)
+     Active when NOT .sidebar-collapsed (or has .desktop-open)
+     ZERO Content Layout Shift: Sits over the content as a drawer
+     ───────────────────────────────────────────────────────────── */
+  body:not(.sidebar-collapsed) .admin-sidebar,
+  .admin-app-layout:not(.sidebar-collapsed) .admin-sidebar,
+  html:not(.sidebar-collapsed) .admin-sidebar,
+  .admin-sidebar.desktop-open {
+    width: 260px !important;
+    z-index: 10000;
+    box-shadow: 6px 0 28px hsl(0 0% 0% / 0.18);
+    background: var(--bg-card);
+  }
+
+  body:not(.sidebar-collapsed) .sidebar-rail-header,
+  body:not(.sidebar-collapsed) .sidebar-rail-footer,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-header,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-footer,
+  html:not(.sidebar-collapsed) .sidebar-rail-header,
+  html:not(.sidebar-collapsed) .sidebar-rail-footer {
+    display: none !important;
+  }
+
+  body:not(.sidebar-collapsed) .sidebar-expanded-header,
+  body:not(.sidebar-collapsed) .sidebar-expanded-footer,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-header,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-footer,
+  html:not(.sidebar-collapsed) .sidebar-expanded-header,
+  html:not(.sidebar-collapsed) .sidebar-expanded-footer {
+    display: flex !important;
+  }
+
+  /* Expanded Flyout Header */
   .sidebar-expanded-header {
     height: 64px;
     display: flex;
@@ -75,100 +301,107 @@
     gap: 0.75rem;
   }
 
-  .sidebar-header-menu-icon {
+  .sidebar-header-cube-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-main);
   }
 
   .sidebar-header-title {
-    font-size: 0.95rem;
+    font-size: 0.96rem;
     font-weight: 700;
     color: var(--text-main);
     letter-spacing: -0.01em;
   }
 
-  /* Desktop circular collapse button (Pause ||) */
+  /* Desktop circular collapse button (Chevron Left <) */
   .sidebar-desktop-collapse-btn {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--color-primary-light);
+    background: var(--bg-surface);
     color: var(--color-primary);
-    border: none;
+    border: 1px solid var(--border-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.15s ease;
+    transition: all 0.18s ease;
     padding: 0;
+    box-shadow: 0 2px 5px hsl(0 0% 0% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.8);
   }
 
   .sidebar-desktop-collapse-btn:hover {
-    background: var(--border-color);
+    background: var(--color-primary-light);
+    color: var(--color-primary-hover);
+    transform: scale(1.08);
   }
 
   .sidebar-mobile-close-btn {
     display: none !important;
   }
 
-  /* Navigation Body */
-  .sidebar-nav-body {
+  /* Expanded Navigation Items */
+  body:not(.sidebar-collapsed) .sidebar-nav-body,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-body,
+  html:not(.sidebar-collapsed) .sidebar-nav-body {
     flex: 1;
     overflow-y: auto;
-    padding: 0.75rem 0.5rem;
+    padding: 0.85rem 0.65rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.35rem;
   }
 
-  .sidebar-nav-item {
+  body:not(.sidebar-collapsed) .sidebar-nav-item,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-item,
+  html:not(.sidebar-collapsed) .sidebar-nav-item {
     display: flex;
     align-items: center;
     gap: 0.85rem;
-    padding: 0.7rem 1.1rem;
+    padding: 0.7rem 1rem;
     color: var(--text-main);
     text-decoration: none;
     font-size: 0.88rem;
     font-weight: 500;
-    border-radius: 9999px;
-    transition: background 0.15s ease, color 0.15s ease;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: all 0.16s ease;
   }
 
-  .sidebar-nav-item:hover {
+  body:not(.sidebar-collapsed) .sidebar-nav-item:hover,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-item:hover,
+  html:not(.sidebar-collapsed) .sidebar-nav-item:hover {
     background: var(--bg-surface-hover, var(--bg-surface));
     color: var(--color-primary);
+    border-color: var(--border-color);
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.05);
+    transform: translateX(2px);
   }
 
-  .sidebar-nav-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  body:not(.sidebar-collapsed) .sidebar-nav-item.active,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-item.active,
+  html:not(.sidebar-collapsed) .sidebar-nav-item.active {
+    background: linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%));
+    color: var(--text-white, hsl(0 0% 100%));
+    border: 1px solid hsl(217 91% 54%);
+    font-weight: 600;
+    box-shadow: 0 4px 14px hsl(217 91% 60% / 0.38), inset 0 1px 1px hsl(0 0% 100% / 0.45), inset 0 -2px 3px hsl(224 76% 36% / 0.4);
   }
 
-  .sidebar-nav-icon svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
+  body:not(.sidebar-collapsed) .sidebar-nav-item.active .sidebar-nav-icon svg,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-item.active .sidebar-nav-icon svg,
+  html:not(.sidebar-collapsed) .sidebar-nav-item.active .sidebar-nav-icon svg {
+    stroke: var(--text-white, hsl(0 0% 100%)) !important;
   }
 
-  .sidebar-nav-label {
+  body:not(.sidebar-collapsed) .sidebar-nav-label,
+  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-label,
+  html:not(.sidebar-collapsed) .sidebar-nav-label {
+    display: inline-block !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  /* Active Nav Item on Expanded: Solid Blue Pill */
-  .sidebar-nav-item.active {
-    background: var(--color-primary);
-    color: var(--text-white, #ffffff);
-    font-weight: 600;
-  }
-
-  .sidebar-nav-item.active .sidebar-nav-icon svg {
-    stroke: var(--text-white, #ffffff) !important;
   }
 
   /* Expanded Footer */
@@ -204,202 +437,16 @@
     color: var(--status-absent);
   }
 
-  /* ─────────────────────────────────────────────────────────────
-     Desktop Collapsed State (Mini-Rail: 72px)
-     Matches Image 3 (localhost:3001/admin/dashboard.html)
-     ───────────────────────────────────────────────────────────── */
-  .admin-app-layout.sidebar-collapsed .admin-sidebar,
-  body.sidebar-collapsed .admin-sidebar,
-  html.sidebar-collapsed .admin-sidebar {
-    width: 72px;
-  }
-
-  .admin-app-layout.sidebar-collapsed .admin-main-wrap,
-  body.sidebar-collapsed .admin-main-wrap,
-  html.sidebar-collapsed .admin-main-wrap {
-    margin-left: 72px;
-  }
-
-  /* Hide expanded headers & footers in collapsed rail */
-  .admin-app-layout.sidebar-collapsed .sidebar-expanded-header,
-  .admin-app-layout.sidebar-collapsed .sidebar-expanded-footer,
-  body.sidebar-collapsed .sidebar-expanded-header,
-  body.sidebar-collapsed .sidebar-expanded-footer,
-  html.sidebar-collapsed .sidebar-expanded-header,
-  html.sidebar-collapsed .sidebar-expanded-footer {
-    display: none !important;
-  }
-
-  /* Show collapsed rail header & footer */
-  .admin-app-layout.sidebar-collapsed .sidebar-rail-header,
-  .admin-app-layout.sidebar-collapsed .sidebar-rail-footer,
-  body.sidebar-collapsed .sidebar-rail-header,
-  body.sidebar-collapsed .sidebar-rail-footer,
-  html.sidebar-collapsed .sidebar-rail-header,
-  html.sidebar-collapsed .sidebar-rail-footer {
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* Collapsed Rail Header */
-  .sidebar-rail-header {
-    padding: 1.15rem 0 0.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.85rem;
-    flex-shrink: 0;
-  }
-
-  .rail-logo-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-  }
-
-  .rail-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-  }
-
-  .rail-menu-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: var(--text-main);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-  }
-
-  .rail-expand-btn {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--color-primary-light);
-    color: var(--color-primary);
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.15s ease;
-    padding: 0;
-  }
-
-  .rail-expand-btn:hover {
-    transform: scale(1.08);
-  }
-
-  /* Collapsed Rail Nav Items */
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-body,
-  body.sidebar-collapsed .sidebar-nav-body,
-  html.sidebar-collapsed .sidebar-nav-body {
-    padding: 0.5rem 0;
-    align-items: center;
-  }
-
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-item,
-  body.sidebar-collapsed .sidebar-nav-item,
-  html.sidebar-collapsed .sidebar-nav-item {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    margin: 0.35rem auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    color: var(--text-muted);
-  }
-
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-item .sidebar-nav-icon,
-  body.sidebar-collapsed .sidebar-nav-item .sidebar-nav-icon,
-  html.sidebar-collapsed .sidebar-nav-item .sidebar-nav-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-  }
-
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-item .sidebar-nav-icon svg,
-  body.sidebar-collapsed .sidebar-nav-item .sidebar-nav-icon svg,
-  html.sidebar-collapsed .sidebar-nav-item .sidebar-nav-icon svg {
-    width: 20px;
-    height: 20px;
-    stroke: var(--text-muted);
-    transition: stroke 0.15s ease;
-  }
-
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-item:hover .sidebar-nav-icon svg,
-  body.sidebar-collapsed .sidebar-nav-item:hover .sidebar-nav-icon svg,
-  html.sidebar-collapsed .sidebar-nav-item:hover .sidebar-nav-icon svg {
-    stroke: var(--color-primary);
-  }
-
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-label,
-  body.sidebar-collapsed .sidebar-nav-label,
-  html.sidebar-collapsed .sidebar-nav-label {
-    display: none !important;
-  }
-
-  /* Collapsed Active Item: Solid Blue Squircle */
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active,
-  body.sidebar-collapsed .sidebar-nav-item.active,
-  html.sidebar-collapsed .sidebar-nav-item.active {
-    background: var(--color-primary);
-    color: var(--text-white, #ffffff);
-    border-radius: 14px;
-  }
-
-  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg,
-  body.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg,
-  html.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg {
-    stroke: var(--text-white, #ffffff) !important;
-  }
-
-  /* Collapsed Rail Footer */
-  .sidebar-rail-footer {
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
-  }
-
-  .rail-footer-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-    text-decoration: none;
-    padding: 0;
-  }
-
-  .rail-footer-btn:hover {
-    background: var(--bg-surface-hover, var(--bg-surface));
-    color: var(--color-primary);
-  }
-
-  .rail-signout-btn:hover {
-    color: var(--status-absent);
+  /* Desktop Flyout Backdrop Overlay */
+  body:not(.sidebar-collapsed) #sidebar-backdrop,
+  .admin-app-layout:not(.sidebar-collapsed) #sidebar-backdrop,
+  html:not(.sidebar-collapsed) #sidebar-backdrop {
+    display: block !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 9999;
+    background: hsl(0 0% 0% / 0.28);
+    backdrop-filter: blur(2px);
   }
 
   /* Hide mobile header completely on desktop */
@@ -408,7 +455,39 @@
   }
 }
 
-/* ── 4. Mobile Layout & Drawer Styles (<= 768px) ── */
+/* ── 4. 3D Isometric SVG Icon Rendering Rules ── */
+.sidebar-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+
+.sidebar-nav-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  filter: drop-shadow(0 1px 1px hsl(0 0% 0% / 0.08));
+  transition: stroke 0.16s ease, fill 0.16s ease;
+}
+
+.sidebar-nav-item:hover .sidebar-nav-icon {
+  color: var(--color-primary);
+  transform: scale(1.06);
+}
+
+.sidebar-nav-item.active .sidebar-nav-icon {
+  color: var(--text-white, hsl(0 0% 100%)) !important;
+}
+
+.sidebar-nav-item.active .sidebar-nav-icon svg {
+  stroke: var(--text-white, hsl(0 0% 100%)) !important;
+  filter: drop-shadow(0 1px 2px hsl(224 76% 30% / 0.4));
+}
+
+/* ── 5. Mobile Layout & Drawer Styles (<= 768px) ── */
 @media (max-width: 768px) {
   /* Mobile Top Header (Sticky: 56px) */
   .mobile-top-header {
@@ -598,17 +677,17 @@
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
-    border-radius: 9999px;
+    border-radius: 12px;
   }
 
   .sidebar-nav-item.active {
-    background: var(--color-primary);
-    color: var(--bg-card);
+    background: linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%));
+    color: var(--text-white, hsl(0 0% 100%));
     font-weight: 600;
   }
 
   .sidebar-nav-item.active .sidebar-nav-icon svg {
-    stroke: var(--bg-card);
+    stroke: var(--text-white, hsl(0 0% 100%)) !important;
   }
 
   .sidebar-expanded-footer {
@@ -635,12 +714,12 @@
   }
 }
 
-/* ── 5. Backdrop Overlay for Mobile Drawer ── */
+/* ── 6. Backdrop Overlay for Flyout Drawer ── */
 .sidebar-backdrop,
 .gc-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--overlay-backdrop, hsl(0 0% 0% / 0.45));
+  background: hsl(0 0% 0% / 0.32);
   z-index: 9995;
   opacity: 0;
   pointer-events: none;

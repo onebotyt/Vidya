@@ -34,6 +34,37 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 394: Hamburger Overlay Flyout Drawer (Zero Page Shift), Arrow-Only Rail & 3D Nav Icons
+
+- **User Directives**:
+  - "nav bar still coming up like side bar not as hamburger manu bar fix it because some page's have to much contents to show in page and that adjusting page content not look good for users"
+  - "remove therr line's only need that arrow to open"
+  - "nav icons make look 3d"
+- **Root Cause & Architectural Resolution**:
+  1. **Zero Content Layout Shift Invariant (`sidebar.css`)**:
+     - Previously, expanding the sidebar on desktop changed `.admin-main-wrap` from `margin-left: 72px` to `margin-left: 250px`, causing page content and cards to squish and re-flow.
+     - Anchored `.admin-main-wrap` permanently at `margin-left: 72px !important;` on desktop (`>= 769px`). Page content width and position NEVER shift or resize.
+     - When opened, the expanded navigation operates as a **floating hamburger overlay drawer** (`position: fixed; width: 260px; z-index: 10000; box-shadow: 6px 0 28px hsl(0 0% 0% / 0.18);`) floating over `#sidebar-backdrop`.
+     - Clicking anywhere outside the flyout drawer or pressing `Escape` smoothly dismisses the flyout back to the 72px rail.
+  2. **Arrow-Only Open Trigger (Three Lines Removed)**:
+     - Removed the redundant three lines (`.rail-menu-icon`) from the collapsed mini-rail header in both `sidebar.html` and `sidebar.js`.
+     - Placed a tactile circular 3D button `.rail-expand-btn` (32x32) with chevron-right `>` as the sole trigger to open the navigation flyout.
+     - Removed redundant three lines from the expanded header as well; header displays the 3D cube logo + `VidyaOS Console` and a circular collapse arrow `<` button.
+  3. **3D Isometric SVG Icons & Tactile Squircles (`icons.js`, `sidebar.css`, `sidebar.js`)**:
+     - Engineered rich 3D isometric vector shapes with multi-facet shading and lighting for all 6 administration modules:
+       - **Dashboard**: 3D isometric command hub structure with roof cap highlight, extruded side walls, and inset depth doorway.
+       - **Academic Structure**: 3D stacked isometric architectural slabs (multi-tier curriculum layers) with beveled depth rims.
+       - **HOD Management**: 3D beveled executive shield with spine highlight and inner executive emblem.
+       - **Reports & Analytics**: 3D isometric extruded column pillars with top caps, shaded walls, and ascending 3D trajectory arrow.
+       - **System Settings**: 3D isometric beveled cogwheel gear with radial teeth and central bore hole depth.
+       - **Audit Logs**: 3D isometric security ledger with top facet, front page block, and spine.
+     - Styled navigation buttons as tactile 3D squircles (46x46 in rail with bevel rim, inset light reflection, and soft drop shadow; active item raised with vibrant blue gradient `linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%))` and crisp white 3D stroke).
+- **Verification**:
+  - JSDOM toggle test verified: initial collapsed state (`sidebar-collapsed: true`, `desktop-open: false`), expand toggle (`desktop-open: true`, `backdrop.active: true`), collapse toggle (`desktop-open: false`, `backdrop.active: false`), 0 lines in rail, and 6/6 items rendering multi-facet 3D SVGs.
+  - Theme test: 88/88 passed (100% CSS variable tokens, 0 raw hex colors).
+  - RBAC test: 34/34 passed.
+  - Register consolidation test: 46/46 passed.
+
 ### ✅ Milestone 393: Admin Nav Icon Registry Fix & Guaranteed Default-Closed Sidebar on Page Open
 
 - **User Directives**:
