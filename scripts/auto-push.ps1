@@ -67,7 +67,8 @@ $branch = (& $gitExe rev-parse --abbrev-ref HEAD).Trim()
 Write-Host "Active branch: $branch" -ForegroundColor Yellow
 
 # 3. Check for uncommitted changes
-$status = (& $gitExe status --porcelain).Trim()
+$statusRaw = & $gitExe status --porcelain
+$status = if ($statusRaw) { $statusRaw.Trim() } else { "" }
 if ($status) {
     Write-Host "Staging and committing local changes..." -ForegroundColor Yellow
     & $gitExe add -A
