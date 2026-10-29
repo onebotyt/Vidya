@@ -8,6 +8,7 @@
     "collab:diff": "node scripts/collab/diff-dev2.js",
     "collab:apply": "node scripts/collab/apply-dev2.js",
     "collab:preview": "node scripts/collab/preview-server.js",
+    "push": "powershell -ExecutionPolicy Bypass -File scripts/auto-push.ps1",
     "push:safe": "node scripts/collab/safe-push.js",
     "push:backend": "node scripts/collab/safe-push.js",
     "test:theme": "node backend/scripts/test-theme-support.js",
