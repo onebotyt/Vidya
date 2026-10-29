@@ -34,6 +34,40 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 405: Today's Attendance Donut Legend Clean-Up & Full Migration of All 6 Admin Pages to Unified Modern Navigation
+
+- **User Directives**:
+  - "in Today's Attendance Overview remove Present,Absent,Leave,Unmarked than start updating other admin pages with new nav and header and remove old code"
+- **Root Cause & Technical Resolution**:
+  1. **Attendance Overview Legend Removal & Centered Donut Metric (`dashboard.html`, `dashboard.css`)**:
+     - Removed `.donut-legend-list` (Present, Absent, Leave, Unmarked items).
+     - Centered the Donut SVG container cleanly within `.attendance-donut-pane`.
+     - Re-balanced the grid layout to `grid-template-columns: minmax(180px, 210px) 1px 1fr` with `gap: 1.5rem`, providing the 6-department breakdown even more full-space display across the card.
+  2. **Modernized Navigation Shell for All 6 Core Admin Pages**:
+     - Migrated the 6 remaining admin pages:
+       1. `frontend/admin/academic-structure/academic-structure.html` (Academic Structure & Programs)
+       2. `frontend/admin/faculty/faculty.html` (Faculty Roster & HOD Management)
+       3. `frontend/admin/reports/reports.html` (Institutional Attendance Reports & Analytics)
+       4. `frontend/admin/settings/settings.html` (Campus Governance & System Settings)
+       5. `frontend/admin/audit-logs/audit-logs.html` (Security Trail & Audit Explorer)
+       6. `frontend/admin/profile/profile.html` (Administrator Identity & Credentials)
+     - Replaced legacy navigation CSS (`/css/admin-nav.css`, `/css/nav.css`) with unified component styles (`/admin/components/sidebar/sidebar.css?v=20261029`, `/admin/components/header/header.css?v=20261029`) and startup script (`sidebar-collapsed`).
+     - Replaced deprecated top navigation bars (`.gc-navbar`), launcher grids (`.apps-launcher-dropdown`), old profile popovers (`.user-profile-popover`), legacy drawers (`#app-sidebar.app-sidebar.gc-drawer`), backdrop overlays (`#sidebar-backdrop`), and mobile bottom navigation (`.mobile-bottom-nav`) with:
+       - `.admin-app-layout` root shell
+       - `.admin-main-wrap` content container
+       - `.admin-top-header` minimalist bar with theme toggle and round profile avatar trigger (`#header-user-profile`)
+       - Fallback `#top-nav-bar` for automated test suites
+     - Cleaned up obsolete script tags (`/js/nav.js`, `/js/admin-nav.js`) and linked modern modular engines (`/admin/components/icons.js`, `/admin/components/sidebar/sidebar.js`, `/admin/components/header/header.js`).
+     - Removed over 1,340 lines of redundant, duplicate legacy HTML/navigation code across the 6 pages while fully preserving page controllers, form dialogs, data tables, and actions.
+  3. **Verification**:
+     - Automated DOM verification (`verify-all-admin-pages.js`): All 7 admin pages passed 100% (layout wrap present, top header present, 3D sidebar mounted, active nav item matches current route, zero old navbar/drawer markup).
+     - `test-theme-support.js`: 88/88 passed (100% theme tokenization, zero hardcoded hex colors).
+     - `test-rbac-and-structure.js`: 34/34 passed (All RBAC rules and 301 redirects verified).
+     - `test-register-consolidation.js`: 46/46 passed.
+     - `test-student-self-registration.js`: 30/30 passed.
+     - `test-api-flows.js`: 25/25 passed.
+     - Updated UI Memory Map records for `ADM-001` through `ADM-007` in `docs/ui-map/pages.md`.
+
 ### ✅ Milestone 404: Minimalist Top Header (Theme + Round Profile Avatar) & High-Speed Sidebar Hover Tooltips
 
 - **User Directives**:

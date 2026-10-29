@@ -43,6 +43,7 @@
 
 /* ── 3. Desktop Styles (>= 769px) ── */
 @media (min-width: 769px) {
+
   /* 
    * ZERO CONTENT LAYOUT SHIFT INVARIANT:
    * .admin-main-wrap sits PERMANENTLY at margin-left: 72px!
@@ -52,7 +53,8 @@
     margin-left: 72px !important;
     min-height: 100vh;
     box-sizing: border-box;
-    transition: none; /* No layout shifts */
+    transition: none;
+    /* No layout shifts */
     position: relative;
     z-index: 1;
   }
@@ -433,228 +435,229 @@
   }
 
   @media (max-width: 768px) {
+
     .admin-sidebar [data-tooltip]::after,
     .admin-sidebar [data-tooltip]::before {
       display: none !important;
     }
   }
-  }
+}
 
-  .rail-footer-btn:hover {
-    transform: translateY(-2px);
-    background: var(--bg-surface-hover, var(--bg-surface));
-    color: var(--color-primary);
-    border-color: var(--color-primary-light);
-    box-shadow: 0 4px 10px hsl(217 91% 60% / 0.16);
-  }
+.rail-footer-btn:hover {
+  transform: translateY(-2px);
+  background: var(--bg-surface-hover, var(--bg-surface));
+  color: var(--color-primary);
+  border-color: var(--color-primary-light);
+  box-shadow: 0 4px 10px hsl(217 91% 60% / 0.16);
+}
 
-  .rail-signout-btn:hover {
-    color: var(--status-absent);
-    border-color: var(--status-absent-bg);
-    box-shadow: 0 4px 10px hsl(0 84% 60% / 0.16);
-  }
+.rail-signout-btn:hover {
+  color: var(--status-absent);
+  border-color: var(--status-absent-bg);
+  box-shadow: 0 4px 10px hsl(0 84% 60% / 0.16);
+}
 
-  /* ─────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────
      Desktop Expanded Flyout Drawer State (260px Floating Overlay)
      Active when NOT .sidebar-collapsed (or has .desktop-open)
      ZERO Content Layout Shift: Sits over the content as a drawer
      ───────────────────────────────────────────────────────────── */
-  body:not(.sidebar-collapsed) .admin-sidebar,
-  .admin-app-layout:not(.sidebar-collapsed) .admin-sidebar,
-  html:not(.sidebar-collapsed) .admin-sidebar,
-  .admin-sidebar.desktop-open {
-    width: 260px !important;
-    z-index: 10000;
-    box-shadow: 6px 0 28px hsl(0 0% 0% / 0.18);
-    background: var(--bg-card);
-  }
-
-  body:not(.sidebar-collapsed) .sidebar-rail-header,
-  body:not(.sidebar-collapsed) .sidebar-rail-footer,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-header,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-footer,
-  html:not(.sidebar-collapsed) .sidebar-rail-header,
-  html:not(.sidebar-collapsed) .sidebar-rail-footer {
-    display: none !important;
-  }
-
-  body:not(.sidebar-collapsed) .sidebar-expanded-header,
-  body:not(.sidebar-collapsed) .sidebar-expanded-footer,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-header,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-footer,
-  html:not(.sidebar-collapsed) .sidebar-expanded-header,
-  html:not(.sidebar-collapsed) .sidebar-expanded-footer {
-    display: flex !important;
-  }
-
-  /* Expanded Flyout Header */
-  .sidebar-expanded-header {
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1.15rem;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .sidebar-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .sidebar-header-cube-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .sidebar-header-title {
-    font-size: 0.96rem;
-    font-weight: 700;
-    color: var(--text-main);
-    letter-spacing: -0.01em;
-  }
-
-  /* Desktop circular collapse button (Chevron Left <) */
-  .sidebar-desktop-collapse-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--bg-surface);
-    color: var(--color-primary);
-    border: 1px solid var(--border-color);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    padding: 0;
-    box-shadow: 0 2px 5px hsl(0 0% 0% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.8);
-  }
-
-  .sidebar-desktop-collapse-btn:hover {
-    background: var(--color-primary-light);
-    color: var(--color-primary-hover);
-    transform: scale(1.08);
-  }
-
-  .sidebar-mobile-close-btn {
-    display: none !important;
-  }
-
-  /* Expanded Navigation Items Body */
-  body:not(.sidebar-collapsed) .sidebar-nav-body,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-body,
-  html:not(.sidebar-collapsed) .sidebar-nav-body {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  /* Expanded Footer: Polished User Card & Tactile Sign Out Button */
-  .sidebar-expanded-footer {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    border-top: 1px solid var(--border-color);
-    background: var(--bg-card);
-  }
-
-  .sidebar-user-card {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.55rem 0.65rem;
-    border-radius: 10px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-  }
-
-  .sidebar-user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-    color: var(--text-white, hsl(0 0% 100%));
-    font-size: 0.78rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .sidebar-user-meta {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-    min-width: 0;
-  }
-
-  .sidebar-user-name {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .sidebar-user-sub {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-  }
-
-  .sidebar-signout-card-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.55rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-surface);
-    color: var(--status-absent);
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-  }
-
-  .sidebar-signout-card-btn svg {
-    stroke: var(--status-absent);
-  }
-
-  .sidebar-signout-card-btn:hover {
-    background: var(--status-absent-bg);
-    border-color: var(--status-absent);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px hsl(0 84% 60% / 0.15);
-  }
-
-  /* Desktop Flyout Backdrop Overlay */
-  body:not(.sidebar-collapsed) #sidebar-backdrop,
-  .admin-app-layout:not(.sidebar-collapsed) #sidebar-backdrop,
-  html:not(.sidebar-collapsed) #sidebar-backdrop {
-    display: block !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    z-index: 9999;
-    background: hsl(0 0% 0% / 0.28);
-    backdrop-filter: blur(2px);
-  }
-
-  /* Hide mobile header completely on desktop */
-  .mobile-top-header {
-    display: none !important;
-  }
+body:not(.sidebar-collapsed) .admin-sidebar,
+.admin-app-layout:not(.sidebar-collapsed) .admin-sidebar,
+html:not(.sidebar-collapsed) .admin-sidebar,
+.admin-sidebar.desktop-open {
+  width: 260px !important;
+  z-index: 10000;
+  box-shadow: 6px 0 28px hsl(0 0% 0% / 0.18);
+  background: var(--bg-card);
 }
+
+body:not(.sidebar-collapsed) .sidebar-rail-header,
+body:not(.sidebar-collapsed) .sidebar-rail-footer,
+.admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-header,
+.admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-footer,
+html:not(.sidebar-collapsed) .sidebar-rail-header,
+html:not(.sidebar-collapsed) .sidebar-rail-footer {
+  display: none !important;
+}
+
+body:not(.sidebar-collapsed) .sidebar-expanded-header,
+body:not(.sidebar-collapsed) .sidebar-expanded-footer,
+.admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-header,
+.admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-footer,
+html:not(.sidebar-collapsed) .sidebar-expanded-header,
+html:not(.sidebar-collapsed) .sidebar-expanded-footer {
+  display: flex !important;
+}
+
+/* Expanded Flyout Header */
+.sidebar-expanded-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.15rem;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-header-cube-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-header-title {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+/* Desktop circular collapse button (Chevron Left <) */
+.sidebar-desktop-collapse-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  padding: 0;
+  box-shadow: 0 2px 5px hsl(0 0% 0% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.8);
+}
+
+.sidebar-desktop-collapse-btn:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary-hover);
+  transform: scale(1.08);
+}
+
+.sidebar-mobile-close-btn {
+  display: none !important;
+}
+
+/* Expanded Navigation Items Body */
+body:not(.sidebar-collapsed) .sidebar-nav-body,
+.admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-body,
+html:not(.sidebar-collapsed) .sidebar-nav-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Expanded Footer: Polished User Card & Tactile Sign Out Button */
+.sidebar-expanded-footer {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+}
+
+.sidebar-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--text-white, hsl(0 0% 100%));
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.sidebar-user-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.sidebar-signout-card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--status-absent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.sidebar-signout-card-btn svg {
+  stroke: var(--status-absent);
+}
+
+.sidebar-signout-card-btn:hover {
+  background: var(--status-absent-bg);
+  border-color: var(--status-absent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px hsl(0 84% 60% / 0.15);
+}
+
+/* Desktop Flyout Backdrop Overlay */
+body:not(.sidebar-collapsed) #sidebar-backdrop,
+.admin-app-layout:not(.sidebar-collapsed) #sidebar-backdrop,
+html:not(.sidebar-collapsed) #sidebar-backdrop {
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 9999;
+  background: hsl(0 0% 0% / 0.28);
+  backdrop-filter: blur(2px);
+}
+
+/* Hide mobile header completely on desktop */
+.mobile-top-header {
+  display: none !important;
+}
+
 
 /* ── 4. 3D Isometric SVG Icon Rendering Rules ── */
 .sidebar-nav-icon {
@@ -690,6 +693,7 @@
 
 /* ── 5. Mobile Layout & Drawer Styles (<= 768px) ── */
 @media (max-width: 768px) {
+
   /* Mobile Top Header (Sticky: 56px) */
   .mobile-top-header {
     height: 56px;

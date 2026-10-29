@@ -547,10 +547,10 @@
   padding: 0.75rem 1rem;
 }
 
-/* Panel 1: Attendance Overview (Side-by-Side: Donut on Left, Dept Bars on Right) */
+/* Panel 1: Attendance Overview (Side-by-Side: Centered Donut on Left, Dept Bars on Right) */
 .attendance-overview-body {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 1px minmax(320px, 1.4fr);
+  grid-template-columns: minmax(180px, 210px) 1px 1fr;
   align-items: stretch;
   gap: 1.5rem;
   padding: 1.15rem 1.35rem;
@@ -570,6 +570,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
   min-width: 0;
   height: 100%;
@@ -631,13 +632,14 @@
 .donut-chart-wrap {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 1.25rem;
+  justify-content: center;
+  width: 100%;
+  padding: 0.25rem 0;
 }
 
 .donut-svg-container {
-  width: 96px;
-  height: 96px;
+  width: 104px;
+  height: 104px;
   position: relative;
   flex-shrink: 0;
 }
