@@ -19,8 +19,15 @@
    */
   function mountAdminHeader() {
     if (typeof document === 'undefined') return;
+    const existing = document.getElementById('admin-top-header');
+    if (existing) {
+      syncHeaderIdentity();
+      setupProfileHover();
+      return;
+    }
+
     const mainWrap = document.querySelector('.admin-main-wrap');
-    if (!mainWrap || document.getElementById('admin-top-header')) return;
+    if (!mainWrap) return;
 
     const headerHtml = `
       <header class="admin-top-header" id="admin-top-header" aria-label="Admin Header Bar">
@@ -87,6 +94,37 @@
 
     mainWrap.insertAdjacentHTML('afterbegin', headerHtml);
     syncHeaderIdentity();
+    setupProfileHover();
+  }
+
+  /**
+   * 1b. Smooth Profile Hover Engine
+   */
+  function setupProfileHover() {
+    const trigger = document.getElementById('header-user-profile');
+    const dropdown = document.getElementById('header-profile-dropdown');
+    if (!trigger || !dropdown) return;
+
+    let timer = null;
+    function show() {
+      clearTimeout(timer);
+      dropdown.classList.add('open');
+      dropdown.setAttribute('aria-hidden', 'false');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+    function hide() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        dropdown.classList.remove('open');
+        dropdown.setAttribute('aria-hidden', 'true');
+        trigger.setAttribute('aria-expanded', 'false');
+      }, 160);
+    }
+
+    trigger.addEventListener('mouseenter', show);
+    trigger.addEventListener('mouseleave', hide);
+    dropdown.addEventListener('mouseenter', show);
+    dropdown.addEventListener('mouseleave', hide);
   }
 
   /**

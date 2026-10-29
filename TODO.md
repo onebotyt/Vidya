@@ -34,6 +34,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 406: Right-Pinned Header Controls, Profile Hover Card, Red Error Fix & Sidebar Selector Hardening
+
+- **User Directives**:
+  - "theme and profile need on right side fix and when hover over profile card need to appear and fix red error and in other pages manu bar brokrn"
+- **Root Cause & Technical Resolution**:
+  1. **Top Header Syntax Error & Right Alignment (`header.css`, `header.js`)**:
+     - *Cause*: A stray token `on` at line 1 of `header.css` prevented the CSS parser from processing `.admin-top-header`, discarding `display: flex` and `justify-content: flex-end`, causing controls to spill to the left.
+     - *Fix*: Removed stray token. Set `.admin-top-header` to `justify-content: flex-end !important` and `.header-right` to `margin-left: auto !important; display: flex !important; justify-content: flex-end !important`, pinning theme toggle and profile avatar permanently to the far-right corner across all viewports.
+  2. **Profile Card Instant Hover & Smooth Leave Bridge (`header.css`, `header.js`)**:
+     - Added CSS hover rules `.header-profile-round-btn:hover ~ .header-profile-dropdown, .header-profile-dropdown:hover { display: flex !important; }`.
+     - Added invisible 14px `::before` pseudo-element bridge across the vertical gap between the circular avatar button and the dropdown card so mouse transit never loses hover state.
+     - Wired `setupProfileHover()` in `header.js` attaching `mouseenter` and `mouseleave` listeners with a 160ms graceful exit timer and executed on both existing and dynamically mounted headers.
+  3. **Sidebar Broken State on Other Pages & False Backdrop Dimming (`sidebar.css`, `sidebar.js`)**:
+     - *Cause*: Compound negative selector `body:not(.sidebar-collapsed)..., .admin-app-layout:not(.sidebar-collapsed)...` matched whenever `body` lacked `.sidebar-collapsed`, prematurely expanding `#app-sidebar` to 260px and activating `#sidebar-backdrop` with `display: block; backdrop-filter: blur(2px)`.
+     - *Fix*: Eliminated all negative body/html cascading selectors. State is now strictly tied to `.admin-sidebar.desktop-open` and `#sidebar-backdrop.active.open`. Sidebar is guaranteed collapsed (72px) by default across all pages until explicitly toggled.
+     - Added 301 redirects for `/admin/audit_logs.html` and `/admin/audit_logs` to `/admin/audit-logs.html` in `server.js`.
+  4. **Verification**:
+     - `test-rbac-and-structure.js`: 35/35 passed (including audit logs 301 redirect).
+     - `test-theme-support.js`: 88/88 passed (100% theme tokenized, zero hardcoded colors).
+     - `verify-all-admin-pages.js`: 7/7 pages passed (Clean 72px rail, zero backdrop dimming on load, active state bound, header controls right-pinned).
+
 ### ✅ Milestone 405: Today's Attendance Donut Legend Clean-Up & Full Migration of All 6 Admin Pages to Unified Modern Navigation
 
 - **User Directives**:

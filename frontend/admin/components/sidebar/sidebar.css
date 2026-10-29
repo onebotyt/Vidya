@@ -69,28 +69,28 @@
     transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
   }
 
-  /* When collapsed: show rail header & rail footer */
+  /* When collapsed (default): show rail header & rail footer */
+  .admin-sidebar:not(.desktop-open) .sidebar-rail-header,
   .admin-app-layout.sidebar-collapsed .sidebar-rail-header,
-  body.sidebar-collapsed .sidebar-rail-header,
   html.sidebar-collapsed .sidebar-rail-header {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
   }
 
+  .admin-sidebar:not(.desktop-open) .sidebar-rail-footer,
   .admin-app-layout.sidebar-collapsed .sidebar-rail-footer,
-  body.sidebar-collapsed .sidebar-rail-footer,
   html.sidebar-collapsed .sidebar-rail-footer {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
   }
 
-  /* When collapsed: hide expanded headers & footers */
+  /* When collapsed (default): hide expanded headers & footers */
+  .admin-sidebar:not(.desktop-open) .sidebar-expanded-header,
+  .admin-sidebar:not(.desktop-open) .sidebar-expanded-footer,
   .admin-app-layout.sidebar-collapsed .sidebar-expanded-header,
   .admin-app-layout.sidebar-collapsed .sidebar-expanded-footer,
-  body.sidebar-collapsed .sidebar-expanded-header,
-  body.sidebar-collapsed .sidebar-expanded-footer,
   html.sidebar-collapsed .sidebar-expanded-header,
   html.sidebar-collapsed .sidebar-expanded-footer {
     display: none !important;
@@ -197,10 +197,9 @@
   }
 
   /* Unified Navigation Body (0-shift geometry) */
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-body,
   .admin-app-layout.sidebar-collapsed .sidebar-nav-body,
-  body.sidebar-collapsed .sidebar-nav-body,
-  html.sidebar-collapsed .sidebar-nav-body,
-  .admin-sidebar:not(.desktop-open) .sidebar-nav-body {
+  html.sidebar-collapsed .sidebar-nav-body {
     padding: 0.65rem 0;
     display: flex;
     flex-direction: column;
@@ -208,9 +207,6 @@
     overflow: visible !important;
   }
 
-  body:not(.sidebar-collapsed) .sidebar-nav-body,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-body,
-  html:not(.sidebar-collapsed) .sidebar-nav-body,
   .admin-sidebar.desktop-open .sidebar-nav-body {
     padding: 0.65rem 0;
     display: flex;
@@ -241,18 +237,14 @@
   }
 
   /* In collapsed rail: width is 46px (x runs from 13px to 59px, exactly centered in 72px) */
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-item,
   .admin-app-layout.sidebar-collapsed .sidebar-nav-item,
-  body.sidebar-collapsed .sidebar-nav-item,
-  html.sidebar-collapsed .sidebar-nav-item,
-  .admin-sidebar:not(.desktop-open) .sidebar-nav-item {
+  html.sidebar-collapsed .sidebar-nav-item {
     width: 46px;
     overflow: visible !important;
   }
 
   /* In expanded drawer: width is 234px (260 - 26 = 234px, exactly 13px margin on both sides) */
-  body:not(.sidebar-collapsed) .sidebar-nav-item,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-item,
-  html:not(.sidebar-collapsed) .sidebar-nav-item,
   .admin-sidebar.desktop-open .sidebar-nav-item {
     width: 234px;
     overflow: hidden;
@@ -281,8 +273,8 @@
     transition: opacity 0.2s 0.06s ease, transform 0.2s 0.06s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-label,
   .admin-app-layout.sidebar-collapsed .sidebar-nav-label,
-  body.sidebar-collapsed .sidebar-nav-label,
   html.sidebar-collapsed .sidebar-nav-label {
     opacity: 0;
     visibility: hidden;
@@ -290,9 +282,7 @@
     transform: translateX(-8px);
   }
 
-  body:not(.sidebar-collapsed) .sidebar-nav-label,
-  .admin-app-layout:not(.sidebar-collapsed) .sidebar-nav-label,
-  html:not(.sidebar-collapsed) .sidebar-nav-label {
+  .admin-sidebar.desktop-open .sidebar-nav-label {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -422,11 +412,6 @@
 
   /* Completely suppress tooltips when drawer flyout is expanded or on mobile */
   body:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::after,
-  body:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::before,
-  .admin-app-layout:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::after,
-  .admin-app-layout:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::before,
-  html:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::after,
-  html:not(.sidebar-collapsed) .admin-sidebar [data-tooltip]::before,
   .admin-sidebar.desktop-open [data-tooltip]::after,
   .admin-sidebar.desktop-open [data-tooltip]::before,
   .admin-sidebar.open [data-tooltip]::after,
@@ -459,12 +444,9 @@
 
 /* ─────────────────────────────────────────────────────────────
      Desktop Expanded Flyout Drawer State (260px Floating Overlay)
-     Active when NOT .sidebar-collapsed (or has .desktop-open)
+     Active when .admin-sidebar has .desktop-open
      ZERO Content Layout Shift: Sits over the content as a drawer
      ───────────────────────────────────────────────────────────── */
-body:not(.sidebar-collapsed) .admin-sidebar,
-.admin-app-layout:not(.sidebar-collapsed) .admin-sidebar,
-html:not(.sidebar-collapsed) .admin-sidebar,
 .admin-sidebar.desktop-open {
   width: 260px !important;
   z-index: 10000;
@@ -472,21 +454,13 @@ html:not(.sidebar-collapsed) .admin-sidebar,
   background: var(--bg-card);
 }
 
-body:not(.sidebar-collapsed) .sidebar-rail-header,
-body:not(.sidebar-collapsed) .sidebar-rail-footer,
-.admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-header,
-.admin-app-layout:not(.sidebar-collapsed) .sidebar-rail-footer,
-html:not(.sidebar-collapsed) .sidebar-rail-header,
-html:not(.sidebar-collapsed) .sidebar-rail-footer {
+.admin-sidebar.desktop-open .sidebar-rail-header,
+.admin-sidebar.desktop-open .sidebar-rail-footer {
   display: none !important;
 }
 
-body:not(.sidebar-collapsed) .sidebar-expanded-header,
-body:not(.sidebar-collapsed) .sidebar-expanded-footer,
-.admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-header,
-.admin-app-layout:not(.sidebar-collapsed) .sidebar-expanded-footer,
-html:not(.sidebar-collapsed) .sidebar-expanded-header,
-html:not(.sidebar-collapsed) .sidebar-expanded-footer {
+.admin-sidebar.desktop-open .sidebar-expanded-header,
+.admin-sidebar.desktop-open .sidebar-expanded-footer {
   display: flex !important;
 }
 
@@ -642,15 +616,24 @@ html:not(.sidebar-collapsed) .sidebar-nav-body {
 }
 
 /* Desktop Flyout Backdrop Overlay */
-body:not(.sidebar-collapsed) #sidebar-backdrop,
-.admin-app-layout:not(.sidebar-collapsed) #sidebar-backdrop,
-html:not(.sidebar-collapsed) #sidebar-backdrop {
-  display: block !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
+#sidebar-backdrop {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: fixed;
+  inset: 0;
   z-index: 9999;
   background: hsl(0 0% 0% / 0.28);
   backdrop-filter: blur(2px);
+  transition: opacity 0.22s ease;
+}
+
+.admin-sidebar.desktop-open ~ #sidebar-backdrop,
+#sidebar-backdrop.active,
+#sidebar-backdrop.open {
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* Hide mobile header completely on desktop */

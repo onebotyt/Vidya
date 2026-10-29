@@ -100,7 +100,8 @@ app.get(['/login/faculty-register.html', '/login/faculty-register', '/register/f
   const query = req.url.includes('?') ? '&' + req.url.split('?')[1] : '';
   res.redirect(301, `/login/register.html?role=faculty${query}`);
 });
-app.get('/admin/academic_structure.html', (req, res) => res.redirect(301, '/admin/academic-structure.html'));
+app.get(['/admin/academic_structure.html', '/admin/academic_structure'], (req, res) => res.redirect(301, '/admin/academic-structure.html'));
+app.get(['/admin/audit_logs.html', '/admin/audit_logs'], (req, res) => res.redirect(301, '/admin/audit-logs.html'));
 app.get('/admin/departments.html', (req, res) => res.redirect(301, '/admin/academic-structure.html?tab=departments'));
 app.get('/faculty/analytics.html', (req, res) => res.redirect(301, '/faculty/reports.html?tab=analytics'));
 app.get(['/faculty/marks.html', '/faculty/marks'], (req, res) => {

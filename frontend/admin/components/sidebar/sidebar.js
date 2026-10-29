@@ -77,6 +77,10 @@
    */
   function initDesktopState() {
     try {
+      const sidebar = document.getElementById('app-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (sidebar) sidebar.classList.remove('desktop-open', 'open', 'sidebar-open');
+      if (backdrop) backdrop.classList.remove('active', 'open');
       if (window.innerWidth >= 769) {
         document.documentElement.classList.add('sidebar-collapsed');
         document.body.classList.add('sidebar-collapsed');
@@ -95,27 +99,26 @@
    */
   function toggleDesktopSidebar() {
     const layout = document.getElementById('admin-app-layout') || document.body;
-    const isCurrentlyCollapsed = document.documentElement.classList.contains('sidebar-collapsed') ||
-                                 document.body.classList.contains('sidebar-collapsed') ||
-                                 layout.classList.contains('sidebar-collapsed');
-
-    const backdrop = document.getElementById('sidebar-backdrop');
     const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (!sidebar) return;
 
-    if (isCurrentlyCollapsed) {
-      // OPEN overlay flyout drawer
-      document.documentElement.classList.remove('sidebar-collapsed');
-      document.body.classList.remove('sidebar-collapsed');
-      layout.classList.remove('sidebar-collapsed');
-      if (sidebar) sidebar.classList.add('desktop-open');
-      if (backdrop) backdrop.classList.add('active', 'open');
-    } else {
+    const isCurrentlyOpen = sidebar.classList.contains('desktop-open');
+
+    if (isCurrentlyOpen) {
       // CLOSE back to mini-rail
+      sidebar.classList.remove('desktop-open');
+      if (backdrop) backdrop.classList.remove('active', 'open');
       document.documentElement.classList.add('sidebar-collapsed');
       document.body.classList.add('sidebar-collapsed');
-      layout.classList.add('sidebar-collapsed');
-      if (sidebar) sidebar.classList.remove('desktop-open');
-      if (backdrop) backdrop.classList.remove('active', 'open');
+      if (layout) layout.classList.add('sidebar-collapsed');
+    } else {
+      // OPEN overlay flyout drawer
+      sidebar.classList.add('desktop-open');
+      if (backdrop) backdrop.classList.add('active', 'open');
+      document.documentElement.classList.remove('sidebar-collapsed');
+      document.body.classList.remove('sidebar-collapsed');
+      if (layout) layout.classList.remove('sidebar-collapsed');
     }
   }
 
