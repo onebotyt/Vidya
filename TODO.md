@@ -37,24 +37,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 423: Vercel Clean URL & Modular Page Routing 404 Resolution
+### ? Milestone 423: Vercel Clean URL & Modular Page Routing 404 Resolution
 
 - **User Directives**:
-  - Image uploaded showing `vidyaos-pink.vercel.app/faculty/dashboard` returning `404: NOT_FOUND (This page doesn't exist)`.
+  - Image uploaded showing vidyaos-pink.vercel.app/faculty/dashboard and vidyaos-pink.vercel.app/admin/dashboard returning 404: NOT_FOUND (This page doesn't exist).
 - **Root Cause & Technical Resolution**:
   1. **Root Cause**:
-     - The deployed frontend repository (`onebotyt/VidyaOS.git`) had a `vercel.json` with rewrites that only routed assets (`.css`, `.js`), `/login`, and incomplete redirects (e.g. `/faculty` -> `/faculty/dashboard`).
-     - Because Vercel rewrites do not recursively resolve, rewriting `/faculty` to `/faculty/dashboard` failed because there was no static file at `faculty/dashboard` or rewrite for `/faculty/dashboard` to the actual file `faculty/dashboard/dashboard.html`.
-     - Furthermore, clean URLs (`/faculty/dashboard`, `/faculty/registers`, `/admin/academic-structure`, `/student/dashboard`, etc.) and `.html` URLs lacked matching rewrite definitions in `vercel.json`.
+     - Vercel's static web server relies on index.html inside folders to serve clean extensionless directory paths (e.g. /faculty/dashboard -> faculty/dashboard/index.html).
+     - Previously, modular folders only contained <page>.html (e.g. dashboard.html), without an index.html.
+     - When cleanUrls: true was enabled in vercel.json, Vercel stripped .html extensions from any requested .html files (e.g. /admin/dashboard/dashboard.html -> 308 redirect to /admin/dashboard/dashboard), causing rewrite destinations ending in .html to fail with 404.
   2. **Technical Resolution**:
-     - Updated `frontend/vercel.json` and monorepo `vercel.json` with comprehensive rewrites:
-       - Configured explicit rules for all portal landing and modular routes (`/faculty/dashboard`, `/faculty/registers`, `/faculty/sheets`, `/faculty/students`, `/faculty/reports`, `/faculty/timetable`, `/faculty/leave-approvals`, `/faculty/media`, `/faculty/profile`, `/faculty/classwork`, `/faculty/course-file`, `/faculty/groups`, `/faculty/group-detail`).
-       - Configured explicit rules for all Admin and Student pages.
-       - Added fallback regex capture patterns: `/:section(admin|faculty|student)/:page([a-zA-Z0-9_-]+)` -> `/:section/:page/:page.html`.
-       - Mapped all legacy redirect aliases (`/faculty/assignments`, `/faculty/tests`, `/faculty/marks`, `/faculty/attendance/quick`, `/faculty/evaluation`, `/faculty/analytics`, `/faculty/hod-teachers.html`, `/faculty/hod-settings.html`, `/faculty/common-teachers.html`) to their consolidated destinations.
+     - Deployed canonical index.html files across every modular directory in faculty/, admin/, and student/ (admin/dashboard/index.html, faculty/dashboard/index.html, faculty/registers/index.html, etc.) ensuring native 200 OK directory resolution on any static hosting environment.
+     - Updated frontend/vercel.json and monorepo vercel.json rewrites to target /index.html destinations.
   3. **Verification**:
-     - `test-theme-support.js`: **88 / 88 PASS**.
-     - `test-rbac-and-structure.js`: **38 / 38 PASS**.
+     - test-theme-support.js: 88 / 88 PASS.
+     - test-rbac-and-structure.js: 38 / 38 PASS.
+     - Standalone frontend, backend, and monorepo all synchronized and pushed.
 
 ### ✅ Milestone 422: Navigation Hover Tooltip Label Pure-CSS Vertical Centering Fix
 
