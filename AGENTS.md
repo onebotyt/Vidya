@@ -30,7 +30,8 @@ If you are operating as Dev 2 or assisting an external contributor:
      4. Update `TODO.md` with structured milestone documentation.
      5. Commit & push: `git add frontend/ TODO.md && git commit -m "..." && git push -u origin feature/<name>`.
      6. Output the Pull Request link.
-4. See full instructions in [DEV2_ANTIGRAVITY_INSTRUCTIONS.md](file:///d:/uiap/Attendance-System-Simplified/DEV2_ANTIGRAVITY_INSTRUCTIONS.md).
+4. **Chat Push Trigger Rule**: Whenever the user sends `"push"` or `"puch"` in the chat, **immediately execute `npm run push`** (or `powershell -ExecutionPolicy Bypass -File scripts/auto-push.ps1`) to automatically stage, commit, and push all workspace changes to GitHub, and return the commit SHA and PR URL immediately without delay.
+5. See full instructions in [DEV2_ANTIGRAVITY_INSTRUCTIONS.md](file:///d:/uiap/Attendance-System-Simplified/DEV2_ANTIGRAVITY_INSTRUCTIONS.md).
 
 ---
 
