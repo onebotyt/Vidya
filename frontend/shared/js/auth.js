@@ -2137,10 +2137,119 @@ function _buildFallbackUniversalNavigation() {
 `;
 }
 
+/**
+ * ══════════════════════════════════════════════════════════════════════
+ * UNIVERSAL TOP-CORNER BACK BUTTON MOUNTER
+ * Mounts a responsive "Back" button exclusively on sub-pages and detail
+ * screens across the entire project (admin, faculty, student, register).
+ * Automatically omitted on root dashboards and landing/login pages.
+ * ══════════════════════════════════════════════════════════════════════
+ */
+function mountUniversalBackButton() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+  const rawPath = window.location.pathname.toLowerCase();
+  const cleanPath = rawPath.replace(/\.html$/, '').replace(/\/index$/, '').replace(/\/$/, '') || '/';
+
+  // 1. Root dashboards where Back button must NOT appear ("where it need not everywhere")
+  const isRootDashboard = (
+    cleanPath === '' ||
+    cleanPath === '/' ||
+    cleanPath === '/landing' ||
+    cleanPath === '/admin/dashboard' ||
+    cleanPath === '/admin' ||
+    cleanPath === '/faculty/dashboard' ||
+    cleanPath === '/faculty' ||
+    cleanPath === '/student/dashboard' ||
+    cleanPath === '/student' ||
+    cleanPath === '/login' ||
+    cleanPath === '/login/index'
+  );
+
+  if (isRootDashboard) {
+    const existing = document.getElementById('vidya-universal-back-btn');
+    if (existing) existing.remove();
+    return;
+  }
+
+  // Avoid duplicate injection
+  if (document.getElementById('vidya-universal-back-btn')) return;
+
+  // 2. Build the Back button element
+  const backBtn = document.createElement('button');
+  backBtn.id = 'vidya-universal-back-btn';
+  backBtn.type = 'button';
+  backBtn.className = 'vidya-back-btn';
+  backBtn.setAttribute('title', 'Go back to previous page');
+  backBtn.setAttribute('aria-label', 'Back to previous page');
+  backBtn.innerHTML = `
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    <span>Back</span>
+  `;
+
+  // 3. Intelligent back navigation handler with contextual fallback
+  backBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+      try {
+        const refUrl = new URL(document.referrer);
+        const refPath = refUrl.pathname.toLowerCase().replace(/\/index\.html$/, '').replace(/\/$/, '') || '/';
+        if (refPath !== cleanPath) {
+          window.history.back();
+          return;
+        }
+      } catch (_) {
+        window.history.back();
+        return;
+      }
+    }
+
+    // Contextual fallback by portal hierarchy
+    if (cleanPath.startsWith('/admin')) {
+      window.location.href = '/admin/dashboard.html';
+    } else if (cleanPath.startsWith('/student')) {
+      window.location.href = '/student/dashboard.html';
+    } else if (cleanPath.startsWith('/faculty')) {
+      window.location.href = '/faculty/dashboard.html';
+    } else if (cleanPath.includes('register')) {
+      window.location.href = '/login';
+    } else {
+      window.location.href = '/';
+    }
+  });
+
+  // 4. Inject into Top-Left Corner
+  const gcNavLeft = document.querySelector('.gc-navbar .gc-nav-left');
+  const topBar = document.querySelector('.top-bar');
+  const appHeader = document.querySelector('.app-header, #app-header, #universal-app-header');
+  const pageHeader = document.querySelector('.page-header, .content-header');
+
+  if (gcNavLeft) {
+    const toggleBtn = gcNavLeft.querySelector('.gc-menu-btn, #sidebar-toggle-btn, #btn-menu-toggle');
+    if (toggleBtn && toggleBtn.nextSibling) {
+      gcNavLeft.insertBefore(backBtn, toggleBtn.nextSibling);
+    } else {
+      gcNavLeft.insertBefore(backBtn, gcNavLeft.firstChild);
+    }
+  } else if (topBar) {
+    topBar.insertBefore(backBtn, topBar.firstChild);
+  } else if (appHeader) {
+    appHeader.insertBefore(backBtn, appHeader.firstChild);
+  } else if (pageHeader) {
+    pageHeader.insertBefore(backBtn, pageHeader.firstChild);
+  } else {
+    backBtn.classList.add('floating-corner');
+    document.body.appendChild(backBtn);
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.loadUniversalNavigation = loadUniversalNavigation;
   window.toggleAndroidProfileDrawer = toggleAndroidProfileDrawer;
   window.updateDrawerThemeLabel = updateDrawerThemeLabel;
+  window.mountUniversalBackButton = mountUniversalBackButton;
 }
 
 // Auto-initialize theme & sync session on script execution
@@ -2150,9 +2259,12 @@ if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => { 
       syncCurrentUser(); 
       loadUniversalNavigation();
+      mountUniversalBackButton();
     });
   } else {
     syncCurrentUser();
     loadUniversalNavigation();
+    mountUniversalBackButton();
   }
 }
+

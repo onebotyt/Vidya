@@ -34,6 +34,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 285: Universal Smart Top-Corner Back Button Across All Sub-Pages
+- **User Request**: *"add back buttun where it need not everywhere at top corner to go in previers page in whole project"*
+- **Architecture & Implementation**:
+  - `frontend/shared/js/auth.js`: Implemented `mountUniversalBackButton()` executed on every page upon DOM readiness.
+  - **Exclusion of Root Dashboards**: Automatically omitted on main root dashboards (`/admin/dashboard`, `/faculty/dashboard`, `/student/dashboard`, `/`, `/login`).
+  - **Inclusion on Sub-Pages & Detail Views**: Mounted dynamically in the top-left corner across all sub-pages, settings, reports, student views, and onboarding forms (`/admin/academic-structure`, `/student/attendance`, `/faculty/timetable`, `/login/register`, etc.).
+  - **Intelligent Navigation with Fallbacks**: Uses `window.history.back()` when local referrer history exists, with graceful contextual fallbacks to role dashboards (`/admin/dashboard.html`, `/student/dashboard.html`, `/faculty/dashboard.html`, or `/login`).
+  - `frontend/shared/css/components.css`: Modern styling with theme variables (`var(--bg-card)`, `var(--border-color)`, `var(--color-primary)`), crisp SVG left arrow, hover lift, micro-interactions, and responsive mobile optimization.
+  - **Frozen Modules Safe**: 0 files modified inside the 9 protected folders in `FROZEN_MODULES.md`.
+
+### ✅ Milestone 284: Clean Main Landing Dashboard & Sign-In Layout (Removal of Matrix Preview, Bento, Portals, Architecture & Login Feature Cards)
+- **User Requests**:
+  - *"remove all this from the main dash board"* (Matrix preview, Bento metrics, Portals)
+  - *"remove this also"* (System Capabilities Enterprise Architecture)
+  - *"remove this also from the singin page"* (Login feature cards: Smart Attendance, Google Classroom, Secure RBAC)
+- **Changes Completed**:
+  - `frontend/index.html` & `frontend/landing/index.html`: Cleanly removed the live matrix interactive preview section (`#matrix-preview`), the 4-card metric bento bar (`.metrics-bento`), the role-based institutional portals section (`#portals`), and the System Capabilities Enterprise Architecture section (`#capabilities`).
+  - `frontend/login/index.html` & `frontend/login/index/index.html`: Removed the 3 `.feature-list` cards from the left brand panel, leaving a sleek, modern, uncluttered branding display with animated orbs, 3D logo, and institutional tagline.
+  - Streamlined top navigation links to focus on direct authentication (`Portal Login`, `Self-Registration`).
+  - Removed deprecated `#matrix-preview` and `#capabilities` anchors from footer navigation links.
+  - 100% theme token compliant, minimalist landing gateway preserving the primary Hero showcase banner, floating quick access dock, and system status health indicator.
+
 ### ✅ Milestone 283: Simplified & Intuitive UI Modernization for HOD, Faculty, and Student Portals with 1-Click Rollback Safeguard
 
 - **User Insight & Clarified Specification**:
