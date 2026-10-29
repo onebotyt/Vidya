@@ -158,6 +158,18 @@
       if (dropdownName) dropdownName.textContent = name;
       const dropdownEmail = document.querySelector('.dropdown-email');
       if (dropdownEmail && user.email) dropdownEmail.textContent = user.email;
+
+      // Sync custom profile photo from localStorage if present
+      const savedPhoto = localStorage.getItem('vidya_admin_avatar');
+      if (savedPhoto) {
+        if (elInitials) {
+          elInitials.innerHTML = `<img src="${savedPhoto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar">`;
+        }
+        const dropdownAvatar = document.querySelector('.dropdown-avatar-circle');
+        if (dropdownAvatar) {
+          dropdownAvatar.innerHTML = `<img src="${savedPhoto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar">`;
+        }
+      }
     } catch (_) {}
   }
 
@@ -209,6 +221,7 @@
 
   // Attach to window
   window.mountAdminHeader = mountAdminHeader;
+  window.syncHeaderIdentity = syncHeaderIdentity;
   window.toggleAdminProfileMenu = toggleAdminProfileMenu;
   window.toggleDashboardTheme = toggleDashboardTheme;
   window.toggleAppTheme = toggleDashboardTheme;

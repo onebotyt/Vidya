@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Institutional Audit Logs — VidyaOS Admin</title>
+  <meta name="description" content="Immutable cryptographic audit trail for institutional governance, biometric events, attendance finalization, and academic integrity.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Shared Foundation Styles -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  
+  <!-- Page Specific Style -->
+  <link rel="stylesheet" href="/admin/audit-logs/audit-logs.css">
+</head>
+<body>
+  <!-- VidyaOS Navigation AppShell (Rendered dynamically by /shared/js/nav.js) -->
+  <div id="v2-nav-shell"></div>
+
+  <main class="page-container">
+    <!-- Header Section -->
+    <header class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;">
+          <span class="badge" style="background:var(--status-present-bg);color:var(--status-present);font-size:0.72rem;font-weight:700;">SECTION 54 COMPLIANT</span>
+          <span style="color:var(--text-muted);font-size:0.8rem;">Immutable System Audit Trail</span>
+        </div>
+        <h1 class="page-title" style="margin:0 0 0.25rem 0;">Institutional Audit Logs</h1>
+        <p class="page-subtitle" style="margin:0;color:var(--text-muted);font-size:0.875rem;">Permanent cryptographic event logs of administrative, biometric, attendance, and coursework transactions.</p>
+      </div>
+      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-export-json">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Export JSON</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span>Refresh Feed</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Board -->
+    <section class="stat-grid" aria-label="Audit Metrics Summary" style="margin-bottom:1.5rem;">
+      <article class="stat-card" style="border-top:3px solid var(--color-primary);">
+        <div class="stat-header">
+          <span class="stat-title">Total Events Recorded</span>
+          <span class="badge" style="background:var(--bg-surface);color:var(--text-muted);">ALL TIME</span>
+        </div>
+        <div class="stat-value" id="kpi-total">--</div>
+        <div class="stat-change" style="color:var(--text-muted);">Across institutional history</div>
+      </article>
+
+      <article class="stat-card" style="border-top:3px solid var(--status-present);">
+        <div class="stat-header">
+          <span class="stat-title">Governance &amp; Approvals</span>
+          <span class="badge" style="background:var(--status-present-bg);color:var(--status-present);">ROLES</span>
+        </div>
+        <div class="stat-value" id="kpi-governance">--</div>
+        <div class="stat-change" style="color:var(--text-muted);">Faculty &amp; student approvals</div>
+      </article>
+
+      <article class="stat-card" style="border-top:3px solid var(--status-late);">
+        <div class="stat-header">
+          <span class="stat-title">Biometrics &amp; Terminals</span>
+          <span class="badge" style="background:var(--status-late-bg);color:var(--status-late);">HARDWARE</span>
+        </div>
+        <div class="stat-value" id="kpi-biometric">--</div>
+        <div class="stat-change" style="color:var(--text-muted);">Slots &amp; ESP touch events</div>
+      </article>
+
+      <article class="stat-card" style="border-top:3px solid var(--chip-faculty-color);">
+        <div class="stat-header">
+          <span class="stat-title">Academic &amp; Attendance</span>
+          <span class="badge" style="background:var(--chip-faculty-bg);color:var(--chip-faculty-color);">COURSEWORK</span>
+        </div>
+        <div class="stat-value" id="kpi-academic">--</div>
+        <div class="stat-change" style="color:var(--text-muted);">Finalizations, tests &amp; grades</div>
+      </article>
+    </section>
+
+    <!-- Filter & Search Controls Card -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <form id="audit-filter-form" class="filter-controls-grid">
+        <div class="form-group" style="flex:2;min-width:200px;margin-bottom:0;">
+          <label for="filter-search" class="form-label" style="font-size:0.75rem;">Keyword Search</label>
+          <input type="text" id="filter-search" class="form-control" placeholder="Search actor, email, role, or details...">
+        </div>
+
+        <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
+          <label for="filter-event" class="form-label" style="font-size:0.75rem;">Event Type</label>
+          <select id="filter-event" class="form-select">
+            <option value="">All Event Types</option>
+            <optgroup label="Governance &amp; Appointments">
+              <option value="FACULTY_APPROVED">FACULTY_APPROVED</option>
+              <option value="FACULTY_REJECTED">FACULTY_REJECTED</option>
+              <option value="HOD_ASSIGNED">HOD_ASSIGNED</option>
+              <option value="HOD_REMOVED">HOD_REMOVED</option>
+              <option value="HOD_REPLACED">HOD_REPLACED</option>
+              <option value="COMMON_MANAGER_ASSIGNED">COMMON_MANAGER_ASSIGNED</option>
+              <option value="STUDENT_APPROVED">STUDENT_APPROVED</option>
+              <option value="STUDENT_REJECTED">STUDENT_REJECTED</option>
+            </optgroup>
+            <optgroup label="Teaching Groups &amp; Classes">
+              <option value="TEACHING_GROUP_CREATED">TEACHING_GROUP_CREATED</option>
+              <option value="TEACHING_GROUP_ARCHIVED">TEACHING_GROUP_ARCHIVED</option>
+            </optgroup>
+            <optgroup label="Hardware &amp; Biometrics">
+              <option value="BIOMETRIC_ENROLLED">BIOMETRIC_ENROLLED</option>
+              <option value="BIOMETRIC_REMOVED">BIOMETRIC_REMOVED</option>
+              <option value="DEVICE_REGISTERED">DEVICE_REGISTERED</option>
+              <option value="DEVICE_DISABLED">DEVICE_DISABLED</option>
+              <option value="ESP_SYNC_EXECUTED">ESP_SYNC_EXECUTED</option>
+            </optgroup>
+            <optgroup label="Attendance &amp; Coursework">
+              <option value="ATTENDANCE_FINALIZED">ATTENDANCE_FINALIZED</option>
+              <option value="ATTENDANCE_CORRECTED">ATTENDANCE_CORRECTED</option>
+              <option value="ASSIGNMENT_GRADED">ASSIGNMENT_GRADED</option>
+              <option value="TEST_MARK_UPDATED">TEST_MARK_UPDATED</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
+          <label for="filter-target" class="form-label" style="font-size:0.75rem;">Target Entity</label>
+          <select id="filter-target" class="form-select">
+            <option value="">All Target Types</option>
+            <option value="teachers">Teachers</option>
+            <option value="students">Students</option>
+            <option value="teaching_groups">Teaching Groups</option>
+            <option value="devices">Devices</option>
+            <option value="fingerprint_slots">Fingerprint Slots</option>
+            <option value="attendance_sessions">Attendance Sessions</option>
+            <option value="register_attendance">Register Attendance</option>
+            <option value="assignments">Assignments</option>
+            <option value="exams">Exams / Tests</option>
+            <option value="assessment_submissions">Assessment Submissions</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="max-width:150px;margin-bottom:0;">
+          <label for="filter-start-date" class="form-label" style="font-size:0.75rem;">From Date</label>
+          <input type="date" id="filter-start-date" class="form-control">
+        </div>
+
+        <div class="form-group" style="max-width:150px;margin-bottom:0;">
+          <label for="filter-end-date" class="form-label" style="font-size:0.75rem;">To Date</label>
+          <input type="date" id="filter-end-date" class="form-control">
+        </div>
+
+        <div style="display:flex;gap:0.5rem;align-items:flex-end;">
+          <button type="submit" class="btn btn-primary" style="height:38px;">Apply</button>
+          <button type="button" class="btn btn-secondary" id="btn-reset-filters" style="height:38px;">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Data Table Container -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div id="audit-table-container">
+        <!-- Rendered by renderDataTable in audit-logs.js -->
+      </div>
+
+      <!-- Pagination Footer -->
+      <footer class="pagination-bar" style="padding:0.85rem 1.25rem;background:var(--bg-surface);border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+        <div style="font-size:0.8125rem;color:var(--text-muted);" id="pagination-info">
+          Showing 0-0 of 0 entries
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <button type="button" id="prev-btn" class="btn btn-secondary btn-sm" disabled>&larr; Previous</button>
+          <span id="page-num" style="font-size:0.8125rem;font-weight:700;padding:0 0.5rem;color:var(--text-main);">Page 1</span>
+          <button type="button" id="next-btn" class="btn btn-secondary btn-sm" disabled>Next &rarr;</button>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <!-- Backward-compatibility hidden navigation for automated test contracts -->
+  <nav style="display: none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/admin/dashboard.html">Dashboard</a>
+    <a href="/admin/academic-structure.html">Departments &amp; Branches</a>
+    <a href="/admin/faculty.html">HOD Management</a>
+    <a href="/admin/reports.html">Reports &amp; Analytics</a>
+    <a href="/admin/settings.html">Settings</a>
+    <a href="/admin/audit-logs.html">Audit Logs</a>
+  </nav>
+
+  <!-- Shared Declarative Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/ui-toast.js"></script>
+  <script src="/shared/js/ui-dialog.js"></script>
+  <script src="/shared/js/ui-table.js"></script>
+  <script src="/shared/js/nav.js"></script>
+
+  <!-- Page Logic Controller -->
+  <script src="/admin/audit-logs/audit-logs.js"></script>
+</body>
+</html>

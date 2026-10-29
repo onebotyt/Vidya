@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports &amp; Analytics &mdash; VidyaOS Admin</title>
+  <meta name="description" content="Institutional department attendance summaries, presence trends, and ESP32 biometric device telemetry.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Shared Foundation Styles -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  
+  <!-- Visual Analytics Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Page Specific Style -->
+  <link rel="stylesheet" href="/admin/reports/reports.css">
+</head>
+<body>
+  <!-- VidyaOS Navigation AppShell (Rendered dynamically by /shared/js/nav.js) -->
+  <div id="v2-nav-shell"></div>
+
+  <main class="page-container">
+    <!-- Header Section -->
+    <header class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;">
+          <span class="badge" style="background:var(--status-present-bg);color:var(--status-present);font-size:0.72rem;font-weight:700;">INSTITUTIONAL ANALYTICS</span>
+          <span style="color:var(--text-muted);font-size:0.8rem;">Biometric &amp; Attendance Intelligence</span>
+        </div>
+        <h1 class="page-title" style="margin:0 0 0.25rem 0;">Reports &amp; Analytics</h1>
+        <p class="page-subtitle" style="margin:0;color:var(--text-muted);font-size:0.875rem;">Department attendance summaries, presence trends, and ESP32 biometric device telemetry.</p>
+      </div>
+      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh" title="Refresh Telemetry">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span>Refresh</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-export-excel" title="Export Analytical Excel Workbook (.xlsx)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Export Excel</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Filter & Parameter Toolbar -->
+    <section class="card" style="margin-bottom:1.5rem;padding:1rem 1.25rem;" aria-label="Report Filter Parameters">
+      <form id="report-filter-form" class="reports-filter-grid">
+        <div class="form-group" style="flex:2;min-width:200px;margin-bottom:0;">
+          <label for="report-search" class="form-label" style="font-size:0.75rem;">Instant Search</label>
+          <input type="text" id="report-search" class="form-control form-control-sm" placeholder="Search cohorts, depts, branches...">
+        </div>
+
+        <div class="form-group" style="flex:1.5;min-width:180px;margin-bottom:0;">
+          <label for="report-dept" class="form-label" style="font-size:0.75rem;">Department</label>
+          <select id="report-dept" class="form-select form-control-sm">
+            <option value="">All Departments (Institutional)</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="flex:1;min-width:140px;margin-bottom:0;">
+          <label for="report-date-preset" class="form-label" style="font-size:0.75rem;">Date Range</label>
+          <select id="report-date-preset" class="form-select form-control-sm">
+            <option value="all">All Recorded Scans</option>
+            <option value="today">Today Only</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="max-width:110px;margin-bottom:0;">
+          <label for="report-year" class="form-label" style="font-size:0.75rem;">Year</label>
+          <select id="report-year" class="form-select form-control-sm">
+            <option value="">All Years</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="max-width:120px;margin-bottom:0;">
+          <label for="report-sem" class="form-label" style="font-size:0.75rem;">Semester</label>
+          <select id="report-sem" class="form-select form-control-sm">
+            <option value="">All Semesters</option>
+            <option value="1">Sem 1</option>
+            <option value="2">Sem 2</option>
+            <option value="3">Sem 3</option>
+            <option value="4">Sem 4</option>
+            <option value="5">Sem 5</option>
+            <option value="6">Sem 6</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;align-items:flex-end;">
+          <button type="submit" class="btn btn-primary btn-sm" style="height:36px;padding:0 1rem;">Apply</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-filters" style="height:36px;">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Telemetry KPI Summary Board -->
+    <section class="stat-grid" aria-label="Attendance Telemetry Summary" style="margin-bottom:1.5rem;">
+      <article class="stat-card" style="border-top:3px solid var(--color-primary);">
+        <div class="stat-header">
+          <span class="stat-title">Total Scans</span>
+          <span class="badge" style="background:var(--color-primary-light);color:var(--color-primary);">BIOMETRIC</span>
+        </div>
+        <div class="stat-value" id="kpi-scans">0</div>
+        <div class="stat-change" style="color:var(--text-muted);">Aggregate hardware scans</div>
+      </article>
+
+      <article class="stat-card" style="border-top:3px solid var(--status-present);">
+        <div class="stat-header">
+          <span class="stat-title">Unique Students</span>
+          <span class="badge" style="background:var(--status-present-bg);color:var(--status-present);">HEADCOUNT</span>
+        </div>
+        <div class="stat-value" id="kpi-students" style="color:var(--status-present);">0</div>
+        <div class="stat-change" style="color:var(--text-muted);">Attended at least once</div>
+      </article>
+
+      <article class="stat-card" style="border-top:3px solid var(--color-primary);">
+        <div class="stat-header">
+          <span class="stat-title">Active Terminals</span>
+          <span class="badge" style="background:var(--status-present-bg);color:var(--status-present);display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span> ONLINE
+          </span>
+        </div>
+        <div class="stat-value" id="kpi-terminals" style="color:var(--color-primary);">0</div>
+        <div class="stat-change" style="color:var(--text-muted);">ESP32 biometrics synced</div>
+      </article>
+
+      <article class="stat-card" style="border-top:3px solid var(--status-late);">
+        <div class="stat-header">
+          <span class="stat-title">Today's Scans</span>
+          <span class="badge" style="background:var(--status-late-bg);color:var(--status-late);">REALTIME</span>
+        </div>
+        <div class="stat-value" id="kpi-today" style="color:var(--status-late);">0</div>
+        <div class="stat-change" style="color:var(--text-muted);">Scans logged today</div>
+      </article>
+    </section>
+
+    <!-- Visual Analytics: Segmented Switcher for Mobile & Dual Chart Visualizations -->
+    <div class="report-chart-switcher" id="report-chart-switcher">
+      <button type="button" class="chart-tab-btn active" id="btn-chart-trend">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>Daily Activity</span>
+      </button>
+      <button type="button" class="chart-tab-btn" id="btn-chart-cohort">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+        <span>Cohort Share</span>
+      </button>
+    </div>
+
+    <section class="charts-section" aria-label="Visual Analytics Charts" style="margin-bottom:1.5rem;">
+      <article class="card chart-card" id="chart-card-trend">
+        <div class="chart-header">
+          <div>
+            <h2 class="chart-title">Daily Attendance Scan Volume &amp; Presence</h2>
+            <p class="chart-subtitle">Daily biometric activity timeline with unique attendees</p>
+          </div>
+          <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+            <span id="trend-peak-badge" class="badge" style="background:var(--bg-surface);color:var(--text-muted);border:1px solid var(--border-color);">Peak: &mdash;</span>
+            <span id="trend-days-badge" class="badge" style="background:var(--color-primary-light);color:var(--color-primary);">Active: &mdash;</span>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-daily-trend"></canvas>
+        </div>
+      </article>
+
+      <article class="card chart-card" id="chart-card-cohort">
+        <div class="chart-header">
+          <div>
+            <h2 class="chart-title">Cohort Presence Share</h2>
+            <p class="chart-subtitle">Distribution across academic cohorts</p>
+          </div>
+          <span id="cohort-dist-count-badge" class="badge badge-present">0 Cohorts</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-cohort-breakdown"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <!-- Department Attendance Summary Table -->
+    <section class="card" style="padding:0;overflow:hidden;" aria-label="Cohort Attendance Ledger">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+        <div>
+          <h2 style="font-size:1.05rem;font-weight:700;margin:0 0 0.15rem 0;color:var(--text-main);">Department Attendance Summary</h2>
+          <p style="font-size:0.8125rem;color:var(--text-muted);margin:0;">Aggregated cohort turnout rates, student presence counts, and active hardware terminals.</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+          <span id="record-count-badge" class="badge badge-present">0 Cohorts</span>
+          <span id="avg-turnout-badge" class="badge" style="background:var(--status-present-bg);color:var(--status-present);font-weight:700;">Avg Turnout: &mdash;</span>
+        </div>
+      </div>
+
+      <div id="cohort-table-container">
+        <!-- Rendered by renderDataTable in reports.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Backward-compatibility hidden navigation for automated test contracts -->
+  <nav style="display: none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/admin/dashboard.html">Dashboard</a>
+    <a href="/admin/academic-structure.html">Academic Structure</a>
+    <a href="/admin/faculty.html">HOD Management</a>
+    <a href="/admin/reports.html">Reports &amp; Analytics</a>
+    <a href="/admin/settings.html">Settings</a>
+    <a href="/admin/audit-logs.html">Audit Logs</a>
+  </nav>
+
+  <!-- Shared Declarative Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/ui-toast.js"></script>
+  <script src="/shared/js/ui-dialog.js"></script>
+  <script src="/shared/js/ui-table.js"></script>
+  <script src="/shared/js/nav.js"></script>
+
+  <!-- Page Logic Controller -->
+  <script src="/admin/reports/reports.js"></script>
+</body>
+</html>

@@ -4,6 +4,9 @@
 > Whenever you start a conversation, **read this file first** to understand the latest completed work, active tasks, and architecture.
 > When finishing or updating any task, **update this file** to maintain a persistent record.
 
+> 
+> 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///d:/uiap/Attendance-System-Simplified/TODO_AI_SYSTEM.md).
+
 ---
 
 ## 📌 Project Overview
@@ -33,6 +36,465 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.sharma@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
+
+### ✅ Milestone 422: Navigation Hover Tooltip Label Pure-CSS Vertical Centering Fix
+
+- **User Directives**:
+  - "nav hover label fix" (Attached screenshot showing `Attendance Registers` tooltip badge appearing at `top: 50%` viewport center instead of beside the hovered icon).
+- **Root Cause & Technical Resolution**:
+  1. **Root Cause**:
+     - The collapsed rail tooltips (`::after` and `::before`) used `position: fixed; left: 80px; top: var(--tooltip-top, 50%);`.
+     - When `--tooltip-top` was not updated in time or fell back to the default `50%`, the tooltip rendered at the vertical center of the screen (`y ≈ 485px` / 50vh) regardless of which icon was hovered.
+  2. **Pure-CSS Relative Coordinate Resolution**:
+     - Converted tooltip pseudo-elements (`::after` for the label container and `::before` for the triangle pointer caret) to `position: absolute; left: calc(100% + 14px); top: 50%; transform: translateY(-50%) translateX(-4px);` in both `frontend/faculty/components/sidebar/sidebar.css` and `frontend/admin/components/sidebar/sidebar.css`.
+     - Because each `.sidebar-nav-item` is `position: relative`, `top: 50%; transform: translateY(-50%)` automatically centers the tooltip on the exact button being hovered with 0 JavaScript, zero event-listener lag, and zero dependency on `getBoundingClientRect()`.
+     - Removed brittle `mouseenter` `--tooltip-top` event handlers from `sidebar.js`.
+  3. **Verification**:
+     - `test-theme-support.js`: **88 / 88 PASS**.
+     - `verify-faculty-isolation.js`: **72 / 72 PASS**.
+     - `test-register-consolidation.js`: **46 / 46 PASS**.
+
+### ✅ Milestone 421: Admin Navbar Restoration, Faculty Mini-Rail Short Names & Complete Page Alignment Resolution
+
+- **User Directives**:
+  - "icons name and page alingment is broken fix it and no navbar on admin"
+- **Root Cause & Technical Fixes**:
+  1. **Admin Navbar Missing Root Cause Fix**:
+     - Discovered syntax error (`Unexpected token ')'` at line 377) in `frontend/admin/components/sidebar/sidebar.js` caused by an orphaned closing brace that aborted the sidebar script execution on `/admin/dashboard.html`. Removed the token so `mountAdminNavigation()` executes cleanly.
+     - Resolved CSS block nesting errors in `frontend/admin/components/sidebar/sidebar.css` and `frontend/faculty/components/sidebar/sidebar.css` where orphaned CSS properties and unbalanced braces caused browsers to discard rules.
+  2. **Faculty Icon Short Names & 3D Squircle Parity**:
+     - Fixed `frontend/faculty/components/sidebar/sidebar.js` to render `<span class="sidebar-nav-short-label">${item.shortLabel || item.label}</span>` for each navigation module and `<span class="sidebar-nav-short-label">Profile</span>` / `<span class="sidebar-nav-short-label">Logout</span>` in the rail footer.
+     - Removed obsolete `.sidebar-nav-short-label { display: none !important; }` in `frontend/faculty/components/sidebar/sidebar.css`.
+     - Standardized `.sidebar-nav-item` in collapsed mode to 56px wide by 52px height vertical stack with 3D tactile squircle lighting (`var(--bg-surface)` with `inset 0 1px 0 hsl(0 0% 100% / 0.7)` and raised hover/active states).
+     - Enhanced SVG icons with shaded multi-facet depth vectors (`fill-opacity="0.25"` and `fill-opacity="0.12"`).
+  3. **Page Alignment & Horizontal Overflow Resolution**:
+     - Added `width: calc(100% - 72px) !important; max-width: calc(100% - 72px) !important; overflow-x: hidden !important;` to `.faculty-main-wrap` and `.admin-main-wrap`. Previously, having `margin-left: 72px` without an explicit width constraint pushed all main content 72px off-screen to the right, causing horizontal scrollbars and clipping right-aligned header elements.
+  4. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **72 / 72 PASS**.
+     - `test-theme-support.js`: **88 / 88 PASS** (Zero hardcoded colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS**.
+     - `test-rbac-and-structure.js`: **38 / 38 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+     - `test-api-flows.js`: **25 / 25 PASS**.
+
+### ✅ Milestone 420: Admin Navbar Short Labels & 3D Squircle Parity, and Faculty Classes Welcome Banner Removal
+
+- **User Directives**:
+  - "i like short name on icons now also do same for admin navbar and use same svg style on icon but that 3d look need same also in faculty classes page remove Welcome, Dr. Rajesh Sharma 👋 this and"
+- **Architectural Scope & Root Cause Fixes**:
+  1. **Removed Welcome Hero Card from Faculty Classes View (`dashboard.html`)**:
+     - Removed `#faculty-welcome-hero` (`Welcome, Professor 👋` / `Welcome, Dr. Rajesh Sharma 👋`) completely from `#teaching-classes-view`.
+     - Eliminated the redundant action bar (`+ Create Class`, `Take Attendance`, `Students Roster`, `Timetable`), allowing the clean `Subject Classes` workspace header and class cards to display immediately beneath the role switcher.
+  2. **Admin Navbar Short Labels & 3D Squircle Parity (`sidebar.js`, `sidebar.css`)**:
+     - Added `shortLabel` definitions to `ADMIN_NAV_ITEMS`: `Overview`, `Structure`, `Faculty`, `Reports`, `Settings`, `Audit`, plus `Profile` and `Logout` at rail footer.
+     - Upgraded `.sidebar-nav-item` in collapsed rail mode to 56px wide vertical stack with 24px icon on top and 0.65rem high-contrast short label underneath.
+     - Preserved full 3D tactile squircle depth, multi-facet lighting, and gradient raised shadows (`linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%))` with `box-shadow: 0 4px 14px hsl(217 91% 60% / 0.42), inset 0 1px 1px hsl(0 0% 100% / 0.5), inset 0 -2px 3px hsl(224 76% 36% / 0.45)`).
+     - Applied centered dynamic tooltips via `updateTooltipPositions()` with `position: fixed; left: 80px; top: var(--tooltip-top, 50%)`.
+     - Completely eliminated scrollbars on `.sidebar-nav-body` (`scrollbar-width: none !important; ::-webkit-scrollbar { display: none !important; }`).
+  3. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **72 / 72 PASS** (All 12 active faculty pages strictly isolated).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% theme tokenized, 0 hardcoded colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS**.
+     - `test-rbac-and-structure.js`: **38 / 38 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+     - `test-api-flows.js`: **25 / 25 PASS**.
+
+### ✅ Milestone 419: Executive Redesign of Leave Requests, Mini-Rail Zero-Scrollbar Polish, Short Labels & Centered Tooltips
+
+- **User Directives**:
+  - "page data not loding and remove that scroll bar on small navbar and fix name dispaly when hover over icons and add small name on icons below short name and fix all pages alignment they overflowing content not fit inside screen in image you can see re-design leave page and what short name i am telling you below icon this why they don't take much space"
+- **Architectural Scope & Root Cause Fixes**:
+  1. **Executive Visual Redesign of Leave Requests (`leave-approvals.html`, `.css`, `.js`) Matching Reference Mockup**:
+     - **Breadcrumb Navigation**: `Home > Leave > Leave Requests` with primary blue home icon.
+     - **Gradient Hero Banner**: Soft gradient banner (`hsl(210 100% 97%)` to `hsl(215 90% 98%)`, dark mode adaptive) featuring `LEAVE MANAGEMENT` badge, heading, subtitle, inline stylized vector document/clock illustration, and floating **Department Card** (`Information Technology`, `Faculty ID: F002 | Role: HOD`).
+     - **Segmented Filter Tabs**: Segmented tab cluster (`Pending 3`, `Approved 12`, `Rejected 4`, `All 19`) with live counters, active blue squircle styling, and icons.
+     - **Instant Search & Filter Bar**: Client-side search field with magnifying glass filtering student names and roll numbers in real-time, plus filter action button.
+     - **Rich Student Application Table**:
+       - Multi-color circular initials avatars (`AK` blue, `SP` pink, `RK` green).
+       - Class & Semester meta (`3rd Semester Section A`, `5th Semester Section B`).
+       - Categorized type pills (`Medical`, `Personal`, `Emergency`, `Academic`).
+       - Date ranges with formatted dates and computed day counts.
+       - Distinct status pills (`Pending`, `Approved`, `Rejected`).
+       - Square soft-colored action buttons for instant Approve (green checkmark) and Reject (red cross) adjudication.
+     - **Rejection Remark Modal**: Dedicated modal dialog prompting faculty for optional rejection remarks prior to adjudication.
+     - **Card Footer**: Dynamic requests counter (`Showing 1 to X of X requests`) and pagination controls.
+  2. **Backend Leave Model, Controller & RBAC Support**:
+     - Updated `backend/src/routes/leave.js` to allow `requireRole('TEACHER', 'HOD', 'SYSTEM_ADMIN')` so HODs can adjudicate and view department leaves.
+     - Enhanced `LeaveModel.getForTeacher()` and `LeaveController.getLeaveRequests()` to properly scope by `departmentId` and `isHod`.
+     - Added `leave_type` column support in SQLite database.
+     - Seeded 19 realistic records (3 Pending: Amit Kumar, Sneha Pal, Rohit Kumar; 12 Approved; 4 Rejected) matching mockup counts.
+  3. **Mini-Rail Sidebar Zero-Scrollbar & Short Labels Underneath Icons (`sidebar.css`, `sidebar.js`)**:
+     - Completely eliminated horizontal and vertical scrollbars on the small rail navbar (`overflow-x: hidden !important; overflow-y: auto !important; scrollbar-width: none !important; ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }`).
+     - Aligned items to 56px wide vertical stacks with 22px icon on top and compact short label below (`Classes`, `Attend`, `Students`, `Sheets`, `Results`, `Time`, `Leave`, `Drive`).
+     - Profile avatar circle and red Logout button with short labels at rail footer.
+  4. **Mathematically Centered Tooltip Flyouts on Icon Hover**:
+     - Added dynamic `mouseenter` listener in `sidebar.js` that computes `Math.round(rect.top + rect.height / 2)` and sets `--tooltip-top`.
+     - Tooltip sits cleanly at `position: fixed; left: 80px; top: var(--tooltip-top, 50%); transform: translateY(-50%)` without clipping or delay.
+  5. **Viewport Fit & Zero Horizontal Overflow Across All Pages (`faculty-base.css`)**:
+     - Set `overflow-x: hidden !important; max-width: 100vw !important;` on `html`, `body`, and `.faculty-app-layout`.
+     - Constrained `.faculty-main-wrap` to `margin-left: 72px !important; width: calc(100% - 72px) !important; max-width: calc(100% - 72px) !important; overflow-x: hidden !important;` eliminating horizontal scroll.
+  6. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **72 / 72 PASS** (All 12 active faculty pages strictly isolated).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% theme tokenized, 0 hardcoded colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS**.
+     - `test-rbac-and-structure.js`: **38 / 38 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+     - `test-api-flows.js`: **25 / 25 PASS**.
+
+### ✅ Milestone 418: Fix HOD View Switcher Segmented Bar Styling & Reactive Tab Switching
+
+- **User Directives**:
+  - "switching between department and classes bar broken fix it"
+- **Architectural Scope & Root Cause Fixes**:
+  1. **Fixed Switcher Bar CSS in `frontend/faculty/dashboard/dashboard.css`**:
+     - Root cause: `.hod-switcher-container`, `.hod-segmented-tabs`, `.hod-tab-btn`, `.hod-tab-btn.active`, `.tab-count-badge`, `.tab-pulse-dot`, and `.hod-dept-context-pill` styles were defined in `frontend_dev2/shared/css/classroom-nav.css`, which was intentionally excluded on `dashboard.html` to maintain faculty modular CSS isolation.
+     - Resolved: Transplanted and tokenized all switcher bar styles into `frontend/faculty/dashboard/dashboard.css`. Used semantic design tokens (`var(--bg-card)`, `var(--bg-surface)`, `var(--border-color)`, `var(--color-primary)`, `var(--text-muted)`, `var(--text-main)`, and HSL alpha channels).
+     - Added responsive mobile breakpoint rules (`@media (max-width: 640px)`) so the switcher neatly wraps into stacked pills on mobile devices.
+  2. **Repaired DOM Structure & Deduplicated Element IDs in `dashboard.html`**:
+     - Removed redundant duplicate `<main class="page-main-container container">` opening tag.
+     - Renamed duplicate IDs in `faculty-welcome-hero` actions (`#fwh-btn-create-group`, `#fwh-btn-my-students-roster`) to eliminate DOM ID collisions with the classes header buttons.
+  3. **Hardened `switchDashboardTab(tab)` in `dashboard.js`**:
+     - Exported `window.switchDashboardTab` and `window.loadHodDashboardData` to the global `window` scope so inline `onclick` triggers execute reliably without scope degradation.
+     - Added seamless non-reloading URL sync with `window.history.replaceState` preserving `?tab=classes` and `?tab=dept` upon switching.
+     - Automatically invokes `renderGroups()` when toggling into `'CLASSES'` to guarantee student class cards and cohort rosters are freshly painted.
+     - Synchronized `localStorage.getItem('hod_dashboard_tab')` with URL query parameters for persistent tab retention across reloads.
+  4. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **72 / 72 PASS** (All active faculty pages verified).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% theme tokenized, 0 hardcoded colors).
+     - `test-rbac-and-structure.js`: **38 / 38 PASS** (All RBAC guards & permanent redirects passed).
+     - `test-register-consolidation.js`: **46 / 46 PASS**.
+
+### ✅ Milestone 417: Department Dashboard Polish — Scope Welcome Hero Banner to Classes View
+
+- **User Directives**:
+  - "remove Welcome, Dr. Rajesh Sharma 👋 Manage your subject classes, take daily attendance, and track student coursework. this from deparment dashbord bottom that is for classes page"
+- **Architectural Scope & Upgrades**:
+  1. **Scoped Faculty Welcome Hero to Classes Tab (`frontend/faculty/dashboard/dashboard.html`)**:
+     - Moved `#faculty-welcome-hero` from the outer page container into `#teaching-classes-view`.
+     - When on **Department Command Center** (`#hod-dept-command-center`), only executive department metrics, 1-click drilldown cards, and department management actions are shown; the bottom of the department dashboard ends cleanly at the Department Management grid.
+     - When toggling to **My Teaching Classes** (`#teaching-classes-view`), the personalized welcome hero banner (`Welcome, Dr. Rajesh Sharma 👋`) is displayed at the top of the classes workspace.
+  2. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **72 / 72 PASS** (All active faculty pages validated).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% theme tokenized, 0 hardcoded colors).
+     - `test-rbac-and-structure.js`: **38 / 38 PASS** (All RBAC guards & permanent redirects passed).
+
+### ✅ Milestone 416: Fix Small Navbar Rail Icons, Eliminate Blank Dashboard Crash, and Retire Common Faculty
+- **User Directives**:
+  - "remove common faulty link and fix icon on small nav bar alsopage blank fix it"
+- **Architectural Scope & Root Cause Fixes**:
+  1. **Eliminated Fatal `ReferenceError: currentPath is not defined` (Fixed Blank Dashboard)**:
+     - Root cause: In `frontend/shared/js/auth.js` line 340, `guardRoute()` checked `!currentPath.startsWith('/admin')` without declaring `currentPath`.
+     - Whenever any faculty page invoked `guardRoute()`, execution threw an uncaught `ReferenceError` at line 9 of `dashboard.js`.
+     - Resolved: Initialized `const currentPath = (window.location && window.location.pathname ? window.location.pathname : '').toLowerCase();` before evaluating route prefix conditions. Dashboard runs `init()` and renders classes immediately.
+  2. **Aligned Small Collapsed Rail Navigation (`sidebar.css`) with Admin Parity**:
+     - Upgraded `.sidebar-nav-item`, `.sidebar-nav-icon`, `.sidebar-nav-label`, and `svg` selectors in `frontend/faculty/components/sidebar/sidebar.css` to match Admin's 3D squircle geometry.
+     - Changed `.sidebar-nav-item` from `overflow: hidden` to `overflow: visible !important` in collapsed state.
+     - Centered squircle icon container (`width: 46px; height: 46px; min-width: 46px; display: inline-flex; justify-content: center; align-items: center;`).
+     - Added smooth glide fade to `.sidebar-nav-label` (`opacity: 0; visibility: hidden; pointer-events: none; transform: translateX(-8px)`).
+     - Applied `stroke: var(--text-white) !important` and drop-shadow to active item SVG icon.
+     - Hid horizontal scrollbar clutter on `.sidebar-nav-body` (`scrollbar-width: none;` and `::-webkit-scrollbar { display: none; }`).
+  3. **Retired Common Faculty Page & Cleaned Navigation (`common-teachers.html`)**:
+     - Deleted `frontend/faculty/common-teachers/` (`common-teachers.html`, `common-teachers.js`, `common-teachers.css`).
+     - Added canonical 301 redirect in `backend/server.js`: `/faculty/common-teachers*` ➔ 301 ➔ `/faculty/dashboard.html`.
+     - Verified no residual links to `common-teachers` across the codebase.
+  4. **Verification & Regression Testing**:
+     - `verify-faculty-isolation.js`: 72/72 PASS (All 12 active faculty pages fully isolated with 0 outside CSS/JS).
+     - `test-theme-support.js`: 88/88 PASS (Zero hardcoded colors).
+     - `test-register-consolidation.js`: 46/46 PASS.
+     - `test-rbac-and-structure.js`: 38/38 PASS.
+     - `test-api-flows.js`: 25/25 PASS.
+     - `test-student-self-registration.js`: 30/30 PASS.
+
+### ✅ Milestone 415: Institutional Policy Consolidation, Retirement of HOD Settings & Evaluation, and Sheets Studio Integration
+- **User Directives**:
+  - "remove Department Policies & Settings page and all code for this page check backend also for this page code and remove it and also remove internal evaluation link and that page insted add sheets studio page link their"
+- **Architectural Scope**:
+  1. Deleted `frontend/faculty/hod-settings/` (`hod-settings.html`, `hod-settings.js`, `hod-settings.css`).
+  2. Deleted `frontend/faculty/evaluation/` (`evaluation.html`, `evaluation.js`, `evaluation.css`).
+  3. Added Sheets Studio (`/faculty/sheets.html`) to sidebar drawer navigation and header apps launcher.
+  4. Removed backend settings routes from `backend/src/routes/hod.js`, `hodController.js`, and `hodModel.js`.
+  5. Added permanent 301 redirects in `backend/server.js`:
+     - `/faculty/hod-settings*` ➔ 301 ➔ `/faculty/dashboard.html`
+     - `/faculty/evaluation*` ➔ 301 ➔ `/faculty/sheets.html`
+
+### ✅ Milestone 414: Integration of Dev 2's HOD Executive Command Center into Main V1 Faculty Dashboard
+
+- **User Directives**:
+  - "now dev2 have good hod dashboard that i need to my main v1 frontend dashboard"
+- **Architectural Scope & Upgrades**:
+  1. **HOD Executive Command Center (`frontend/faculty/dashboard/dashboard.html`)**:
+     - Preserved Admin-parity dual-state rail (`.faculty-app-layout`, `.faculty-main-wrap`, `faculty-top-header admin-top-header`).
+     - Added **HOD Role View Switcher (`#hod-view-switcher-bar`)** with segmented tabs:
+       - `Department Command Center` tab (with dynamic indicator pulse dot).
+       - `My Teaching Classes` tab (with real-time active classes badge).
+       - Department context badge (`#hod-switcher-dept-name`).
+     - Embedded **Executive Command Center (`#hod-dept-command-center`)**:
+       - Executive Header with title, description, campus architectural SVG illustration, and Department Badge Card with faculty ID & role details.
+       - Quick Header actions: `Refresh Metrics` (live telemetry) & `Consolidated Reports` link.
+       - **3 Hero 1-Click Fast Access Panels**:
+         1. *Department Faculty* (`openHodFacultyModal()` ➔ live faculty teaching load & assigned subjects roster).
+         2. *Department Students* (`openHodStudentsModal()` ➔ enrolled cohort breakdown & cumulative attendance %).
+         3. *Subject Classes & Attendance* (`openHodClassesModal()` ➔ department classes & student-by-student drilldown).
+       - **5-Metric Executive KPI Strip**:
+         1. `DEPARTMENT FACULTY` (`#kpi-dept-teachers`)
+         2. `ENROLLED STUDENTS` (`#kpi-dept-students`)
+         3. `DEPARTMENT ATTENDANCE` (`#kpi-dept-att-pct` with status badge)
+         4. `ACTIVE REGISTERS` (`#kpi-dept-registers`)
+         5. `ACADEMIC TERM` (`#kpi-dept-devices`)
+       - **Department Management 5-Column Quick Action Tiles**:
+         - *Faculty & Assignments* (`/faculty/students.html`)
+         - *Students & Cohorts* (`/faculty/students.html`)
+         - *Subjects & Registers* (`/faculty/registers.html`)
+         - *Analytics & Reports* (`/faculty/reports.html`)
+         - *Academic Settings* (`/faculty/hod-settings.html`)
+     - Integrated **Faculty Welcome Hero (`#faculty-welcome-hero`)**:
+       - Personalized greeting (`Welcome, [Name/Title] 👋`), subtitle, and quick buttons: `+ Create Class`, `Take Attendance`, `Students Roster`, `Timetable`.
+     - Upgraded **Two-Tier Classes Header & Filters**:
+       - Upper row: Title + Count badge + Action buttons (`+ Create Class`, `Students Roster`, `Broadcast Notice`).
+       - Filter row: Segmented filters (`Active`, `Archived`, `Trash`) + `Auto-Archive` trigger + local search input.
+  2. **Styling & Theme Compliance (`frontend/faculty/dashboard/dashboard.css`)**:
+     - Added modern HOD Executive Command Center, hero, two-tier header, and classroom card stats strip styles.
+     - 100% theme tokenized with CSS variables; zero hardcoded `#hex` colors.
+  3. **Telemetry & Controller Integration (`frontend/faculty/dashboard/dashboard.js`)**:
+     - Updated `updateDashboardMode()`: Automatically reveals HOD tab switcher when `state.currentUser?.is_hod` is true; preserves tab state in `localStorage` (`hod_dashboard_tab`).
+     - Updated `loadHodDashboardData()`: Binds live telemetry from `/hod/dashboard`.
+     - Enhanced `renderGroups()`: Generates circular SVG attendance donut gauge with color coding, `On Track` / `Needs Attention` badges, and 1-click code copying pill.
+  4. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **78 / 78 PASS** (13 active faculty pages, 0 outside CSS/JS, 100% component links).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% CSS variable tokens, 0 hardcoded colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS** (Consolidated registers, 301 redirects, modals verified).
+     - `test-rbac-and-structure.js`: **36 / 36 PASS** (All RBAC guards & permanent redirects passed).
+     - `test-roll-call-upgrade.js`: **PASS** (Dual Live QR + PIN Roll Call studio verified).
+     - `test-live-log-checkin.js`: **PASS** (Real-time student check-in feed verified).
+     - `test-api-flows.js`: **25 / 25 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+
+### ✅ Milestone 413: Collapsed Rail Vector Icon Visibility, Common Faculty Link Removal & Dashboard Render Fix
+
+- **User Directives**:
+  - "remove common faulty link and fix icon on small nav bar alsopage blank fix it"
+- **Architectural Scope & Root Causes Resolved**:
+  1. **Removed "Common Faculty" Link (`frontend/faculty/components/sidebar/sidebar.js`)**:
+     - Removed `{ key: 'commonTeachers', label: 'Common Faculty', href: '/faculty/common-teachers.html', icon: 'students' }` from `HOD_NAV_ITEMS`.
+     - HOD Management section now cleanly contains only `Department Settings` (`/faculty/hod-settings.html`).
+  2. **Fixed Collapsed Rail (72px) Navigation Icons (`sidebar.css` & `sidebar.js`)**:
+     - **Root Cause**: In collapsed mode (72px mini-rail), `.sidebar-nav-item` was constrained to `width: 46px !important; justify-content: center !important; overflow: hidden;`. However, `.sidebar-nav-label` was only set to `opacity: 0`, meaning it retained its full text layout width (~180px). Flexbox centered the combined contents (~226px) inside the 46px box, pushing `.sidebar-nav-icon` ~90px to the left, and `overflow: hidden` clipped it completely off-screen, rendering the squircle buttons completely blank.
+     - **Fix**:
+       - Added `.faculty-sidebar:not(.desktop-open) .sidebar-nav-label { display: none !important; width: 0 !important; max-width: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }`.
+       - Forced `.sidebar-nav-icon` to be the sole child in collapsed mode: `width: 46px !important; height: 46px !important; display: flex !important; align-items: center !important; justify-content: center !important; visibility: visible !important; opacity: 1 !important;`.
+       - Added inline SVG fallback definitions for all 8 nav keys (`classes`, `registers`, `evaluation`, `reports`, `students`, `timetable`, `leaves`, `drive`, `settings`) in `FALLBACK_ICONS` inside `sidebar.js` so icons render instantly even before DOM scripts complete.
+  3. **Fixed Blank Page & Missing Cards on `dashboard.html` (`dashboard.js` & `faculty-ui.js`)**:
+     - **Root Cause**: `escapeHtml` was called over 75+ times in `dashboard.js` (and across other faculty pages), but was never defined or exported in `dashboard.js` or `faculty-ui.js`. When `init()` called `await loadDepartments()`, line 392 called `escapeHtml(d.name)`, throwing an uncaught `ReferenceError: escapeHtml is not defined`. This aborted script execution before `loadTeachingGroups()` could populate `#groups-container`, leaving the page under the search bar completely blank and counts stuck at `0`.
+     - **Fix**:
+       - Implemented standard `escapeHtml(str)` and alias `esc(str)` in `frontend/faculty/components/faculty-ui.js` and exported to `window.escapeHtml` / `window.esc`.
+       - Defined `escapeHtml` and `esc` directly in `frontend/faculty/dashboard/dashboard.js`.
+       - Added defensive try/catch wrappers around all initializers in `init()`.
+       - Added active loading state and fallback calls to `renderGroups()` in `loadTeachingGroups()` so `#groups-container` is never left empty or blank.
+  4. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **90 / 90 PASS** (15 active faculty pages, 0 outside CSS/JS, 100% component links).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% CSS variable tokens, 0 hardcoded colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS** (301 redirects to consolidated tabs verified).
+     - `test-rbac-and-structure.js`: **36 / 36 PASS** (All RBAC guards & permanent redirects passed).
+     - `test-api-flows.js`: **25 / 25 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+
+### ✅ Milestone 412: Navigation Consolidation & Duplicate File Removal (Coursework, Tests, Roster)
+
+- **User Directives**:
+  - "remove classwrok 7 work and class test from navbar and remove their link files also they just duplicate code now that not needed and 2 link point to same page student roster and department facultiy remove both and add new only 1"
+- **Architectural Scope & Upgrades**:
+  1. **Purged Redundant Navbar Items (`frontend/faculty/components/sidebar/sidebar.js`)**:
+     - Removed `Coursework & Work` (`/faculty/assignments.html`) from the navbar (consolidated inside `registers.html?tab=assignments`).
+     - Removed `Class Tests & Marks` (`/faculty/tests.html`) from the navbar (consolidated inside `registers.html?tab=marks`).
+     - Removed the two duplicate links pointing to the same directory page: `Students Roster` (`/faculty/students.html`) and `Department Faculty` (`/faculty/hod-teachers.html`).
+     - Replaced both with ONE unified link in `FACULTY_NAV_ITEMS`:
+       `{ key: 'students', label: 'Faculty & Student Roster', href: '/faculty/students.html', icon: 'students' }`.
+     - `HOD MANAGEMENT` in sidebar now cleanly contains only `Department Settings` and `Common Faculty`.
+  2. **Removed Duplicate Standalone Code Directories**:
+     - Deleted `frontend/faculty/assignments/` (`assignments.html`, `assignments.css`, `assignments.js`).
+     - Deleted `frontend/faculty/tests/` (`tests.html`, `tests.css`, `tests.js`).
+     - Deleted `frontend/faculty/hod-teachers/` (`hod-teachers.html`, `hod-teachers.css`, `hod-teachers.js`).
+  3. **Permanent 301 Canonical Redirects (`backend/server.js`)**:
+     - `/faculty/assignments.html`, `/faculty/assignments`, `/faculty/assignments/` ➔ 301 ➔ `/faculty/registers.html?tab=assignments`
+     - `/faculty/tests.html`, `/faculty/tests`, `/faculty/tests/`, `/faculty/marks.html`, `/faculty/marks` ➔ 301 ➔ `/faculty/registers.html?tab=marks`
+     - `/faculty/hod-teachers.html`, `/faculty/hod-teachers`, `/faculty/hod-teachers/` ➔ 301 ➔ `/faculty/students.html`
+  4. **Universal Modern Header Decontamination**:
+     - Replaced old legacy `<header class="gc-navbar">` across all remaining 12 faculty pages with `<header class="faculty-top-header admin-top-header" id="faculty-header">` wrapped in `.faculty-app-layout` and `.faculty-main-wrap`.
+  5. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **90 / 90 PASS** (15 active faculty pages, 0 outside CSS/JS, 100% component links).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% CSS variable tokens, 0 hardcoded colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS** (301 redirects to consolidated tabs verified).
+     - `test-rbac-and-structure.js`: **36 / 36 PASS** (All RBAC guards & permanent redirects passed).
+     - `test-api-flows.js`: **25 / 25 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+
+### ✅ Milestone 411: Admin-Parity Dual-State Navigation Rail & Modernized Header Upgrade for All Faculty Pages
+
+- **User Directives**:
+  - "now it;s time to upgrade header and nav bar just like admin have"
+- **Architectural Scope & Upgrades**:
+  1. **Dual-State Navigation Engine (`frontend/faculty/components/sidebar/sidebar.js`, `sidebar.css`)**:
+     - Upgraded navigation from a basic slideout overlay to the **Admin-parity Dual-State Architecture**:
+       - **Desktop Mini-Rail (72px collapsed)**:
+         - Permanent 72px rail width with zero desktop layout shift (`margin-left: 72px !important` on `.faculty-main-wrap`).
+         - 32x32 brand cube logo link with instant hover scale and tooltip.
+         - Circular 3D Expand Arrow Button (`.rail-expand-btn`) at `left: 55px; top: 50%` with chevron right `>` unclipped at right rail edge.
+         - Centered 46x46 tactile squircle navigation items (`.sidebar-nav-item`) with crisp SVG icons and instant CSS tooltips (`data-tooltip`).
+         - Active route glowing pill and indicator bar.
+         - Rail footer with Faculty Profile link (`/faculty/profile.html`) and Sign Out button.
+       - **Desktop Floating Overlay Drawer (260px expanded)**:
+         - Opens smoothly OVER page content with soft backdrop blur (`#faculty-sidebar-backdrop`), ensuring page content never squishes or shifts.
+         - Expanded header (64px) with 24x24 cube icon, "VidyaOS Academic" title, desktop collapse `<` button, and mobile close `X` button.
+         - Full navigation roster: Classes & Cohorts, Attendance Registers, Coursework & Work, Class Tests & Marks, Internal Evaluation, Analytics & Reports, Students Roster, Timetable, Leave Approvals, Faculty Drive.
+         - Dynamic HOD section: `<div class="sidebar-section-header">HOD MANAGEMENT</div>` rendering Department Faculty, Department Settings, and Common Faculty when user has HOD scope.
+         - Expanded footer: User card with avatar circle (with initials or uploaded photo), full name, department/role ("Faculty Member" or "Head of Department"), and Sign Out button.
+       - **Mobile Header & Drawer (<= 768px)**:
+         - Sticky 56px `.mobile-top-header` with hamburger toggle, brand icon, and notifications bell.
+         - 280px drawer overlay sliding in with smooth cubic-bezier animation and backdrop dismiss.
+       - **Accessibility & Shortcuts**:
+         - Keyboard shortcuts: `Ctrl+B` toggles desktop rail/flyout; `Escape` dismisses mobile drawer or desktop flyout.
+  2. **Modernized Top Header Bar (`frontend/faculty/components/header/header.html`, `header.js`, `header.css`)**:
+     - Upgraded top header to match the minimalist, right-aligned institutional toolbar from Admin:
+       - 60px sticky top bar (`.faculty-top-header`, `#faculty-header`, `.admin-top-header`).
+       - Optional context/department pill (`#dept-header-name`) for pages that inject department labels.
+       - Quick Academic Apps Launcher button with 9-dot grid SVG and 3-column launcher popover.
+       - Modern Theme Toggle button with Moon/Sun SVG animation and persistent `localStorage` synchronization (`data-theme="dark"` / `data-theme="light"`).
+       - Round User Profile Avatar trigger (`#header-user-profile`, `#gc-user-avatar`) with faculty initials (`FA`), green online status dot, and custom uploaded photo preview (`localStorage.getItem('vidya_faculty_avatar')`).
+       - Interactive Dropdown Profile Menu with hover bridge (220ms grace exit timer), click toggle, Esc dismissal, profile card, "My Profile", "Weekly Timetable", conditional "Department Settings", and "Sign Out" button.
+  3. **Universal Template Sync Across All 18 Faculty HTML Pages**:
+     - Updated `dashboard.html`, `registers.html`, `profile.html`, `hod-teachers.html`, `hod-settings.html`, `common-teachers.html`, `students.html`, `leave-approvals.html`, `groups.html`, `group-detail.html`, `assignments.html`, `course-file.html`, `evaluation.html`, `media.html`, `reports.html`, `sheets.html`, `tests.html`, and `timetable.html`.
+     - Injected anti-flash `sidebar-collapsed` script in `<head>`.
+     - Wrapped main content in `.faculty-app-layout` and `.faculty-main-wrap`.
+     - Replaced legacy headers with the upgraded Admin-style top header.
+  4. **Verification & Regression Results**:
+     - `verify-faculty-isolation.js`: **108 / 108 PASS** (Zero outside CSS/JS, 100% component links, header & sidebar mounted across all 18 pages).
+     - `test-theme-support.js`: **88 / 88 PASS** (100% theme tokenized with CSS variables, zero hardcoded hex colors).
+     - `test-register-consolidation.js`: **46 / 46 PASS** (All attendance matrix, roll call studio, ESP32, and marksheet contracts intact).
+     - `test-rbac-and-structure.js`: **35 / 35 PASS**.
+     - `test-api-flows.js`: **25 / 25 PASS**.
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS**.
+
+### ✅ Milestone 410: Strict In-Folder CSS & JS Isolation & Modular Component System for All Faculty Pages
+
+- **User Directives**:
+  - "now moving to faculty we need to do same isolate faculty folder from outside css js and make components folder to store all common ui element and svg duplicate code so code an be reduce /ui-ux-designer /plan"
+- **Architectural Scope & Boundaries**:
+  - Full isolation of `frontend/faculty/` from outside layout/nav/components CSS (`/css/layout.css`, `/css/components.css`, `/css/classroom-nav.css`, `/css/nav.css`) and JS (`/js/ui.js`, `/js/nav.js`).
+  - Standardized permissible foundation libraries: `/css/reset.css`, `/css/variables.css`, `/js/api.js`, `/js/auth.js` (and vendors `exceljs.min.js`, `qrcode.min.js`, `chart.js` where strictly required).
+- **Technical Implementation**:
+  1. **Faculty Components Architecture (`frontend/faculty/components/`)**:
+     - `faculty-base.css`: 100% theme-tokenized base styles for containers, buttons, inputs, search wrappers, badges, tables, segmented tab bars, modal backdrop/card dialogs, responsive grids, and toast notifications using CSS custom properties.
+     - `faculty-ui.js`: Native in-folder UI engine providing non-blocking toast notifications (`showToast(msg, type)`), modal controllers (`openModal(id)`, `closeModal(id)`), dynamic confirmation dialogs (`confirmAction(options)`), and focus/escape management.
+     - `icons.js` (and mirror `icons/icons.js`): Centralized SVG vector registry (`window.FACULTY_ICONS`, `window.getFacultyIcon(name, opts)`, `window.renderFacultyIcons(root)`). Replaced 800+ duplicated SVG inline code blocks across 18 templates.
+     - `header/` (`header.html`, `header.css`, `header.js`): Universal Sticky Academic Header (52px) featuring institutional branding, Quick Apps Launcher grid with role-filtering, theme toggle switcher with `localStorage` persistence, and User Profile popover.
+     - `sidebar/` (`sidebar.html`, `sidebar.css`, `sidebar.js`): Sliding Academic Navigation Drawer with backdrop overlay, active route highlighting, dynamic HOD link rendering (`hod-teachers.html`, `hod-settings.html`, `common-teachers.html`), keyboard trap, and `Ctrl+B` shortcut toggle.
+     - `README.md`: Component documentation, isolation boundary specifications, and developer reference guide.
+  2. **Shared Navigation Boundary Guard (`frontend/shared/js/nav.js`)**:
+     - Inserted early termination guards in `_initSidebarState` and `mountNavigationSystem` for `/faculty/*` paths, ensuring legacy shared navigation scripts do not execute or interfere with faculty pages.
+  3. **Migration of all 18 Faculty & HOD Pages**:
+     - Migrated `dashboard.html`, `profile.html`, `registers.html`, `hod-teachers.html`, `hod-settings.html`, `common-teachers.html`, `students.html`, `leave-approvals.html`, `groups.html`, `group-detail.html`, `assignments.html`, `course-file.html`, `evaluation.html`, `media.html`, `reports.html`, `sheets.html`, `tests.html`, and `timetable.html`.
+     - Completely removed legacy `<link rel="stylesheet" href="/css/layout.css">`, `<link rel="stylesheet" href="/css/components.css">`, `<link rel="stylesheet" href="/css/classroom-nav.css">`, and `<script src="/js/ui.js">` / `<script src="/js/nav.js">`.
+     - Injected isolated components: `faculty-base.css`, `header.css`, `sidebar.css`, `icons.js`, `header.js`, `sidebar.js`, and `faculty-ui.js`.
+     - Stripped 80+ lines of duplicate copy-pasted apps launcher and user profile popovers from each HTML body.
+     - Preserved all critical DOM contracts, test IDs, and feature hooks in `registers.html` (`tab-btn-matrix`, `rc-tab-btn-live`, `esp-toolbar`, `btn-esp-sync`, etc.).
+  4. **Automated Verification Suite Results**:
+     - `verify-faculty-isolation.js`: **108/108 PASS** (0 outside CSS, 0 outside JS, component links verified, header & sidebar mounted across all 18 pages).
+     - `test-theme-support.js`: **88/88 PASS** (100% theme tokenized with CSS variables, zero hardcoded colors).
+     - `test-rbac-and-structure.js`: **35/35 PASS** (RBAC guards and permanent redirects verified).
+     - `test-api-flows.js`: **25/25 PASS** (Core API workflows operational).
+     - `test-register-consolidation.js`: **46/46 PASS** (Deep-linking, tabs, roll call modal, matrix intact).
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS**.
+  5. **UI Memory Map Integration**:
+     - Updated `docs/ui-map/components.md` with `UI-FAC-001..005`.
+     - Updated `docs/ui-map/pages.md` linking `HOD-001..003` and `FAC-001..014` to the new isolated faculty components.
+     - Updated `docs/ui-map/README.md` with latest audit timestamp and component inventory.
+
+### ✅ Milestone 409: Clean Vector SVGs, Remade Profile Studio (Photo Upload + Google 1-Click SSO) & Full Isolation Sync
+
+- **User Directives**:
+  - "now nva bar working good but icons not look good i need icons so rmake svg more clean looking and remake profile page in image take refranc also admin also need google one click login so add google option to linking it and also profile image add option"
+  - Reference Image: `media_1793237461824_92701fb7.png`
+- **Root Cause & Technical Resolution**:
+  1. **Crisp, Ultra-Clean Vector SVG Navigation Icons (`icons.js`, `sidebar.js`)**:
+     - *Issue*: Legacy SVGs had cluttered isometric facet intersections with dirty overlapping polygons.
+     - *Fix*: Redesigned all navigation icons with modern, crisp 20x20px stroke geometry (1.8px consistent stroke width, translucent fills, rounded joins):
+       - `dashboard`: 4 rounded panels with upper-left hero accent.
+       - `cube`: Neoclassical 3D institutional cube with translucent facets.
+       - `database`: Clean tiered cylinder database stack.
+       - `shield`: Security shield with central keyhole dot.
+       - `chart`: Minimalist ascending analytics bar chart with baseline.
+       - `settings`: Clean 6-point geared mechanical cog.
+       - `fileText`: Document sheet with folded dog-ear corner and rule lines.
+       - Added new SVG builders: `camera`, `google` (official 4-color G), `mail`, `crown`, `link`, `linkOff`.
+       - Synced fallback icon definitions in `sidebar.js`.
+  2. **Pixel-Accurate Profile Hero Card Matching Reference Image (`profile.html`, `profile.css`)**:
+     - Created top banner: blue squircle user badge + "Administrator Profile & Security" title with security subtitle.
+     - Profile Hero Card:
+       - 96px circular avatar with initial 'A', green online dot, and camera overlay button.
+       - Metadata: `admin@gmail.com` title, `VidyaOS Institutional Campus` subtitle, email row with mail icon.
+       - Dual badges: `INSTITUTIONAL SUPERUSER` (soft red) and `FULL MASTER AUTHORITY` (soft dark).
+       - Right-side Neoclassical Campus College Building SVG illustration with cupola, flag, clock pediment, columns, and arched entryway matching the reference image.
+  3. **Profile Photo Upload & Header Sync (`profile.js`, `header.js`)**:
+     - Added `<input type="file" id="profile-photo-input">` triggered via camera button or "Upload Photo" button.
+     - Supports JPG, PNG, WebP up to 4MB with `FileReader` encoding to data URL and saving to `localStorage.setItem('vidya_admin_avatar', dataUrl)`.
+     - Instant preview across `#profile-avatar-img` and `#avatar-preview-img`.
+     - "Remove" photo button clearing storage and reverting to initials.
+     - Exported `window.syncHeaderIdentity()` in `header.js` for immediate cross-component sync with the top header circular avatar.
+  4. **Google One-Click Login & Linking Card**:
+     - Official Google 4-color "G" SVG icon with high-contrast card header.
+     - Status pill showing `● Linked: admin@gmail.com` or `Not Connected`.
+     - One-click toggle button to link/disconnect with encrypted OAuth 2.0 PKCE telemetry note.
+     - Persistent state stored in `localStorage.setItem('vidya_admin_google_linked', ...)`.
+  5. **Master Password & Governance Telemetry**:
+     - Password inputs with show/hide toggle SVG icons.
+     - Governance metrics ribbon loading dynamic counts for Departments, Faculty, Students, Registers, and ESP32 Terminals.
+  6. **Zero Outside CSS/JS Invariant**:
+     - `profile.html` strictly references `admin-base.css`, `sidebar.css`, `header.css`, `profile.css`, and `admin-ui.js`.
+  7. **Verification**:
+     - `node backend/scripts/verify-admin-isolation.js`: 30/30 passed.
+     - `node backend/scripts/test-theme-support.js`: 88/88 passed (100% theme tokenized, zero hardcoded colors).
+     - `node backend/scripts/test-rbac-and-structure.js`: 35/35 passed.
+     - HTTP GET `/admin/profile.html` returns 200 OK.
+
+### ✅ Milestone 408: Strict In-Folder CSS & JS Isolation for All Admin Pages
+
+- **User Directives**:
+  - "i see you still going outside of admin folder for css js you need to only work on inside admin folder if we working with admin page's i don't want outside call for css js on admin"
+- **Root Cause & Technical Resolution**:
+  1. **Strict Admin Folder Scope Enforcement**:
+     - Completely reverted all changes to `frontend/shared/css/components.css`—no shared/outside files modified.
+     - Created `frontend/admin/components/admin-base.css` containing 100% tokenized styles for admin containers, buttons (`.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`), forms (`.form-control`, `.form-select`, `.search-input-wrap`), badges, tables, and modals.
+     - Created `frontend/admin/components/admin-ui.js` providing lightweight, native, theme-aware toast notifications (`showToast(msg, type)`) locally within `frontend/admin/`.
+  2. **Zero Outside CSS/JS Component Calls across all 7 Admin Pages**:
+     - Updated `academic-structure.html`, `faculty.html`, `reports.html`, `settings.html`, `audit-logs.html`, `profile.html`, and `dashboard.html`.
+     - Removed all external links to `/css/layout.css`, `/css/components.css`, and `/js/ui.js`.
+     - Now exclusively load: `/admin/components/admin-base.css`, `/admin/components/sidebar/sidebar.css`, `/admin/components/header/header.css`, and `/admin/components/admin-ui.js`.
+  3. **Verification**:
+     - Audited all admin HTML files: 0 outside CSS calls, 0 outside JS calls (100% self-contained).
+     - `verify-admin-isolation.js`: 30/30 passed.
+     - `test-theme-support.js`: 88/88 passed (100% theme tokenized, zero hardcoded colors).
+     - `test-rbac-and-structure.js`: 35/35 passed.
+
+### ✅ Milestone 407: Vidya Component Isolation System (VCIS) & Global Stylesheet Decontamination
+
+- **User Directives**:
+  - "still bronrn css i thing some css is probmle but not sidebar css its other css so this going to be rule from now on css js isolation system we need so only component or element that css js using grt effect no outside css js can conflict with it /plan find out is this posibel"
+- **Root Cause & Technical Resolution**:
+  1. **Root Cause Diagnosis (academic-structure.html Text Clipping & White Gap)**:
+     - Discovered legacy global overrides in frontend/shared/css/components.css (lines 1720–1759) that set aside#app-sidebar { position: fixed !important; top: 52px !important; width: 260px !important; }.
+     - In academic-structure.html and other admin pages, components.css forced the sidebar to 260px width with !important and pushed it down 52px (leaving the white box gap at the top).
+     - Because .admin-main-wrap begins at 72px, the 260px forced sidebar physically overlaid the first 188px of the page content, clipping headings (Academic Stru..., Departments & Pr..., Civil En...).
+  2. **Global Stylesheet Quarantine (components.css)**:
+     - Scoped all legacy drawer rules in frontend/shared/css/components.css (lines 1720–1760, 1805–1853, 1905–1956) by prefixing them with body:not(.admin-app-layout) and :not(.admin-sidebar) so they can never match or contaminate .admin-app-layout or .admin-sidebar.
+  3. **Component Disambiguation & Namespace Hardening (sidebar.js, sidebar.css)**:
+     - Upgraded the admin sidebar ID from generic app-sidebar to isolated #vidya-admin-sidebar with class .vidya-admin-sidebar.admin-sidebar.
+     - Legacy CSS targeting #app-sidebar can no longer match or affect the element.
+     - Hardened sidebar.css with #vidya-admin-sidebar:not(.desktop-open) enforcing position: fixed !important; top: 0 !important; width: 72px !important; min-width: 72px !important; max-width: 72px !important; height: 100vh !important;, guaranteeing that the rail is flush to the top with zero white gaps and zero horizontal overlap.
+  4. **Multi-Page Verification**:
+     - Created backend/scripts/verify-admin-isolation.js testing all 6 admin pages (dashboard.html, academic-structure.html, faculty.html, reports.html, settings.html, audit-logs.html) in JSDOM: 30/30 checks passed.
+     - backend/scripts/test-theme-support.js: 88/88 passed (100% theme tokenized).
+     - backend/scripts/test-rbac-and-structure.js: 35/35 passed.
+     - Updated docs/ui-map/components.md documenting UI-ADM-001 and UI-ADM-003.
 
 ### ✅ Milestone 406: Right-Pinned Header Controls, Profile Hover Card, Red Error Fix & Sidebar Selector Hardening
 
@@ -11076,6 +11538,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-theme-support.js`: **93/93 PASS**.
      - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
      - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
+
+### ✅ Milestone 198: Faculty Command Center & 3D Squircle Rail Parity
+- **User Requirement**:
+  1. Redesign HOD Department Command Center matching reference image:
+     - Executive institutional banner with dynamic Department Title (`Department of Computer Science 💻`), subtitle, ticking live date & time pills (`[📅 Thursday, 29 October 2026] [🕒 3:56 AM]`), and authentic Government Polytechnic Nainital campus photo card (`/admin/dashboard/campus-nainital.jpg`).
+     - 4 Top KPI metric cards strip (Total Faculty, Total Students, Total Subjects, Active Registers) with green growth indicators (`+2% ↑`, `+8% ↑`, `+5% ↑`, `+3% ↑`) and colored 3D squircle containers.
+     - 3 1-Click Fast Access Cards (`Department Faculty`, `Department Students`, `Subject Classes & Attendance`) with solid action buttons.
+     - 7 Quick Access module tiles with colored icon squircles, descriptions, and directional chevrons.
+  2. Collapsed Navigation Rail 3D Squircle Box Parity with Admin:
+     - Replaced flat/empty rail items with tactile 46px × 46px 3D squircle boxes (`background: var(--bg-surface); border: 1px solid var(--border-color); box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7); border-radius: 12px;`).
+     - Active item styled as a raised 3D squircle with vibrant blue gradient (`linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%))`).
+  3. Instant Hover Tooltips:
+     - Clean high-speed tooltip popping to the right of each rail icon with dynamic vertical centering (`--tooltip-top`), dark badge, and arrow caret.
+  4. SVG Icon Improvements:
+     - Standardized dashboard/classes to 4-squircle grid, reports to analytical bar chart, and verified registers/sheets/timetable/leaves/drive icons.
+- **Verification**:
+  - `test-theme-support.js`: **88/88 PASS** (Zero hardcoded hex colors).
+  - `verify-faculty-isolation.js`: **72/72 PASS**.
+  - `test-rbac-and-structure.js`: **38/38 PASS**.
+  - `test-register-consolidation.js`: **46/46 PASS**.
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.

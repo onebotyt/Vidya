@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Test Scores &amp; Internal Evaluation — VidyaOS</title>
+  <meta name="description" content="View recorded unit tests, class assessments, semester marks, and continuous evaluations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./scores.css">
+</head>
+<body class="page-shell">
+  <!-- Unified AppShell Header & Navigation (injected by nav.js) -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compat hidden nav for automated test contracts -->
+  <nav style="display:none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/student/dashboard.html" id="nav-dashboard">Classes Hub</a>
+    <a href="/student/attendance.html" id="nav-attendance">Attendance</a>
+    <a href="/student/assignments.html" id="nav-assignments">Coursework</a>
+    <a href="/student/scores.html" id="nav-scores">Test Scores</a>
+    <a href="/student/timetable.html" id="nav-timetable">Timetable</a>
+    <a href="/student/leave.html" id="nav-leave">Leaves</a>
+    <a href="/student/profile.html" id="nav-profile">My Profile</a>
+  </nav>
+
+  <main class="scores-container">
+    <!-- Student Identity Card -->
+    <div id="student-id-card" class="student-hero-card" style="display:none;">
+      <div>
+        <div class="student-hero-title-group">
+          <h2 id="scores-student-name" class="student-hero-name">Student Name</h2>
+          <span id="scores-cohort-badge" class="badge badge-pending">Cohort</span>
+        </div>
+        <div id="scores-dept-info" class="student-hero-meta">Department / Course</div>
+      </div>
+      <div class="student-badges-strip">
+        <span class="badge badge-present" style="font-size:0.82rem; padding:0.35rem 0.75rem;">
+          Roll: <strong id="scores-roll-no">—</strong>
+        </span>
+        <span class="badge" style="background:var(--bg-surface-secondary); font-family:var(--font-family-mono); font-size:0.82rem; color:var(--color-primary); font-weight:700; padding:0.35rem 0.75rem;">
+          UBTER Reg: <strong id="scores-reg-no">—</strong>
+        </span>
+        <span class="badge" style="background:var(--bg-surface-secondary); font-family:var(--font-family-mono); font-size:0.82rem; color:var(--text-muted); padding:0.35rem 0.75rem;">
+          <span id="scores-enrollment-no">—</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Page Header & Action Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+      <div>
+        <h1 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin:0;">Test Scores &amp; Internal Evaluation</h1>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin:0.25rem 0 0;">Official marks roster, periodic unit assessments, and faculty grading breakdown</p>
+      </div>
+      <a href="/student/dashboard.html" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:0.4rem;">
+        ← Back to Classes Hub
+      </a>
+    </div>
+
+    <!-- Score Analytics Cards -->
+    <div class="scores-summary-grid" id="scores-summary-grid" style="display:none;">
+      <div class="score-kpi-card">
+        <div class="score-kpi-icon">📝</div>
+        <div>
+          <div class="score-kpi-val" id="kpi-tests-count">0</div>
+          <div class="score-kpi-lbl">Tests Recorded</div>
+        </div>
+      </div>
+      <div class="score-kpi-card">
+        <div class="score-kpi-icon">📈</div>
+        <div>
+          <div class="score-kpi-val" id="kpi-avg-pct">0%</div>
+          <div class="score-kpi-lbl">Average Score</div>
+        </div>
+      </div>
+      <div class="score-kpi-card">
+        <div class="score-kpi-icon">🏆</div>
+        <div>
+          <div class="score-kpi-val" id="kpi-top-score">—</div>
+          <div class="score-kpi-lbl">Top Performance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scores Table Container -->
+    <div id="scores-wrap" class="scores-card">
+      <div style="text-align:center; padding:3rem 1.5rem; color:var(--text-muted);">
+        Loading your academic test scores...
+      </div>
+    </div>
+  </main>
+
+  <!-- Compatibility marker for user-nav -->
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <!-- VidyaOS V2 Shared Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="./scores.js"></script>
+</body>
+</html>

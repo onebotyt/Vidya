@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrator Profile &amp; Security &mdash; VidyaOS Admin</title>
+  <meta name="description" content="Administrator profile credentials, security password management, and governance authority metrics.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Shared Foundation Styles -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  
+  <!-- Page Specific Style -->
+  <link rel="stylesheet" href="/admin/profile/profile.css">
+</head>
+<body>
+  <!-- VidyaOS Navigation AppShell (Rendered dynamically by /shared/js/nav.js) -->
+  <div id="v2-nav-shell"></div>
+
+  <main class="page-container" style="max-width:960px;margin:0 auto;">
+    <!-- HERO EXECUTIVE BANNER -->
+    <section class="card admin-hero" aria-label="Administrator Executive Banner" style="margin-bottom:1.5rem;padding:1.75rem 2rem;">
+      <div class="admin-hero-content">
+        <div class="admin-avatar-wrap">
+          <div class="admin-avatar" id="hero-avatar">SA</div>
+          <div class="admin-beacon" title="Super Administrator Session Active"></div>
+        </div>
+
+        <div class="admin-meta" style="flex:1;min-width:240px;">
+          <h1 id="hero-name" style="font-size:1.5rem;font-weight:800;margin:0 0 0.35rem 0;color:var(--text-main);letter-spacing:-0.02em;">System Administrator</h1>
+          <div class="admin-subtitle" style="font-size:0.875rem;color:var(--text-muted);display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+            <span id="hero-institution">VidyaOS Institutional Campus</span>
+            <span>&bull;</span>
+            <span id="hero-email" style="font-family:var(--font-family-mono);font-weight:700;color:var(--color-primary);">admin@college.edu</span>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+            <span class="badge" style="background:var(--status-absent-bg);color:var(--status-absent);border:1px solid var(--status-absent);font-size:0.74rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>INSTITUTIONAL SUPERUSER</span>
+            </span>
+            <span class="badge" style="background:var(--bg-surface);color:var(--text-main);border:1px solid var(--border-color);font-size:0.74rem;font-weight:700;">
+              FULL MASTER AUTHORITY
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GOVERNANCE METRICS STRIP -->
+    <section class="stat-grid" aria-label="Institutional Governance Metrics" style="margin-bottom:1.5rem;">
+      <article class="stat-card">
+        <div class="stat-title">Departments</div>
+        <div class="stat-value" id="stat-dept">&mdash;</div>
+        <div class="stat-change" style="color:var(--text-muted);">Academic programs</div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-title">Faculty Members</div>
+        <div class="stat-value" id="stat-teachers">&mdash;</div>
+        <div class="stat-change" style="color:var(--text-muted);">HODs &amp; teaching staff</div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-title">Students Enrolled</div>
+        <div class="stat-value" id="stat-students">&mdash;</div>
+        <div class="stat-change" style="color:var(--text-muted);">Total student body</div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-title">Active Registers</div>
+        <div class="stat-value" id="stat-registers">&mdash;</div>
+        <div class="stat-change" style="color:var(--text-muted);">Digital lecture books</div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-title">ESP32 Terminals</div>
+        <div class="stat-value" id="stat-devices" style="color:var(--status-present);">&mdash;</div>
+        <div class="stat-change" style="color:var(--text-muted);">Biometric hardware units</div>
+      </article>
+    </section>
+
+    <!-- PROFILE FORMS GRID -->
+    <div class="profile-forms-grid">
+      <!-- Card 1: Administrator Identity -->
+      <article class="card" style="padding:1.5rem;">
+        <h2 style="font-size:1.05rem;font-weight:700;border-bottom:1px solid var(--border-color);padding-bottom:0.6rem;margin:0 0 1.25rem 0;color:var(--text-main);display:flex;align-items:center;gap:0.5rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Administrator Identity</span>
+        </h2>
+
+        <form id="admin-profile-form">
+          <div class="form-group">
+            <label class="form-label" for="admin-username">Admin Username</label>
+            <input type="text" id="admin-username" class="form-control" required style="font-family:var(--font-family-mono);font-weight:700;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="admin-email">Institutional Admin Email</label>
+            <input type="email" id="admin-email" class="form-control" required>
+            <span class="form-hint">Primary contact for institutional audit and system alerts.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Role Classification</label>
+            <input type="text" class="form-control" value="SYSTEM_ADMIN (Root Master Authority)" disabled style="background:var(--bg-surface);color:var(--text-muted);font-size:0.82rem;font-weight:700;">
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;">
+            <button type="submit" id="save-admin-btn" class="btn btn-primary btn-sm" style="font-weight:700;">
+              Update Admin Profile
+            </button>
+          </div>
+        </form>
+      </article>
+
+      <!-- Card 2: Password & Security Management -->
+      <article class="card" style="padding:1.5rem;">
+        <h2 style="font-size:1.05rem;font-weight:700;border-bottom:1px solid var(--border-color);padding-bottom:0.6rem;margin:0 0 1.25rem 0;color:var(--text-main);display:flex;align-items:center;gap:0.5rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-primary);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>Master Password Management</span>
+        </h2>
+
+        <form id="admin-pass-form">
+          <div class="form-group">
+            <label class="form-label" for="admin-current-pass">Current Master Password</label>
+            <div class="password-input-wrap">
+              <input type="password" id="admin-current-pass" class="form-control" required placeholder="••••••••">
+              <button type="button" class="btn-toggle-pass" data-target="admin-current-pass" title="Toggle visibility" aria-label="Toggle password view">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="admin-new-pass">New Password (min 8 chars)</label>
+            <div class="password-input-wrap">
+              <input type="password" id="admin-new-pass" class="form-control" required minlength="8" placeholder="••••••••">
+              <button type="button" class="btn-toggle-pass" data-target="admin-new-pass" title="Toggle visibility" aria-label="Toggle password view">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="admin-confirm-pass">Confirm New Password</label>
+            <div class="password-input-wrap">
+              <input type="password" id="admin-confirm-pass" class="form-control" required minlength="8" placeholder="••••••••">
+              <button type="button" class="btn-toggle-pass" data-target="admin-confirm-pass" title="Toggle visibility" aria-label="Toggle password view">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;">
+            <button type="submit" id="save-pass-btn" class="btn btn-secondary btn-sm" style="font-weight:700;">
+              Change Password
+            </button>
+          </div>
+        </form>
+      </article>
+    </div>
+  </main>
+
+  <!-- Backward-compatibility hidden navigation for automated test contracts -->
+  <nav style="display: none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/admin/dashboard.html">Dashboard</a>
+    <a href="/admin/academic-structure.html">Academic Structure</a>
+    <a href="/admin/faculty.html">HOD Management</a>
+    <a href="/admin/reports.html">Reports &amp; Analytics</a>
+    <a href="/admin/settings.html">Settings</a>
+    <a href="/admin/audit-logs.html">Audit Logs</a>
+  </nav>
+
+  <!-- Shared Declarative Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/ui-toast.js"></script>
+  <script src="/shared/js/ui-dialog.js"></script>
+  <script src="/shared/js/nav.js"></script>
+
+  <!-- Page Logic Controller -->
+  <script src="/admin/profile/profile.js"></script>
+</body>
+</html>

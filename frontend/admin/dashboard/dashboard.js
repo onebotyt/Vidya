@@ -26,11 +26,11 @@ function startLiveDateTime() {
 
   function update() {
     const now = new Date();
-    
+
     // Format: Tuesday, 28 October 2026
     const optionsDate = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
     const dateStr = now.toLocaleDateString('en-GB', optionsDate);
-    
+
     // Format: 12:15 PM
     const optionsTime = { hour: 'numeric', minute: '2-digit', hour12: true };
     const timeStr = now.toLocaleTimeString('en-US', optionsTime);
@@ -54,7 +54,7 @@ async function loadAdminStats() {
       const elTeachers = document.getElementById('stat-teachers');
       const elStudents = document.getElementById('stat-students');
       const elDepts = document.getElementById('stat-departments');
-      
+
       const totalStudents = Number(d.total_enrolled_students || d.total_students || 248);
       const totalTeachers = Number(d.total_teachers || 18);
       const totalDepartments = Number(d.total_departments || 6);
@@ -66,7 +66,7 @@ async function loadAdminStats() {
       // Attendance Ratio Calculation
       const elPresent = document.getElementById('stat-present-count');
       const elAbsent = document.getElementById('stat-absent-count');
-      
+
       // If live session data is present, compute; otherwise preserve realistic institutional defaults
       if (d.today_sessions && d.today_sessions > 0) {
         const estPresent = Math.round(totalStudents * 0.79);
@@ -88,7 +88,7 @@ function populateUserIdentity() {
   if (!user) return;
 
   const displayName = user.full_name || user.name || user.username || 'Admin';
-  
+
   const elHero = document.getElementById('admin-hero-name');
   if (elHero) elHero.textContent = displayName;
 

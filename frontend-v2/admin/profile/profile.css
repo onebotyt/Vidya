@@ -1,0 +1,107 @@
+/**
+ * VidyaOS Administrator Security Profile Stylesheet
+ * Location: /admin/profile/profile.css
+ * 
+ * Strict Theme Token Compliance: Zero hardcoded hex/rgb values.
+ */
+
+.admin-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: var(--status-absent);
+}
+
+.admin-hero-content {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-avatar-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+}
+
+.admin-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--text-white);
+  font-size: 1.85rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  user-select: none;
+}
+
+.admin-beacon {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--status-present);
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 8px var(--status-present);
+}
+
+/* 2-Column Responsive Forms Grid */
+.profile-forms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .profile-forms-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Password Toggle Input Group */
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrap .form-control {
+  padding-right: 2.5rem;
+}
+
+.btn-toggle-pass {
+  position: absolute;
+  right: 0.65rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+
+.btn-toggle-pass:hover {
+  color: var(--color-primary);
+}

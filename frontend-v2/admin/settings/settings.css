@@ -1,0 +1,41 @@
+/**
+ * VidyaOS Institutional Settings Stylesheet
+ * Location: /admin/settings/settings.css
+ * 
+ * Strict Theme Token Compliance: Zero hardcoded hex/rgb values.
+ */
+
+.settings-layout-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 840px) {
+  .settings-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Letterhead Mockup Preview Box */
+.letterhead-mockup {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.letterhead-mockup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), var(--status-present));
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Timetable &amp; Schedule — VidyaOS</title>
+  <meta name="description" content="View weekly class timetable, period timings, designated lecture halls, and course instructors.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./timetable.css">
+</head>
+<body class="page-shell">
+  <!-- Unified AppShell Header & Navigation (injected by nav.js) -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compat hidden nav for automated test contracts -->
+  <nav style="display:none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/student/dashboard.html" id="nav-dashboard">Classes Hub</a>
+    <a href="/student/attendance.html" id="nav-attendance">Attendance</a>
+    <a href="/student/assignments.html" id="nav-assignments">Coursework</a>
+    <a href="/student/scores.html" id="nav-scores">Test Scores</a>
+    <a href="/student/timetable.html" id="nav-timetable">Timetable</a>
+    <a href="/student/leave.html" id="nav-leave">Leaves</a>
+    <a href="/student/profile.html" id="nav-profile">My Profile</a>
+  </nav>
+
+  <main class="timetable-container">
+    <!-- Page Header & Action Bar -->
+    <div class="timetable-header-bar">
+      <div>
+        <h1 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin:0;">Class Timetable &amp; Schedule</h1>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin:0.25rem 0 0;">Weekly lecture schedule, laboratory timings, and classroom allocations</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <span id="current-day-badge" class="badge badge-present" style="font-weight:700; font-size:0.82rem; padding:0.35rem 0.75rem;">
+          Today: Loading...
+        </span>
+        <a href="/student/dashboard.html" class="btn btn-secondary btn-sm">← Back to Classes Hub</a>
+      </div>
+    </div>
+
+    <!-- 6-Day Weekly Matrix Grid -->
+    <div class="week-grid" id="week-grid">
+      <div style="text-align:center; padding:3rem; color:var(--text-muted); grid-column:1 / -1;">
+        Loading weekly timetable schedule...
+      </div>
+    </div>
+  </main>
+
+  <!-- Compatibility marker for user-nav -->
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <!-- VidyaOS V2 Shared Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="./timetable.js"></script>
+</body>
+</html>

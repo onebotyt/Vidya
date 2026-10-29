@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty &amp; HOD Directory — Admin Console | VidyaOS</title>
+  <meta name="description" content="Manage institutional faculty roster, departmental leadership appointments, and self-registration security gates.">
+
+  <!-- Typography & Core Tokens -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/shared/css/reset.css?v=20261028">
+  <link rel="stylesheet" href="/shared/css/tokens.css?v=20261028">
+  <link rel="stylesheet" href="/shared/css/components.css?v=20261028">
+  <link rel="stylesheet" href="/shared/css/nav.css?v=20261028">
+  <link rel="stylesheet" href="faculty.css?v=20261028">
+</head>
+<body>
+  <!-- Universal App Shell Navigation -->
+  <header class="gc-navbar">
+    <div class="gc-nav-left">
+      <button type="button" class="gc-menu-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Main Menu" aria-label="Toggle navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <a href="/admin/dashboard.html" class="gc-brand-link">
+        <div class="gc-brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg>
+        </div>
+        <div class="gc-brand-title">Admin Console</div>
+        <span class="gc-brand-sub">VidyaOS</span>
+      </a>
+      <span class="gc-page-badge">Faculty &amp; HODs</span>
+    </div>
+    <div class="gc-nav-right">
+      <button type="button" class="gc-icon-btn" onclick="toggleAppTheme()" id="btn-theme-toggle" title="Toggle Theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <div class="gc-user-avatar" id="gc-user-avatar" onclick="toggleUserProfile(event)" title="Account Profile">SA</div>
+    </div>
+  </header>
+
+
+  <!-- Main Content Area -->
+  <main class="main-content" style="max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 5rem 1rem;">
+    <!-- Page Header & Action Cluster -->
+    <div class="toolbar" style="margin-bottom: 1.25rem;">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">HOD &amp; Faculty Leadership</h1>
+        <p style="font-size: 0.875rem; color: var(--text-muted);">Manage appointed Heads of Department, shared faculty managers, and self-registration gates.</p>
+      </div>
+      <div class="toolbar-right">
+        <button type="button" class="btn btn-primary" onclick="handleCreateHOD()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Appoint HOD</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Anti-Spam Registration Gates Control Banner -->
+    <div class="card fac-gates-card" style="padding: 0.85rem 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--text-main);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Self-Registration Security Gates:</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <button type="button" id="btn-toggle-hod-gate" class="btn btn-sm btn-secondary fac-gate-btn" onclick="toggleAdminGate('HOD')" title="Toggle HOD Self-Registration">
+            <span class="badge chip-hod" style="font-size: 0.7rem; padding: 0.15rem 0.45rem;">HOD Gate</span>
+            <span id="hod-gate-label">Loading...</span>
+          </button>
+          <button type="button" id="btn-toggle-common-gate" class="btn btn-sm btn-secondary fac-gate-btn" onclick="toggleAdminGate('COMMON_FACULTY')" title="Toggle Common Faculty Self-Registration">
+            <span class="badge chip-faculty" style="font-size: 0.7rem; padding: 0.15rem 0.45rem;">Common Gate</span>
+            <span id="common-gate-label">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Metric Summary Grid -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-title">Total HODs</span>
+          <div class="stat-card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+        </div>
+        <div class="stat-card-value" id="stat-hod-count">—</div>
+        <div class="stat-card-delta delta-up">Department leadership accounts</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-title">Departments</span>
+          <div class="stat-card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg></div>
+        </div>
+        <div class="stat-card-value" id="stat-dept-count">—</div>
+        <div class="stat-card-delta delta-up">Academic departments cataloged</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-title">Pending Approvals</span>
+          <div class="stat-card-icon" style="background: var(--status-late-bg); color: var(--status-late);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+        </div>
+        <div class="stat-card-value" id="stat-pending-count">0</div>
+        <div class="stat-card-delta" style="color: var(--status-late);">Self-registered HOD requests</div>
+      </div>
+    </div>
+
+    <!-- Pending HOD Approvals Queue (Conditional) -->
+    <div id="pending-hods-section" style="display: none; margin-bottom: 1.5rem;">
+      <div class="card" style="border-left: 4px solid var(--status-late);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="badge chip-hod">Pending Approval</span>
+            <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;">Self-Registered HOD Approvals</h2>
+          </div>
+          <span class="badge" id="pending-badge-count" style="background: var(--status-late-bg); color: var(--status-late);">0 Pending</span>
+        </div>
+        <div id="pending-table-container"></div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card" style="padding: 1rem; margin-bottom: 1.25rem;">
+      <div class="toolbar" style="margin-bottom: 0;">
+        <div class="toolbar-left">
+          <div class="search-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="hod-search-input" class="form-control search-input" placeholder="Search by name, department, or email..." oninput="handleSearch(this.value)">
+          </div>
+          <select id="hod-dept-filter" class="form-select" style="width: auto; min-width: 180px;" onchange="handleDeptFilter(this.value)">
+            <option value="">All Departments</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <span class="badge" id="hod-count-badge" style="background:var(--bg-surface);color:var(--text-muted);">0 HODs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOD Roster High-Density Data Table -->
+    <div id="hod-table-container">
+      <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏳</div>
+        <div>Loading HOD roster...</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav" aria-label="Admin Mobile Navigation">
+    <div class="mobile-bottom-nav-inner">
+      <a href="/admin/dashboard.html" class="mobile-nav-item">
+        <span class="mobile-nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+        <span class="mobile-nav-label">Home</span>
+      </a>
+      <a href="/admin/academic-structure.html" class="mobile-nav-item">
+        <span class="mobile-nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V9l7-5 7 5v12"></path><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path></svg></span>
+        <span class="mobile-nav-label">Structure</span>
+      </a>
+      <a href="/admin/faculty.html" class="mobile-nav-item active">
+        <span class="mobile-nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+        <span class="mobile-nav-label">Faculty</span>
+      </a>
+      <button type="button" class="mobile-nav-item" onclick="toggleSidebar()" aria-label="Open Navigation Menu">
+        <span class="mobile-nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></span>
+        <span class="mobile-nav-label">Menu</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Modular Scripts (Zero Hardcoded Modal Markup!) -->
+  <script src="/shared/js/api.js?v=20261028"></script>
+  <script src="/shared/js/auth.js?v=20261028"></script>
+  <script src="/shared/js/ui-toast.js?v=20261028"></script>
+  <script src="/shared/js/ui-dialog.js?v=20261028"></script>
+  <script src="/shared/js/ui-table.js?v=20261028"></script>
+  <script src="/shared/js/nav.js?v=20261028"></script>
+  <script src="faculty.js?v=20261028"></script>
+</body>
+</html>

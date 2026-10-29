@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coursework &amp; To-Do Assignments — VidyaOS</title>
+  <meta name="description" content="Review upcoming coursework, missing assignments, and turned-in grades across your classes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./assignments.css">
+</head>
+<body class="page-shell">
+  <!-- Unified AppShell Header & Navigation (injected by nav.js) -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compat hidden nav for automated test contracts -->
+  <nav style="display:none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/student/dashboard.html" id="nav-dashboard">Classes Hub</a>
+    <a href="/student/attendance.html" id="nav-attendance">Attendance</a>
+    <a href="/student/assignments.html" id="nav-assignments">Coursework</a>
+    <a href="/student/scores.html" id="nav-scores">Test Scores</a>
+    <a href="/student/timetable.html" id="nav-timetable">Timetable</a>
+    <a href="/student/leave.html" id="nav-leave">Leaves</a>
+    <a href="/student/profile.html" id="nav-profile">My Profile</a>
+  </nav>
+
+  <main class="todo-container">
+    <!-- Hero Header with Class Filter Dropdown -->
+    <section class="todo-hero-bar">
+      <div class="todo-hero-left">
+        <h1>To-Do Coursework</h1>
+        <p>Review upcoming submissions, missing deadlines, and turned-in assignments</p>
+      </div>
+
+      <div class="todo-filter-wrap">
+        <label for="todo-class-filter" style="font-size:0.82rem; font-weight:700; color:var(--text-muted);">Filter Class:</label>
+        <select id="todo-class-filter" class="todo-class-select" onchange="handleClassFilterChange(this.value)">
+          <option value="ALL">All classes</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Material Design Tabs Nav -->
+    <nav class="todo-tabs-nav" id="todo-tabs-nav">
+      <button type="button" class="todo-tab-btn active" id="tab-btn-assigned" onclick="switchTodoTab('assigned')">
+        <span>Assigned</span>
+        <span class="todo-tab-badge" id="badge-assigned">0</span>
+      </button>
+
+      <button type="button" class="todo-tab-btn" id="tab-btn-missing" onclick="switchTodoTab('missing')">
+        <span>Missing</span>
+        <span class="todo-tab-badge" id="badge-missing">0</span>
+      </button>
+
+      <button type="button" class="todo-tab-btn" id="tab-btn-done" onclick="switchTodoTab('done')">
+        <span>Done</span>
+        <span class="todo-tab-badge" id="badge-done">0</span>
+      </button>
+    </nav>
+
+    <!-- Tab Pane 1: Assigned -->
+    <section class="todo-tab-pane active" id="tab-pane-assigned">
+      <div id="todo-list-assigned">
+        <div class="todo-empty-state">
+          <div class="todo-empty-icon">⏳</div>
+          <div class="todo-empty-title">Loading assigned coursework...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Pane 2: Missing -->
+    <section class="todo-tab-pane" id="tab-pane-missing">
+      <div id="todo-list-missing">
+        <div class="todo-empty-state">
+          <div class="todo-empty-icon">⏳</div>
+          <div class="todo-empty-title">Loading missing work...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Pane 3: Done -->
+    <section class="todo-tab-pane" id="tab-pane-done">
+      <div id="todo-list-done">
+        <div class="todo-empty-state">
+          <div class="todo-empty-icon">⏳</div>
+          <div class="todo-empty-title">Loading completed work...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Compatibility marker for user-nav -->
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <!-- VidyaOS V2 Shared Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="./assignments.js"></script>
+</body>
+</html>

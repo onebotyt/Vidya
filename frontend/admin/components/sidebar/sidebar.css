@@ -24,21 +24,25 @@
   box-sizing: border-box;
 }
 
-/* ── 2. Unified Sidebar (#app-sidebar) ── */
+/* ── 2. Unified Sidebar (#vidya-admin-sidebar / .admin-sidebar) ── */
+#vidya-admin-sidebar,
+#app-sidebar.admin-sidebar,
 .admin-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: var(--bg-card);
-  border-right: 1px solid var(--border-color);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  background: var(--bg-card) !important;
+  border-right: 1px solid var(--border-color) !important;
   z-index: 10000 !important;
   overflow: visible !important;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
   user-select: none;
-  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* ── 3. Desktop Styles (>= 769px) ── */
@@ -51,22 +55,29 @@
    */
   .admin-main-wrap {
     margin-left: 72px !important;
-    min-height: 100vh;
-    box-sizing: border-box;
-    transition: none;
-    /* No layout shifts */
+    width: calc(100% - 72px) !important;
+    max-width: calc(100% - 72px) !important;
+    min-height: 100vh !important;
+    box-sizing: border-box !important;
+    transition: none !important;
     position: relative;
     z-index: 1;
+    overflow-x: hidden !important;
   }
 
   /* 
    * Default Desktop State: Collapsed 72px Mini-Rail
+   * Immune to any external !important rules
    */
-  .admin-sidebar {
-    width: 72px;
-    transform: none;
-    box-shadow: none;
-    transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
+  #vidya-admin-sidebar:not(.desktop-open),
+  #app-sidebar.admin-sidebar:not(.desktop-open),
+  .admin-sidebar:not(.desktop-open) {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    transform: none !important;
+    box-shadow: none !important;
+    transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease !important;
   }
 
   /* When collapsed (default): show rail header & rail footer */
@@ -208,140 +219,303 @@
   }
 
   .admin-sidebar.desktop-open .sidebar-nav-body {
-    padding: 0.65rem 0;
+    padding: 0.5rem 0;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    overflow-x: hidden;
-    overflow-y: auto;
+    gap: 0.25rem;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
 
-  /* Universal Navigation Item Geometry: Locked at x = 13px, zero shift on expand */
+  /* Unified Navigation Body (Zero scrollbar invariant) */
+  .admin-sidebar .sidebar-nav-body,
+  .sidebar-nav-body {
+    padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .admin-sidebar .sidebar-nav-body::-webkit-scrollbar,
+  .sidebar-nav-body::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Universal Navigation Item */
   .sidebar-nav-item {
-    margin: 0.2rem 13px !important;
-    height: 46px;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
-    border-radius: 12px;
     position: relative;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7);
     color: var(--text-muted);
     text-decoration: none;
     cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    transition: all 0.16s ease;
   }
 
-  /* In collapsed rail: width is 46px (x runs from 13px to 59px, exactly centered in 72px) */
+  /* In collapsed rail: items are 56px wide, stacked vertically with icon on top and short label below */
   .admin-sidebar:not(.desktop-open) .sidebar-nav-item,
   .admin-app-layout.sidebar-collapsed .sidebar-nav-item,
   html.sidebar-collapsed .sidebar-nav-item {
-    width: 46px;
+    width: 56px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    margin: 0.15rem auto !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 4px 2px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--bg-surface) !important;
+    box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7) !important;
+    gap: 2px !important;
     overflow: visible !important;
+    color: var(--text-muted) !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
-  /* In expanded drawer: width is 234px (260 - 26 = 234px, exactly 13px margin on both sides) */
-  .admin-sidebar.desktop-open .sidebar-nav-item {
-    width: 234px;
-    overflow: hidden;
+  /* In collapsed rail: 24x24 Icon container */
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-icon,
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-icon,
+  html.sidebar-collapsed .sidebar-nav-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    min-height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Fixed 46x46 Squircle Icon Container: Center LOCKED at x = 36px */
-  .sidebar-nav-icon {
-    width: 46px;
-    min-width: 46px;
-    max-width: 46px;
-    height: 46px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-icon svg,
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-icon svg,
+  html.sidebar-collapsed .sidebar-nav-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke: currentColor !important;
+    display: block !important;
   }
 
-  /* Smooth Label Glide & Fade */
-  .sidebar-nav-label {
-    white-space: nowrap;
-    font-size: 0.88rem;
-    font-weight: 600;
-    margin-left: 0.15rem;
-    padding-right: 0.75rem;
-    color: inherit;
-    transition: opacity 0.2s 0.06s ease, transform 0.2s 0.06s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Short name shown below icon in small collapsed navbar */
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-short-label,
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-short-label,
+  html.sidebar-collapsed .sidebar-nav-short-label {
+    display: block !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    color: inherit !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 52px !important;
+    margin-top: 1px !important;
+    pointer-events: none !important;
   }
 
+  /* Full label hidden in collapsed rail */
   .admin-sidebar:not(.desktop-open) .sidebar-nav-label,
   .admin-app-layout.sidebar-collapsed .sidebar-nav-label,
   html.sidebar-collapsed .sidebar-nav-label {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateX(-8px);
+    display: none !important;
   }
 
-  .admin-sidebar.desktop-open .sidebar-nav-label {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(0);
+  /* Hover state on collapsed rail */
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-item:hover:not(.active),
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item:hover:not(.active),
+  html.sidebar-collapsed .sidebar-nav-item:hover:not(.active) {
+    background: var(--bg-surface-hover, var(--bg-surface)) !important;
+    border-color: var(--color-primary-light) !important;
+    color: var(--color-primary) !important;
+    transform: translateY(-2px) scale(1.04) !important;
+    box-shadow: 0 4px 10px hsl(217 91% 60% / 0.16) !important;
   }
 
-  .sidebar-nav-item:hover:not(.active) {
-    background: var(--bg-surface-hover, var(--bg-surface));
-    border-color: var(--color-primary-light);
-    box-shadow: 0 4px 10px hsl(217 91% 60% / 0.16), inset 0 1px 0 hsl(0 0% 100% / 0.9);
-    color: var(--color-primary);
+  /* Active squircle pill on collapsed rail - 3D Raised Squircle with Vibrant Gradient */
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-item.active,
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active,
+  html.sidebar-collapsed .sidebar-nav-item.active {
+    background: linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%)) !important;
+    border: 1px solid hsl(217 91% 54%) !important;
+    color: var(--text-white, hsl(0 0% 100%)) !important;
+    box-shadow: 0 4px 14px hsl(217 91% 60% / 0.42), inset 0 1px 1px hsl(0 0% 100% / 0.5), inset 0 -2px 3px hsl(224 76% 36% / 0.45) !important;
   }
 
-  /* Active Nav Item: 3D Raised Squircle with Vibrant Gradient */
-  .sidebar-nav-item.active {
-    background: linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%));
-    border: 1px solid hsl(217 91% 54%);
-    color: var(--text-white, hsl(0 0% 100%));
-    box-shadow: 0 4px 14px hsl(217 91% 60% / 0.42), inset 0 1px 1px hsl(0 0% 100% / 0.5), inset 0 -2px 3px hsl(224 76% 36% / 0.45);
-  }
-
-  .sidebar-nav-item.active .sidebar-nav-icon svg {
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-item.active .sidebar-nav-icon svg,
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-icon svg {
     stroke: var(--text-white, hsl(0 0% 100%)) !important;
     filter: drop-shadow(0 1px 2px hsl(224 76% 30% / 0.45));
   }
 
+  .admin-sidebar:not(.desktop-open) .sidebar-nav-item.active .sidebar-nav-short-label,
+  .admin-app-layout.sidebar-collapsed .sidebar-nav-item.active .sidebar-nav-short-label {
+    color: var(--text-white, hsl(0 0% 100%)) !important;
+  }
+
+  /* In expanded drawer: width is 234px */
+  .admin-sidebar.desktop-open .sidebar-nav-item {
+    width: 234px !important;
+    height: 46px !important;
+    margin: 0.2rem 13px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    padding: 0 0.85rem !important;
+    gap: 0.75rem !important;
+    border-radius: 12px !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7) !important;
+    color: var(--text-muted) !important;
+    overflow: hidden !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-icon {
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke: currentColor !important;
+    display: block !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-short-label {
+    display: none !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-label {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    color: inherit !important;
+    pointer-events: auto !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-item:hover:not(.active) {
+    background: var(--bg-surface-hover, var(--bg-surface)) !important;
+    border-color: var(--color-primary-light) !important;
+    color: var(--color-primary) !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-item.active {
+    background: linear-gradient(145deg, hsl(217 91% 62%), hsl(224 76% 48%)) !important;
+    border: 1px solid hsl(217 91% 54%) !important;
+    color: var(--text-white, hsl(0 0% 100%)) !important;
+    box-shadow: 0 4px 14px hsl(217 91% 60% / 0.42) !important;
+  }
+
+  .admin-sidebar.desktop-open .sidebar-nav-item.active .sidebar-nav-icon svg {
+    stroke: var(--text-white, hsl(0 0% 100%)) !important;
+  }
+
   /* Collapsed Rail Footer */
   .sidebar-rail-footer {
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
+    padding: 0.5rem 0 0.65rem;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.35rem;
+    border-top: 1px solid var(--border-color);
     flex-shrink: 0;
-    overflow: visible !important;
+    margin-top: auto;
   }
 
   .rail-footer-btn {
-    width: 44px;
-    height: 44px;
+    width: 56px !important;
+    height: 48px !important;
     border-radius: 12px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
+    background: transparent;
+    border: none;
     color: var(--text-muted);
-    display: inline-flex;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.16s ease;
+    gap: 2px !important;
+    padding: 2px !important;
+    box-shadow: none !important;
+  }
+
+  .rail-footer-btn:hover {
+    background: var(--bg-surface);
+    color: var(--color-primary);
+  }
+
+  .rail-user-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--text-white, hsl(0 0% 100%));
+    display: flex;
     align-items: center;
     justify-content: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 2px 4px hsl(0 0% 0% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.7);
-    padding: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
     position: relative;
-    overflow: visible !important;
+  }
+
+  .rail-user-circle::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--status-present, hsl(142 71% 45%));
+    border: 1.5px solid var(--bg-card);
+  }
+
+  .rail-footer-btn .sidebar-nav-short-label {
+    display: block !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    color: inherit !important;
+  }
+
+  .rail-signout-btn {
+    color: var(--status-absent, hsl(0 84% 60%)) !important;
+  }
+
+  .rail-signout-btn .sidebar-nav-short-label {
+    color: var(--status-absent, hsl(0 84% 60%)) !important;
+  }
+
+  .rail-signout-btn:hover {
+    background: var(--status-absent-bg, hsl(0 80% 95%)) !important;
   }
 
   /* ─────────────────────────────────────────────────────────────
      Desktop Collapsed Rail Fast Custom Tooltips (Zero Native Delay)
-     Instant hover response with sleek high-contrast styling & pointer caret
      ───────────────────────────────────────────────────────────── */
   .admin-sidebar [data-tooltip] {
     position: relative;
@@ -356,22 +530,24 @@
     position: absolute;
     left: calc(100% + 14px);
     top: 50%;
-    transform: translateY(-50%) translateX(-6px);
     background: var(--text-main);
     color: var(--bg-card);
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     font-family: inherit;
     line-height: 1;
     white-space: nowrap;
-    padding: 0.45rem 0.8rem;
+    padding: 6px 12px;
     border-radius: 8px;
-    box-shadow: 0 4px 18px hsl(0 0% 0% / 0.25), 0 2px 5px hsl(0 0% 0% / 0.12);
+    box-shadow: 0 6px 20px hsl(0 0% 0% / 0.18), 0 0 0 1px var(--border-color);
+    border: 1px solid var(--border-color);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.12s;
-    z-index: 100000 !important;
+    transform: translateY(-50%) translateX(-6px);
+    transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.14s;
+    z-index: 100050 !important;
   }
 
   /* Triangle Pointer Arrow */
@@ -381,19 +557,19 @@
   .admin-sidebar:not(.desktop-open) [data-tooltip]::before {
     content: '';
     position: absolute;
-    left: calc(100% + 6px);
+    left: calc(100% + 8px);
     top: 50%;
-    transform: translateY(-50%) translateX(-6px);
     width: 0;
     height: 0;
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
-    border-right: 8px solid var(--text-main);
+    border-right: 6px solid var(--text-main);
+    pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.12s;
-    z-index: 100000 !important;
+    transform: translateY(-50%) translateX(-4px);
+    transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.14s;
+    z-index: 100051 !important;
   }
 
   /* Instant High-Speed Hover Trigger */
@@ -447,11 +623,15 @@
      Active when .admin-sidebar has .desktop-open
      ZERO Content Layout Shift: Sits over the content as a drawer
      ───────────────────────────────────────────────────────────── */
+#vidya-admin-sidebar.desktop-open,
+#app-sidebar.admin-sidebar.desktop-open,
 .admin-sidebar.desktop-open {
   width: 260px !important;
-  z-index: 10000;
-  box-shadow: 6px 0 28px hsl(0 0% 0% / 0.18);
-  background: var(--bg-card);
+  min-width: 260px !important;
+  max-width: 260px !important;
+  z-index: 10000 !important;
+  box-shadow: 6px 0 28px hsl(0 0% 0% / 0.18) !important;
+  background: var(--bg-card) !important;
 }
 
 .admin-sidebar.desktop-open .sidebar-rail-header,
@@ -799,6 +979,8 @@ html:not(.sidebar-collapsed) .sidebar-nav-body {
 
   .admin-main-wrap {
     margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     min-height: calc(100vh - 56px);
   }
 

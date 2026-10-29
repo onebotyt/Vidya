@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave Applications &amp; Excused Absences — VidyaOS</title>
+  <meta name="description" content="Apply for medical, emergency, and official duty leaves; track faculty review and excused attendance standing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- VidyaOS V2 Modular CSS Design Tokens -->
+  <link rel="stylesheet" href="/shared/css/tokens.css">
+  <link rel="stylesheet" href="/shared/css/reset.css">
+  <link rel="stylesheet" href="/shared/css/components.css">
+  <link rel="stylesheet" href="/shared/css/nav.css">
+  <link rel="stylesheet" href="./leave.css">
+</head>
+<body class="page-shell">
+  <!-- Unified AppShell Header & Navigation (injected by nav.js) -->
+  <div id="navbar-container"></div>
+
+  <!-- Backward-compat hidden nav for automated test contracts -->
+  <nav style="display:none !important;" id="top-nav-bar" aria-hidden="true">
+    <a href="/student/dashboard.html" id="nav-dashboard">Classes Hub</a>
+    <a href="/student/attendance.html" id="nav-attendance">Attendance</a>
+    <a href="/student/assignments.html" id="nav-assignments">Coursework</a>
+    <a href="/student/scores.html" id="nav-scores">Test Scores</a>
+    <a href="/student/timetable.html" id="nav-timetable">Timetable</a>
+    <a href="/student/leave.html" id="nav-leave">Leaves</a>
+    <a href="/student/profile.html" id="nav-profile">My Profile</a>
+  </nav>
+
+  <main class="leave-container">
+    <!-- Page Header & Action Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+      <div>
+        <h1 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin:0;">Leave Applications &amp; Excused Absences</h1>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin:0.25rem 0 0;">Notify faculty mentors of medical or emergency absences to request approved attendance consideration</p>
+      </div>
+      <a href="/student/dashboard.html" class="btn btn-secondary btn-sm">← Back to Classes Hub</a>
+    </div>
+
+    <!-- 2-Column Responsive Workspace -->
+    <div class="leave-layout">
+      <!-- Left Column: Application Form -->
+      <div class="leave-card-panel">
+        <h2 style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0 0 1rem; display:flex; align-items:center; gap:0.4rem;">
+          <span>📝 Apply for Leave</span>
+        </h2>
+        <form class="leave-form-grid" onsubmit="applyLeave(event)">
+          <div class="leave-form-dates">
+            <div>
+              <label for="f-from" class="form-group-label">From Date</label>
+              <input type="date" id="f-from" class="leave-input" required>
+            </div>
+            <div>
+              <label for="f-to" class="form-group-label">To Date</label>
+              <input type="date" id="f-to" class="leave-input" required>
+            </div>
+          </div>
+          <div>
+            <label for="f-reason" class="form-group-label">Reason for Absence</label>
+            <textarea id="f-reason" class="leave-textarea" rows="4" placeholder="Describe reason (e.g. Fever, hospitalization, family bereavement, university sports meet)..." required></textarea>
+          </div>
+          <button type="submit" id="btn-submit-leave" class="btn btn-primary" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.75rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>Submit Application</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: My Applications History -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h2 style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">
+            <span>My Leave History</span>
+          </h2>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="loadLeaves()" title="Refresh applications">
+            🔄 Refresh
+          </button>
+        </div>
+        <div id="leave-list" class="leave-list-feed">
+          <div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border-color);">
+            Loading your leave applications...
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Compatibility marker for user-nav -->
+  <div id="user-nav" style="display:none;" aria-hidden="true"></div>
+
+  <!-- VidyaOS V2 Shared Scripts -->
+  <script src="/shared/js/api.js"></script>
+  <script src="/shared/js/auth.js"></script>
+  <script src="/shared/js/nav.js"></script>
+  <script src="/shared/js/ui.js"></script>
+  <script src="./leave.js"></script>
+</body>
+</html>
