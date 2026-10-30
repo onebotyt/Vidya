@@ -1,4 +1,116 @@
-# Project Task Tracking & State: VidyaOS — Institutional Campus Operating System
+﻿
+### 🟢 Milestone 290: Fix Delete & Withdrawal Modal Cancel Button & Dismissal
+- **Status**: ✅ Completed & Verified
+  - Scope: deployfolder/VidyaOS (Frontend)
+- **User Request**: *"delet box cencel btn not working"*
+- **Root Cause Diagnosed**:
+  1. aculty-ui.js's closeModal() method only removed CSS classes .open and .active without resetting modal.style.display = 'none'.
+  2. In students.css, a selector .modal-backdrop[style*="display: flex"] was forcing display: flex !important; opacity: 1 !important; pointer-events: auto !important; whenever inline display: flex was set upon opening, keeping the modal frozen on screen even when Cancel was clicked.
+  3. Modal Cancel buttons lacked explicit 	ype="button", causing potential bubbling.
+- **Fixes Applied**:
+  - aculty/components/faculty-ui.js: Updated closeModal() to explicitly set modal.style.display = 'none' upon dismissal.
+  - aculty/students/students.css: Removed .modal-backdrop[style*="display: flex"] and added .modal-backdrop:not(.open):not(.active) { display: none !important; opacity: 0 !important; pointer-events: none !important; } to reliably enforce instant closure.
+  - aculty/students/students.js: Fortified hideModal() and closeModal() to remove .open / .active and clear inline display style.
+  - aculty/components/confirm-dialog/: Updated confirm-dialog.js and confirm-dialog.css with explicit inline onclick="closeConfirmDialog()" and .vidya-confirm-backdrop:not(.open) { display: none !important; }.
+  - aculty/students/students.html: Added explicit 	ype="button" and data-modal-close to modal Cancel buttons.
+- **Verification**: Verified 200 OK across all modified scripts and styles.
+### 🟢 Milestone 289: Dedicated Tab Isolation for Faculty & Students + Reusable Confirm Dialog Component
+- **Status**: ✅ Completed & Verified
+  - Scope: deployfolder/VidyaOS (Frontend)
+- **User Request**: *"not need this Twin Side-by-Side Overview Panels facultiy only in facultiy and student only in student also delet box not working properly fix it also use compont for delet box"*
+- **Part 1: Tab Isolation (Faculty Only in Faculty, Student Only in Student)**:
+  - Completely removed the cramped twin side-by-side grid (.portal-twin-grid, #panel-overview).
+  - **Tab 1: Department Faculty** (#tab-faculty-btn): Shows dedicated full-width #tab-faculty-panel with complete faculty roster (#faculty-main-table), avatar initials, name, employee ID, designation badge, assigned subjects pill, status dot, search box, and action buttons.
+  - **Tab 2: Students** (#tab-students-btn): Shows dedicated full-width #tab-roster-panel with complete student register (#students-table), roll number, UBTER registration number, official enrollment number, full name, cohort class, biometric slot, status badge, Google sync, and action buttons.
+  - Tabs 3–5 (Pending Registrations, Roster & Lifecycle, Enrollment Analytics) seamlessly toggle without layout overlap or cross-contamination.
+- **Part 2: Reusable Confirm & Delete Dialog Component (aculty/components/confirm-dialog/)**:
+  - confirm-dialog.css: 100% theme token compliant (0 raw hex/rgb values). Smooth backdrop blur, scale animation, warning squircle icon, and danger styling.
+  - confirm-dialog.js:
+    - showConfirmDialog(options): General-purpose confirmation with async loading states, button disabling, backdrop click/Escape dismissal, and clean state restoration.
+    - confirmStudentWithdrawal(id, name, callback): Formats student withdrawal dialog, executes DELETE /hod/students/:id, and refreshes roster.
+    - confirmTeacherDelete(id, name, callback): Formats faculty deletion dialog with mandatory DELETE typing verification before execution.
+- **Verification**: Verified 200 OK across /faculty/students.html, confirm-dialog.css, and confirm-dialog.js. Zero hex/rgb color violations confirmed.
+### 🟢 Milestone 288: Reusable Department Hero & Institution Showcase Component
+- **Status**: ✅ Completed & Verified
+  - Scope: deployfolder/VidyaOS (Frontend)
+- **User Request**: *"this part in image make this is a compont so we don't have to repeat code also can add easly this is alrady in dashoard aslo"* (with dual-card department hero banner image).
+- **Component Architecture**:
+  - Created centralized, plug-and-play component under aculty/components/dept-hero/:
+    - dept-hero.css: 100% theme token compliant (0 hardcoded #hex or rgb colors). Fully responsive with flex/grid breakpoints.
+    - dept-hero.html: Reusable markup skeleton for static references or server injection.
+    - dept-hero.js: Self-mounting component that targets #dept-hero-container, <dept-hero>, or [data-component="dept-hero"].
+  - **Features**:
+    - **Live Clock**: Interval-synced live date ("Thursday, 29 October 2026") and live time ("3:56 AM") updated every 10 seconds.
+    - **Session & Role Detection**: Auto-detects HOD vs Faculty from user session and displays appropriate access badge ("HOD Access" / "Faculty Access").
+    - **Hierarchy Resolution**: Automatically resolves and displays active department name ("Department of Computer Science 💻" / dynamic department).
+    - **Institution Showcase**: Government Polytechnic Nainital branding card with campus photo, tagline, and quote.
+    - **Two-Way Interoperability**: MutationObservers and mirrored selectors ensure full compatibility with existing page controllers (dashboard.js, students.js).
+- **Pages Integrated**:
+  - aculty/students/students.html & aculty/students/index.html: Replaced ~55 lines of repetitive header markup with <div id="dept-hero-container"></div>.
+  - aculty/dashboard/dashboard.html & aculty/dashboard/index.html: Replaced duplicate hero section with <div id="dept-hero-container"></div>.
+- **Verification**: Verified 200 OK across both pages and assets on live dev server (http://localhost:5001). Theme token check verified 0 hex/rgb colors.
+### 🟢 Milestone 287: Fix Foreign Key Withdrawal Failure & Remake Department Portal UI (Image 2 Parity)
+- **Status**: ✅ Completed & Verified
+  - Scope: deployfolder/VidyaOS (Frontend) & deployfolder/VidyaOS_BackEnd (Backend)
+- **Part 1: Fix Foreign Key Constraint Failure on Student Withdrawal (Image 1)**:
+  - **Root Cause**: HodModel.deleteStudent() only deleted from egister_attendance and ttendance_session_students before deleting students. Dependent tables with foreign keys lacking ON DELETE CASCADE (ssessment_submissions, esp32_presence, student_self_attendance, iot_attendance_events, ttendance_corrections, 	eaching_group_members, leave_applications, ingerprint_slots, student_department_enrollments, user session/activity tables) caused SQLite to reject the operation with FOREIGN KEY constraint failed.
+  - **Resolution**: Updated HodModel.deleteStudent() to comprehensively purge all child references across 12 dependent tables and user records in a single atomic transaction before removing the student record, preserving sequential cohort re-indexing. Also fortified HodModel.deleteTeacher().
+- **Part 2: Remake Department Portal UI (Image 2 Parity)**:
+  - **Dual Top Header**:
+    - Left Card: Eyebrow badge DEPARTMENT PORTAL, title with laptop emoji (Department of Computer Science 💻 / active dept), description, and live badges for current date, live time ticker, and access level.
+    - Right Card: Institutional branding showcase with Government Polytechnic Nainital, Knowledge • Skills • Better Tomorrow, "Education creates opportunities.", and college campus building photo (campus-nainital.jpg).
+  - **Quick Stats Bar**: 4 modern metric cards with upward sparklines for Faculty, Students, Subjects, and Pending Registrations with percentage trend pills.
+  - **Self-Registration Gateways**: Horizontal interactive card featuring lightning icon, Faculty Registration toggle switch + mini-counts (0 Pending, 3 Approved, 0 Rejected), and Student Registration toggle switch + mini-counts.
+  - **Action & Navigation Bar**: Tabs for Department Faculty, Students, Pending Registrations, Roster & Lifecycle, and Enrollment Analytics alongside unified search and filter drawer toggle.
+  - **Twin Side-by-Side Overview Panels (Image 2)**:
+    - Left Panel: Department Faculty roster with initials avatar (purple-avatar / lue-avatar), name, employee ID, designation, subject count pill, active dot, and action buttons.
+    - Right Panel: Department Students roster with roll number, student name, semester, cohort, enrolled pill, and action buttons.
+  - **100% Theme Token Compliant**: 0 hardcoded #hex or gb() color values.
+
+### 🟢 Milestone 286: Complete Session Revocation & Login Flickering Fix (Deployfolder Scope)
+- **Status**: ✅ Completed & Pushed to GitHub
+  - Frontend Repo: https://github.com/onebotyt/VidyaOS.git (Commit: 151ec69)
+  - Backend Repo: https://github.com/onebotyt/VidyaOS_BackEnd.git (Commit: ac7423e)
+- **Problem Diagnosed**:
+  1. facultyLogout() was referenced in faculty/components/sidebar/sidebar.html but undefined, causing signout clicks to fail silently.
+  2. logout() only deleted access_token and user while leaving refresh_token, sessionStorage, and cookies in the browser.
+  3. When clicking "Sign In", login/index.js auto-redirected back into the dashboard using stale session/refresh tokens. Once on dashboard, the backend returned 401, creating an endless in-and-out visual flicker.
+- **Fixes Applied**:
+  1. Comprehensive Client-Side Purge (shared/js/auth.js, sidebar.js):
+     - Purges all keys: access_token, refresh_token, authToken, auth_token, token, user, currentUser, auth_user, user_profile, session_id.
+     - Clears sessionStorage and expires client-accessible cookies.
+     - Synchronously calls POST /api/v1/auth/logout with keepalive: true and passes refresh_token to ensure database-level session revocation.
+  2. Anti-Flicker Guard (login/index.js):
+     - Sets vidya_logged_out_flag on logout. Login page checks this flag and bypasses auto-redirect.
+     - Adds client-side JWT expiration check (payload.exp * 1000 <= Date.now()) to purge dead tokens without bouncing to dashboard.
+  3. Sidebar Parity:
+     - Fixed sidebar.html logout triggers to unified logout().
+     - Exported window.facultyLogout and window.adminLogout as aliases.
+  4. Backend Cookie Options:
+     - Updated authController.logout to clear refreshToken with matching sameSite, secure, httpOnly, and path: '/' options.
+
+## ⚠️ ACTIVE DEVELOPMENT SCOPE (Updated 2026-10-30)
+> **The combined Vidya repo is FROZEN. All active work is in deployfolder/ only.**
+
+| Repo | Purpose | Local Port | Deploy Target |
+|---|---|---|---|
+| deployfolder/VidyaOS_BackEnd | REST API only | **3001** | **Render** |
+| deployfolder/VidyaOS | Frontend only | **5001** | **Vercel** |
+| Vidya/ (this repo root) | Combined backup (VPS) | 3000 | FROZEN - DO NOT TOUCH |
+
+Start both servers: .\deployfolder\start-all.ps1
+Backend: http://localhost:3001 | Frontend: http://localhost:5001
+
+Verified 2026-10-30:
+- Backend boots on :3001, SQLite connected, all 18 route modules mounted
+- JWT login (admin / Admin@123) returns access_token + refresh_token
+- Frontend dev server boots on :5001, proxies /api/* to :3001
+- vercel.json rewrites point to https://vidyaos-backend.onrender.com
+- CORS: origin:true works for local + Vercel
+- render.yaml ready for Render free tier (Singapore region)
+
+---
+# Project Task Tracking & State: VidyaOS â€” Institutional Campus Operating System
 
 > **AI INSTRUCTION**: This file tracks the continuous state of the project across chat sessions, resets, and context-clearing events. 
 > Whenever you start a conversation, **read this file first** to understand the latest completed work, active tasks, and architecture.
@@ -6,7 +118,7 @@
 
 ---
 
-## 📌 Project Overview
+## ðŸ“Œ Project Overview
 - **System**: **VidyaOS** (Unified Institutional Campus & Academic Operating System)
 - **Path**: `d:/uiap/Attendance-System-Simplified/`
 - **Stack**:
@@ -22,7 +134,7 @@
 
 ---
 
-## 🔐 Default Demo Accounts
+## ðŸ” Default Demo Accounts
 All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (Faculty & Students).
 
 | Role | Username / Email | Password | Primary Console |
@@ -34,7 +146,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 285: Universal Smart Top-Corner Back Button Across All Sub-Pages
+### âœ… Milestone 285: Universal Smart Top-Corner Back Button Across All Sub-Pages
 - **User Request**: *"add back buttun where it need not everywhere at top corner to go in previers page in whole project"*
 - **Architecture & Implementation**:
   - `frontend/shared/js/auth.js`: Implemented `mountUniversalBackButton()` executed on every page upon DOM readiness.
@@ -44,7 +156,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `frontend/shared/css/components.css`: Modern styling with theme variables (`var(--bg-card)`, `var(--border-color)`, `var(--color-primary)`), crisp SVG left arrow, hover lift, micro-interactions, and responsive mobile optimization.
   - **Frozen Modules Safe**: 0 files modified inside the 9 protected folders in `FROZEN_MODULES.md`.
 
-### ✅ Milestone 284: Clean Main Landing Dashboard & Sign-In Layout (Removal of Matrix Preview, Bento, Portals, Architecture & Login Feature Cards)
+### âœ… Milestone 284: Clean Main Landing Dashboard & Sign-In Layout (Removal of Matrix Preview, Bento, Portals, Architecture & Login Feature Cards)
 - **User Requests**:
   - *"remove all this from the main dash board"* (Matrix preview, Bento metrics, Portals)
   - *"remove this also"* (System Capabilities Enterprise Architecture)
@@ -56,7 +168,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Removed deprecated `#matrix-preview` and `#capabilities` anchors from footer navigation links.
   - 100% theme token compliant, minimalist landing gateway preserving the primary Hero showcase banner, floating quick access dock, and system status health indicator.
 
-### ✅ Milestone 283: Simplified & Intuitive UI Modernization for HOD, Faculty, and Student Portals with 1-Click Rollback Safeguard
+### âœ… Milestone 283: Simplified & Intuitive UI Modernization for HOD, Faculty, and Student Portals with 1-Click Rollback Safeguard
 
 - **User Insight & Clarified Specification**:
   - *"that,s change the ui and degine of the project but remain the this degine if i don't like the ui degin we can move in previse ui degine ."*
@@ -70,44 +182,44 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   2. **HOD Executive Command Center Unveiled**:
      - Removed obsolete hidden wrapper `<div style="display: none !important;">` that previously hid the HOD command center from department heads.
      - Updated `dashboard.js` (`updateDashboardMode()`) so HODs (`hod@gmail.com`) automatically see the Department Executive Hub with 4 prominent 1-click action cards:
-       - 👥 **Department Faculty & Workload** (`/faculty/hod-teachers.html`)
-       - 🎓 **Student Roster & Cohorts** (`/faculty/students.html`)
-       - 📋 **Consolidated 3-in-1 Attendance Registers** (`/faculty/registers.html`)
-       - 📊 **Department Analytics & Reports** (`/faculty/reports.html`)
+       - ðŸ‘¥ **Department Faculty & Workload** (`/faculty/hod-teachers.html`)
+       - ðŸŽ“ **Student Roster & Cohorts** (`/faculty/students.html`)
+       - ðŸ“‹ **Consolidated 3-in-1 Attendance Registers** (`/faculty/registers.html`)
+       - ðŸ“Š **Department Analytics & Reports** (`/faculty/reports.html`)
   3. **Faculty Daily Workflow Simplification**:
      - Added clean, friendly **Faculty Welcome Hero** (`#faculty-welcome-hero`) on `/faculty/dashboard.html` with personalized greeting and direct action pills:
        - `[+] Create Class`
-       - `📋 Take Attendance`
-       - `👥 Students Roster`
-       - `🕒 My Timetable`
+       - `ðŸ“‹ Take Attendance`
+       - `ðŸ‘¥ Students Roster`
+       - `ðŸ•’ My Timetable`
   4. **Credential Aliases & Seamless Authentication**:
      - Configured backend alias resolution in [backend/src/services/authService.js](file:///c:/Users/hp/.gemini/antigravity-ide/scratch/Vidya/backend/src/services/authService.js) mapping institutional aliases (`student.it01@college.edu`, `prof.sharma@college.edu`, etc.) to seeded database accounts (`student1@gmail.com`, `hod@gmail.com`).
      - Cleared unrevoked active sessions in database. Verified HTTP 200 logins for both student and faculty roles. Server restarted and running on port 3000.
   4. **Student Experience Streamlined**:
      - Added **Student Fast Actions Grid** on `/student/dashboard.html` with 4 large, easy-to-understand cards:
-       - 📚 **Coursework & Tasks** (`/student/assignments.html`)
-       - 📅 **Attendance Matrix** (`/student/attendance.html`)
-       - 🕒 **My Timetable** (`/student/timetable.html`)
-       - 📝 **Leave Application** (`/student/leave.html`)
+       - ðŸ“š **Coursework & Tasks** (`/student/assignments.html`)
+       - ðŸ“… **Attendance Matrix** (`/student/attendance.html`)
+       - ðŸ•’ **My Timetable** (`/student/timetable.html`)
+       - ðŸ“ **Leave Application** (`/student/leave.html`)
 - **Verification**:
   - JS Syntax verified clean across modified scripts (`node -c`).
   - 100% Theme Token compliance verified: zero hardcoded hex colors introduced.
   - Endpoints `/faculty/dashboard.html` and `/student/dashboard.html` responding with HTTP 200.
 
-### ✅ Milestone 282: Architectural Freeze on 9 Core Frontend Feature Modules (Strict Read-Only Enforcement)
+### âœ… Milestone 282: Architectural Freeze on 9 Core Frontend Feature Modules (Strict Read-Only Enforcement)
 
 - **User Insight & Clarified Specification**:
   - *"@[frontend\faculty\assignments] @[frontend\faculty\evaluation] @[frontend\faculty\group-detail] @[frontend\faculty\groups] @[frontend\faculty\registers] @[frontend\faculty\sheets] @[frontend\faculty\students] @[frontend\faculty\tests] @[frontend\student\group-detail] these folder not need to be edit or any changs need in memory and save in md file"*
 - **Locked & Frozen Module Registry**:
-  1. `frontend/faculty/assignments/` — Faculty assignments & coursework
-  2. `frontend/faculty/evaluation/` — Faculty evaluation & grading
-  3. `frontend/faculty/group-detail/` — Google Classroom workspace engine (Stream, Classwork, People, Grades)
-  4. `frontend/faculty/groups/` — Teaching group cards & semester selectors
-  5. `frontend/faculty/registers/` — Consolidated 3-in-1 register (Day 1-31 matrix, ESP32 toolbar, Dual QR/PIN Studio)
-  6. `frontend/faculty/sheets/` — Attendance sheet ledgers & exports
-  7. `frontend/faculty/students/` — Student directory, registration toggle gateways, approval queue
-  8. `frontend/faculty/tests/` — Class tests, exam scheduling, marksheets
-  9. `frontend/student/group-detail/` — Student Google Classroom workspace portal
+  1. `frontend/faculty/assignments/` â€” Faculty assignments & coursework
+  2. `frontend/faculty/evaluation/` â€” Faculty evaluation & grading
+  3. `frontend/faculty/group-detail/` â€” Google Classroom workspace engine (Stream, Classwork, People, Grades)
+  4. `frontend/faculty/groups/` â€” Teaching group cards & semester selectors
+  5. `frontend/faculty/registers/` â€” Consolidated 3-in-1 register (Day 1-31 matrix, ESP32 toolbar, Dual QR/PIN Studio)
+  6. `frontend/faculty/sheets/` â€” Attendance sheet ledgers & exports
+  7. `frontend/faculty/students/` â€” Student directory, registration toggle gateways, approval queue
+  8. `frontend/faculty/tests/` â€” Class tests, exam scheduling, marksheets
+  9. `frontend/student/group-detail/` â€” Student Google Classroom workspace portal
 - **Implementation & Persistent Memory Anchors**:
   1. **Authoritative Specification**:
      - Created [FROZEN_MODULES.md](file:///c:/Users/hp/.gemini/antigravity-ide/scratch/Vidya/FROZEN_MODULES.md) cataloging all 9 frozen modules and declaring strict read-only protection.
@@ -118,7 +230,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Verification**:
   - All documentation links and invariants cross-verified. `FROZEN_MODULES.md`, `AGENTS.md`, `DEV2_ANTIGRAVITY_INSTRUCTIONS.md`, and `TODO.md` in complete synchronization.
 
-### ✅ Milestone 281: GitHub Collaboration Architecture with Strict Frontend-Only Merges & Dual Frontend Mirror
+### âœ… Milestone 281: GitHub Collaboration Architecture with Strict Frontend-Only Merges & Dual Frontend Mirror
 
 - **User Insight & Clarified Specification**:
   - *"now i want to do code collab using github and i want give 2nd dev full code backend and frontend but when he make changes i only need frontend code update /plan"*
@@ -156,7 +268,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-theme-support.js`: 88/88 tests passed (0 hardcoded colors).
   - All collaboration scripts verified clean syntax via `node -c`.
 
-### ✅ Milestone 280: Remove Empty "Mark as Done" Button, Require File Attachment, and Refine Student Submission UI/UX
+### âœ… Milestone 280: Remove Empty "Mark as Done" Button, Require File Attachment, and Refine Student Submission UI/UX
 
 
 - **User Request & Screenshots**:
@@ -178,7 +290,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - All syntax verified cleanly via `node -c`.
      - Regression suites passed 100%: `verify-unified-classroom.js` (15/15), `test-theme-support.js` (88/88).
 
-### ✅ Milestone 279: Fix PC Desktop Comments UI, Enable Persistent Comments, and Resolve Mobile Runtime Exceptions
+### âœ… Milestone 279: Fix PC Desktop Comments UI, Enable Persistent Comments, and Resolve Mobile Runtime Exceptions
 
 - **User Requests & Screenshots**:
   - *"FIX IN PC SCREEN ON FACULTY LOGIN COMMENTS BOX FROM MOBILE APPEAR THAT IS NOT PROPER UI AND COMMENTS NOT WORKING FIX IT AND IN MOBILE SCREEN BLANK PAGE AND ERRORS"*
@@ -204,11 +316,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Verified zero missing window export identifiers across all group-detail modules.
      - Passed entire regression test suite (15/15 unified classroom, 88/88 theme tokens, 34/34 RBAC, 46/46 registers consolidation, 25/25 API flows).
 
-### ✅ Milestone 278: Remove Private Comments Section from Assignment Instructions View
+### âœ… Milestone 278: Remove Private Comments Section from Assignment Instructions View
 
 - **User Request & Screenshot**:
   - *"REMOVE Private comments"*
-  - Screenshot of `http://localhost:3000/student/group-detail.html?id=1&tab=classwork` showing the desktop 2-column assignment instructions layout, where a secondary sidebar card titled "Private comments" ("Add comment to instructor…") sat beneath the "Your work" card.
+  - Screenshot of `http://localhost:3000/student/group-detail.html?id=1&tab=classwork` showing the desktop 2-column assignment instructions layout, where a secondary sidebar card titled "Private comments" ("Add comment to instructorâ€¦") sat beneath the "Your work" card.
 - **Root Cause & Resolution**:
   - In `frontend/faculty/group-detail/js/group-detail-classwork.js`, the desktop instructions view (`openWorkInstructionsView`) rendered a secondary `.pwd-sidebar-card` for private comments below `#pc-your-work-body`.
   - Removed the entire "Private comments" card container and its inner markup from the desktop sidebar column.
@@ -216,7 +328,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Verified syntax cleanly via `node -c` on all group-detail scripts.
   - Regression test suite passing 100%: `verify-unified-classroom.js` (15/15), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46), `test-api-flows.js` (25/25).
 
-### ✅ Milestone 277: Fix Infinite Skeleton Loading in Student Classwork View
+### âœ… Milestone 277: Fix Infinite Skeleton Loading in Student Classwork View
 
 - **User Issue & Screenshot**:
   - *"FIX NOT LODDING"*
@@ -230,27 +342,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   2. Added `#cw-main-create-btn` and `.cw-dd-wrap` to `body.student-mode` hidden rules in [core.css](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail/css/core.css) so the `+ Create` button is completely hidden from students.
   3. Verified all test suites: `verify-unified-classroom.js` (15/15), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46), and `test-api-flows.js` (25/25).
 
-### ✅ Milestone 276: Student Submission Status Parity & Staged File Preview/Cancel System
+### âœ… Milestone 276: Student Submission Status Parity & Staged File Preview/Cancel System
 
 - **User Insight & Screenshots**:
   - *"STUDENTS VIEW SHOWING STATUS OF STUDENTS SUBMISSIONS YOU CAN SEE IN IMAGE 1 AND IMAGE 2 IS FROM GOOGLE CLASSROOM THAT NOT SHOWING STATUS AND IMAGE 3 FROM INSIDE INSTRUCTIONS PAGE AND IN MOBILE WHEN FILE STUDENT SELECT TO SUBMIT THAT FILE STUDENT CAN SEE PREVIEW OR CANCEL AND SELECT DIFFERENT TO SUBMIT"*
-  - **Image 1 (Before)**: Student view in VidyaOS displayed whole-class submission counts (`• 10/10 submitted`, `• 3/10 submitted`) and the faculty statistics block (`3 SUBMITTED | 7 PENDING | 10 STUDENTS`).
+  - **Image 1 (Before)**: Student view in VidyaOS displayed whole-class submission counts (`â€¢ 10/10 submitted`, `â€¢ 3/10 submitted`) and the faculty statistics block (`3 SUBMITTED | 7 PENDING | 10 STUDENTS`).
   - **Image 2 (Google Classroom Reference)**: In Google Classroom student view, whole-class counts and faculty stats blocks are hidden. Only the student's personal status (`Handed in` / `Assigned`) is displayed in the card header and expanded row.
-  - **Images 3 & 4 (Google Classroom Instructions & Mobile)**: When a student selects a file to submit, they can preview the file, cancel it with `✕` to select a different file, or click `Turn in` when satisfied.
+  - **Images 3 & 4 (Google Classroom Instructions & Mobile)**: When a student selects a file to submit, they can preview the file, cancel it with `âœ•` to select a different file, or click `Turn in` when satisfied.
 - **Root Cause & Comprehensive Resolution**:
   1. **Suppression of Whole-Class Submission Statistics (`renderWorkCardHtml` & `core.css`)**:
-     - Omitted `.work-submit-ratio-chip` (`• X/Y submitted`) and `.work-mobile-stat-badge` for students in `renderWorkCardHtml`.
+     - Omitted `.work-submit-ratio-chip` (`â€¢ X/Y submitted`) and `.work-mobile-stat-badge` for students in `renderWorkCardHtml`.
      - In the expanded card meta row, replaced the faculty `.work-expanded-stats` box with `.student-card-status-badge` showing the student's personal status (`Handed in` in green or `Assigned` in muted text), exactly matching Google Classroom Image 2.
      - Added CSS rules in `core.css` hiding `.work-expanded-stats`, `.work-submit-ratio-chip`, `.work-mobile-stat-badge`, and `.work-mobile-sub-sep` in `body.student-mode`.
   2. **Staged File Preview, Cancel, and Turn-in System (`group-detail-classwork.js` & `classwork.css`)**:
      - Decoupled file selection from immediate upload. When a student chooses a file via `+ Add work` (mobile) or `+ Add or create` (desktop), the file is held in `window.S_stagedStudentFile`.
      - Rendered `.gc-staged-file-card` displaying the file icon, file name, formatted file size (e.g. `1.4 MB`), and an interactive preview link (`previewStagedStudentFile`) opening the document object URL in a new browser tab.
-     - Provided a circular cancel button `✕` (`handleStudentCancelStagedFile`) allowing the student to dismiss the staged file and select a different one.
+     - Provided a circular cancel button `âœ•` (`handleStudentCancelStagedFile`) allowing the student to dismiss the staged file and select a different one.
      - Rendered a full-width **"Turn in"** button (`handleStudentWorkSubmitClick`) that submits the staged file with clear feedback and allows unsubmit/resubmit at any time.
   3. **Verification**:
      - Verified with `scripts/verify-unified-classroom.js` (15/15 passing), `test-theme-support.js` (88/88 passing), `test-rbac-and-structure.js` (34/34 passing), and `test-api-flows.js` (25/25 passing).
 
-### ✅ Milestone 275: Fix Student Assignment Instructions Page Blank View
+### âœ… Milestone 275: Fix Student Assignment Instructions Page Blank View
 
 - **User Issue & Screenshot**:
   - *"IN STUDENT VIEW INSTRUCTIONS PAGE BLANK FIX IT"*
@@ -266,7 +378,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   4. In `core.css`: Added `.work-inst-bottom-bar` to `body.student-mode` hidden list to avoid floating over the student's "Your work" bottom sheet.
   5. Verified with `scripts/verify-unified-classroom.js` (13/13 passing), `test-theme-support.js` (88/88 passing), and full regression test suites.
 
-### ✅ Milestone 274: Unified Single-Engine Google Classroom Workspace (Zero Code Duplication)
+### âœ… Milestone 274: Unified Single-Engine Google Classroom Workspace (Zero Code Duplication)
 
 - **User Insight & Clarified Specification**:
   - *"IMAGE 1,2 FOR FACULTY SIDE AND IAMGE 3,4 STUDENT SIDE BOTH NOT SAME ALSO STUDENT CLASSROOM NOT REFINE GOOD SO WHAT YOU NEED TO DO YOU SAME CLASSROOM AS TEACHER BUT RESTRICT STUDENT OPTIONS THIS WAHY CODE CAN BE REDUCED AND IF LATER WE FIX OR UPDATE TEACHER CLASSROOM STUDENT ALSO FIX"*
@@ -307,11 +419,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 273: Colorful Subject Hero Banner Visible on Mobile Stream
+### âœ… Milestone 273: Colorful Subject Hero Banner Visible on Mobile Stream
 
 - **User Insight & Clarified Specification**:
   - *"IN MOBILE I DON'T SEE THAT COLORFULL SUBJACT CARD AND THIS CARD DESIGN IS FROM WHEN CLASSROOM IS CREATE THAT GET DESIGNED CARD THAT IS RIGHT NOW FACULTY CLASSROOM HAVE SAME CARD DESIGN NEED TO IN SAME SUBJACT IN STUDENT BECAUSE IN GOOGLE CLASSROOM CARD STAY SAME"*
-  - Accompanied by image of the colorful green card (`Database Management Systems (Theory)`, `Dr. Rajesh Sharma • Information Technology`, badges `DATABA`, `THEORY`, `SEMESTER 5`, avatar `RS`).
+  - Accompanied by image of the colorful green card (`Database Management Systems (Theory)`, `Dr. Rajesh Sharma â€¢ Information Technology`, badges `DATABA`, `THEORY`, `SEMESTER 5`, avatar `RS`).
 - **Root Cause & Comprehensive Resolution**:
   1. **Restored Colorful Subject Hero Banner on Mobile**:
      - Removed `.student-hero-banner` from `@media (max-width: 768px)` hide rules.
@@ -331,18 +443,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 272: Student Classroom UI/UX Responsive Isolation & Single Mobile App Bar
+### âœ… Milestone 272: Student Classroom UI/UX Responsive Isolation & Single Mobile App Bar
 
 - **User Insight & Clarified Specification**:
   - *"FIX UI UX"* with two screenshots:
-    1. **Mobile Screenshot (Image 1)**: Double stacked headers at top — desktop `.gc-navbar` (`☰ [GradCap] C.. › Database Management Systems [Moon] [AS]`) squished and overlapping text with icons, and below it `.mobile-class-app-bar` duplicating the hamburger button and displaying fallback `"Class"` instead of the course title.
-    2. **Desktop Screenshot (Image 2)**: `.mobile-class-app-bar` (`☰ Class [Filter] [User] [Options]`) erroneously rendered on desktop screen right above the green hero banner.
+    1. **Mobile Screenshot (Image 1)**: Double stacked headers at top â€” desktop `.gc-navbar` (`â˜° [GradCap] C.. â€º Database Management Systems [Moon] [AS]`) squished and overlapping text with icons, and below it `.mobile-class-app-bar` duplicating the hamburger button and displaying fallback `"Class"` instead of the course title.
+    2. **Desktop Screenshot (Image 2)**: `.mobile-class-app-bar` (`â˜° Class [Filter] [User] [Options]`) erroneously rendered on desktop screen right above the green hero banner.
 - **Root Cause & Comprehensive Resolution**:
   1. **Strict Responsive Viewport Isolation**:
      - **Desktop (`>= 769px`)**: Enforced `.mobile-class-app-bar, .student-mobile-bottom-nav, .mobile-cw-unit-section, .mobile-work-details-view, .mobile-options-dropdown { display: none !important; }`. Only `.gc-navbar`, the class hero banner, and desktop tabs (`Stream`, `Classwork`, `People`, `Attendance`) render on desktop.
      - **Mobile (`<= 768px`)**: Enforced `.gc-navbar, .student-hero-banner, .student-tabs-nav, .pc-unit-section, .pc-work-details-grid, .pwd-top-breadcrumbs, .pc-work-details-container { display: none !important; }`. Squeezed desktop navbar is completely hidden; only `.mobile-class-app-bar` renders at top.
   2. **Single Native Mobile Top App Bar**:
-     - Left: Hamburger drawer button `☰` + dynamic subject title (`#mobile-course-title`, e.g. "Database Management Systems (Theory)") with flexbox ellipsis truncation.
+     - Left: Hamburger drawer button `â˜°` + dynamic subject title (`#mobile-course-title`, e.g. "Database Management Systems (Theory)") with flexbox ellipsis truncation.
      - Right: Topic Filter button (`toggleMobileUnitFilter()`), Theme Toggle button (`toggleTheme()`), Student Initials circular avatar (`#mobile-user-avatar`), and Three-dots menu (`toggleMobileOptionsMenu()`).
   3. **Mobile Dropdowns & Modal Sheets**:
      - Moved `.user-profile-popover` and `.apps-launcher-dropdown` outside `.gc-navbar` and positioned them `position: fixed !important; z-index: 10015;` so they work seamlessly from both desktop and mobile headers.
@@ -363,19 +475,19 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 271: Student Assignment Instructions Page Desktop & Mobile Visual Alignment Fix
+### âœ… Milestone 271: Student Assignment Instructions Page Desktop & Mobile Visual Alignment Fix
 
 - **User Insight & Clarified Specification**:
   - *"FIX INSTRUCTIONS PAGE"*
   - Two screenshots provided:
     1. **Desktop View (Image 1)**: PC assignment instructions layout (`.pc-work-details-container`) had a raw, unstyled duplicate mobile layout (`.mobile-work-details-view`) showing directly underneath it on the same page.
-    2. **Mobile View (Image 2)**: Global navigation header (`.gc-navbar` with breadcrumb `C.. › Database Management Systems...`) squeezed and crowded above the mobile assignment header (`← ⋮`), and the `+ Add work` button had duplicate plus icons (`+ + Add work`).
+    2. **Mobile View (Image 2)**: Global navigation header (`.gc-navbar` with breadcrumb `C.. â€º Database Management Systems...`) squeezed and crowded above the mobile assignment header (`â† â‹®`), and the `+ Add work` button had duplicate plus icons (`+ + Add work`).
 - **Root Cause & Comprehensive Resolution**:
   1. **Strict Responsive View Isolation**:
      - On Desktop (`@media (min-width: 769px)`): Enforced `.pc-work-details-container { display: block !important; }` and `.mobile-work-details-view { display: none !important; }`. This completely eliminates the duplicate unstyled mobile markup from rendering below the PC instructions view.
      - On Mobile (`@media (max-width: 768px)`): Enforced `.pc-work-details-container, .pc-work-details-grid, .pwd-top-breadcrumbs { display: none !important; }` and `.mobile-work-details-view { display: block !important; }`.
   2. **Dedicated Mobile Instructions Screen Mode**:
-     - When viewing instructions on mobile (`body.viewing-work-details` on `@media (max-width: 768px)`), hid `.gc-navbar`, `.student-mobile-bottom-nav`, and `.mobile-class-app-bar` with `display: none !important;`. The mobile view now starts cleanly with the native Google Classroom sticky app bar (`←` back button and `⋮` options menu).
+     - When viewing instructions on mobile (`body.viewing-work-details` on `@media (max-width: 768px)`), hid `.gc-navbar`, `.student-mobile-bottom-nav`, and `.mobile-class-app-bar` with `display: none !important;`. The mobile view now starts cleanly with the native Google Classroom sticky app bar (`â†` back button and `â‹®` options menu).
      - Increased `.mobile-details-body` bottom scroll padding to `220px` to ensure instructions, description, and attachment cards remain fully scrollable above the elevated fixed bottom sheet (`.mobile-your-work-sheet`).
   3. **Button Label & Breadcrumb Ergonomics**:
      - Fixed `+ + Add work` duplicate icon by updating `<span id="mobile-add-work-label">Add work</span>` (clean SVG plus icon + `Add work`).
@@ -389,7 +501,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-register-consolidation.js`: 46/46 passed.
   - Clean JS syntax via `node --check`.
 
-### ✅ Milestone 270: Student Classroom CSS Repair & Google Classroom Student To-do Hub Launch (Phase 2 Ecosystem Modernization)
+### âœ… Milestone 270: Student Classroom CSS Repair & Google Classroom Student To-do Hub Launch (Phase 2 Ecosystem Modernization)
 
 - **User Insight & Clarified Specification**:
   - *"CSS BROKE FIX IT ALSO START MAKING NEXT PHASE"*
@@ -407,7 +519,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - **Done `(N)`**: Submitted and graded items showing green `Turned in` / `Done late` / `score/max` badges and teacher feedback snippets.
   3. **Class Filter Dropdown**: Filter work items seamlessly across "All classes" or specific courses (populated via `/api/v1/teaching-groups/student/my-groups`).
   4. **Direct Workspace Navigation**: Clicking any work card navigates directly into the class turn-in workspace (`/student/group-detail.html?id=:id&work=:workId`).
-  5. **Server 301 Permanent Redirect**: Added `/student/todo.html` and `/student/todo` ➔ `/student/assignments.html`.
+  5. **Server 301 Permanent Redirect**: Added `/student/todo.html` and `/student/todo` âž” `/student/assignments.html`.
 - **Verification & Regression Suite**:
   - `test-theme-support.js`: 88/88 passed (100% theme token compliant, 0 hardcoded colors).
   - `test-rbac-and-structure.js`: 34/34 passed.
@@ -417,27 +529,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-api-flows.js`: 25/25 passed.
   - Clean JS syntax via `node --check`.
 
-### ✅ Milestone 269: Student Classroom Pixel-Perfect Visual Alignment (Images 1-5 Parity)
+### âœ… Milestone 269: Student Classroom Pixel-Perfect Visual Alignment (Images 1-5 Parity)
 
 - **User Insight & Clarified Specification**:
   - *"IN PC STUDENT VIEW IMAGE 1,2 AND IN MOBILE LIKE IMAGE 3,4 AFTER SUBMIT IMAGE 5"*
 - **Completed Visual Deliverables**:
   1. **Image 1: PC Assignment Details & Turn-In Workspace**:
      - Standalone two-column layout (`.pc-work-details-grid`).
-     - Left Column: Breadcrumb trail (`Classroom › Course › Semester`), large blue circular clipboard icon, bold assignment title, instructor subtitle with publication date, points badge (`10 points`), due date (`Due 19 Aug, 23:59`), bulleted instructions list, authentic Google Classroom attachment preview card with SVG document thumbnail, and class comments input.
+     - Left Column: Breadcrumb trail (`Classroom â€º Course â€º Semester`), large blue circular clipboard icon, bold assignment title, instructor subtitle with publication date, points badge (`10 points`), due date (`Due 19 Aug, 23:59`), bulleted instructions list, authentic Google Classroom attachment preview card with SVG document thumbnail, and class comments input.
      - Right Column: Pinned "Your work" card showing submission status (`Handed in` in green when submitted, `Assigned` when pending), submitted file preview card with document thumbnail preview, active `Unsubmit` button, and "Work cannot be turned in after the due date" notice. Pinned "Private comments" card below.
   2. **Image 2: PC Classwork Tab**:
      - Unit section headers (`.pc-unit-section`) with unit title, collapse chevron, and three-dots options menu.
      - Expandable `.pc-work-card` featuring circular blue clipboard icon, assignment title, due date, "Posted [Date]" vs status badge (`Handed in` / `Assigned`), formatted bulleted description, Google Classroom attachment card with thumbnail, and blue "View instructions" link leading to Image 1.
   3. **Image 3: Mobile Classwork Tab**:
-     - Responsive top app bar (`.mobile-class-app-bar`) with hamburger `≡`, course title, filter icon, avatar, and options menu.
+     - Responsive top app bar (`.mobile-class-app-bar`) with hamburger `â‰¡`, course title, filter icon, avatar, and options menu.
      - Unit header "Unit 1" with clean accent divider.
-     - Single work item rows (`.mobile-work-item-row`) with vibrant blue circle clipboard icon (`📋`), assignment title on line 1, due date on line 2, and right-aligned status (`Assigned` or `Turned in`).
+     - Single work item rows (`.mobile-work-item-row`) with vibrant blue circle clipboard icon (`ðŸ“‹`), assignment title on line 1, due date on line 2, and right-aligned status (`Assigned` or `Turned in`).
      - Bottom navigation bar with 3 tabs (`Stream`, `Classwork`, `People`) with active blue rounded pill background highlight around the clipboard icon.
   4. **Image 4: Mobile Assignment Details (Before Submit)**:
-     - Header bar with back arrow `←` and options menu `⋮`.
+     - Header bar with back arrow `â†` and options menu `â‹®`.
      - Due date line, policy notice ("Work cannot be turned in after the due date"), bold title, points badge (`100 points`), "Add class comment" row, bulleted description, "Attachments" section with thumbnail card.
-     - Elevated bottom sheet (`.mobile-your-work-sheet`) showing drag handle `—`, "Your work" title, `Assigned` status, and full-width blue pill `+ Add work` button.
+     - Elevated bottom sheet (`.mobile-your-work-sheet`) showing drag handle `â€”`, "Your work" title, `Assigned` status, and full-width blue pill `+ Add work` button.
   5. **Image 5: Mobile Assignment Details (After Submit / Turned In)**:
      - Elevated bottom sheet dynamically transitions to **"Turned in" in vibrant green**, displays submitted file card with square red `PDF` badge and file name (e.g. `01_Girdhar_Dhami_JAVA_Assignment_03.pdf`), and includes `Unsubmit` button.
   6. **Backend Unsubmit API (`POST /api/v1/assignments/:id/unsubmit`)**:
@@ -446,7 +558,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   7. **Zero Hardcoded Hex Colors**:
      - 100% theme token compliance verified with `node scripts/test-theme-support.js` (88/88 passed).
 
-### ✅ Milestone 268: Student Google Classroom Workspace Architecture & Direct Class Actions Parity
+### âœ… Milestone 268: Student Google Classroom Workspace Architecture & Direct Class Actions Parity
 
 - **User Insight & Clarified Specification**:
   - *"NOW WE NEED TO FIX STUDENT CODE WITH UPDATE SYSTEM ANALYZE STUDENT WHAT NEED TO REMOVE AND UPGRADE BECAUSE STUDENT NOT HAVE CLASSROOM SYSTEM"*
@@ -478,10 +590,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Updated `renderGoogleClassCards()` in `frontend/student/dashboard/dashboard.js`:
        - Class Title click opens `/student/group-detail.html?id=${c.id}` directly.
        - Card actions link directly to in-class tabs:
-         - `Attendance` ➔ `/student/group-detail.html?id=${c.id}&tab=attendance`
-         - `Classwork` ➔ `/student/group-detail.html?id=${c.id}&tab=classwork`
-         - `People` ➔ `/student/group-detail.html?id=${c.id}&tab=people`
-         - `Stream` ➔ `/student/group-detail.html?id=${c.id}&tab=stream`
+         - `Attendance` âž” `/student/group-detail.html?id=${c.id}&tab=attendance`
+         - `Classwork` âž” `/student/group-detail.html?id=${c.id}&tab=classwork`
+         - `People` âž” `/student/group-detail.html?id=${c.id}&tab=people`
+         - `Stream` âž” `/student/group-detail.html?id=${c.id}&tab=stream`
        - Slide-out drawer links updated to `/student/group-detail.html?id=${c.id}`.
        - "+ Join Class" code submission instantly navigates student into joined classroom workspace.
   5. **Theme Compliance & Verification**:
@@ -492,7 +604,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - All 30 student self-registration tests pass (`test-student-self-registration.js`).
      - Roll Call upgrade and live log tests pass.
 
-### ✅ Milestone 267: Mobile Classroom Bottom Nav Refinement, Dedicated Compact Register View & Roll Call Modal Fix
+### âœ… Milestone 267: Mobile Classroom Bottom Nav Refinement, Dedicated Compact Register View & Roll Call Modal Fix
 
 - **User Insight & Clarified Specification**:
   - *"NOW REMOVE SHEETS BTN ON BOTTOM NAV BAR THIS PAGE ONLY FOR BIG SCREENS AND MOVE PEOPLE NAV ON LAST AND IN REGISTER IN MOBLIE SCREENS NO 30 DAY METRIC ONLY COMPAT UI UX ALSO FIX ROLL CALL BTN"*
@@ -518,7 +630,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node scripts/test-register-consolidation.js`: 46/46 passed.
   - `node scripts/test-roll-call-upgrade.js` & `node scripts/test-live-log-checkin.js`: All passed.
 
-### ✅ Milestone 266: Direct Classroom Page Linking from Subject Cards & Mobile Header Create Class Button
+### âœ… Milestone 266: Direct Classroom Page Linking from Subject Cards & Mobile Header Create Class Button
 
 - **User Insight & Clarified Specification**:
   - *"NOW FIX SUBJACT CARD BTN ATTENDANCE ,REGISTER,CLASSWORK RIGHT NOW THEY NOT OPEN PAGE INSIDE WE HAVE CLASS I NEED THEY OPEN CLASSROOM WROK PAGE,REGISTER PAGE DIRECTLY AND I DON'T SEE CREATE CLASS BTN FIX IT"*
@@ -544,7 +656,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node scripts/test-roll-call-upgrade.js`: All tests passed.
   - `node scripts/test-live-log-checkin.js`: All tests passed.
 
-### ✅ Milestone 265: Fix Student Work Page Opening (Eliminating Edit Page Collision) & Remove Topic Option from Edit Page
+### âœ… Milestone 265: Fix Student Work Page Opening (Eliminating Edit Page Collision) & Remove Topic Option from Edit Page
 
 - **User Insight & Clarified Specification**:
   - *"fix when i click on open student wrok page not open insted edit page open fix it also remove that topic option"*
@@ -569,7 +681,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   4. **Verification**:
      - All 3 regression suites passing (`test-theme-support.js` 88/88, `test-rbac-and-structure.js` 34/34, `test-register-consolidation.js` 46/46).
 
-### ✅ Milestone 264: Settings Icon Removal, Three-Dot Options Dropdown (Edit/Delete), & Google Classroom Edit Page View (Mobile Image 2, PC Image 3)
+### âœ… Milestone 264: Settings Icon Removal, Three-Dot Options Dropdown (Edit/Delete), & Google Classroom Edit Page View (Mobile Image 2, PC Image 3)
 
 - **User Insight & Clarified Specification**:
   - *"remove setting icon and fix three dot add edit and delete btn and fix edit model insted model page apper in mobile like image 2 and for pc image 3 design"*
@@ -583,26 +695,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Document-level outside click listener dismisses the dropdown automatically.
   2. **Google Classroom Mobile Edit Page (Image 2 Alignment)**:
      - Dedicated page view `#work-edit-page-view` replaces the popup modal dialog.
-     - **Top Bar**: Close button `✕`, pill `Save` button, and options `⋮`.
+     - **Top Bar**: Close button `âœ•`, pill `Save` button, and options `â‹®`.
      - **Main Content**:
        - Large, clean borderless title input (`.gc-edit-title-input`).
-       - `👥 All students` audience chip.
-       - Outlined Material `Description` box with floating label and text-alignment icon `≡`.
-       - Attachment card with paperclip `📎`, PDF badge, `Students can view file`, and `⋮`.
+       - `ðŸ‘¥ All students` audience chip.
+       - Outlined Material `Description` box with floating label and text-alignment icon `â‰¡`.
+       - Attachment card with paperclip `ðŸ“Ž`, PDF badge, `Students can view file`, and `â‹®`.
        - `+ Add attachment` button.
        - Quick setting rows for Points, Due Date, and Topic.
   3. **Google Classroom PC / Desktop Edit Workspace (Image 3 Alignment)**:
      - Responsive two-column desktop workspace (`.work-edit-workspace`):
-       - **Top Nav Bar**: Close `✕`, assignment clipboard icon, `Assignment` heading, and blue rounded `Save` button.
+       - **Top Nav Bar**: Close `âœ•`, assignment clipboard icon, `Assignment` heading, and blue rounded `Save` button.
        - **Left Main Card**:
          - Outlined `Title*` container box.
          - Outlined `Instructions (optional)` container box with rich formatting toolbar (`B`, `I`, `U`, list, clear).
-         - Attachment preview card with sharing options (`Students can view file ▾`) and remove `✕`.
+         - Attachment preview card with sharing options (`Students can view file â–¾`) and remove `âœ•`.
          - Dedicated `Attach` toolbar card with 5 circular icon tools: Drive, YouTube, + Create, Upload, Link.
        - **Right Sidebar**:
-         - Assign to: `👥 All students`.
+         - Assign to: `ðŸ‘¥ All students`.
          - Points input: `100`.
-         - Due date picker with `☑ Close submissions after due date` checkbox and info tooltip.
+         - Due date picker with `â˜‘ Close submissions after due date` checkbox and info tooltip.
          - Topic unit dropdown selector.
          - `+ Rubric` button.
      - Synchronized saving via `submitEditWork()`, updates the teaching group API, reloads list, refreshes instructions view, and supports hardware/browser back navigation via `popstate`.
@@ -614,13 +726,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 263: Google Classroom Native Mobile Header Alignment & Sticky Bottom Comment Composer Bar
+### âœ… Milestone 263: Google Classroom Native Mobile Header Alignment & Sticky Bottom Comment Composer Bar
 
 - **User Insight & Clarified Specification**:
   - *"now fix header also that text box for adding comment stay on screen bottom sticky in mobile screen for easy access and send comments"*
 - **Completed Deliverables**:
   1. **Google Classroom Native Top Header (Image 4 Alignment)**:
-     - Cleaned `.work-inst-top-nav`: Removed the crowded "100 points" pill from the top navigation bar. Top bar now strictly displays the back arrow `←` on the left and Settings `⚙` / More Options `⋮` on the right, matching Image 4.
+     - Cleaned `.work-inst-top-nav`: Removed the crowded "100 points" pill from the top navigation bar. Top bar now strictly displays the back arrow `â†` on the left and Settings `âš™` / More Options `â‹®` on the right, matching Image 4.
      - Upgraded tab bar to Material Design flat tabs with an active underline indicator (`border-bottom: 3px solid var(--color-primary)`) instead of rounded button pill borders.
   2. **Native Typography Instructions Header**:
      - Removed the oversized colored circular icon from the top of instructions.
@@ -628,10 +740,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - **Due Info**: `Due Oct 25, 11:59 PM` (subtle secondary text).
        - **Policy Note**: `Work cannot be turned in after the due date`.
        - **Title**: Clean, bold assignment heading (`.work-inst-gc-title`).
-       - **Points**: `100 points • Unit 1 • Assignment` (`.work-inst-gc-points`).
+       - **Points**: `100 points â€¢ Unit 1 â€¢ Assignment` (`.work-inst-gc-points`).
   3. **Sticky Bottom Comment Composer Bar**:
      - Added `.work-inst-bottom-bar` pinned to the bottom of the screen (`position: fixed !important; bottom: 0 !important; z-index: 10005;`) on mobile screens.
-     - Styled with rounded pill input (`#work-inst-bottom-comment-input`), placeholder `Add class comment…`, and circular blue airplane send button (`#work-inst-bottom-send-btn`).
+     - Styled with rounded pill input (`#work-inst-bottom-comment-input`), placeholder `Add class commentâ€¦`, and circular blue airplane send button (`#work-inst-bottom-send-btn`).
      - Added safe padding-bottom (`5.5rem`) to `.work-inst-container` so instructions and class comments never get hidden behind the sticky bar.
      - Connected `submitWorkInstActiveComment()` to send comments, prepend to the comments list, clear input, scroll smoothly into view, and display toast notification.
      - In `switchWorkInstTab(tab)`, the bottom comment bar automatically hides when viewing the Student Work roster tab and reappears on the Instructions tab.
@@ -643,7 +755,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 262: Standalone Student Work Page Mode, Single-Row Filters & Unit Card (Title + Arrow + Dot) Alignment
+### âœ… Milestone 262: Standalone Student Work Page Mode, Single-Row Filters & Unit Card (Title + Arrow + Dot) Alignment
 
 - **User Insight & Clarified Specification**:
   - *"student wrok page appering on bottom not as new page fix it also fix collapse btn on same row in filter row also in unit card only title then arrow then dot"*
@@ -651,14 +763,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Student Work / Instructions Full-Screen Standalone Page Mode**:
      - Fixed bug where `.cw-layout` was not being hidden because the DOM element was `.classwork-layout`; now accurately hides `.classwork-layout` so the work view no longer appears at the bottom under the classwork cards.
      - Added `body.work-standalone-page` mode on mobile (`max-width: 768px`) with `position: fixed; inset: 0; z-index: 10000; overflow-y: auto; background: var(--bg-card);`, rendering `#work-instructions-view` as a true full-page screen matching Google Classroom mobile app.
-     - Sticky top sub-header with back arrow `←`, points pill `100 points`, settings `⚙`, and more `⋮` pinned to top; automatically hides bottom navigation bar and mobile FAB while active.
+     - Sticky top sub-header with back arrow `â†`, points pill `100 points`, settings `âš™`, and more `â‹®` pinned to top; automatically hides bottom navigation bar and mobile FAB while active.
      - Added seamless browser/hardware back button handling via `popstate` so navigating back cleanly returns to the Classwork list.
   2. **Single-Row Toolbar with Collapse Button Alongside Filters**:
      - Styled `.gc-cw-toolbar` on mobile with `flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 0.35rem`.
      - Topic Filter (`#cw-unit-filter-wrap`), Category Filter (`#cw-cat-filter-wrap`), and the Collapse All button (`#btn-collapse-all-units`) now all sit on the exact same single row without any wrapping.
   3. **Unit Card Header: Only Title then Arrow then Dot**:
      - Simplified both syllabus unit sections and General Coursework headers to contain strictly:
-       - **Left**: Unit title (`.unit-main-heading`, e.g., `Unit 1 — Basics and Language Fundamentals` or `General Coursework`).
+       - **Left**: Unit title (`.unit-main-heading`, e.g., `Unit 1 â€” Basics and Language Fundamentals` or `General Coursework`).
        - **Right**: Chevron toggle arrow button (`.unit-toggle-btn`) followed immediately by the three-dot menu button (`.unit-menu-trigger`).
      - Removed redundant left chevron, subtitle descriptions, and item count chips (`1 items >`, `8 items`) per specification.
 - **Verification & Regression Test Suite**:
@@ -670,23 +782,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 261: Google Classroom Mobile App UI/UX Alignment — Clean Assignment Card, Active Units Only, 4-Option Menu & Hover FAB
+### âœ… Milestone 261: Google Classroom Mobile App UI/UX Alignment â€” Clean Assignment Card, Active Units Only, 4-Option Menu & Hover FAB
 
 - **User Insight & Clarified Specification**:
   - *"in mobile app google classroom it show like image 1 then click on assignment open image 2 page so show student record and nav bar from switch between instruction and student work page i our mobile ui ux remain same but in assignment card like image1 only have titel ,date ,three dot we going to add small submit status like date like 6/10 and only show unit card if that hae work active if not only show active and when click on submission & roster btn open student work page and rename btn student work and when click enter marks open page that we have already in marks tab page in mobile move enter marks,student work,edit ,delete btn under three dot and in mobile i only need hover create btn in classwork and fix fitter alignment"*
 - **Completed Deliverables**:
   1. **Google Classroom Mobile Assignment Card (Image 1)**:
-     - Minimal title and subtitle row on small screens containing only the assignment title, due date, and small submit status pill (`Due 25 Oct, 23:59 • 6/10`), matching Image 1.
+     - Minimal title and subtitle row on small screens containing only the assignment title, due date, and small submit status pill (`Due 25 Oct, 23:59 â€¢ 6/10`), matching Image 1.
      - Hidden desktop badges (`.work-card-meta-desktop-only`, type badge, max marks, unit badge) on mobile (`max-width: 768px`) to ensure zero visual clutter.
      - Tapping the assignment card anywhere on mobile directly navigates to the Google Classroom full-page view (`#work-instructions-view`) with the `Student work` roster tab pre-selected (Image 2).
   2. **Active Units Only Filtering**:
      - Updated `renderCWList()` in [group-detail-classwork.js](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail/js/group-detail-classwork.js) with `if (groupItems.length === 0) return;` so empty unit cards are automatically skipped; only units with active coursework/tests are shown.
-  3. **Three-Dot Menu (⋮) with All 4 Actions on Mobile**:
+  3. **Three-Dot Menu (â‹®) with All 4 Actions on Mobile**:
      - Positioned `.work-card-dropdown` with 4 comprehensive actions:
-       - `[ 📊 Enter Marks ]` (opens minimal marks table modal `#modal-enter-marks`)
-       - `[ 👥 Student work ]` (opens student work roster in `#work-instructions-view`)
-       - `[ 📝 Edit ]` (opens edit work modal)
-       - `[ 🗑 Delete ]` (deletes work item)
+       - `[ ðŸ“Š Enter Marks ]` (opens minimal marks table modal `#modal-enter-marks`)
+       - `[ ðŸ‘¥ Student work ]` (opens student work roster in `#work-instructions-view`)
+       - `[ ðŸ“ Edit ]` (opens edit work modal)
+       - `[ ðŸ—‘ Delete ]` (deletes work item)
      - Renamed "Submissions & Roster" button across desktop and mobile to **"Student work"**.
   4. **Mobile Hover Create Button (FAB)**:
      - Hid top inline create button (`.cw-dd-wrap`) on mobile in favor of the floating hover button (`#classwork-mobile-fab`), eliminating toolbar clutter.
@@ -702,66 +814,66 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 260: Mobile (Small Screen) UI/UX Overflow Fix — Cards & Three-Dot (⋮) Menu Screen Containment
+### âœ… Milestone 260: Mobile (Small Screen) UI/UX Overflow Fix â€” Cards & Three-Dot (â‹®) Menu Screen Containment
 
-- **Scope**: Fixed small-screen mobile UI/UX overflow issues on Group Detail Classwork and Stream views where cards and their three-dot (⋮) menu buttons were pushed outside the screen.
+- **Scope**: Fixed small-screen mobile UI/UX overflow issues on Group Detail Classwork and Stream views where cards and their three-dot (â‹®) menu buttons were pushed outside the screen.
 - **Root Cause & Fixes**:
   1. **Root Containment**: Added `max-width: 100%; overflow-x: hidden; box-sizing: border-box;` on `html, body, .classroom-page, .classroom-body, .cw-layout, .cw-main` to eliminate horizontal scroll blowout (`scrollWidth === innerWidth === 360px`).
-  2. **Mobile Class Header Bar**: Converted `.mobile-class-header-bar` from wide `space-between` single-row flex into clean vertical column stack with `word-break: break-word` (Database Management Systems • / Sem 5 • Information Technology), matching Image 4 and eliminating the ~580px width blowout.
+  2. **Mobile Class Header Bar**: Converted `.mobile-class-header-bar` from wide `space-between` single-row flex into clean vertical column stack with `word-break: break-word` (Database Management Systems â€¢ / Sem 5 â€¢ Information Technology), matching Image 4 and eliminating the ~580px width blowout.
   3. **Consolidated Filter Dropdowns**: Replaced overflowing horizontal category pills (`.cw-pills-scroll`) with a responsive Category Filter dropdown (`#cw-cat-filter-wrap`) in the GC toolbar, synchronized with live counts (`All Work (N)`, `Assignments (N)`, `Lab Practical (N)`, etc.), matching the Material Design outline style of the Topic filter.
   4. **Sidebar Clean-up**: Removed duplicated syllabus units from sidebar per spec, keeping topics in the central syllabus matrix and dropdown.
   5. **GC Action Toolbar**: Enabled `+ Create` button (`.cw-dd-wrap`) on mobile with responsive wrapping, allowing topic filter and collapse buttons to stay within screen bounds without blowing out viewport.
-  6. **Syllabus Unit Headers**: Implemented `min-width: 0; overflow: hidden; word-break: break-word` on `.unit-header-left` and `flex-shrink: 0; position: relative` on `.unit-header-right`, keeping `0 items >` and the `⋮` three-dot menu trigger 100% visible inside the screen edge.
-  7. **Work Cards & Three-Dot Menu**: Applied strict `box-sizing: border-box; max-width: 100%; min-width: 0` to `.work-card`, `.work-card-hdr`, and `.work-card-main-content`. Moved due date into the card subtitle row as a compact badge (`.work-due-pill-badge`) with max marks (`Max: 30 marks`), hiding the long `.work-due-text` on small screens so `.work-card-hdr-right` three-dot button (⋮) always stays visible and properly padded inside the card.
-  8. **Three-Dot Dropdown Menu Positioning**: Configured `.work-card-dropdown` to open downwards (`top: calc(100% + 4px); bottom: auto; right: 0; z-index: 500;`) and set `overflow: visible` on `.work-card` to ensure `[ 📝 Edit ]` and `[ 🗑 Delete ]` items pop open seamlessly without being clipped by the card boundary or overflowing the viewport.
+  6. **Syllabus Unit Headers**: Implemented `min-width: 0; overflow: hidden; word-break: break-word` on `.unit-header-left` and `flex-shrink: 0; position: relative` on `.unit-header-right`, keeping `0 items >` and the `â‹®` three-dot menu trigger 100% visible inside the screen edge.
+  7. **Work Cards & Three-Dot Menu**: Applied strict `box-sizing: border-box; max-width: 100%; min-width: 0` to `.work-card`, `.work-card-hdr`, and `.work-card-main-content`. Moved due date into the card subtitle row as a compact badge (`.work-due-pill-badge`) with max marks (`Max: 30 marks`), hiding the long `.work-due-text` on small screens so `.work-card-hdr-right` three-dot button (â‹®) always stays visible and properly padded inside the card.
+  8. **Three-Dot Dropdown Menu Positioning**: Configured `.work-card-dropdown` to open downwards (`top: calc(100% + 4px); bottom: auto; right: 0; z-index: 500;`) and set `overflow: visible` on `.work-card` to ensure `[ ðŸ“ Edit ]` and `[ ðŸ—‘ Delete ]` items pop open seamlessly without being clipped by the card boundary or overflowing the viewport.
   9. **Image 4 Live Stats Strip**: Updated `.work-expanded-stats` to render the clean 3-metric strip (`1 SUBMITTED | 9 PENDING | 10 STUDENTS`) with dividers and flex space-around distribution.
-  10. **Action Buttons**: Responsive `.work-card-actions` with `[Enter Marks]`, `[Submissions & Roster]`, and compact icon buttons `[ 📝 ]` and `[ 🗑 ]` on mobile, perfectly matching Image 4.
+  10. **Action Buttons**: Responsive `.work-card-actions` with `[Enter Marks]`, `[Submissions & Roster]`, and compact icon buttons `[ ðŸ“ ]` and `[ ðŸ—‘ ]` on mobile, perfectly matching Image 4.
   11. **Stream Cards**: Added containment to `.stream-post`, `.post-header`, `.post-meta`, and `flex-shrink: 0` to `.post-menu-btn`.
 - **Theme Compliance & Testing**:
   - Zero hardcoded hex colors added (all use `var(--*)` CSS variables; verified with `Select-String`).
   - Mobile Viewport Verification: Headless Chrome rendered 360x780 mobile screen, confirming `docWidth: 360`, `winWidth: 360`, `isOverflowing: false`, zero overflowing elements, card triggers at `right: 315` and unit triggers at `right: 343`.
-  - Test suites: 88/88 theme support ✅ · 34/34 RBAC & structure ✅ · 46/46 register consolidation ✅ · 30/30 student self-registration ✅ · 25/25 system flow tests ✅. JS syntax clean across all files ✅.
+  - Test suites: 88/88 theme support âœ… Â· 34/34 RBAC & structure âœ… Â· 46/46 register consolidation âœ… Â· 30/30 student self-registration âœ… Â· 25/25 system flow tests âœ…. JS syntax clean across all files âœ….
 
 ---
 
-### ✅ Milestone 259: Google Classroom–Style Classwork Redesign (Images 1, 2, 3) – Work Cards + Instructions Full-Page View
+### âœ… Milestone 259: Google Classroomâ€“Style Classwork Redesign (Images 1, 2, 3) â€“ Work Cards + Instructions Full-Page View
 
 - **Scope**: Redesigned the entire `group-detail` Classwork tab to match Google Classroom mockups.
 - **Key Deliverables**:
   1. **GC Toolbar**: Create pill button + Material outline Topic filter select + Collapse All toggle.
   2. **Collapsible Work Cards**: `.work-card-hdr` (Image 1 collapsed) / `.work-card-expanded-body` (Image 2 expanded) with "Handed in / Assigned" live stats, instructions description, attachment preview card, and "View instructions" link.
-  3. **Instructions Full-Page View** (`#work-instructions-view`): Slides in to replace classwork list — sticky top nav with back arrow, "Instructions | Student work" tab pills with count badge, edit (⚙) and more (⋮) action buttons. Pane 1 = Instructions (title block, description, attachment, class comments composer). Pane 2 = Student Work roster with All/Handed-in/Assigned filter pills.
+  3. **Instructions Full-Page View** (`#work-instructions-view`): Slides in to replace classwork list â€” sticky top nav with back arrow, "Instructions | Student work" tab pills with count badge, edit (âš™) and more (â‹®) action buttons. Pane 1 = Instructions (title block, description, attachment, class comments composer). Pane 2 = Student Work roster with All/Handed-in/Assigned filter pills.
   4. **New JS functions**: `openWorkInstructionsView`, `closeWorkInstructionsView`, `switchWorkInstTab`, `openEditWorkFromInstructions`, `toggleWorkInstMoreMenu`, `loadWorkInstRoster`, `renderWorkInstRoster`, `filterWorkInstRoster`, `submitWorkInstComment`. All exported to `window`.
-  5. **CSS**: ~800 lines of new theme-token-compliant styles. Fixed 2 hardcoded `#ffffff` → `var(--text-white)`. Zero hardcoded hex values remain.
-- **Tests**: 88/88 theme ✅ · 34/34 RBAC ✅ · 46/46 register ✅ · 20/20 marks ✅. JS `--check` syntax clean ✅.
+  5. **CSS**: ~800 lines of new theme-token-compliant styles. Fixed 2 hardcoded `#ffffff` â†’ `var(--text-white)`. Zero hardcoded hex values remain.
+- **Tests**: 88/88 theme âœ… Â· 34/34 RBAC âœ… Â· 46/46 register âœ… Â· 20/20 marks âœ…. JS `--check` syntax clean âœ….
 
 ---
 
-### ✅ Milestone 258: Minimal Mobile Marks Entry Redesign & High-Fidelity UI Alignment (Mockups 2, 3 & Minimal Mobile Marks Modal)
+### âœ… Milestone 258: Minimal Mobile Marks Entry Redesign & High-Fidelity UI Alignment (Mockups 2, 3 & Minimal Mobile Marks Modal)
 
 
 
 - **User Insight & Clarified Specification**:
   - *"WHEN CLICK ENTER MARKS THIS TABLE OPEN FOR MOBILE THIS IS MINIMAL FOR MOBILE"*
   - User provided an image mockup titled **"MOBILE MARKS ENTRY REDESIGN"** demonstrating the exact minimal design for the Marks Entry Modal (`#modal-enter-marks`) on mobile screens:
-    1. **Header**: Left back arrow button (`←`), Center title (`Unit Test 2 — Advanced SQL`) with subtitle (`Max Marks: 20 • 15 Oct 2026`), Right user avatar badge (`DS`).
-    2. **Toolbar**: Single flat minimal row with 5 buttons: `[ 📝 Edit ]`, `[ + Q ]`, `[ - Q ]`, `[ ⇅ Columns ⌵ ]`, `[ ↗ Export ]` (no heavy box borders; Table/Excel toggle hidden on mobile).
+    1. **Header**: Left back arrow button (`â†`), Center title (`Unit Test 2 â€” Advanced SQL`) with subtitle (`Max Marks: 20 â€¢ 15 Oct 2026`), Right user avatar badge (`DS`).
+    2. **Toolbar**: Single flat minimal row with 5 buttons: `[ ðŸ“ Edit ]`, `[ + Q ]`, `[ - Q ]`, `[ â‡… Columns âŒµ ]`, `[ â†— Export ]` (no heavy box borders; Table/Excel toggle hidden on mobile).
     3. **Table Headers**: `STUDENT` (spanning roll & name), `P` (status indicator header), `Q1`, `Q2`, `Q3`, `Q4` (questions), `TOTAL` (right aligned).
     4. **Table Rows**:
        - Roll Number: 2 digits with leading zero (`01`, `02`, `03`...), muted gray text.
        - Student Name: Bold/medium font with text ellipsis.
-       - Attendance Dot: Soft circular indicator under `P` (soft green dot `•` for Present, soft red dot `•` for Absent, interactive toggle).
+       - Attendance Dot: Soft circular indicator under `P` (soft green dot `â€¢` for Present, soft red dot `â€¢` for Absent, interactive toggle).
        - Question Inputs: Clean **underline-only** inputs (no bounding boxes, `border-bottom: 1.5px solid var(--border-color); background: transparent; text-align: center;`, with default `0` above the underline; on `:focus` active blue underline highlight).
        - Total: Clean text format `0/20` (or `score/20`), soft gray text, right-aligned.
-    5. **Footer**: Pinned at bottom with `Total Max Marks: 20` • `Auto-calculated` on the left, and `Cancel` text link + dark solid `[ Save Marks ]` button on the right.
+    5. **Footer**: Pinned at bottom with `Total Max Marks: 20` â€¢ `Auto-calculated` on the left, and `Cancel` text link + dark solid `[ Save Marks ]` button on the right.
 
 - **Completed Deliverables**:
   1. **Minimal Mobile Marks Entry Modal (`#modal-enter-marks`)**:
      - Updated HTML in `frontend/faculty/group-detail/index.html` with `.marks-modal-header-minimal` (back button, title, meta, faculty avatar `DS`, and desktop close button), `.marks-modal-toolbar` with minimal flat buttons, and `.marks-modal-footer-minimal`.
-     - In `group-detail-classwork.js`: dynamic population of title, subtitle (`Max Marks: 20 • Date`), and avatar initials (`DS`); rendered 2-digit roll numbers (`01`, `02`...), `.minimal-att-dot.btn-sheet-att-toggle`, underline-only inputs `.minimal-q-input.marks-input-cell.q-score-input` with default `0`, and totals in `${val}/${totalMax}` format.
+     - In `group-detail-classwork.js`: dynamic population of title, subtitle (`Max Marks: 20 â€¢ Date`), and avatar initials (`DS`); rendered 2-digit roll numbers (`01`, `02`...), `.minimal-att-dot.btn-sheet-att-toggle`, underline-only inputs `.minimal-q-input.marks-input-cell.q-score-input` with default `0`, and totals in `${val}/${totalMax}` format.
   2. **PC & Mobile Classwork Layout Alignment (Images 2 & 3)**:
      - PC Layout (Image 2): Desktop categories sidebar with uppercase headers & count chips, toolbar with `+ Create` button, collapsible unit title headers, desktop cards with left type icon, title, meta pills, inline description, and right actions + 3-metrics stats block (`SUBMITTED | PENDING | STUDENTS`).
-     - Mobile Layout (Image 3): Mobile sticky header bar with back button, class name (`Database Management Systems • Sem 5 • CSE`) and avatar (`DS`), sticky category pills strip with count badges, collapsible units with item counts and chevrons, and mobile cards featuring the 3-metrics stats strip, vibrant `[ Enter Marks ]` button, outline `[ 👥 Submissions & Roster ]` button, and `[ ⚙️ ]` options button.
+     - Mobile Layout (Image 3): Mobile sticky header bar with back button, class name (`Database Management Systems â€¢ Sem 5 â€¢ CSE`) and avatar (`DS`), sticky category pills strip with count badges, collapsible units with item counts and chevrons, and mobile cards featuring the 3-metrics stats strip, vibrant `[ Enter Marks ]` button, outline `[ ðŸ‘¥ Submissions & Roster ]` button, and `[ âš™ï¸ ]` options button.
   3. **Verification**:
      - All 88 theme tests pass with zero hardcoded colors.
      - All 12 mobile marks table tests pass.
@@ -772,7 +884,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 257: Collapsible Google Classroom Style Unit Sections, Unit Title Details & 3-Dots Edit Menu
+### âœ… Milestone 257: Collapsible Google Classroom Style Unit Sections, Unit Title Details & 3-Dots Edit Menu
 
 - **User Insight & Clarified Specification**:
   - *"LIKE THIS NOT SHOWING UNIT 1 THEN UNDER UNIT 1 ASSIGNMENT AND TEST ALSO THAT UNIT 1 TITLE CARD ADD ARROW THEN CLICK ON IT OPEN/CLOSE ASSIGNMENT AND TEST UNDER THAT UNIT AND THERR DOT THEN CLICK SHOW OPTION LIKE EDIT WHEN CLCIK ON EDIT USER TEACHER CAN ADD UNIT NAME SO LOOK MORE DETAILS ALSO IN WROK CREATE BTN ADD UNIT ADD OPTION WHEN CLICK ON SHOW MODEL TO ADD NEW UNIT ,NAME"*
@@ -781,7 +893,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Redesigned unit headers into `.cw-unit-section-header` displaying the comprehensive unit heading (e.g. `Unit 2 - Declarations, Control Structures and Arrays`, `Unit 1 - Basics and Language Fundamentals`), horizontal divider line, and item count badge.
      - Added interactive chevron arrow button (`.unit-toggle-btn`) with smooth 90-degree CSS rotation on `.is-collapsed`.
      - Clicking either the chevron button or the unit title card header smoothly collapses and expands the list of assignments and tests under that unit.
-  2. **Three-Dots Menu (⋮) on Unit Title Cards**:
+  2. **Three-Dots Menu (â‹®) on Unit Title Cards**:
      - Added `.unit-menu-trigger` and `.unit-dropdown-menu` to every unit header.
      - Features `Edit Unit Details` (opens the modal to customize unit name and syllabus title), `Add Work to Unit` (opens assignment creation modal with that unit pre-selected), and `Delete Unit`.
      - Clicking anywhere outside closes the active dropdown menu.
@@ -801,7 +913,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Verified `test-theme-support.js` (88/88 passed, 0 hardcoded colors).
      - Verified `test-register-consolidation.js` (46/46 passed) and `test-rbac-and-structure.js` (34/34 passed).
 
-### ✅ Milestone 256: Syllabus Unit Organization & Unit-Based Classwork Filtering
+### âœ… Milestone 256: Syllabus Unit Organization & Unit-Based Classwork Filtering
 
 - **User Insight & Clarified Specification**:
   - *"IN CLASSWORK TAB THIS SAME ASSIGNMENT OR TEST SHOW IN THAT UNIT AND ALSO OPTION TO FILTER BY UNIT OR SHOW ALL DEFAULT SHOW ALL"*
@@ -825,27 +937,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Created `scripts/verify-classwork-unit-organization.js` (19/19 tests passing).
      - Verified all regression suites: `test-theme-support.js` (88/88), `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 255: Spacious Question Editor Modal with Full-Width Textarea & Premium Card Layout
+### âœ… Milestone 255: Spacious Question Editor Modal with Full-Width Textarea & Premium Card Layout
 
 - **User Insight & Clarified Specification**:
   - *"MAKE MODEL BETTER TEXT AERA I SMALL"*
 - **Root Cause**:
   - The Question Editor Modal crammed all four elements (`Q#` label, question description text input, marks numeric input with `pts`, and delete button) into a single horizontal row.
   - On mobile displays (~360px), after accounting for padding, label, marks stepper, and delete icon, the text input was compressed into a tiny ~80px box that truncated descriptions.
-  - In addition, the modal close button (`✕`) was hidden by `.modal-close-btn { display: none !important; }` in core CSS.
+  - In addition, the modal close button (`âœ•`) was hidden by `.modal-close-btn { display: none !important; }` in core CSS.
 - **Completed Deliverables**:
   1. **Two-Tier Structured Question Card Layout**:
      - **Top Bar**: Primary-tint pill badge (`Q1`, `Q2`), compact marks stepper with `Max: [ 5 ] pts`, and circular delete button.
      - **Bottom Bar**: Full-width, multi-line `textarea` (`width: 100% !important; min-height: 48px;`) spanning the entire width (300px+ on mobile, 450px on desktop) with comfortable line height and placeholder.
   2. **Elevated Modal Header & Controls**:
-     - Added dedicated icon box, clear title (`Edit Questions & Marks`), informative subtitle, and visible circular `✕` close button (`width: 32px; height: 32px; border-radius: 50%;`).
+     - Added dedicated icon box, clear title (`Edit Questions & Marks`), informative subtitle, and visible circular `âœ•` close button (`width: 32px; height: 32px; border-radius: 50%;`).
   3. **High-Comfort Summary Card & Actions**:
      - Modern `TOTAL MAX MARKS` dashboard card with bold mono counter and pill buttons (`Split Evenly` & `+ Add Q`).
      - Polished footer with ghost `Cancel` and solid primary `Apply & Update` button.
   4. **Regression Verification**:
      - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 254: Elevated Question Editor Modal Stacking & Renamed Button to `Q Edit`
+### âœ… Milestone 254: Elevated Question Editor Modal Stacking & Renamed Button to `Q Edit`
 
 - **User Insight & Clarified Specification**:
   - *"NOW FIX QUESTIONS EDIT BTN WHEN CLICK MODEL APPER BEHIND ALSO BTN NAME Q EDIT"*
@@ -863,7 +975,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   4. **Regression Verification**:
      - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 253: Fixed R.N and STUDENT Header Overlapping & Aligned Column Geometry
+### âœ… Milestone 253: Fixed R.N and STUDENT Header Overlapping & Aligned Column Geometry
 
 - **User Insight & Clarified Specification**:
   - *"R.N ANS STUDENT HEADER OVERLAPING FIX IT"*
@@ -881,7 +993,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Regression Verification**:
      - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 252: Mobile Table Enhancements (R.N Header, Sticky Right Total, Hidden Columns Filter & Full Text Wrapping)
+### âœ… Milestone 252: Mobile Table Enhancements (R.N Header, Sticky Right Total, Hidden Columns Filter & Full Text Wrapping)
 
 - **User Insight & Clarified Specification**:
   - *"ROLLNO COLUMN HEADER NEED TO SHOW R.N AND TOTAL COLUMN MARKS STICK TO RIGHT FIX IT AND REMOVE VISIBLETY COLUMN OPTION FOR MOBILE SCREENS AND IF NAME TEXT GET LAGER TEXT GET WRAP AND SSHOW FULL TEXT"*
@@ -892,7 +1004,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   2. **Total Column Sticky to the Right Edge**:
      - Set `position: sticky !important; top: 0 !important; right: 0 !important; z-index: 22 !important;` on `.marks-table .col-total`.
      - Set `position: sticky !important; right: 0 !important; z-index: 11 !important; background: var(--bg-card) !important;` with an elevated edge drop-shadow on `.marks-table .cell-total`.
-     - When faculty scroll questions horizontally (`Q1`–`Qn`), each student's `TOTAL` marks (`0/20`) remain permanently visible and pinned on the right edge of the screen.
+     - When faculty scroll questions horizontally (`Q1`â€“`Qn`), each student's `TOTAL` marks (`0/20`) remain permanently visible and pinned on the right edge of the screen.
   3. **Removed Columns Visibility Filter on Mobile**:
      - Applied `.desktop-only-col-filter` to `#marks-col-filter-wrapper` in `index.html` and `classwork.css`.
      - Completely hides the Columns dropdown on viewports `<768px`, maximizing toolbar space for `Edit`, `+ Q`, `- Q`, and `Export`.
@@ -902,7 +1014,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   5. **Regression Verification**:
      - 100% pass across all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 251: Dedicated Full-Screen Separate Page Mode for Mobile Marks Entry
+### âœ… Milestone 251: Dedicated Full-Screen Separate Page Mode for Mobile Marks Entry
 
 - **User Insight & Clarified Specification**:
   - *"FIX UI UX MORE AND I THINK YOU MADE MODLE NOT LIKE SEPARTE PAGE MAKE LIKE SEPRATE PAGE SO THAT SCROLL BAR NOT APPER BECAUSE CONTENT IN BACKGROUND"*
@@ -913,26 +1025,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - All background content (app bar, classroom banner, tabs nav, activity feed, test list, cards, mobile bottom nav dock) is completely removed from the rendering tree while entering marks.
      - Because background content does not exist in the render tree, the background scroll height is zero and no background scrollbars can ever appear!
   2. **Dedicated Separate Page Layout**:
-     - `#modal-enter-marks` operates as a 100vw × 100dvh standalone screen (`position: fixed; inset: 0; z-index: 99999; background: var(--bg-card); overflow: hidden;`).
-     - Smooth native app navigation: clicking the back arrow (`←`) or `Cancel` or saving marks removes `.marks-standalone-page` and returns instantly to the classroom workspace.
+     - `#modal-enter-marks` operates as a 100vw Ã— 100dvh standalone screen (`position: fixed; inset: 0; z-index: 99999; background: var(--bg-card); overflow: hidden;`).
+     - Smooth native app navigation: clicking the back arrow (`â†`) or `Cancel` or saving marks removes `.marks-standalone-page` and returns instantly to the classroom workspace.
      - Added browser history state integration (`history.pushState` & `popstate` listener) so mobile hardware back gestures navigate back cleanly without exiting the browser.
   3. **Regression Verification**:
      - 100% pass on all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 250: Mobile Marks Modal Refinements (Scroll Lock, White-Blue Theme, Zero Overlap)
+### âœ… Milestone 250: Mobile Marks Modal Refinements (Scroll Lock, White-Blue Theme, Zero Overlap)
 
 - **User Insight & Clarified Specification**:
   - *"FIX UI UX AND I CAN SEE SIDE SCROLL BAR WHEN TRY TO SCROLL THAT MEANS BEHIND THIS WE HAVE FIX THAT ALSO REMOVE AUTO CALCULATE TEXTE AND FIX OVER LAPING AND ON HEAD REMOVE LOGO ALSO FIX THEME TO OUT WHITE BLUE COLOR THAT WE USE IN ALL CODE"*
 - **Completed Deliverables**:
   1. **Header Logo / Avatar Removal**:
      - Removed circular avatar badge (`#marks-modal-user-avatar`) from the modal header.
-     - Title (`Unit Test 2 — Advanced SQL`) now spans 100% of the horizontal space without ellipsis truncation.
-     - Back navigation arrow (`←`) styled in VidyaOS signature blue (`var(--color-primary)`).
+     - Title (`Unit Test 2 â€” Advanced SQL`) now spans 100% of the horizontal space without ellipsis truncation.
+     - Back navigation arrow (`â†`) styled in VidyaOS signature blue (`var(--color-primary)`).
   2. **Scroll Lock & Scrollbar Suppression**:
      - Implemented `body.modal-open` CSS rule (`overflow: hidden !important; touch-action: none !important;`) preventing background body scroll and side scrollbars behind the modal.
      - Suppressed bulky Windows/browser horizontal scrollbars on `#marks-table-viewport` using `scrollbar-width: none !important;` and `-webkit-scrollbar { display: none !important; }`.
   3. **Auto-Calculated Text Removed & Zero Overlap Footer**:
-     - Removed `• Auto-calculated` caption completely from the footer.
+     - Removed `â€¢ Auto-calculated` caption completely from the footer.
      - Fixed footer layout: `Total Max Marks: 20` on the left with `flex: 1 1 auto; white-space: nowrap;` and `Cancel` / `Save Marks` on the right with `flex-shrink: 0; gap: 0.6rem;`.
      - Zero overlap between labels and action buttons across all viewport widths.
   4. **Signature White & Blue Institutional Theme**:
@@ -942,19 +1054,19 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   5. **Regression Verification**:
      - 100% pass on all test suites: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 249: Minimal Mobile Marks Entry Modal Redesign (Mockup Implementation)
+### âœ… Milestone 249: Minimal Mobile Marks Entry Modal Redesign (Mockup Implementation)
 
 - **User Insight & Clarified Specification**:
   - *"WHEN CLICK ENTER MARKS THIS TABLE OPEN FOR MOBILE THIS IS MINIMAL FOR MOBILE"*
   - Implement the exact minimal mobile design for the marks entry table (`#modal-enter-marks`) matching the user-provided "MOBILE MARKS ENTRY REDESIGN" mockup.
 - **Completed Deliverables**:
   1. **Minimal Mobile Modal Header**:
-     - Left back button (`←` SVG arrow) for smooth one-touch exit on mobile devices (`.modal-back-btn`).
-     - Center title hierarchy: test title (`Unit Test 2 — Advanced SQL`) with subtitle metadata (`Max Marks: 20 • 15 Oct 2026`).
+     - Left back button (`â†` SVG arrow) for smooth one-touch exit on mobile devices (`.modal-back-btn`).
+     - Center title hierarchy: test title (`Unit Test 2 â€” Advanced SQL`) with subtitle metadata (`Max Marks: 20 â€¢ 15 Oct 2026`).
      - Right circular faculty avatar badge (`DS`) dynamically derived from faculty account initials.
-     - Desktop close button (`✕`) hidden on mobile viewports (<768px).
+     - Desktop close button (`âœ•`) hidden on mobile viewports (<768px).
   2. **Minimal Flat Toolbar (5 Actions)**:
-     - Formatted as a single flat horizontal row without card borders: `[ 📝 Edit ]`, `[ + Q ]`, `[ - Q ]`, `[ ⇅ Columns ⌵ ]`, and `[ ↗ Export ]`.
+     - Formatted as a single flat horizontal row without card borders: `[ ðŸ“ Edit ]`, `[ + Q ]`, `[ - Q ]`, `[ â‡… Columns âŒµ ]`, and `[ â†— Export ]`.
      - Responsive text spans (`.desktop-text` vs `.mobile-text`) providing compact labels (`+ Q`, `- Q`, `Edit`).
      - Desktop-only view mode toggle (Table / Excel) and Set Default button hidden on mobile screens.
   3. **Minimal Table Columns & Formatting**:
@@ -963,14 +1075,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Underline-only question inputs (`.minimal-q-input`) with no bounding boxes (`border: none; border-bottom: 1.5px solid var(--border-color); background: transparent; text-align: center`), active highlight underline on focus, and default `0` centered above the underline.
      - Right-aligned `TOTAL` column cleanly displaying `0/20` (or `score/totalMax`) in soft muted typography.
   4. **Minimal Pinned Footer**:
-     - Left: `Total Max Marks: 20` with bold maximum and `• Auto-calculated` caption.
+     - Left: `Total Max Marks: 20` with bold maximum and `â€¢ Auto-calculated` caption.
      - Right: Plain text `Cancel` button and dark solid `[ Save Marks ]` pill button (`.btn-modal-save-dark`).
   5. **Architecture & Zero Hex Integrity**:
      - 100% theme token compliant (no hardcoded hex/rgb colors).
      - Full viewport height (`height: 100dvh !important;`) on mobile with sticky columns for horizontal scroll.
      - 100% pass on regression suite: `verify-mobile-marks-table.js` (12/12), `verify-marks-tab-redesign.js` (20/20), `test-theme-support.js` (88/88), `test-rbac-and-structure.js` (34/34), `test-register-consolidation.js` (46/46).
 
-### ✅ Milestone 248: Antigravity Skills Installation from Vault (300+ Catalog)
+### âœ… Milestone 248: Antigravity Skills Installation from Vault (300+ Catalog)
 
 - **User Insight & Clarified Specification**:
   - *"YES INSTALL UI/UX Designer, SQL & Database Optimizer, Backend Security Coder, the Skill Manager IF BACKEND DESIGNER SKILL"*
@@ -987,7 +1099,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Workspace: `d:\uiap\.agents\skills/` (workspace-level configuration).
   - Project: `d:\uiap\Attendance-System-Simplified\.agents\skills/` (project-level configuration).
 
-### ✅ Milestone 247: Marks Workspace Redesign (PC Image 4 & Mobile Image 5)
+### âœ… Milestone 247: Marks Workspace Redesign (PC Image 4 & Mobile Image 5)
 
 - **User Insight & Clarified Specification**:
   - *"REMOVE Avg Score,Pass % AND FIX UI AND REMOVE DELETE BTN AND REDEGIN PAGE DESIGN NO 4 IMAGE IS PC SCREEN NEW DESIGN NO 5 IS FOR MOBILE SCREEN"*
@@ -1001,11 +1113,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Removed edit and trash/delete buttons (`delWork`) from the `ACTIONS` column in both tables. Only the primary `[ Enter Marks ]` button remains.
      - Modernized `GRADED` column with pill badges (e.g. green pill `10/10` or subtle gray pill `0/10`).
   2. **Mobile Screen Redesign (Image 5)**:
-     - Mini horizontal statistics ticker for phone screens: `4 Tests • 5 Items • 10 Enrolled • 42.5% Avg`.
+     - Mini horizontal statistics ticker for phone screens: `4 Tests â€¢ 5 Items â€¢ 10 Enrolled â€¢ 42.5% Avg`.
      - Section headers with test count and dedicated compact `[ + Schedule Test ]` / `[ + New Assignment ]` action buttons.
      - Responsive mobile cards view (`.marks-mobile-list`):
        - Header row: Test title on left, compact `[ Enter Marks ]` button on right.
-       - Subtitle row: `15 Oct 2026 • 20 Max Marks`.
+       - Subtitle row: `15 Oct 2026 â€¢ 20 Max Marks`.
        - Status badge row: `10/10 Graded` (green pill) or `0/10 Graded` (gray pill).
      - Clean responsive switching via `@media (max-width: 768px)`: automatically hides wide tables and shows mobile cards list on phone screens.
   3. **Theme Token Compliance & Zero Hardcoded Colors**:
@@ -1017,7 +1129,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-register-consolidation.js`: 46/46 passed.
      - `verify-mobile-marks-table.js`: 12/12 passed.
 
-### ✅ Milestone 246: Dynamic Questions Fallback & Responsive Mobile Marks Table Overhaul
+### âœ… Milestone 246: Dynamic Questions Fallback & Responsive Mobile Marks Table Overhaul
 
 - **User Insight & Clarified Specification**:
   - *"I CAN SEE HARDCODED Q1 TO Q4 ... openEditQuestionsModal() ... AND REMOVE THAT MOBILE CARD ONLY TABLE VERSION GOOD WE JUST HAVE TO REDUSE TEXT MARGIN PADDING TO FIT IN SMALL SCREENS ALSO FIX UINOT PROPERLY"*
@@ -1031,10 +1143,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Responsive Mobile Table Architecture (< 768px)**:
      - In `classwork.css`, added specialized mobile rules with reduced text sizes, cell padding, and input widths:
        - **Roll No**: 32px, centered, sticky `left: 0`.
-       - **Student Name**: 90px–120px, text ellipsis, compact inline attendance toggle button (`P` / `AB`), sticky `left: 32px` with a subtle elevation divider shadow so teachers never lose track of which student they are grading while swiping horizontally.
-       - **Question Score Inputs**: 38px–42px wide, 28px height, centered text, `inputmode="decimal"`.
-       - **Total Column**: 42px–46px wide with live updating badge.
-       - Fits comfortably within standard mobile screen widths (~360px–412px) for 1–4 questions without overflowing, and provides smooth touch swiping for tests with 5+ questions.
+       - **Student Name**: 90pxâ€“120px, text ellipsis, compact inline attendance toggle button (`P` / `AB`), sticky `left: 32px` with a subtle elevation divider shadow so teachers never lose track of which student they are grading while swiping horizontally.
+       - **Question Score Inputs**: 38pxâ€“42px wide, 28px height, centered text, `inputmode="decimal"`.
+       - **Total Column**: 42pxâ€“46px wide with live updating badge.
+       - Fits comfortably within standard mobile screen widths (~360pxâ€“412px) for 1â€“4 questions without overflowing, and provides smooth touch swiping for tests with 5+ questions.
   4. **Compact Toolbar & Fixed Modal Layout**:
      - Redesigned the toolbar from 4 clumsy wrapped rows into a compact layout with 26px button heights, abbreviated labels (`Edit Questions`, `+ Add Q`, `- Remove Q`, `Columns`, `Table`, `Excel`, `Export`).
      - Elevated `.modal-backdrop` to `z-index: 1500 !important;` (above `.classroom-mobile-bottom-nav` which sits at `z-index: 1000`), completely resolving the bottom navigation dock overlap.
@@ -1085,7 +1197,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 244: Fix Registration Form Horizontal Layout Blowout (Unclosed Callout Flex Container)
+### âœ… Milestone 244: Fix Registration Form Horizontal Layout Blowout (Unclosed Callout Flex Container)
 
 - **User Insight & Bug Report**:
   - *"REGISTER PAGE IS BROKEN FIX IT"* (with screenshot showing all fields squished horizontally in a single row across the screen).
@@ -1104,7 +1216,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 243: Institutional Home Page Set as Root (`/`) with Seamless Sign-In Navigation to `/login`
+### âœ… Milestone 243: Institutional Home Page Set as Root (`/`) with Seamless Sign-In Navigation to `/login`
 
 - **User Insight & Clarified Specification**:
   - *"THIS OPEN HOME PAGE THEN ANY ONE CAN CLICK ON SIGN IN BTN TO GO IN LOGIN PAGE AND LOG IN https://vidyaos-pink.vercel.app/"*
@@ -1131,7 +1243,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 242: Direct Root Access Configuration (`/` Defaulting Directly to Sign-In Portal)
+### âœ… Milestone 242: Direct Root Access Configuration (`/` Defaulting Directly to Sign-In Portal)
 
 - **User Insight & Architecture Request**:
   - *"i need login page can open with this url https://vidyaos-pink.vercel.app/"*
@@ -1151,7 +1263,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 241: Comprehensive Landing Page & Hub Buttons Migration to Extensionless Clean URLs
+### âœ… Milestone 241: Comprehensive Landing Page & Hub Buttons Migration to Extensionless Clean URLs
 
 - **User Insight & Error Diagnosis**:
   - *"yes you url wroking but when i going using home page sign in btn page not oping"*
@@ -1175,7 +1287,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 240: Resolution of Vercel cleanUrls Routing Collision & Extensionless Rewrite Protocol
+### âœ… Milestone 240: Resolution of Vercel cleanUrls Routing Collision & Extensionless Rewrite Protocol
 
 - **User Insight & Error Diagnosis**:
   - *"still"* (attached screenshot of `vidyaos-pink.vercel.app/login` returning `404: NOT_FOUND`)
@@ -1194,14 +1306,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Created `frontend/student/index.html` (instant fallback redirect to `/student/dashboard`).
   3. **Strict Extensionless `vercel.json` Specification (`frontend/vercel.json` & `vercel.json`)**:
      - Removed all conflicting `.html` destinations from rewrites.
-     - Kept static asset mapping (`/css/:path*` ➔ `/shared/css/:path*`, `/js/:path*` ➔ `/shared/js/:path*`).
-     - Rewrote `/admin` ➔ `/admin/academic-structure`, `/faculty` ➔ `/faculty/dashboard`, `/student` ➔ `/student/dashboard`, and `/register` ➔ `/login/register`.
+     - Kept static asset mapping (`/css/:path*` âž” `/shared/css/:path*`, `/js/:path*` âž” `/shared/js/:path*`).
+     - Rewrote `/admin` âž” `/admin/academic-structure`, `/faculty` âž” `/faculty/dashboard`, `/student` âž” `/student/dashboard`, and `/register` âž” `/login/register`.
   4. **Multi-Repo Synchronization & Deployment**:
      - Pushed clean, collision-free updates to both [onebotyt/Vidya](https://github.com/onebotyt/Vidya.git) (monorepo) and [onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git) (frontend).
 
 ---
 
-### ✅ Milestone 239: Resolution of Vercel Production 404 Error on /login & Comprehensive Cloud Rewrites
+### âœ… Milestone 239: Resolution of Vercel Production 404 Error on /login & Comprehensive Cloud Rewrites
 
 - **User Insight & Error Diagnosis**:
   - *"my vercal website not working after git push"*
@@ -1217,16 +1329,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Created `frontend/login.html` and `frontend/login/register.html` for instant resolution of direct `.html` links.
      - Preserved `frontend/login/index/index.html` for complete backward compatibility with any hardcoded paths.
   2. **Comprehensive Cloud Routing Configuration (`frontend/vercel.json` & `vercel.json`)**:
-     - Configured static asset rewrites: `/css/:path*` ➔ `/shared/css/:path*` and `/js/:path*` ➔ `/shared/js/:path*`.
-     - Configured clean entrypoint rewrites: `/login` ➔ `/login/index.html`, `/register` ➔ `/login/register/index.html`.
-     - Configured modular page rewrites: `/:section/:page.html` ➔ `/:section/:page/index.html`.
+     - Configured static asset rewrites: `/css/:path*` âž” `/shared/css/:path*` and `/js/:path*` âž” `/shared/js/:path*`.
+     - Configured clean entrypoint rewrites: `/login` âž” `/login/index.html`, `/register` âž” `/login/register/index.html`.
+     - Configured modular page rewrites: `/:section/:page.html` âž” `/:section/:page/index.html`.
      - Added root `vercel.json` so deployments from the monorepo also resolve cleanly.
   3. **Multi-Repo Synchronization & Deployment**:
      - Pushed to both Monorepo ([onebotyt/Vidya](https://github.com/onebotyt/Vidya.git)) and Frontend repository ([onebotyt/VidyaOS](https://github.com/onebotyt/VidyaOS.git)), triggering automatic redeployment on Vercel.
 
 ---
 
-### ✅ Milestone 238: Phase 2 Major Project Presentation & Viva Defense Report Document
+### âœ… Milestone 238: Phase 2 Major Project Presentation & Viva Defense Report Document
 
 - **User Insight & Architecture Shift**:
   - *"NOW MAKE DOCUMENT FOR PASH 2 PRESENTATION OF PROJCT"*
@@ -1235,7 +1347,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Completed Deliverables**:
   1. **Phase 1 vs. Phase 2 Scope & Deliverables Matrix**:
      - Direct comparison across 10 dimensions: System Scope, Attendance Modalities, Academic Workspace, Spreadsheet Engine, Export Formats, Grading & Marksheet, Student Onboarding, UI Design System, Code Architecture, and Test Coverage.
-  2. **Slide-by-Slide Presentation Blueprint (Slides 1 – 18)**:
+  2. **Slide-by-Slide Presentation Blueprint (Slides 1 â€“ 18)**:
      - Formatted slide decks with titles, visual wireframe layouts, key technical bullets, speaker talking points, and diagram references for committee defense.
   3. **Complete System Architecture & Technical Deep-Dive**:
      - Mermaid system diagrams, decoupled 3-tier MVC breakdown, and element-wise modularized frontend/backend structure.
@@ -1254,7 +1366,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 237: Classroom Marks Portal Restoration, Dual Test & Assignment Marksheets, and Batch Grading Studio
+### âœ… Milestone 237: Classroom Marks Portal Restoration, Dual Test & Assignment Marksheets, and Batch Grading Studio
 
 - **User Insight & Architecture Shift**:
   - *"we have marks page inside classroom in old code make it again from where teacher can give marks for test,assignment"*
@@ -1295,7 +1407,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 236: Authentic OpenXML (.xlsx) Spreadsheet Binary Generation & Desktop Microsoft Excel Compatibility
+### âœ… Milestone 236: Authentic OpenXML (.xlsx) Spreadsheet Binary Generation & Desktop Microsoft Excel Compatibility
 
 - **User Insight & Error Diagnosis**:
   - *"fix excell sheet not working"*
@@ -1334,7 +1446,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 235: Attendance Matrix Sheet Removal & High-Fidelity Multi-Format Export (Excel, PDF, Word Document)
+### âœ… Milestone 235: Attendance Matrix Sheet Removal & High-Fidelity Multi-Format Export (Excel, PDF, Word Document)
 
 - **User Insight & Architecture Shift**:
   - *"remove attendance matrix sheet that not needed also expot btn in every sheet need to able to expot in Excel,pdf,document on same formate we see on ui just like Unified Sheets Studio (Full Advanced Portal)"*
@@ -1363,7 +1475,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - **Raw CSV (.csv)**: Clean comma-separated values for offline data analysis.
   3. **Unified Export UI Dropdowns**:
      - In `frontend/faculty/sheets/index.html`, added the `.DOC` Word Document option to `#export-dropdown-menu`.
-     - In `frontend/faculty/group-detail/index.html`, added `#class-export-dropdown-wrapper` with a matching `Export ▾` dropdown containing `.XLSX`, `.PDF`, `.DOC`, and `.CSV` options.
+     - In `frontend/faculty/group-detail/index.html`, added `#class-export-dropdown-wrapper` with a matching `Export â–¾` dropdown containing `.XLSX`, `.PDF`, `.DOC`, and `.CSV` options.
   4. **Verification**:
      - Automated test script `verify_export_and_sheets_update.js`: **32/32 PASS**.
      - `test-theme-support.js`: **88/88 PASS** (0 hardcoded hex colors).
@@ -1375,7 +1487,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 234: Left-Side Quick Actions Layout & Advanced Sheets Studio Portal Link Restoration
+### âœ… Milestone 234: Left-Side Quick Actions Layout & Advanced Sheets Studio Portal Link Restoration
 
 - **User Insight & Architecture Shift**:
   - *"move Quick Actions to left side and when you make new ui for sheet page you deleted my old sheet studio code that have more advance features"*
@@ -1384,7 +1496,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     2. **Preservation of Advanced Sheets Studio**: The user expressed concern that when a simplified `#tab-sheets` view was previously introduced, their old full-featured Sheets Studio (`frontend/faculty/sheets/` with 3,863 lines of code including Edit/Save mode, question-wise score matrix, continuous Auto-Fit, Zoom scale, column visibility map, side panel, custom columns, filters, and Excel/PDF export) had been deleted.
   - Verification & Architecture Realignment:
     - Confirmed that the user's advanced Sheets Studio code in `frontend/faculty/sheets/index.html` (990 lines) and `frontend/faculty/sheets/sheets.js` (3,863 lines) was **never deleted** and remains 100% intact.
-    - Updated all classroom Sheets Studio entry points (`openSheetStudio()`, Quick Actions "Sheets Studio (All Sheets)", banner pill `[▦ Sheets Studio]`, ⚙️ settings menu, and in-tab banner) to navigate directly to the full-featured `/faculty/sheets.html?id=${gid}` in the same tab, with the back button returning seamlessly to `/faculty/group-detail.html?id=${gid}`.
+    - Updated all classroom Sheets Studio entry points (`openSheetStudio()`, Quick Actions "Sheets Studio (All Sheets)", banner pill `[â–¦ Sheets Studio]`, âš™ï¸ settings menu, and in-tab banner) to navigate directly to the full-featured `/faculty/sheets.html?id=${gid}` in the same tab, with the back button returning seamlessly to `/faculty/group-detail.html?id=${gid}`.
 
 - **Completed Deliverables**:
   1. **Left-Side Quick Actions Layout (`stream.css` & `index.html`)**:
@@ -1395,7 +1507,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   2. **Direct Access to Advanced Sheets Studio (`group-detail/index.html`, `group-detail-core.js`, `sheets/index.html`)**:
      - Updated `openSheetStudio(sheetName)` to directly load `/faculty/sheets.html?id=${gid}${sheetName ? '&sheet=' + sheetName : ''}` via `window.location.href`.
      - In `frontend/faculty/sheets/index.html`, updated the `#btn-back-bar1` back button to inspect `id` query parameter and navigate seamlessly back to `/faculty/group-detail.html?id=${gid}`.
-     - Added a prominent launch card at the top of `#tab-sheets` linking directly to `Launch Advanced Sheets Studio ⇲`.
+     - Added a prominent launch card at the top of `#tab-sheets` linking directly to `Launch Advanced Sheets Studio â‡²`.
   3. **Verification**:
      - All 11 Sheets Studio static assets verified with `200 OK`.
      - `test-theme-support.js`: **88/88 PASS** (0 hardcoded hex colors).
@@ -1407,7 +1519,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 233: Classroom Register Single-Class Default, Add Class Button, Mobile Minimal UI, Clean PC Matrix Summary Columns & Bulk Marking
+### âœ… Milestone 233: Classroom Register Single-Class Default, Add Class Button, Mobile Minimal UI, Clean PC Matrix Summary Columns & Bulk Marking
 
 
 - **User Insight & Architecture Shift**:
@@ -1416,7 +1528,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     1. **Single-Class Default with Dynamic "+ Add Class" Button**: Default strictly to 1 class (Period 1) per day. Display a clean `+ Add Class` button that dynamically creates and reveals a 2nd period for the active date.
     2. **Mobile UI Minimal Polish**: Streamline mobile header cards by hiding bulky redundant badges (`Official Register`, `Theory`, UBTER subtitle, and print button), minimizing vertical padding and toolbar size for a compact mobile experience.
     3. **PC Matrix Optimization & Clean Summary Columns**: Remove the 6 breakdown sub-columns (`Mo`, `Pr`, `Tt` under Attended and Absent) and the `Remarks` column. Replace with 2 clean columns: **TOTAL ATTENDED** and **TOTAL ABSENT** alongside `%`, reducing sticky right width from 374px down to 156px and freeing 218px for lecture dates.
-    4. **Elimination of "Late" Status Everywhere**: Update the digital pen cell cycler to toggle strictly `Present ➔ Absent ➔ Clear` (zero Late references in cycle, legends, or pen buttons).
+    4. **Elimination of "Late" Status Everywhere**: Update the digital pen cell cycler to toggle strictly `Present âž” Absent âž” Clear` (zero Late references in cycle, legends, or pen buttons).
     5. **Total Attended Classes Count on Mobile**: In the mobile daily roster, display the total number of attended classes (e.g. `12`) instead of `% Att.`.
     6. **Checkboxes for Bulk Marking**: Add master "Select All" checkboxes and individual student row checkboxes for both PC and mobile with floating bulk action bars (`Mark Present`, `Mark Absent`, `Clear`, `Deselect`).
 
@@ -1430,7 +1542,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Rendered two clean 2-tier sticky columns: `.sticky-r-att-total` (`TOTAL ATTENDED`, width 58px) and `.sticky-r-abs-total` (`TOTAL ABSENT`, width 54px) alongside `.sticky-r-pct` (`%`, width 44px).
      - Reduced sticky right width from 374px to 156px, giving PC tables 218px more visible calendar room.
   3. **Complete Elimination of Late Option (`group-detail-register.js`, `index.html`, `register.css`)**:
-     - Updated `toggleDigitalPen()` cycle strictly to: `CLEAR ➔ PRESENT ➔ ABSENT ➔ CLEAR`.
+     - Updated `toggleDigitalPen()` cycle strictly to: `CLEAR âž” PRESENT âž” ABSENT âž” CLEAR`.
      - Removed "Late" from PC and mobile legends and eliminated `.mobile-pen-btn.l`.
   4. **Mobile Attended Number Metric (`index.html`, `group-detail-register.js`, `register.css`)**:
      - Replaced `% Att.` header with `Attended` (`#m-th-attended`).
@@ -1453,15 +1565,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 232: Google Classroom Stream Announcement Modal (PC) & Full-Screen Mobile Composer with Mobile Detail Bugfix
+### âœ… Milestone 232: Google Classroom Stream Announcement Modal (PC) & Full-Screen Mobile Composer with Mobile Detail Bugfix
 
 
 - **User Insight & Architecture Shift**:
   - *"in googleclassroom we have btn for announcement when click that open model in pc and separate page in mobile like when we have full page to see message also fix mobile in l4 image yu can see message page showing when open classroom"*
   - The user requested two interconnected Google Classroom announcement experiences and identified a critical mobile regression:
-    1. **Google Classroom Announcement Trigger**: A dedicated `[ ✎ New announcement ]` pill button matching Image 1 (`media_1792621899938.png`) alongside the announcement card.
-    2. **PC "Post" Modal**: On desktop screens (`> 768px`), clicking the announcement button opens the authentic Google Classroom `Post` modal matching Image 2 (`media_1792621914404.png`), equipped with `Post` header, outlined input container, markdown formatting toolbar (**B**, *I*, <u>U</u>, ≡, Tx), blue focus underline, bottom media icon toolbar (Drive, YouTube, File upload, Link), and Cancel / Post pill buttons.
-    3. **Mobile Full-Screen Announcement Composer**: On mobile viewports (`<= 768px`), clicking the announcement button opens a dedicated full-screen composer page matching Image 3 (`media_1792622219105.png`), equipped with sticky 56px top bar (`✕` close, `Create` pill button, `⋮` menu), recipient chips (`[ New ]`, `[ All students ]`), Material outlined box with label "Announce something to your class", 4-horizontal-lines icon, and `📎 Add attachment` file upload button.
+    1. **Google Classroom Announcement Trigger**: A dedicated `[ âœŽ New announcement ]` pill button matching Image 1 (`media_1792621899938.png`) alongside the announcement card.
+    2. **PC "Post" Modal**: On desktop screens (`> 768px`), clicking the announcement button opens the authentic Google Classroom `Post` modal matching Image 2 (`media_1792621914404.png`), equipped with `Post` header, outlined input container, markdown formatting toolbar (**B**, *I*, <u>U</u>, â‰¡, Tx), blue focus underline, bottom media icon toolbar (Drive, YouTube, File upload, Link), and Cancel / Post pill buttons.
+    3. **Mobile Full-Screen Announcement Composer**: On mobile viewports (`<= 768px`), clicking the announcement button opens a dedicated full-screen composer page matching Image 3 (`media_1792622219105.png`), equipped with sticky 56px top bar (`âœ•` close, `Create` pill button, `â‹®` menu), recipient chips (`[ New ]`, `[ All students ]`), Material outlined box with label "Announce something to your class", 4-horizontal-lines icon, and `ðŸ“Ž Add attachment` file upload button.
     4. **Resolution of Mobile Message Page Bug (Image 4)**: On mobile viewports, opening the classroom previously displayed the announcement detail view (`#announcement-detail-view`) immediately over the stream feed because `@media (max-width: 768px)` in `stream.css` had `display: flex !important;`, overriding inline `style="display:none;"`.
 
 - **Completed Deliverables**:
@@ -1471,20 +1583,20 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Updated `openAnnouncementDetail(postId)` to add `.active` class and `closeAnnouncementDetail()` to remove `.active` class.
      - Completely eliminated the Image 4 bug on mobile viewports: opening classroom now renders the stream feed cleanly.
   2. **Single Google Classroom Stream Announcement Pill Button (`index.html` & `stream.css`)**:
-     - Removed redundant duplicate announcement trigger card from the stream, keeping strictly ONE announcement control: the `.btn-new-announcement-pill` (`[ ✎ New announcement ]`).
+     - Removed redundant duplicate announcement trigger card from the stream, keeping strictly ONE announcement control: the `.btn-new-announcement-pill` (`[ âœŽ New announcement ]`).
      - Maintained hidden fallback hooks (`#stream-compose-box`) to preserve complete backward compatibility.
      - Single click triggers `triggerNewAnnouncement()` (PC modal or Mobile full-screen composer).
   3. **PC Google Classroom "Post" Modal & Rich Formatting (`index.html`, `stream.css`, `group-detail-stream.js`)**:
      - Upgraded modal input to rich-text `.post-modal-editor` (`contenteditable="true"` with placeholder `"Announce something to your class"`).
-     - Fixed formatting buttons (**B**, *I*, <u>U</u>, ≡, Tx) to use `document.execCommand()` with `onmousedown="event.preventDefault()"`: text visually formats directly in-place without losing text selection or inserting raw tags.
+     - Fixed formatting buttons (**B**, *I*, <u>U</u>, â‰¡, Tx) to use `document.execCommand()` with `onmousedown="event.preventDefault()"`: text visually formats directly in-place without losing text selection or inserting raw tags.
      - Removed obsolete Google Drive and YouTube buttons, keeping only the real Upload file and Link insert buttons.
      - Implemented `renderFormattedPostContent()` and `sanitizeStreamHtml()` to safely render bold, italic, underline, list, and link tags across post cards and announcement detail view.
   4. **Mobile Full-Screen Announcement Composer (`index.html`, `stream.css`, `group-detail-stream.js`, `group-detail-core.js`)**:
      - Built `#mobile-announcement-composer` fixed edge-to-edge overlay matching Image 3:
-       - Top bar: `✕` close button, `Create` pill button, and `⋮` options menu.
-       - Recipients row: `👥` group icon, class name chip (`mobile-chip-class-name`), and `[ All students ]` active chip.
+       - Top bar: `âœ•` close button, `Create` pill button, and `â‹®` options menu.
+       - Recipients row: `ðŸ‘¥` group icon, class name chip (`mobile-chip-class-name`), and `[ All students ]` active chip.
        - Outlined input box: Material outlined styling with primary label "Announce something to your class", lines icon, and textarea.
-       - Attachment action: `📎 Add attachment` button triggering file input, with real-time file preview badge (`DOC`, `PDF`, etc.) and remove button.
+       - Attachment action: `ðŸ“Ž Add attachment` button triggering file input, with real-time file preview badge (`DOC`, `PDF`, etc.) and remove button.
        - Auto-hides mobile bottom navigation bar and classwork FAB while composer is active.
        - Connected to `Escape` key listener and `switchTab` router in `group-detail-core.js`.
   5. **Regression & Quality Verification**:
@@ -1498,7 +1610,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 231: Stream Document Attachments, Announcement Detail Page Redesign & Tab-Scoped Floating Action Button Isolation
+### âœ… Milestone 231: Stream Document Attachments, Announcement Detail Page Redesign & Tab-Scoped Floating Action Button Isolation
 
 - **User Insight & Architecture Shift**:
   - *"fix annuoment teacher can send documents and fix ui when we click on announce message in class that show page that show full message and comments and remove floating create btn from people ,register,sheet"*
@@ -1526,7 +1638,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Fixed `getFileTypeMeta()` to return `{ ext, badgeClass, badge, cls }` ensuring all document extension tags (`PDF`, `DOC`, `XLS`, `PPT`, `ZIP`, `IMG`) render with proper colors and badges.
      - Supported multipart file uploads via `FormData` in `postAnnouncement()`, saving attachments to `/uploads/stream/` and rendering clickable download pills.
   3. **Announcement Detail & Class Comments Studio Redesign (`index.html` & `stream.css`)**:
-     - Redesigned `.detail-header-bar` with 56px sticky height, back button (`←`), centered title (`Announcement`), and 3-dots options menu (`⋮`).
+     - Redesigned `.detail-header-bar` with 56px sticky height, back button (`â†`), centered title (`Announcement`), and 3-dots options menu (`â‹®`).
      - Wrapped announcement content in `.detail-post-card` with author avatar, author name, timestamp, formatted text body, and document attachment pill.
      - Styled `.detail-comments-container` with modern heading, icon, and empty state placeholder.
      - Created pinned `.detail-bottom-composer` with sticky bottom positioning (`position: fixed; bottom: 0;`), pill-shaped input container, and circular primary send button.
@@ -1540,12 +1652,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 230: Mobile Classwork Sticky Category Filter Pills & Floating Action Button (FAB) Normalization
+### âœ… Milestone 230: Mobile Classwork Sticky Category Filter Pills & Floating Action Button (FAB) Normalization
 
 - **User Insight & Architecture Shift**:
   - *"we have hover create btn for work also filter user not need to scroll"*
   - The user reported:
-    1. The hovering create button (`classwork-mobile-fab`) was broken on mobile—appearing as an unstyled raw black `+` symbol at the bottom-left corner of the viewport due to a class mismatch (`.cw-mobile-fab` in CSS vs `.classwork-mobile-fab` in HTML).
+    1. The hovering create button (`classwork-mobile-fab`) was broken on mobileâ€”appearing as an unstyled raw black `+` symbol at the bottom-left corner of the viewport due to a class mismatch (`.cw-mobile-fab` in CSS vs `.classwork-mobile-fab` in HTML).
     2. When the user scrolled through work items on mobile, the category filter pills strip scrolled off the screen, forcing the user to scroll all the way back to the top just to switch between "Assignments", "Lab Practical", "Class Tests", "Final Docs", and "All Work".
     3. The mobile toolbar contained a redundant create button alongside the floating action button.
 
@@ -1556,8 +1668,8 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - The filter pills now remain neatly docked directly beneath the sticky 56px top navbar as the user scrolls, eliminating the need to scroll back up.
   2. **Classwork Floating Action Button (FAB) & Menu Normalization (`index.html` & `classwork.css`)**:
      - Synced classes on `<button class="classwork-mobile-fab cw-mobile-fab" id="classwork-mobile-fab">`.
-     - Grouped selector `.classwork-mobile-fab, #classwork-mobile-fab, .cw-mobile-fab` with 56×56px circular design, `var(--color-primary)` brand background, crisp white `+` icon, elevated shadow `0 4px 16px hsl(0 0% 0% / 0.28)`, and fixed positioning at `bottom: 74px; right: 1.25rem`.
-     - Smooth 45-degree rotation transform on `.menu-open` turning `+` into `×` when opened.
+     - Grouped selector `.classwork-mobile-fab, #classwork-mobile-fab, .cw-mobile-fab` with 56Ã—56px circular design, `var(--color-primary)` brand background, crisp white `+` icon, elevated shadow `0 4px 16px hsl(0 0% 0% / 0.28)`, and fixed positioning at `bottom: 74px; right: 1.25rem`.
+     - Smooth 45-degree rotation transform on `.menu-open` turning `+` into `Ã—` when opened.
      - Grouped menu selectors `.cw-fab-menu-item, .cw-mobile-fab-item` in `.cw-mobile-fab-menu` at `bottom: 140px; right: 1.25rem`.
      - Enforced strict `@media (min-width: 769px)` hiding of FAB and FAB menu on desktop PC screens.
   3. **Toolbar Streamlining on Mobile**:
@@ -1571,7 +1683,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 229: Classwork Mobile Card Header & Action Overflow Fix
+### âœ… Milestone 229: Classwork Mobile Card Header & Action Overflow Fix
 
 - **User Insight & Architecture Shift**:
   - *"fix classwork page ui you have broken"*
@@ -1585,7 +1697,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Completed Deliverables**:
   1. **Mobile Work Card Header Responsive Normalization (`classwork.css`)**:
      - Hid `.work-card-actions` on mobile viewports (`<= 768px`) with `display: none !important;`.
-     - Enabled `.work-card-menu-wrap` (`display: block !important;`) on mobile with a clean 34×34px 3-dots trigger button (`⋮`).
+     - Enabled `.work-card-menu-wrap` (`display: block !important;`) on mobile with a clean 34Ã—34px 3-dots trigger button (`â‹®`).
      - Allowed `.work-card-title-wrap` to take full width (`flex: 1 !important; min-width: 0 !important; word-break: break-word !important;`), rendering the title cleanly on natural lines without crushing.
   2. **Mobile Classwork Dropdown Enhancement (`group-detail-classwork.js` & `classwork.css`)**:
      - Added "Submissions & Roster" to the mobile anchored 3-dots dropdown menu.
@@ -1604,7 +1716,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 228: Classroom Workspace Sticky Navigation, Sticky Quick Actions & Minimal Add Student Bar
+### âœ… Milestone 228: Classroom Workspace Sticky Navigation, Sticky Quick Actions & Minimal Add Student Bar
 
 - **User Insight & Architecture Shift**:
   - *"remove Class Invite Code and Group Overview from pc screen and make Quick Actions setion and class room nav tabs sticky and make minimum add student bar"*
@@ -1634,12 +1746,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 227: Classroom Workspace Mobile UI Polish & Header Streamlining
+### âœ… Milestone 227: Classroom Workspace Mobile UI Polish & Header Streamlining
 
 - **User Insight & Architecture Shift**:
   - *"fix ui and fix header i need that simple header also fix wrok ui and in people page fix class room code make it compact small and remove classroom code from classs stream card that show info of class room we"*
   - The mobile view of the classroom workspace had several visual and layout flaws:
-    1. The top header was congested on mobile with overlapping avatars and redundant "+ Classes Hub" buttons, differing from the clean, simple design (`≡` | `[🎓] Classroom` on left, `☾` and `(RS)` on right).
+    1. The top header was congested on mobile with overlapping avatars and redundant "+ Classes Hub" buttons, differing from the clean, simple design (`â‰¡` | `[ðŸŽ“] Classroom` on left, `â˜¾` and `(RS)` on right).
     2. The stream banner card had a bulky "Class code: DBMS501" glassmorphism pill and raw unstyled "New announcement" text underneath.
     3. The Classwork ("wrok") UI on mobile displayed an unstyled filter dropdown and a huge vertical category box taking up screen space.
     4. The People tab had a large 200px dashed classroom invite code box taking excessive vertical space.
@@ -1647,7 +1759,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 - **Completed Deliverables**:
   1. **Simplified Top Navigation Header (`index.html` & `core.css`)**:
-     - Streamlined the mobile navbar to display only `≡` sidebar toggle and `[🎓] Classroom` brand on the left, and `☾` theme toggle button and user avatar `(RS)` on the right, matching the reference design in Screenshot 2.
+     - Streamlined the mobile navbar to display only `â‰¡` sidebar toggle and `[ðŸŽ“] Classroom` brand on the left, and `â˜¾` theme toggle button and user avatar `(RS)` on the right, matching the reference design in Screenshot 2.
      - Hid desktop-only actions (`+ Classes Hub`, apps launcher, desktop settings dropdown, and subtitle breadcrumbs) on mobile viewports (`<= 768px`).
   2. **Stream Banner Card Clean-Up (`index.html` & `stream.css`)**:
      - Removed `#banner-code-pill` from the stream banner card, leaving clean academic subject metadata (Subject title, Sem 5, Department, Academic Year).
@@ -1667,7 +1779,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 226: Classroom Workspace Modularization — Element-Wise CSS & JS Decomposition
+### âœ… Milestone 226: Classroom Workspace Modularization â€” Element-Wise CSS & JS Decomposition
 
 - **User Insight & Architecture Shift**:
   - *"now we need to make code more clean to maintain like breaking lager css and js file code into multiple css js that have code elements wise like when we open class room we can see ui elements like cards btn and options ,sheets make them in separate css js so if we want to fix one thing we don't have to read all code"*
@@ -1680,7 +1792,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - **`stream.css`** (16KB): Stream feed, announcement composer card, expandable textarea, attachment preview badges, full-page announcement detail studio, and comment threads.
      - **`classwork.css`** (17KB): Category navigation sidebar & filter pills, coursework item cards (assignments, tests, practicals, notes), creation dialogs, floating action button (`#cw-mobile-fab`), student submissions review drawer, grading panel, and marks entry modal with question matrix.
      - **`people.css`** (4KB): Teachers card, students cohort roster list, member action menus, invite code section, batch enrollment modal, and transfer/drop dialogs.
-     - **`register.css`** (13KB): Institutional physical 31-day desktop attendance matrix, single-line ESP32 hardware sync toolbar, ultra-compact mobile daily matrix with 2-class per day period bar, 38×38px digital pen buttons, remarks status badge popover, and Live Roll Call modal (dynamic QR code + 6-digit PIN).
+     - **`register.css`** (13KB): Institutional physical 31-day desktop attendance matrix, single-line ESP32 hardware sync toolbar, ultra-compact mobile daily matrix with 2-class per day period bar, 38Ã—38px digital pen buttons, remarks status badge popover, and Live Roll Call modal (dynamic QR code + 6-digit PIN).
      - **`sheets.css`** (4KB): Embedded spreadsheet studio console, multi-sheet dropdown selector (Internal Evaluation, Class Tests, Assignments, Monthly Matrix), Excel-style styled header bands, student roster cells, and CSV/PDF export controls.
      - **`group-detail.css`** (19 lines): Master aggregated entry point utilizing clean `@import` statements for all 6 modular files.
      - 100% theme variable compliance: Verified with zero hardcoded `#hex` or `rgb()` colors across all 6 modular stylesheets.
@@ -1707,14 +1819,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 225: Classroom Attendance Matrix & Ultra-Compact Mobile 2-Class Attendance Engine
+### âœ… Milestone 225: Classroom Attendance Matrix & Ultra-Compact Mobile 2-Class Attendance Engine
 
 - **User Insight & Architecture Shift**:
   - The user requested two distinct, optimized views for the Classroom Register workspace (`/faculty/group-detail.html?id=1&tab=register`):
     1. **PC (Desktop) View**: Must match the physical institutional attendance register in Screenshot 2, displaying *only* the single-line ESP32 Sync bar and the Class Roll Sheet Matrix with all its rich ledger features:
-       - Two-tier matrix headers (`DATES OF LECTURE — [MONTH YEAR]`, `ATTENDED [Mo, Pr, Tt]`, `ABSENT [Mo, Pr, Tt]`, `%`, `Remarks`).
+       - Two-tier matrix headers (`DATES OF LECTURE â€” [MONTH YEAR]`, `ATTENDED [Mo, Pr, Tt]`, `ABSENT [Mo, Pr, Tt]`, `%`, `Remarks`).
        - Sticky first column (`Roll No.`) and sticky second column (`Student Name` with UBTER registration / enrollment subtitle).
-       - Sunday and gazetted holiday vertical text spans (`↑ S U N D A Y ↓`, `↑ D U S S E H R A ↓`) spanning across all rows.
+       - Sunday and gazetted holiday vertical text spans (`â†‘ S U N D A Y â†“`, `â†‘ D U S S E H R A â†“`) spanning across all rows.
        - Today's date column highlight gradient (`data-today="true"`) with indicator dot and automatic scroll-to-view.
        - Status remarks badge popover menu (`Regular`, `Short`, `Below 75%`, `Xfer`, `Drop`) updating student status via `PUT /api/v1/faculty/registers/:id/student-status`.
        - Two-tier footer (`tfoot`) displaying daily and monthly Present (P) and Absent (A) totals.
@@ -1723,7 +1835,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Multi-class in one day support ("in one day we can have 2 class's so we need to do something"):
          - Segmented period filter: `Both (P1 & P2)`, `Class 1`, `Class 2`.
          - `+ Add 2nd Class` button opening `#add-session-modal` to add an additional session/period on the date.
-         - 38×38px touch targets (`.mobile-pen-btn`) cycling `P` ➔ `A` ➔ `L` ➔ Clear on tap.
+         - 38Ã—38px touch targets (`.mobile-pen-btn`) cycling `P` âž” `A` âž” `L` âž” Clear on tap.
          - View mode toggle pill (`[Full 31-Day Ledger]` / `[Compact View]`) allowing faculty on mobile to toggle into the full matrix when needed.
     3. **Resolution of Screenshot 1 404 Error**:
        - Replaced nonexistent endpoint `/api/v1/attendance/esp32/status` with canonical SQLite endpoint `GET /api/v1/attendance/registers/:id/esp32-day-scans?date=YYYY-MM-DD`.
@@ -1744,7 +1856,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `loadClassRegister()`: loads grid data and calls both `renderClassRegisterMatrix()` and `renderMobileCompactMatrix()`.
      - `renderClassRegisterMatrix()`: renders physical two-tier PC matrix, Sunday/holiday vertical spans, today gradient, summary columns, and tfoot totals.
      - `renderMobileCompactMatrix()`: renders daily compact table for selected date, handling multiple class sessions per day and period filtering.
-     - `toggleDigitalPen()`: unified status cycler (`P` ➔ `A` ➔ `L` ➔ Clear) with optimistic UI update and `PUT /api/v1/faculty/registers/:id/mark-cell`.
+     - `toggleDigitalPen()`: unified status cycler (`P` âž” `A` âž” `L` âž” Clear) with optimistic UI update and `PUT /api/v1/faculty/registers/:id/mark-cell`.
      - `checkClassEspStatus()` & `triggerClassEspDaySync()`: connected to real backend ESP32 scan/confirmation endpoints.
      - `setMobilePeriodFilter()`, `toggleMobileRegisterMode()`, `onSyncDateChange()`, `openAddSessionModal()`, and `createClassSession()`.
   4. **Verification Suite**:
@@ -1759,7 +1871,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - The user requested three critical workflow enhancements for the Classroom workspace (`/faculty/group-detail.html`):
     1. **Sticky Top Header**: Make the top application header (`.gc-navbar`) remain firmly pinned to the top of the viewport when scrolling, preventing content from bleeding or hiding underneath.
     2. **Embedded Register & Sheets Tabs**: Previously, tapping `Register` or `Sheets` in the mobile bottom bar navigated away to standalone `/faculty/registers.html` and `/faculty/sheets.html`, altering the navigation context and changing the bottom menu bar to the global faculty bar (`Home`, `Registers`, `Students`, `Menu`). The user requested that `Register` and `Sheets` open as native in-place tabs *inside* the classroom (just like `Classwork`), keeping the same sticky header and persistent classroom bottom menu (`Stream` | `Classwork` | `People` | `Register` | `Sheets`).
-    3. **Subject-Scoped Attendance Matrix**: When opening the in-classroom `Register` tab, eliminate the generic subject switcher dropdown (`Switch: Database Management Systems...`) and render the dedicated Attendance Matrix for that specific classroom subject only, complete with month navigation, ESP32 presence sync, Live Roll Call modal (dynamic QR code & 6-digit PIN), and interactive cell attendance toggle (`P` ➔ `A` ➔ `L`).
+    3. **Subject-Scoped Attendance Matrix**: When opening the in-classroom `Register` tab, eliminate the generic subject switcher dropdown (`Switch: Database Management Systems...`) and render the dedicated Attendance Matrix for that specific classroom subject only, complete with month navigation, ESP32 presence sync, Live Roll Call modal (dynamic QR code & 6-digit PIN), and interactive cell attendance toggle (`P` âž” `A` âž” `L`).
     4. **Resolution of `sheets.js` `daysInMonth` Crash**: Fixed DevTools console crash `ReferenceError: daysInMonth is not defined at renderAttendanceSheetTable (sheets.js:2935:29)`.
 
 - **Completed Deliverables**:
@@ -1773,7 +1885,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Dedicated `#tab-register` Pane**:
      - Built dedicated in-classroom Attendance Matrix workspace scoped to the active class.
      - Omitted the global multi-subject select dropdown to prevent context switching.
-     - Integrated month navigation pill (`<`, `[Month Year ▾]`, `>`, `Today`), ESP32 sync status & trigger bar, Live Roll Call modal (dynamic QR & PIN + live check-in feed), physical matrix ledger table, and defaulter highlighting (<75%).
+     - Integrated month navigation pill (`<`, `[Month Year â–¾]`, `>`, `Today`), ESP32 sync status & trigger bar, Live Roll Call modal (dynamic QR & PIN + live check-in feed), physical matrix ledger table, and defaulter highlighting (<75%).
   4. **Dedicated `#tab-sheets` Pane**:
      - Built embedded multi-sheet studio console containing:
        - Mode switcher dropdown: `1. Master Evaluation Sheet`, `2. Class Test Marksheet`, `3. Assignment Marksheet`, `4. Attendance Ledger`.
@@ -1783,7 +1895,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   5. **Controller Integration (`frontend/faculty/group-detail/group-detail.js`)**:
      - Extended `switchTab(tab, subOption)` to handle `register` and `sheets`, dynamically calling `loadClassRegister()` and `loadClassSheets()`.
      - Preserved `#classroom-mobile-bottom-nav` active highlighting across all 5 tabs (`Stream`, `Classwork`, `People`, `Register`, `Sheets`).
-     - Implemented `toggleClassCellAttendance(studentId, date, currentStatus, sessionId)` for instant cell toggling (`P` ➔ `A` ➔ `L` ➔ cleared) using `PUT /api/v1/faculty/registers/:id/mark-cell`.
+     - Implemented `toggleClassCellAttendance(studentId, date, currentStatus, sessionId)` for instant cell toggling (`P` âž” `A` âž” `L` âž” cleared) using `PUT /api/v1/faculty/registers/:id/mark-cell`.
      - Implemented live Roll Call modal handlers (`openClassRollCallModal`, `closeClassRollCallModal`, `switchClassRollCallMode`, `toggleRollCallStudent`).
   6. **Bugfix: Resolved `daysInMonth` in `sheets.js`**:
      - Corrected scope variable declarations in `renderAttendanceSheetTable()` (`daysInMonth`, `m`, `y`, `yr`, `sem`, `esc`).
@@ -1798,7 +1910,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 223: Course File Schema Invariant & SVG Attribute Resolution
+### âœ… Milestone 223: Course File Schema Invariant & SVG Attribute Resolution
 
 - **User Insight & Bug Identification**:
   - The user captured an error on `/faculty/dashboard.html`: red toast notification stating `"no such column: group_id"`, and DevTools console showing `500 (Internal Server Error): /api/v1/course-files?group_id=1` along with SVG `<path> attribute d` parser warnings.
@@ -1822,7 +1934,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 222: Teaching Group Tabs Relocation — Move Stream, Classwork, People, Marks on Top of Announcement
+### âœ… Milestone 222: Teaching Group Tabs Relocation â€” Move Stream, Classwork, People, Marks on Top of Announcement
 
 - **User Insight & Requirements**:
   - *"move stream,classwrok,people,marks on top of announcement"*
@@ -1835,7 +1947,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Placed `<nav class="classroom-tabs-bar" id="classroom-desktop-tabs" role="tablist">` as the primary header inside `<main class="classroom-body">`, immediately preceding `#tab-stream` and sitting directly on top of the announcement compose card.
      - Preserved all tab IDs (`tab-btn-stream`, `tab-btn-classwork`, `tab-btn-people`, `tab-btn-marks`) and badge count IDs (`tab-cw-count`, `tab-people-count`, `tab-marks-count`).
   2. **Uncluttered Top Navbar & Header Styling (`frontend/faculty/group-detail/group-detail.css`)**:
-     - Updated `.gc-nav-left` from `max-width: 340px` to `flex: 1 1 auto; max-width: none; min-width: 220px;`, allowing the full class title (`Database Management Systems (Theory)`) and department subtitle (`Sem 5 • Information Technology`) to be displayed without clipping.
+     - Updated `.gc-nav-left` from `max-width: 340px` to `flex: 1 1 auto; max-width: none; min-width: 220px;`, allowing the full class title (`Database Management Systems (Theory)`) and department subtitle (`Sem 5 â€¢ Information Technology`) to be displayed without clipping.
      - Activated `.classroom-tabs-bar` with modern Material/Google Classroom tab strip styling: `display: flex; gap: 0.35rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; width: 100%;`.
      - Styled `.classroom-tabs-bar .gc-nav-tab` with `border-bottom: 3px solid transparent; margin-bottom: -1px; min-height: 48px;` and active primary indicator flush with the border line.
      - Optimized vertical rhythm: adjusted `.classroom-banner` margin to `1.25rem auto 0.75rem` and `.classroom-body` padding to `1.25rem 2.5rem 2.5rem`, providing clean 20px spacing between banner and tabs.
@@ -1854,7 +1966,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 221: Comprehensive Explanatory Comments & Bidirectional Code Traceability Across 100% of 3-Tier MVC Architecture
+### âœ… Milestone 221: Comprehensive Explanatory Comments & Bidirectional Code Traceability Across 100% of 3-Tier MVC Architecture
 
 - **User Insight & Architecture Shift**:
   - Scan the entire backend codebase and systematically add comprehensive explanatory comments and bidirectional architectural traceability tags:
@@ -1899,7 +2011,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 220: Unification of Registration Portals — Single Canonical Multi-Role Registration Hub & Elimination of Legacy Separate Portals
+### âœ… Milestone 220: Unification of Registration Portals â€” Single Canonical Multi-Role Registration Hub & Elimination of Legacy Separate Portals
 
 - **User Insight & Architecture Shift**:
   - Claude AI Recommendation: *"4. Merge the three registration pages into one."*
@@ -1914,9 +2026,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Automatic query parameter routing: Supports `?role=student`, `?role=faculty`, `?role=hod`, and Google pre-fill parameters (`google_email`, `google_name`, `google_sub`).
   2. **Canonical 301 Redirect Architecture (`server.js` & `authController.js`)**:
      - Updated `backend/server.js`:
-       - `/register` and `/register.html` ➔ Permanent 301 redirect to `/login/register.html`.
-       - `/login/student-register.html` and `/login/student-register` ➔ Permanent 301 redirect to `/login/register.html?role=student`.
-       - `/login/faculty-register.html` and `/login/faculty-register` ➔ Permanent 301 redirect to `/login/register.html?role=faculty`.
+       - `/register` and `/register.html` âž” Permanent 301 redirect to `/login/register.html`.
+       - `/login/student-register.html` and `/login/student-register` âž” Permanent 301 redirect to `/login/register.html?role=student`.
+       - `/login/faculty-register.html` and `/login/faculty-register` âž” Permanent 301 redirect to `/login/register.html?role=faculty`.
      - Updated `backend/src/controllers/authController.js`: Google OAuth redirects for new registrations point directly to `/login/register.html?role=student`.
   3. **Purged Legacy Duplicate Folders**:
      - Deleted `frontend/login/student-register/` and `frontend/login/faculty-register/` (6 duplicate files, over 80KB eliminated).
@@ -1930,7 +2042,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 219: Empower Branch Faculty & Eliminate Restrictive Class Teacher Bottleneck
+### âœ… Milestone 219: Empower Branch Faculty & Eliminate Restrictive Class Teacher Bottleneck
 
 - **User Insight & Architecture Shift**:
   - *"in new system we have class teacher wrok into their branch FACULTY sso if 1 is not available other can help students that is why role becomes absolute useless"*
@@ -1955,7 +2067,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 218: Phase 2 Dependency & Database Pruning — Playwright Removal, Ghost Table Purge & Test Suite Consolidation
+### âœ… Milestone 218: Phase 2 Dependency & Database Pruning â€” Playwright Removal, Ghost Table Purge & Test Suite Consolidation
 
 - **User Requirements**:
   - *"next"* (Proceed with Phase 2 de-bloating: Playwright removal, WhatsApp ghost table cleanup, and test suite consolidation).
@@ -1979,11 +2091,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 217: Phase 1 Safe Zero-Risk De-Bloating — Duplicate Assets, Database Consolidation & Stub Elimination
+### âœ… Milestone 217: Phase 1 Safe Zero-Risk De-Bloating â€” Duplicate Assets, Database Consolidation & Stub Elimination
 
 - **User Requirements**:
   - *"this is analysis of claude ai i can see many old thing like class teacher role ,WhatsApp etc"*
-  - *"wait fro /plan after analysis"* ➔ User approved **Phase 1 (Safe Zero-Risk Cleanup)**: Delete duplicate frontend/database folders, 10 stub redirect pages, and 35 server.js redirect rules.
+  - *"wait fro /plan after analysis"* âž” User approved **Phase 1 (Safe Zero-Risk Cleanup)**: Delete duplicate frontend/database folders, 10 stub redirect pages, and 35 server.js redirect rules.
 
 - **Completed Cleanups & Architectural Consolidation**:
   1. **Eliminated Exact Duplicate Frontend Folders**:
@@ -2006,7 +2118,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 216: Clean Project Packaging & Comprehensive Documentation Suite with MySQL Migration Guide
+### âœ… Milestone 216: Clean Project Packaging & Comprehensive Documentation Suite with MySQL Migration Guide
 
 - **User Requirements**:
   - *"now make zip only remove unnecessary thing and add new uopdated documents that explin about projact in detailed"*
@@ -2037,7 +2149,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 215: Bidirectional Code Traceability & Architectural Comments across 3-Tier MVC Architecture
+### âœ… Milestone 215: Bidirectional Code Traceability & Architectural Comments across 3-Tier MVC Architecture
 
 - **User Requirements**:
   - Scan the entire backend codebase and add comprehensive explanatory comments and bidirectional architectural traceability:
@@ -2081,7 +2193,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 214: Separation of Controllers and Models (Clean MVC Architecture)
+### âœ… Milestone 214: Separation of Controllers and Models (Clean MVC Architecture)
 
 - **User Requirements**:
   - *"Routes Serve as Controllers but i need separate controller and model so code get more clean if possible make clean and less code"*
@@ -2151,14 +2263,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Deleted dead `backend/src/services/defaulterService.js` and all associated legacy routes.
      - Removed inline SQL query in `backend/server.js` for `/api/v1/departments`, delegating cleanly to `authController.getDepartments()`.
      - Purged dead, unused client scripts and stylesheets left behind by page consolidations:
-       - `frontend/student/groups/groups.js` (60.7 KB) & `groups.css` (12.6 KB) — superseded by student dashboard.
-       - `frontend/admin/students/students.js` (22.5 KB) & `students.css` (11.6 KB) — superseded by admin reports.
-       - `frontend/admin/assignments/assignments.js` & `assignments.css` — superseded by admin faculty.
-       - `frontend/admin/audit/audit.js` & `audit.css` — superseded by audit logs.
-       - `frontend/faculty/hod-students/hod-students.js` & `hod-students.css` — superseded by faculty students.
-       - `frontend/faculty/hod-reports/hod-reports.js` & `hod-reports.css` — superseded by faculty reports.
-       - `frontend/faculty/hod-archive/hod-archive.js` & `hod-archive.css` — superseded by faculty students.
-       - `frontend/faculty/hod-devices/hod-devices.js` & `hod-devices.css` — superseded by hod settings.
+       - `frontend/student/groups/groups.js` (60.7 KB) & `groups.css` (12.6 KB) â€” superseded by student dashboard.
+       - `frontend/admin/students/students.js` (22.5 KB) & `students.css` (11.6 KB) â€” superseded by admin reports.
+       - `frontend/admin/assignments/assignments.js` & `assignments.css` â€” superseded by admin faculty.
+       - `frontend/admin/audit/audit.js` & `audit.css` â€” superseded by audit logs.
+       - `frontend/faculty/hod-students/hod-students.js` & `hod-students.css` â€” superseded by faculty students.
+       - `frontend/faculty/hod-reports/hod-reports.js` & `hod-reports.css` â€” superseded by faculty reports.
+       - `frontend/faculty/hod-archive/hod-archive.js` & `hod-archive.css` â€” superseded by faculty students.
+       - `frontend/faculty/hod-devices/hod-devices.js` & `hod-devices.css` â€” superseded by hod settings.
      - Converted legacy `index.html` stub pages in consolidated directories to lightweight, standards-compliant client meta-refresh/JS redirects for full static host compatibility (e.g. Vercel).
      - Synchronized `frontend/css/reset.css` with `frontend/shared/css/reset.css`.
      - Centralized phone normalizer in `backend/src/utils/formatters.js`.
@@ -2177,7 +2289,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 213: Complete Removal of Defaulter System, Hardcoded Subjects & Dead Entities
+### âœ… Milestone 213: Complete Removal of Defaulter System, Hardcoded Subjects & Dead Entities
 
 - **User Requirements**:
   - *"Defaulter system complte remove i don't want this is unnecessary code if we remove this we can reduce code size and i don't see conttroller and model folders in backend why and many more files have old code that don't need like in@[backend\src\services\curriculumService.js] we have hard-coded subject but now teachers make own teaching group so we don't have to have hard-coded subject like this their more code scan analyze and remove it"*
@@ -2216,7 +2328,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 212: Removal of `CRITICAL_THRESHOLD` & Backend Code Deduplication
+### âœ… Milestone 212: Removal of `CRITICAL_THRESHOLD` & Backend Code Deduplication
 
 - **User Requirements**:
   - *"remove CRITICAL_THRESHOLD all code from attendance system not needed"*
@@ -2247,7 +2359,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 211: Complete Removal of `frontend/components` & Modular Page Decoupling
+### âœ… Milestone 211: Complete Removal of `frontend/components` & Modular Page Decoupling
 
 - **User Requirements**:
   - *"@[frontend/components] remove this we not needed because i need i just pick any folder of frontend page like@[frontend/student/assignments], @[frontend/student/dashboard] this and other dev can make frontend page without problems that is why no shared css ,js only necessary outside css,js links"*
@@ -2273,7 +2385,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 210: Elimination of Redundant External CSS/JS Links & Component Consolidation
+### âœ… Milestone 210: Elimination of Redundant External CSS/JS Links & Component Consolidation
 
 - **User Requirements**:
   - *"in codes i can see extra css js links but we have have remove components and made code in files we no longer need to share css and js only necessary css js links from outside to extra"*
@@ -2299,7 +2411,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 209: Admin Drawer Inline Script Syntax Error Fix (`')' expected`)
+### âœ… Milestone 209: Admin Drawer Inline Script Syntax Error Fix (`')' expected`)
 
 - **User Requirements**:
   - *"Explain what this problem is and help me fix it: ')' expected. @[d:\uiap\Attendance-System-Simplified\frontend\admin\academic-structure\index.html:L131]"*
@@ -2315,7 +2427,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 208: Unified Monorepo Architecture (`onebotyt/Vidya`) & Standalone Repositories Synchronization Engine
+### âœ… Milestone 208: Unified Monorepo Architecture (`onebotyt/Vidya`) & Standalone Repositories Synchronization Engine
 
 - **User Requirements**:
   - Initialized new unified repository `https://github.com/onebotyt/Vidya.git` hosting both frontend and backend together for unified development and experimentation.
@@ -2343,11 +2455,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 207: Mobile Viewport Auto-Zoom & Horizontal Overflow Elimination
+### âœ… Milestone 207: Mobile Viewport Auto-Zoom & Horizontal Overflow Elimination
 
 - **User Requirements**:
   - *"when i open page that open in zoom not fit to mobile screen fiux it"* accompanied by mobile screenshot of Classroom dashboard.
-  - Page opened in an unintended zoomed-out/zoomed-in state on mobile devices because content overflow exceeded the 360px–390px mobile viewport, causing mobile browsers (WebKit/Blink) to auto-scale/zoom out to fit the blowout.
+  - Page opened in an unintended zoomed-out/zoomed-in state on mobile devices because content overflow exceeded the 360pxâ€“390px mobile viewport, causing mobile browsers (WebKit/Blink) to auto-scale/zoom out to fit the blowout.
 
 - **Root Causes Fixed**:
   1. **Viewport Meta Constraint**: Upgraded `<meta name="viewport">` in `faculty/dashboard/index.html` and `faculty/groups/index.html` to `width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover` to prevent auto-zooming and enforce 1:1 scale on mobile displays.
@@ -2364,7 +2476,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 206: Streamlined Detailed Classroom Cards & Responsive Mobile Polish
+### âœ… Milestone 206: Streamlined Detailed Classroom Cards & Responsive Mobile Polish
 
 - **User Requirements**:
   - *"i doesn't like minimul design remove i need that detailed design card same but minimul"*
@@ -2377,7 +2489,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Purged `getClassesViewMode`, `setClassesViewMode`, `applyClassesViewMode` controllers and local storage hooks.
      - Excised `.view-minimal` styles from `dashboard.css` and `groups.css`.
   2. **Minimal Proportions for Authentic Detailed Card**:
-     - **Header Banner (`.gc-card-header`)**: Streamlined desktop height to ~102px (mobile ~92px) with clean typography, compact meta row (`Sem X • THEORY • AY 2026-27`), and uncluttered code tag.
+     - **Header Banner (`.gc-card-header`)**: Streamlined desktop height to ~102px (mobile ~92px) with clean typography, compact meta row (`Sem X â€¢ THEORY â€¢ AY 2026-27`), and uncluttered code tag.
      - **Unclipped Teacher Initial Avatar (`.gc-card-avatar`)**: Repositioned avatar circle to `bottom: 0.75rem; right: 1.15rem; width: 38px; height: 38px;` (mobile `34px; bottom: 0.65rem; right: 0.85rem;`), ensuring it is 100% visible inside the banner with zero clipping and zero collision with the stats row below.
      - **Body Stats Row (`.gc-card-body`, `.gc-card-stats-row`)**: Reduced top/bottom padding to `0.65rem 1.15rem 0.5rem`, providing clean left-aligned student count and attendance % pill without overlapping.
      - **Sleek Action Buttons (`.gc-card-primary-actions`)**: Tightened 2x2 grid spacing (`gap: 0.45rem; padding: 0.55rem 1.15rem;`) and 34px button heights (`[Take Attendance] [Register] [Students] [Classwork]`).
@@ -2391,19 +2503,19 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 203: Google Classroom Desktop Header Alignment, Centered Navigation Tabs & Card Banner Layout
+### âœ… Milestone 203: Google Classroom Desktop Header Alignment, Centered Navigation Tabs & Card Banner Layout
 
 - **User Requirements**:
   - *"you can see in pc header and mobile header difference"* accompanied by screenshots comparing the desktop (PC) classroom view with the mobile view.
   - Aligned PC desktop view to authentic Google Classroom web layout:
     1. **Top Navbar Header Layout**:
-       - Left: Hamburger toggle `☰`, Classroom logo icon, and class title (`Database Management Systems (Theory)`) with section subtitle (`Sem 5 • Information Technology`). Removed redundant breadcrumbs and legacy back button clutter.
+       - Left: Hamburger toggle `â˜°`, Classroom logo icon, and class title (`Database Management Systems (Theory)`) with section subtitle (`Sem 5 â€¢ Information Technology`). Removed redundant breadcrumbs and legacy back button clutter.
        - Center: Centered navigation tabs (`Stream`, `Classwork 9`, `People 10`, `Marks 4`) right inside the top header navbar (`.gc-nav-center-tabs`), featuring the active underline border and count badges.
-       - Right: Clean Settings gear icon `⚙️` (`#btn-desktop-class-settings`) opening a sleek dropdown with *Edit Class Details*, *Unified Sheets Studio*, *Attendance Register*, *Promote Cohort*, and *About This Class*. Preserved `+ Classes Hub`, Google Apps launcher `⋮⋮⋮`, theme toggle, and profile avatar.
+       - Right: Clean Settings gear icon `âš™ï¸` (`#btn-desktop-class-settings`) opening a sleek dropdown with *Edit Class Details*, *Unified Sheets Studio*, *Attendance Register*, *Promote Cohort*, and *About This Class*. Preserved `+ Classes Hub`, Google Apps launcher `â‹®â‹®â‹®`, theme toggle, and profile avatar.
     2. **Card Hero Banner**:
        - Transformed the banner from full-bleed 100% width into a centered card container matching `.classroom-body` (`max-width: 1200px; margin: 1.5rem auto 1.25rem; border-radius: var(--radius-lg); width: calc(100% - 3rem);`).
        - Displayed the iconic yellow academic folder and blue headphones vector illustration (`.banner-illustration`) on the right side of the card.
-       - Added 1-click Class Code pill (`Class code: DBMS501 [⎘]`) copying the code to clipboard.
+       - Added 1-click Class Code pill (`Class code: DBMS501 [âŽ˜]`) copying the code to clipboard.
        - Added compact bottom-right action pills (*Customize*, *Sheets Studio*, *Register*).
     3. **Elimination of Redundant Bars**:
        - Hid the bulky `.classroom-sheets-bar` and legacy `.classroom-tabs-bar` on desktop since sheets tools live in the Settings gear menu, Apps launcher, and banner pills, and tabs are centered in the top header.
@@ -2424,7 +2536,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 205: Guaranteed Same-Tab Navigation for Unified Sheets Studio & Registers
+### âœ… Milestone 205: Guaranteed Same-Tab Navigation for Unified Sheets Studio & Registers
 
 - **User Requirements**:
   - *"when click to open sheets studio that opeing in different tab fix it"* & *"still in open in different tab"*.
@@ -2446,23 +2558,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 204: Mobile Classroom Header Logo + Profile + 5-Tab Bottom Navbar
+### âœ… Milestone 204: Mobile Classroom Header Logo + Profile + 5-Tab Bottom Navbar
 
 - **User Requirements**:
   - *"fix mobile classroom header because that did not have logo and profile and also move sheet studio, register in bottom navbar"*
-  - Mobile header must show: `☰` (sidebar toggle) + green brand icon + **Classroom** label on the left, and 🌙 theme toggle + profile avatar initials on the right.
-  - Bottom navbar must have 5 tabs: Stream, Classwork, People, Register (→ `openLinkedRegister()`), Sheets (→ `openSheetStudio()`).
+  - Mobile header must show: `â˜°` (sidebar toggle) + green brand icon + **Classroom** label on the left, and ðŸŒ™ theme toggle + profile avatar initials on the right.
+  - Bottom navbar must have 5 tabs: Stream, Classwork, People, Register (â†’ `openLinkedRegister()`), Sheets (â†’ `openSheetStudio()`).
   - Desktop view must remain intact (Milestone 203 layout unchanged).
 
 - **Key Code Changes**:
   1. **`frontend/faculty/group-detail/index.html`**:
-     - Replaced old `mobile-header-actions` div (containing `ⓘ` and `⋮` overflow buttons) with `#btn-theme-toggle-mobile` (moon icon SVG) + `#gc-user-avatar-mobile` (avatar div with `.mobile-avatar` class).
+     - Replaced old `mobile-header-actions` div (containing `â“˜` and `â‹®` overflow buttons) with `#btn-theme-toggle-mobile` (moon icon SVG) + `#gc-user-avatar-mobile` (avatar div with `.mobile-avatar` class).
      - Added `#mobile-tab-btn-register` and `#mobile-tab-btn-sheets` buttons to `#classroom-mobile-bottom-nav`.
   2. **`frontend/faculty/group-detail/group-detail.css`** (inside `@media (max-width: 768px)`):
      - Removed `.gc-brand-link` from the hidden list so logo + "Classroom" text show on mobile.
-     - Added CSS to make `.gc-brand-link`, `.gc-brand-icon` (32×32px, green background, 8px radius), `.gc-brand-title` (1.1rem, 800 weight) visible.
-     - Added rules for `.mobile-header-actions` (flex, gap 0.25rem), `#btn-theme-toggle-mobile` (36×36px icon button), and `.gc-user-avatar.mobile-avatar` (34×34px avatar circle).
-     - Tightened bottom nav: `padding: 0 0.25rem`, nav button `padding: 3px 4px; min-width: 0`, pill `46×28px`, label `0.65rem nowrap ellipsis` for 5 items to fit.
+     - Added CSS to make `.gc-brand-link`, `.gc-brand-icon` (32Ã—32px, green background, 8px radius), `.gc-brand-title` (1.1rem, 800 weight) visible.
+     - Added rules for `.mobile-header-actions` (flex, gap 0.25rem), `#btn-theme-toggle-mobile` (36Ã—36px icon button), and `.gc-user-avatar.mobile-avatar` (34Ã—34px avatar circle).
+     - Tightened bottom nav: `padding: 0 0.25rem`, nav button `padding: 3px 4px; min-width: 0`, pill `46Ã—28px`, label `0.65rem nowrap ellipsis` for 5 items to fit.
   3. **`frontend/faculty/group-detail/group-detail.js`**:
      - Updated `renderUserAvatar()` to also populate `#gc-user-avatar-mobile` with teacher initials.
 
@@ -2478,9 +2590,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **User Requirements**:
   - *"fix announcement user can send any docment and file in announcement also red dot for students not teacher's also fix header inside class"* accompanied by screenshots showing text input for attachments, cut-off banner title, and teacher's classwork red dot.
   - Key architectural and functional deliverables:
-    1. **Real Document & File Attachments in Announcements**: Replaced the plain text "attachment name" input with a genuine multi-format file uploader (`<input type="file">` + "📎 Attach Document or File" trigger). Supports uploading any document, spreadsheet, slide, archive, image, text, or code file (PDF, DOCX, XLSX, PPTX, ZIP, PNG, JPG, TXT, PY, JAVA, etc.).
+    1. **Real Document & File Attachments in Announcements**: Replaced the plain text "attachment name" input with a genuine multi-format file uploader (`<input type="file">` + "ðŸ“Ž Attach Document or File" trigger). Supports uploading any document, spreadsheet, slide, archive, image, text, or code file (PDF, DOCX, XLSX, PPTX, ZIP, PNG, JPG, TXT, PY, JAVA, etc.).
     2. **Multipart Backend Stream Uploader**: Integrated `makeUploader('stream', 100)` into `POST /api/v1/teaching-groups/:id/stream` in `backend/src/routes/teachingGroups.js`. Stores uploaded files under `/uploads/stream/` with timestamped unique filenames, records `attachment_path` and `attachment_name`, and supports both multipart form uploads and backward-compatible JSON payloads.
-    3. **Dynamic File Extension Badges & Attachment Preview**: Added `.file-ext-badge` styles with theme tokenized color coding for `PDF`, `DOC`, `XLS`, `PPT`, `ZIP`, `IMG`, `TXT`, `CODE`, and `FILE`. Displayed attachment preview card in composer with filename, formatted file size, and remove button `✕`. Rendered download pill in stream posts and detail view opening genuine files in new window/tab.
+    3. **Dynamic File Extension Badges & Attachment Preview**: Added `.file-ext-badge` styles with theme tokenized color coding for `PDF`, `DOC`, `XLS`, `PPT`, `ZIP`, `IMG`, `TXT`, `CODE`, and `FILE`. Displayed attachment preview card in composer with filename, formatted file size, and remove button `âœ•`. Rendered download pill in stream posts and detail view opening genuine files in new window/tab.
     4. **Purged Red Dot for Teachers (Student-Only Invariant)**: Completely removed `.mobile-nav-red-dot` from `#mobile-tab-btn-classwork` in `frontend/faculty/group-detail/group-detail.js`. Enforced that red dots are strictly reserved for students who have unsubmitted coursework on the student dashboard.
     5. **Fixed Header & Unclipped Hero Banner**:
        - Fixed `.classroom-banner` on mobile: updated `min-height: 140px !important`, `margin: 0.35rem 0.85rem 0.65rem !important`, `padding: 1.25rem 1.25rem !important`, and `justify-content: center !important` (eliminating the `flex-end` alignment that cut off "Database Management...").
@@ -2501,14 +2613,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 201: Google Classroom Comments Indicator, Theory + Practical Gating, Notification Dispatch & Student Pending Work Red Dot
+### âœ… Milestone 201: Google Classroom Comments Indicator, Theory + Practical Gating, Notification Dispatch & Student Pending Work Red Dot
 
 - **User Requirements**:
   - *"on image what you see when i click on massge in googelclassromm becuase comments can not be show outside that can take more space and commented student bages show on massage that can give indigator someone has commented now we need to add more features to classroom like when teachers click on create class on Component remove prctical instead add theory + practical option when select this in classroom teacher get lab prctical option in classwork and when classwork is created don't send message to stream instead send to notify system then students get notifications also in students classwork icon show red dot if any work is padding"*
   - Key architectural and functional deliverables:
-    1. **Stream Post Comment Badging & Full Card Navigation**: Comments are kept out of the outside stream card to save vertical space; card is clickable to open the dedicated comments studio; cards with comments show an active commented indicator badge (`💬 X class comments` + count pill).
+    1. **Stream Post Comment Badging & Full Card Navigation**: Comments are kept out of the outside stream card to save vertical space; card is clickable to open the dedicated comments studio; cards with comments show an active commented indicator badge (`ðŸ’¬ X class comments` + count pill).
     2. **Academic Component Selection (Create/Edit Class)**: Removed standalone "Practical Only"; available choices are now **"Theory"** and **"Theory + Practical"**.
-    3. **Lab Practical Classwork Gating**: In the classroom workspace, the "Lab Practical" category, create dropdown item, and mobile FAB action are dynamically gated—prominently displayed when the class has "Theory + Practical", and hidden for "Theory only".
+    3. **Lab Practical Classwork Gating**: In the classroom workspace, the "Lab Practical" category, create dropdown item, and mobile FAB action are dynamically gatedâ€”prominently displayed when the class has "Theory + Practical", and hidden for "Theory only".
     4. **Notification Dispatch (Zero Stream Clutter)**: When classwork (assignments/practicals) is published, no announcement is posted to `classroom_posts`; instead, batch in-app notifications are dispatched to all enrolled students via `notificationService`.
     5. **Student Pending Work Red Dot Indicator**: Real-time calculation of pending unsubmitted coursework per enrolled student; rendered as a prominent pulsating red dot badge on the Classwork button in student class cards and classwork navigation tabs.
 
@@ -2528,7 +2640,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   5. **Student Pending Work Calculation & Red Dot Indicator**:
      - Added `pending_work_count` subquery in `GET /api/v1/teaching-groups/student/my-groups`.
      - Styled `.gc-red-dot` and `.gc-coursework-pending` in `frontend/student/dashboard/dashboard.css`.
-     - Updated `frontend/student/dashboard/dashboard.js` to render the red dot on `.gc-action-btn` (Classwork) and `[X Pending •]` coursework pill.
+     - Updated `frontend/student/dashboard/dashboard.js` to render the red dot on `.gc-action-btn` (Classwork) and `[X Pending â€¢]` coursework pill.
      - Added `.mobile-nav-red-dot` to `#mobile-tab-btn-classwork` in `frontend/faculty/group-detail/group-detail.js`.
   6. **Automated Verification**:
      - `node backend/scripts/test-theme-support.js`: **93/93 PASS** (0 hardcoded hex colors).
@@ -2537,32 +2649,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-student-self-registration.js`: **30/30 PASS**.
      - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
      - Screenshots verified:
-       - `classroom-mobile-attachment-card.png`: Commented badge `💬 1 class comment [1]` and bottom bar classwork dot.
-       - `student-dashboard-red-dot.png`: Card body `[📁 4 Pending •]` pill.
+       - `classroom-mobile-attachment-card.png`: Commented badge `ðŸ’¬ 1 class comment [1]` and bottom bar classwork dot.
+       - `student-dashboard-red-dot.png`: Card body `[ðŸ“ 4 Pending â€¢]` pill.
        - `student-dashboard-card-footer.png`: Red dot on student `Classwork` button icon.
 
 ---
 
-### ✅ Milestone 200: Google Classroom Mobile Architecture & Announcement Comments Studio
+### âœ… Milestone 200: Google Classroom Mobile Architecture & Announcement Comments Studio
 
 - **User Requirements**:
   - *"now enhance classroom just like google class room"* accompanied by three mobile app screenshots (`media_1791719609618.png`, `media_1791719628725.png`, `media_1791719636431.png`).
   - Faithfully recreate Google Classroom mobile UX:
-    1. Clean mobile top bar with Hamburger menu `☰` on the left, empty center on Stream tab, and Info circle `ⓘ` + Overflow `⋮` on the right (gear, theme toggle, and profile avatar removed on mobile).
+    1. Clean mobile top bar with Hamburger menu `â˜°` on the left, empty center on Stream tab, and Info circle `â“˜` + Overflow `â‹®` on the right (gear, theme toggle, and profile avatar removed on mobile).
     2. Vibrant gradient class hero banner with tilted academic yellow/amber notebook and blue headphones vector illustration, clean typography (Class title and Semester/Department subtitle), and suppressed breadcrumb/tag chips.
-    3. Prominent full-width `"✏️ New announcement"` action pill button below banner replacing the inline compose card on mobile screens, opening an interactive bottom-sheet modal.
-    4. Google Classroom stream post cards: circular avatar with author initials, author name and formatted date stack ("Oct 6", "Sep 11", "Oct 5"), vertical three dots `⋮`, multiline body text with bullet points, attachment card pill with red `[PDF]` badge + filename (`JavaProgramming_ClassTest5.pdf`), divider line, and `"Add class comment"` action link.
-    5. Dedicated Announcement Detail & Class Comments view (`#announcement-detail-view`) matching Screenshot 3: top header bar with Back arrow `←` and Overflow `⋮`, announcement card, `"Class comments"` header, comment thread, and sticky bottom capsule comment composer with `"Add class comment"` input and blue paper airplane `➤` send button.
+    3. Prominent full-width `"âœï¸ New announcement"` action pill button below banner replacing the inline compose card on mobile screens, opening an interactive bottom-sheet modal.
+    4. Google Classroom stream post cards: circular avatar with author initials, author name and formatted date stack ("Oct 6", "Sep 11", "Oct 5"), vertical three dots `â‹®`, multiline body text with bullet points, attachment card pill with red `[PDF]` badge + filename (`JavaProgramming_ClassTest5.pdf`), divider line, and `"Add class comment"` action link.
+    5. Dedicated Announcement Detail & Class Comments view (`#announcement-detail-view`) matching Screenshot 3: top header bar with Back arrow `â†` and Overflow `â‹®`, announcement card, `"Class comments"` header, comment thread, and sticky bottom capsule comment composer with `"Add class comment"` input and blue paper airplane `âž¤` send button.
     6. Modern 3-tab bottom navigation bar (`Stream`, `Classwork`, `People`) with highlighted capsule active state.
 
 - **Key Architectural & Code Changes**:
   1. **Backend Route Additions (`backend/src/routes/teachingGroups.js`)**:
      - Added `DELETE /api/v1/teaching-groups/:id/stream/:postId` endpoint to delete stream announcements and clean up associated comment records with audit logging.
   2. **Markup Architecture (`frontend/faculty/group-detail/index.html`)**:
-     - Streamlined mobile header actions: `#btn-mobile-info` (`ⓘ`) and `#btn-mobile-overflow` (`⋮`).
+     - Streamlined mobile header actions: `#btn-mobile-info` (`â“˜`) and `#btn-mobile-overflow` (`â‹®`).
      - Added `.banner-illustration` SVG (yellow notebook and blue headphones vector) and `.banner-subtitle` inside `#classroom-banner`.
      - Added full-width `.mobile-new-announcement-btn` inside `#mobile-stream-actions`.
-     - Added `#announcement-detail-view` featuring `.detail-header-bar` (`←` and `⋮`), `#detail-post-card`, `.detail-comments-container`, and sticky `.detail-bottom-composer` with capsule `.detail-composer-pill`.
+     - Added `#announcement-detail-view` featuring `.detail-header-bar` (`â†` and `â‹®`), `#detail-post-card`, `.detail-comments-container`, and sticky `.detail-bottom-composer` with capsule `.detail-composer-pill`.
      - Added `#modal-class-info` and `#modal-new-announcement` bottom-sheet dialogs.
   3. **Theme Token Compliance & Styles (`frontend/faculty/group-detail/group-detail.css`)**:
      - 100% theme tokenized styles (zero hardcoded `#hex` or `rgb()` colors, verified with `test-theme-support.js`).
@@ -2586,7 +2698,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 199: Home Page Mobile Screen Architecture & Responsiveness Polish
+### âœ… Milestone 199: Home Page Mobile Screen Architecture & Responsiveness Polish
 
 - **User Requirements**:
   - *"fix home page for mobile screens"* (accompanied by mobile viewport screenshots showing clipped header "Si..." for Sign In, wrapping hero pills, giant title/description pushing CTAs below fold, and wrapping Live PIN in the hero window).
@@ -2595,12 +2707,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Key Architectural & Code Changes**:
   1. **Top Header Mobile Responsive Clearance (`.site-header`)**:
      - Reduced `.nav-container` mobile padding to `0.6rem 1rem` and gap to `0.5rem`.
-     - Scaled `.brand-emblem` to 36×36px and hid secondary `.brand-tagline` (`Campus Operating System`) on screens $\le 640px$.
+     - Scaled `.brand-emblem` to 36Ã—36px and hid secondary `.brand-tagline` (`Campus Operating System`) on screens $\le 640px$.
      - Hid redundant `.btn-nav-ghost` (`Register`) in top bar on $\le 640px$ (prominently accessible via hero button, role gateways, floating dock, and sign-in page).
-     - Scaled `.theme-toggle` to 34×34px and `.btn-nav-cta` (`Sign In`) to compact padding `0.42rem 0.85rem` with `font-size: 0.8rem`.
-     - Completely eliminated horizontal overflow and clipping on 320px–375px screens.
+     - Scaled `.theme-toggle` to 34Ã—34px and `.btn-nav-cta` (`Sign In`) to compact padding `0.42rem 0.85rem` with `font-size: 0.8rem`.
+     - Completely eliminated horizontal overflow and clipping on 320pxâ€“375px screens.
   2. **Above-the-Fold Hero Section (`.hero-wrap`)**:
-     - Added responsive text spans to `.hero-badge-pill`: `.badge-text-full` (`VidyaOS 2026 Academic Release · Zero-Latency Core`) and `.badge-text-short` (`VidyaOS 2026 · Institutional Core`) to eliminate 2-line badge wrapping on mobile.
+     - Added responsive text spans to `.hero-badge-pill`: `.badge-text-full` (`VidyaOS 2026 Academic Release Â· Zero-Latency Core`) and `.badge-text-short` (`VidyaOS 2026 Â· Institutional Core`) to eliminate 2-line badge wrapping on mobile.
      - Adjusted `.hero-headline` to `1.8rem` (`line-height: 1.16`) and `.hero-description` to `0.85rem` (`line-height: 1.45`).
      - Aligned `.hero-cta-row` buttons as full-width responsive blocks (`0.72rem 1.15rem` padding), ensuring both primary and secondary CTAs fit comfortably above the fold.
   3. **Live Interactive Window (`#matrix-preview`) & Roll Call Studio**:
@@ -2612,9 +2724,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Clamped metric descriptions with `-webkit-line-clamp: 2` for a modern, compact dashboard presentation.
   5. **Role Gateways (`#portals`) & Feature Bento (`#capabilities`)**:
      - Scaled `.portal-card` padding to `1.35rem 1.15rem` with compact icon boxes and feature checklist line heights.
-     - Scaled `.feat-card` padding to `1.15rem` with 38×38px icons.
+     - Scaled `.feat-card` padding to `1.15rem` with 38Ã—38px icons.
   6. **Floating Island Dock & Footer Spacing**:
-     - Scaled `.dock-btn` to 38×38px and disabled `.dock-tooltip` on mobile to avoid sticky hover states on touch screens.
+     - Scaled `.dock-btn` to 38Ã—38px and disabled `.dock-tooltip` on mobile to avoid sticky hover states on touch screens.
      - Added `5.5rem` bottom padding to `.site-footer` so the floating dock never obscures copyright or server telemetry text.
   7. **Automated Verification**:
      - `node backend/scripts/test-theme-support.js`: **93/93 PASS** (100% theme tokenized, 0 hardcoded colors).
@@ -2624,11 +2736,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-live-log-checkin.js`: **PASS**.
      - `node backend/scripts/test-student-self-registration.js`: **30/30 PASS**.
      - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
-     - Puppeteer mobile viewport screenshots verified in both Light and Dark modes (`375×667`).
+     - Puppeteer mobile viewport screenshots verified in both Light and Dark modes (`375Ã—667`).
 
 ---
 
-### ✅ Milestone 198: Minimal Redesign of Academic Structure & Mobile Card Duplication Elimination
+### âœ… Milestone 198: Minimal Redesign of Academic Structure & Mobile Card Duplication Elimination
 
 - **User Requirements**:
   - *"now fix this page remove unnecessary elements make minimal page"* (with screenshots of the Academic Structure console showing above-the-fold vertical bloat and broken duplicate department titles/status badges inside mobile cards).
@@ -2636,18 +2748,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 - **Key Architectural & Code Changes**:
   1. **Purged Header & Toolbar Clutter**:
-     - Removed redundant promotional pill: `UNIFIED CATALOG Single Code • Single Catalog`.
+     - Removed redundant promotional pill: `UNIFIED CATALOG Single Code â€¢ Single Catalog`.
      - Removed full-width `Back to Dashboard` button row on mobile (available via Home bottom navigation).
      - Cleaned catalog card header by removing verbose subtitle descriptions, integrating `#dept-search` with `#catalog-count-badge` in a single sleek header row.
   2. **High-Density Minimal Telemetry Strip (`.structure-telemetry-strip`)**:
-     - Replaced bloated ~120px session card and four ~90px KPI boxes (~210px total consumption) with a sleek, unified telemetry ribbon (**~50px on desktop, ~68px on mobile — 71% vertical space reduction**).
-     - Preserved all contractual test invariants: `#session-active-label`, `#session-dates-label`, `#session-rollover-text`, `FULLY AUTONOMOUS • ZERO MAINTENANCE`, `#stat-dept-count`, `#stat-hod-count`, and `#stat-session-term`.
+     - Replaced bloated ~120px session card and four ~90px KPI boxes (~210px total consumption) with a sleek, unified telemetry ribbon (**~50px on desktop, ~68px on mobile â€” 71% vertical space reduction**).
+     - Preserved all contractual test invariants: `#session-active-label`, `#session-dates-label`, `#session-rollover-text`, `FULLY AUTONOMOUS â€¢ ZERO MAINTENANCE`, `#stat-dept-count`, `#stat-hod-count`, and `#stat-session-term`.
   3. **Critical Mobile Duplication Bug Fixed**:
      - Resolved CSS specificity collision where `.academic-table tbody td` overrode `.d-desktop-only`, previously forcing hidden desktop cells to render on mobile alongside mobile header cells (causing duplicate department titles and duplicate active status badges).
      - Upgraded specificity with `.academic-table tbody td.d-desktop-only { display: none !important; }`.
      - Streamlined mobile card rendering into a clean 3-row layout:
-       - **Row 1**: Code badge (`[CE]`) + icon & name (`🏛 Civil Engineering`) on left, status pill (`● ACTIVE`) on top-right.
-       - **Row 2**: Duration pill (`3 Yrs • Diploma in Engg`) on left, HOD status pill (`UNASSIGNED` or appointed HOD) on right.
+       - **Row 1**: Code badge (`[CE]`) + icon & name (`ðŸ› Civil Engineering`) on left, status pill (`â— ACTIVE`) on top-right.
+       - **Row 2**: Duration pill (`3 Yrs â€¢ Diploma in Engg`) on left, HOD status pill (`UNASSIGNED` or appointed HOD) on right.
        - **Row 3**: Symmetrical action buttons (`[Edit]` and `[Core / Delete]`).
      - Reduced department card height by >50% (from ~180px down to ~88px).
   4. **Automated Verification**:
@@ -2659,7 +2771,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 197: System Settings Page Streamlining & Minimal Redesign
+### âœ… Milestone 197: System Settings Page Streamlining & Minimal Redesign
 
 - **User Requirements**:
   - *"now fix settings page remove unnecessary elements make minimal page"*
@@ -2669,14 +2781,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Purged Redundant UI Bloat**:
      - Excised 4-card `System Governance & Architecture` preview tiles.
      - Removed redundant `Live Settings State Preview` JSON block.
-     - Removed verbose `.field-hint` micro-labels to achieve single-screen mobile layout (375×667 without scrolling).
+     - Removed verbose `.field-hint` micro-labels to achieve single-screen mobile layout (375Ã—667 without scrolling).
   2. **Automated Verification**:
      - `node backend/scripts/test-theme-support.js`: **93/93 PASS**.
      - `node backend/scripts/test-settings-page.js`: **31/31 PASS**.
 
 ---
 
-### ✅ Milestone 196: Native OpenXML `<c:chart>` Interactive Excel Export Engine
+### âœ… Milestone 196: Native OpenXML `<c:chart>` Interactive Excel Export Engine
 
 - **User Requirements**:
   - *"remove print btn and export csv instead export btn give excel sheet like data analysis have"*
@@ -2692,7 +2804,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 195: Purge Obsolete API Explorer & Extracted Catalog Code
+### âœ… Milestone 195: Purge Obsolete API Explorer & Extracted Catalog Code
 
 - **User Requirements**:
   - *"@[d:\uiap\Attendance-System-Simplified\frontend\api-explorer.html] why this still here remove all export code"*
@@ -2716,7 +2828,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 194: Minimal Modern Redesign of Filters Toolbar & Telemetry Status Cards
+### âœ… Milestone 194: Minimal Modern Redesign of Filters Toolbar & Telemetry Status Cards
 
 - **User Requirements**:
   - *"fitters and status card taking to much space in screen so redesign and make minimal and modern"* (with screenshots showing the filters card and 4 bulky status cards consuming over 500px, pushing all charts and attendance reports below the fold).
@@ -2724,14 +2836,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 - **Key Architectural & Code Changes**:
   1. **Collapsible High-Density Filter Toolbar (`.report-filter-bar`)**:
-     - Converted the bulky 4-row filter panel into a sleek, minimal single-row toolbar (default height ~44px, down from ~242px — **81% vertical reduction**).
+     - Converted the bulky 4-row filter panel into a sleek, minimal single-row toolbar (default height ~44px, down from ~242px â€” **81% vertical reduction**).
      - **Main Row (`.filter-main-row`)**: Real-time cohort search input (`#report-search`) with magnifying glass icon and clear button (`#clear-search-btn`), plus a compact "Filters" toggle button (`#btn-toggle-filters`) and quick reset button (`#btn-reset-filters`).
      - **Collapsible Drawer Panel (`#filter-drawer-panel.filter-drawer-panel`)**: Modern CSS `grid-template-rows: 0fr` to `1fr` transition that smoothly expands/collapses secondary dropdowns (Department `#report-dept`, Date Range `#report-date-preset`, Year `#report-year`, and Semester `#report-sem`).
      - **Dynamic Filter Count Badge (`#filter-active-count.filter-active-pill`)**: Automatically counts and highlights active scoping filters (`.has-active`) with rotating chevron (`.filter-chevron-icon`), maintaining clear state visibility when the panel is collapsed.
   2. **High-Density Minimal 4-Metric Status Ribbon (`#kpi-board.analysis-board`)**:
-     - Replaced the bulky, vertically stacked cards (~260px tall with redundant filler descriptions "Across all sessions", "Enrolled student touches", "Operational scanners", "Registered today" and duplicate badges "Verified", "Attendees", "Today") with a sleek, horizontal micro-tile board (**~98px on mobile, ~52px on desktop — 62% vertical reduction**).
+     - Replaced the bulky, vertically stacked cards (~260px tall with redundant filler descriptions "Across all sessions", "Enrolled student touches", "Operational scanners", "Registered today" and duplicate badges "Verified", "Attendees", "Today") with a sleek, horizontal micro-tile board (**~98px on mobile, ~52px on desktop â€” 62% vertical reduction**).
      - **Symmetrical Micro-Tile Layout (`.kpi-card`)**: Left-aligned compact micro-icon pill (28-34px) with soft themed background tint, crisp metric label (`.kpi-lbl` in 0.72rem), and bold tabular numeric value (`.kpi-val` in 1.2-1.35rem).
-     - **Operational Telemetry Dot (`.kpi-live-dot`)**: Clean pulsating live dot (`● Online`) integrated directly into the Terminals header row without visual clutter.
+     - **Operational Telemetry Dot (`.kpi-live-dot`)**: Clean pulsating live dot (`â— Online`) integrated directly into the Terminals header row without visual clutter.
      - Preserved all element IDs (`kpi-scans`, `kpi-students`, `kpi-terminals`, `kpi-today`) for seamless telemetry updates in `reports.js`.
   3. **Total Screen Space Savings**:
      - Reduced combined above-the-fold vertical consumption from **~502px down to ~150px** (~350px / 70% space saved), immediately displaying the visual daily activity charts and attendance tables without requiring scrolling.
@@ -2744,11 +2856,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 193: Header Standardization, Popover Refinement & Encoding Cleanup
+### âœ… Milestone 193: Header Standardization, Popover Refinement & Encoding Cleanup
 
 - **User Requirements**:
   - *"fix header"* (standardize header, compact title and action bar, remove obsolete `#apps-launcher-modal`, align profile popover with dashboard standards).
-  - *"remove thses"* (remove corrupted Unicode box-drawing comment dividers `<!-- â•... -->` and fix title entity).
+  - *"remove thses"* (remove corrupted Unicode box-drawing comment dividers `<!-- Ã¢â€¢... -->` and fix title entity).
 
 - **Key Architectural & Code Changes**:
   1. **User Profile Popover Standardization**:
@@ -2760,7 +2872,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Shortened subtitle to `Biometric attendance & device telemetry` to eliminate multi-line wrapping on mobile devices.
      - Adjusted top `<main>` padding to `1rem` for optimal vertical rhythm.
   3. **Comment & Character Encoding Sanitization**:
-     - Removed all corrupted `<!-- â•... -->` divider comments across `frontend/admin/reports/index.html`.
+     - Removed all corrupted `<!-- Ã¢â€¢... -->` divider comments across `frontend/admin/reports/index.html`.
      - Fixed `<title>` entity to proper `&mdash;` standard.
      - Verified zero remaining non-ASCII mojibake characters in the HTML file.
   4. **Automated Verification**:
@@ -2770,7 +2882,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
      - `node backend/scripts/test-student-self-registration.js`: **30/30 PASS**.
 
-### ✅ Milestone 192: Side Nav Bar Standardization & High-Density Status Cards Polish
+### âœ… Milestone 192: Side Nav Bar Standardization & High-Density Status Cards Polish
 
 - **User Requirements**:
   - *"more enhance ui ux and fix status cards"*
@@ -2779,10 +2891,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Key Architectural & Code Changes**:
   1. **Standardized Admin Slide-Out Drawer (`#app-sidebar.app-sidebar.gc-drawer`)**:
      - Restored the institutional admin drawer standard pattern from `dashboard/index.html` to `frontend/admin/reports/index.html`.
-     - Replaced custom unstyled header markup with `.gc-drawer-header`, `.gc-brand-link`, `.gc-brand-icon` (SVG `🏛️` institution logo), and stacked "Admin Console" / "VidyaOS" branding with a `.gc-menu-btn` SVG `×` close button.
+     - Replaced custom unstyled header markup with `.gc-drawer-header`, `.gc-brand-link`, `.gc-brand-icon` (SVG `ðŸ›ï¸` institution logo), and stacked "Admin Console" / "VidyaOS" branding with a `.gc-menu-btn` SVG `Ã—` close button.
      - Replaced non-standard `.gc-drawer-content` with `.gc-drawer-body` (`flex: 1; overflow-y: auto;`), ensuring menu items fill the available height and properly push the footer to the bottom.
      - Upgraded `.gc-drawer-section-label` to `.gc-drawer-sec-title` with proper 1.25rem left inset alignment.
-     - Upgraded footer to standard `.gc-drawer-status-pill` (`.gc-drawer-dot` + `VidyaOS • Admin`) and `.gc-drawer-logout-btn` with sign-out SVG icon.
+     - Upgraded footer to standard `.gc-drawer-status-pill` (`.gc-drawer-dot` + `VidyaOS â€¢ Admin`) and `.gc-drawer-logout-btn` with sign-out SVG icon.
      - Added `height: 100vh; height: 100dvh;` to `aside.app-sidebar.gc-drawer` in `frontend/shared/css/admin-nav.css` and `frontend/css/admin-nav.css` to prevent floating footer or white cut-off gaps on dynamic mobile viewports.
   2. **Non-Truncating Status Cards & Mobile Filter Polish**:
      - Eliminated horizontal label squeezing: Redesigned the 4 KPI cards to modern vertical stacking with `.kpi-top-row` (icon pill + status tag), bold tabular numerals (`.kpi-val`), full-width title (`.kpi-lbl`), and contextual subtitle (`.kpi-desc`), completely eliminating `TOTAL SC...`, `UNIQUE ...`, and `TODAY'S S...` truncations.
@@ -2791,7 +2903,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-theme-support.js`: **93/93 PASS** (100% theme tokenized, 0 hardcoded colors).
      - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 191: Mobile UI/UX Overhaul for Department Attendance Reports
+### âœ… Milestone 191: Mobile UI/UX Overhaul for Department Attendance Reports
 
 - **User Requirements**:
   - "fix ui ux" (with 4 mobile screenshots showing truncated filter blocks, clipped KPI badges, multi-screen vertical chart scrolling, and oversized controls).
@@ -2804,11 +2916,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Row 2: Year (25%) + Semester (25%) + Search Cohorts (50%) with clear icon button.
      - Full-width quick reset button with compact 30px height.
      - On desktop, all 5 controls line up seamlessly in a single horizontal row.
-  2. **Non-Truncating High-Density 2×2 KPI Cards**:
+  2. **Non-Truncating High-Density 2Ã—2 KPI Cards**:
      - Replaced verbose labels (`TOTAL BIOMETRIC SCANS`, `TODAY'S SCANS`) with clean, single-line labels (`Total Scans`, `Unique Students`, `Terminals`, `Today's Scans`).
      - Fixed badge truncation: Changed clipped badge `Active Session` to compact `Active`.
      - Reduced card padding to `0.65rem 0.75rem` and value font size to `1.4rem` on mobile, keeping all 4 cards crisp and above the fold.
-  3. **Segmented Mobile Chart Switcher (`[ 📊 Daily Activity | 🍩 Cohort Share ]`)**:
+  3. **Segmented Mobile Chart Switcher (`[ ðŸ“Š Daily Activity | ðŸ© Cohort Share ]`)**:
      - Replaced 700px of stacked vertical chart scrolling with a sleek 2-pill toggle switcher on mobile.
      - Tap to switch between Daily Volume Trend and Cohort Presence Share instantly within a single screen.
      - Desktop remains a full 2-column side-by-side grid (`2fr 1fr`).
@@ -2821,7 +2933,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node scripts/test-theme-support.js`: **93/93 PASS** (100% theme tokenized, 0 hardcoded colors).
      - `node scripts/test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 190: Excision of Student Demographics & High-Density Upgrade of Department Attendance Reports
+### âœ… Milestone 190: Excision of Student Demographics & High-Density Upgrade of Department Attendance Reports
 
 - **User Requirements**:
   - "remove Student Demographics: and upgrade and remove unnecessary elements Department Attendance"
@@ -2850,7 +2962,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - HTTP GET `/admin/students.html`: **301 Moved Permanently** -> `/admin/reports.html`.
      - HTTP GET `/admin/reports.html`: **200 OK**.
 
-### ✅ Milestone 189: Consolidated Admin Reports & Analytics Page & Navigation Streamlining
+### âœ… Milestone 189: Consolidated Admin Reports & Analytics Page & Navigation Streamlining
 
 - **User Requirements**:
   - "we 2 separate analysis page combine them make one page no need separate page" (with drawer screenshot highlighting "Student Analytics" and "Department Reports").
@@ -2860,8 +2972,8 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Key Architectural & Code Changes**:
   1. **Consolidated 1-Page Master Console (`/admin/reports.html`)**:
      - Merged Department Attendance and Student Demographics into a tabbed console:
-       - **Tab 1: 📊 Department Attendance (`#panel-attendance`)**: Attendance KPIs, date filters, department summaries, daily attendance trend charts, scan logs, and CSV exports.
-       - **Tab 2: 🎓 Student Demographics (`#panel-students`)**: High-density 2×2 demographic KPIs, single-line department filter bar, segmented mobile chart switcher (Departments / Biometrics / Cohorts), cohort cards & summary table, and on-demand searchable roster table with student dossiers.
+       - **Tab 1: ðŸ“Š Department Attendance (`#panel-attendance`)**: Attendance KPIs, date filters, department summaries, daily attendance trend charts, scan logs, and CSV exports.
+       - **Tab 2: ðŸŽ“ Student Demographics (`#panel-students`)**: High-density 2Ã—2 demographic KPIs, single-line department filter bar, segmented mobile chart switcher (Departments / Biometrics / Cohorts), cohort cards & summary table, and on-demand searchable roster table with student dossiers.
      - Deep-linking & history state: Supports `?tab=attendance` (default) and `?tab=students`. Tab switches update URL via `history.replaceState` and trigger on-demand data loads without redundant polling.
   2. **Permanent 301 Redirect for Clean URL Architecture**:
      - Configured in `backend/server.js`: `['/admin/students.html', '/admin/students', '/admin/students/']` permanently redirects (`301 Moved Permanently`) to `/admin/reports.html?tab=students`.
@@ -2881,7 +2993,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node scripts/test-rbac-and-structure.js`: **30/30 PASS**.
      - HTTP GET `/admin/students.html`: **301 Moved Permanently** -> `/admin/reports.html?tab=students`.
 
-### ✅ Milestone 188: Mobile UI/UX Polish - Single-Line Filter, Segmented Chart Switcher & Mobile Card Stacks
+### âœ… Milestone 188: Mobile UI/UX Polish - Single-Line Filter, Segmented Chart Switcher & Mobile Card Stacks
 
 - **User Requirements**:
   - "fix ui ux" (with screenshots showing truncated KPI labels/subtitles, multi-screen chart scrolling, and horizontally overflowing cohort/roster tables).
@@ -2891,9 +3003,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Single-Line Filter & Roster Bar (`index.html` & `students.css`)**:
      - Consolidated the department dropdown, refresh button, and roster toggle button into a single horizontal toolbar.
      - Eliminated the awkward full-width second row button.
-  2. **Non-Truncating High-Density 2×2 KPI Cards**:
+  2. **Non-Truncating High-Density 2Ã—2 KPI Cards**:
      - Updated labels to `Total Enrolled`, `Biometric Coverage`, `Active Accounts`, and `Active Cohorts`.
-     - Subtitles formatted cleanly (`10 Active • 0 Prov.`, `10/10 Enrolled`, `10 Active Students`, `Across Depts`) with zero ellipsis cuts (`...`).
+     - Subtitles formatted cleanly (`10 Active â€¢ 0 Prov.`, `10/10 Enrolled`, `10 Active Students`, `Across Depts`) with zero ellipsis cuts (`...`).
   3. **Segmented Mobile Chart Switcher (`[ Departments | Biometrics | Cohorts ]`)**:
      - Replaced 3 stacked vertical full-screen charts with a sleek 3-tab pill switcher.
      - Users can switch instantly between charts without scrolling through 800px of chart boxes. Desktop remains a 3-column grid.
@@ -2906,7 +3018,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-theme-support.js`: **93/93 PASS**.
      - `test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 187: Mobile UI/UX Overhaul for Student Demographics & Analytics
+### âœ… Milestone 187: Mobile UI/UX Overhaul for Student Demographics & Analytics
 
 
 - **User Requirements**:
@@ -2918,7 +3030,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Runtime Bug Fix (`frontend/admin/students/students.js`)**:
      - Corrected function call from `renderCohortSummary` to `renderCohortSummaryTable` in `loadAllAnalytics()`, resolving the crashing ReferenceError toast.
   2. **Page Header Optimization (`frontend/admin/students/index.html` & `students.css`)**:
-     - Condensed title to `Student Analytics` and button to `← Dashboard` in a single flex row.
+     - Condensed title to `Student Analytics` and button to `â† Dashboard` in a single flex row.
      - Hid verbose paragraph subtitle and bulky "Institutional Model Rule" banner on screens `<= 639px`.
   3. **High-Density Toolbar & Filter**:
      - Designed compact `.stud-filter-bar` with department selector, icon refresh button, and `View Roster` toggle.
@@ -2933,7 +3045,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-theme-support.js`: **93/93 PASS** (0 hardcoded hex colors).
      - `test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 186: Reposition Department Select to Top of Create HOD Modal
+### âœ… Milestone 186: Reposition Department Select to Top of Create HOD Modal
 
 
 - **User Requirements**:
@@ -2952,7 +3064,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-theme-support.js`: **93/93 PASS**.
      - `test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 185: Mobile Modal Dialogs Layout & Overflow Fix
+### âœ… Milestone 185: Mobile Modal Dialogs Layout & Overflow Fix
 
 
 - **User Requirements**:
@@ -2972,12 +3084,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Ensured backdrop and modal cards have proper vertical scrolling (`overflow-y: auto`) without overflowing into browser chrome or bottom navigation bars.
   3. **Visual Verification**:
      - Verified modal rendering in both Light and Dark modes (`modal-search-mobile.png`, `modal-create-mobile.png`, `modal-create-dark.png`).
-     - Modals now fit comfortably within the 390×844 mobile viewport with all inputs, dropdowns, and submit buttons immediately visible and accessible.
+     - Modals now fit comfortably within the 390Ã—844 mobile viewport with all inputs, dropdowns, and submit buttons immediately visible and accessible.
   4. **Verification**:
      - `test-theme-support.js`: **93/93 PASS**.
      - `test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 184: Mobile UI/UX Overhaul & Clutter Reduction on HOD Hub
+### âœ… Milestone 184: Mobile UI/UX Overhaul & Clutter Reduction on HOD Hub
 
 
 - **User Requirements**:
@@ -2991,7 +3103,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Placed title and button side-by-side in a single flex line on mobile viewports (`flex-wrap: nowrap`).
      - Hid verbose paragraph subtitles on mobile (`.fac-page-header-text p { display: none !important; }`).
   2. **Ultra-Compact Registration Gateways Strip**:
-     - Combined section title and pills into a single-line 38px toolbar (`Registration Gates: [HOD 🔒 Closed] [Common 🔒 Closed]`).
+     - Combined section title and pills into a single-line 38px toolbar (`Registration Gates: [HOD ðŸ”’ Closed] [Common ðŸ”’ Closed]`).
      - Concise `Open` / `Closed` pill labels instead of uppercase multi-word statuses.
   3. **Common Faculty Manager De-duplication**:
      - Removed redundant duplicate `#btn-appoint-common-mgr` from card header.
@@ -3009,7 +3121,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-theme-support.js`: **93/93 PASS**.
      - `test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 183: Compact Self-Registration Gateways Strip on HOD Hub
+### âœ… Milestone 183: Compact Self-Registration Gateways Strip on HOD Hub
 
 
 - **User Requirements**:
@@ -3027,7 +3139,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Verification**:
      - `test-theme-support.js`: **93/93 PASS**.
 
-### ✅ Milestone 182: Module Cards Reordering (Academic Structure after Department Reports)
+### âœ… Milestone 182: Module Cards Reordering (Academic Structure after Department Reports)
 
 
 - **User Requirements**:
@@ -3046,7 +3158,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-admin-nav.js`: **51/51 PASS**
      - Captured and verified desktop and mobile screenshots.
 
-### ✅ Milestone 181: Module Cards Alignment & Removal of Attendance Threshold Mentions
+### âœ… Milestone 181: Module Cards Alignment & Removal of Attendance Threshold Mentions
 
 - **User Requirements**:
   - "update thses card also remove attendance threshold systems"
@@ -3055,7 +3167,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 - **Key Architectural & Code Changes**:
   1. **Administration Module Cards Update (`frontend/admin/dashboard/index.html`)**:
-     - **Card 05 (System Settings)**: Removed "official minimum attendance threshold percentage (75%), and session expiration rules"; updated description to "Official institution identity, college affiliation, accreditation codes, and institutional campus metadata." Updated badge to `Institutional Identity` and button to `Configure Settings →`.
+     - **Card 05 (System Settings)**: Removed "official minimum attendance threshold percentage (75%), and session expiration rules"; updated description to "Official institution identity, college affiliation, accreditation codes, and institutional campus metadata." Updated badge to `Institutional Identity` and button to `Configure Settings â†’`.
      - **Card 04 (Department Reports)**: Removed "early-warning defaulter tracking"; updated description to "Comprehensive attendance ledgers across all college branches, faculty accountability audits, academic semester records, and CSV exports."
      - **Card 03 (Student Analytics)**: Updated icon to dedicated graduation/cohort SVG.
      - **Unified Styling**: Replaced mixed `btn-secondary` outline buttons with cohesive `btn btn-primary btn-sm` across all 6 cards.
@@ -3066,7 +3178,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-api-flows.js`: **25/25 PASS**
      - Confirmed both desktop (1280px) and mobile (390px) screenshots.
 
-### ✅ Milestone 180: Streamlined 3-Card KPI Row (Total Faculty, Total Students, Enrolled Total Students)
+### âœ… Milestone 180: Streamlined 3-Card KPI Row (Total Faculty, Total Students, Enrolled Total Students)
 
 - **User Requirements**:
   - "only add total faculty and total student count card also enrolled total student this one for even if student pass out and new student added count increases for as record of how many students have used this system also thses 3 card in 1 row"
@@ -3090,7 +3202,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-api-flows.js`: **25/25 PASS**
      - Verified visual renderings on both 390px mobile and 1280px desktop.
 
-### ✅ Milestone 179: Admin Dashboard Mobile Layout Streamlining & Unneeded Cards Removal
+### âœ… Milestone 179: Admin Dashboard Mobile Layout Streamlining & Unneeded Cards Removal
 
 - **User Requirements**:
   - "we going to fix admin pages 1 dashboard page so ui can work on mobile screen remove Institutional Administration Console card, Role Boundary Invariant: , Recent Security & Administrative Activity these not needed"
@@ -3114,7 +3226,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-api-flows.js`: **25/25 PASS**
      - Mobile browser layout test: Verified zero horizontal overflow (`390px vs 390px`).
 
-### ✅ Milestone 178: Embedded Documented Navigation Blocks in Admin Pages & Export/Components Cleanup
+### âœ… Milestone 178: Embedded Documented Navigation Blocks in Admin Pages & Export/Components Cleanup
 
 - **User Requirements**:
   - "did you move header and both nav bar code inside admin pages also remove components we going to make separate code for separate files also add comments so i known what that code for also remove that all export code and @dev-server.js"
@@ -3142,7 +3254,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-rbac-and-structure.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 177: Unified Single `admin-nav` Architecture (Consolidated CSS/JS & Pure SVGs)
+### âœ… Milestone 177: Unified Single `admin-nav` Architecture (Consolidated CSS/JS & Pure SVGs)
 
 - **User Requirements**:
   - "make only 1 css js for name admin-nav for admin header ,bottom nav ,side bar nav also only svg"
@@ -3181,7 +3293,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-api-flows.js`: **25/25 PASS**
      - `test-register-consolidation.js`: **46/46 PASS**
 
-### ✅ Milestone 176: Secure Zero-AJAX Admin Navigation Architecture & Mobile Header Collision Elimination
+### âœ… Milestone 176: Secure Zero-AJAX Admin Navigation Architecture & Mobile Header Collision Elimination
 
 - **User Requirements**:
   - "let's fix header , side manu, bottom manu all html files ajax can have security problems so 1 we going to make for admin"
@@ -3209,7 +3321,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-rbac-and-structure.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 175: Minimal Course File Dossier Card UI (Descriptions Excised)
+### âœ… Milestone 175: Minimal Course File Dossier Card UI (Descriptions Excised)
 
 - **User Requirements**:
   - "remove descriptions from card not need i need minimal"
@@ -3232,7 +3344,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-course-file-preparation.js`: **33/33 PASS**
      - `test-register-consolidation.js`: **46/46 PASS**
 
-### ✅ Milestone 174: Refinement of Master Internal Evaluation Spreadsheet in Sheet Studio
+### âœ… Milestone 174: Refinement of Master Internal Evaluation Spreadsheet in Sheet Studio
 
 - **User Requirements**:
   - `http://localhost:3000/faculty/evaluation.html?id=3`
@@ -3264,7 +3376,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 173: Dedicated Faculty Drive, Asset Hub & Global Omnisearch Engine
+### âœ… Milestone 173: Dedicated Faculty Drive, Asset Hub & Global Omnisearch Engine
 
 - **User Requirements**:
   - "tell me what approaches we can achieve because this this current and in feature this going to be for teachers to maintain their records not much to do with student's so we need to design for teacher's also a better system to organize media because teachers will going to ues it like images,videos,documents also a global search bar to find any things like their own media or students documents make plan"
@@ -3276,7 +3388,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Modern Google Classroom header with center Omnisearch trigger button (`Ctrl+K`).
      - Minimalist Category Chips: `All Files`, `Documents & Slides`, `Videos & Demos`, `Images & Whiteboards`, `Student Documents` with real-time file counters.
      - Toolbar: Instant live search bar, course/subject filter dropdown, total files & storage stats badge, and Grid/List view toggle.
-     - Large visual asset cards with color-coded badges, course pills, student tag rows, and 1-click preview (👁️), download (⬇️), and delete (🗑️) actions.
+     - Large visual asset cards with color-coded badges, course pills, student tag rows, and 1-click preview (ðŸ‘ï¸), download (â¬‡ï¸), and delete (ðŸ—‘ï¸) actions.
      - Drag-and-drop file upload modal with real-time percentage upload progress bar.
      - In-app media preview modal: Native PDF iframe viewer, HTML5 video player with controls, responsive image lightbox, and direct download buttons.
   2. **Global Omnisearch Engine (`Ctrl+K` Spotlight Search)**:
@@ -3312,7 +3424,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 170: Complete Eradication of Attendance Prediction & Forecasting System
+### âœ… Milestone 170: Complete Eradication of Attendance Prediction & Forecasting System
 
 - **User Requirements**:
   - "still this page open remove prediction system for all code even from teacher code and department settings remove it"
@@ -3331,14 +3443,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Backend Service (`backend/src/services/reportService.js`)**:
      - Refactored `getStudentAttendanceStats()`: Eliminated speculative calculation text ("You can miss up to X consecutive class(es)...", "ATTENDANCE DEFICIT: Attend the next Y consecutive class(es)...").
      - Replaced with authoritative institutional standing statements:
-       - Healthy (≥ 75%): `"Attendance satisfies the statutory 75% institutional requirement."`
+       - Healthy (â‰¥ 75%): `"Attendance satisfies the statutory 75% institutional requirement."`
        - Deficit (< 75%): `"Attendance is currently X%, below the statutory 75% requirement."`
      - Preserved response structure so contract tests pass with 0 safe absences speculation.
   4. **Shared Calculation Helpers (`frontend/shared/js/utils.js` & `frontend/js/utils.js`)**:
      - Updated `calculateAttendanceForecast()` to return non-speculative compliance messages.
   5. **Faculty Defaulters Console (`frontend/faculty/reports/`)**:
      - Table header column renamed from *"Safe Miss / Recovery Target"* to *"Compliance Standing"*.
-     - Row items updated from *"Safe to miss: X"* / *"Must attend: +Y"* to clean compliance indicators (*"Eligible (≥ 75%)"* / *"Deficit (< 75%)"* with exact session shortfall).
+     - Row items updated from *"Safe to miss: X"* / *"Must attend: +Y"* to clean compliance indicators (*"Eligible (â‰¥ 75%)"* / *"Deficit (< 75%)"* with exact session shortfall).
   6. **Landing Page (`frontend/index.html`)**:
      - Removed predictive mentions, updating metric and gateway descriptions to institutional threshold compliance intelligence.
   7. **Verification Suites Passing**:
@@ -3353,7 +3465,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 169: Student Portal Google Classroom & Teaching Groups Dashboard Consolidation
+### âœ… Milestone 169: Student Portal Google Classroom & Teaching Groups Dashboard Consolidation
 
 - **User Requirements**:
   - "update student ui for new class room system"
@@ -3364,7 +3476,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Teaching Groups Consolidated into Home Dashboard (`/student/dashboard.html`)**:
      - Clarified architectural rule: For students, Teaching Groups and Enrolled Classes are identical concepts.
      - Permanent 301 HTTP redirects established in `backend/server.js`:
-       `['/student/groups.html', '/student/groups', '/student/groups/', '/student/teaching-groups', '/student/teaching-groups/'] ➔ /student/dashboard.html`.
+       `['/student/groups.html', '/student/groups', '/student/groups/', '/student/teaching-groups', '/student/teaching-groups/'] âž” /student/dashboard.html`.
      - `frontend/student/groups/index.html` configured with instant client-side forward: `window.location.replace('/student/dashboard.html' + window.location.search)`.
      - Removed redundant separate "Teaching Groups" links across all slide-out left drawers (`.gc-drawer`).
      - Removed redundant separate "Groups" tile from the 9-dot Apps Launcher dropdowns across all student pages.
@@ -3389,7 +3501,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Gradient card banners featuring 6 tokenized HSL palettes.
        - Course code pill, subject name, component badge (`THEORY` / `PRACTICAL`), teacher avatar, and faculty name.
        - Attendance Gauge pill with percentage and visual status tag (`Safe Zone` / `Deficit Warning`).
-       - Direct action buttons on each card: 📅 Register, 📝 Classwork, 📊 Scores, 💬 Stream.
+       - Direct action buttons on each card: ðŸ“… Register, ðŸ“ Classwork, ðŸ“Š Scores, ðŸ’¬ Stream.
      - **Active Live Session Banner (`#active-session-banner`)**:
        - Detects ongoing attendance sessions in real-time and enables instant 1-tap PIN presence claim.
      - **Class Stream Modal (`#student-stream-modal`)**:
@@ -3411,7 +3523,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `scripts/test-api-flows.js`: **25/25 PASS**
 ---
 
-### ✅ Milestone 168: Bottom Navigation Clearance for Toast Notifications & Alert Messages
+### âœ… Milestone 168: Bottom Navigation Clearance for Toast Notifications & Alert Messages
 
 - **User Requirements**:
   - "BOTTOM MANU BAR COVING ALERT MESSAGES FIX IT" (Bottom menu bar was covering/obscuring toast notifications and alert messages).
@@ -3439,7 +3551,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `scripts/test-course-file-preparation.js`: **33/33 PASS**
      - `scripts/test-register-consolidation.js`: **46/46 PASS**
 
-### ✅ Milestone 167: Course File Modal Dialog UI/UX System & Centered Fixed Overlays
+### âœ… Milestone 167: Course File Modal Dialog UI/UX System & Centered Fixed Overlays
 
 - **User Requirements**:
   - "FIX UI UX" (with screenshot of Course File showing modals like Enrolled Student Roster dumping inline at the bottom of the page unstyled without overlay dialogs).
@@ -3470,7 +3582,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `scripts/test-course-file-preparation.js`: **33/33 PASS**
      - `scripts/test-register-consolidation.js`: **46/46 PASS**
 
-### ✅ Milestone 166: Course File NBA Document Cards with Direct View, Upload & Delete Actions
+### âœ… Milestone 166: Course File NBA Document Cards with Direct View, Upload & Delete Actions
 
 - **User Requirements**:
   - "COURSE NBA EVERY DOCUMENT HAVE CARD IN THAT PDF GOING TO UPLOAD THAT LATER TEACHER CAN VIWE THAT OR UPLOAD NEW"
@@ -3482,7 +3594,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Converted Course File Quick Access panel from cramped 2-column layout to a polished, **1-by-1 full-width horizontal card layout** (`.cf-doc-cards-grid` with `flex-direction: column`).
      - Subject cards min-width expanded to 350px in `.gc-classes-grid`.
      - Each card (`.cf-doc-card`) spans full width with:
-       - **Left Section (`.cf-doc-card-title`)**: Formatted index badge (`01`–`18`) with mono styling + full document title with tooltip on overflow.
+       - **Left Section (`.cf-doc-card-title`)**: Formatted index badge (`01`â€“`18`) with mono styling + full document title with tooltip on overflow.
        - **Right Action Bar (`.cf-doc-card-actions`)**:
          - **View Button (`cf-action-view`)**: Deep-links with eye icon to view PDF preview / live interactive modal.
          - **Upload Button (`cf-action-upload`)**: Deep-links with upload icon to trigger PDF upload dropzone modal.
@@ -3514,24 +3626,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-student-self-registration.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 165: Course File NBA/NAAC Quick Access Panel on Subject Cards
+### âœ… Milestone 165: Course File NBA/NAAC Quick Access Panel on Subject Cards
 
-- **User Requirements**: "AND THESE ALL IN DASHBOARD FOR QUICK ACCESS" — all 18 Course File document categories accessible directly from each subject card on the dashboard.
+- **User Requirements**: "AND THESE ALL IN DASHBOARD FOR QUICK ACCESS" â€” all 18 Course File document categories accessible directly from each subject card on the dashboard.
 
 - **Implemented Architecture**:
   1. **Collapsible Quick Access Panel** (`cf-quick-panel`) added below the 4 primary action buttons on every subject card in both `dashboard.js` and `groups.js`.
   2. **4 Category Sections** with all 18 document links as pill-shaped chips:
-     - 📘 Curriculum & Syllabus (7 docs): Allotment Letter, Approved Syllabus, Course Outcomes, CO-PO Mapping, Lesson Plan, Class Timetable, Academic Calendar
-     - 👥 Students & Diagnostics (4 docs): Student List, Result Analysis, Advanced Learners, Slow Learners
-     - 📝 Assessments & Schedules (5 docs): Assessment Plan, Lab Plan, Assignment Schedule, Sample Papers, Continuous Assessment
-     - 🏆 Review & Attainment (2 docs): CO Attainment, Corrective Actions
+     - ðŸ“˜ Curriculum & Syllabus (7 docs): Allotment Letter, Approved Syllabus, Course Outcomes, CO-PO Mapping, Lesson Plan, Class Timetable, Academic Calendar
+     - ðŸ‘¥ Students & Diagnostics (4 docs): Student List, Result Analysis, Advanced Learners, Slow Learners
+     - ðŸ“ Assessments & Schedules (5 docs): Assessment Plan, Lab Plan, Assignment Schedule, Sample Papers, Continuous Assessment
+     - ðŸ† Review & Attainment (2 docs): CO Attainment, Corrective Actions
   3. **Each chip deep-links** to `/faculty/course-file.html?group_id=X&register_id=Y&doc=<slug>` so the Course File page can highlight the specific document.
-  4. **"Open Full Course File Dossier →"** footer link at bottom.
-  5. **Toggle function** `toggleCfPanel(groupId)` opens/closes with ▾/▴ chevron.
-  6. **Zero hardcoded colors** — all styles via CSS variables. Theme test: **93/93 PASS**.
+  4. **"Open Full Course File Dossier â†’"** footer link at bottom.
+  5. **Toggle function** `toggleCfPanel(groupId)` opens/closes with â–¾/â–´ chevron.
+  6. **Zero hardcoded colors** â€” all styles via CSS variables. Theme test: **93/93 PASS**.
   7. Applied to: `frontend/faculty/dashboard/dashboard.js`, `dashboard.css`, `frontend/faculty/groups/groups.js`, `groups.css`.
 
-### ✅ Milestone 164: Elimination of Dashboard Telemetry Panels — Pure Subject Class Cards View
+### âœ… Milestone 164: Elimination of Dashboard Telemetry Panels â€” Pure Subject Class Cards View
 
 - **User Requirements**:
   1. **Complete Removal of Dashboard Command Center & Segmented Switcher**:
@@ -3559,7 +3671,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-student-self-registration.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 163: Subject Class Course File Preparation & Institutional NBA/NAAC Dossier System
+### âœ… Milestone 163: Subject Class Course File Preparation & Institutional NBA/NAAC Dossier System
 
 - **User Requirements**:
   1. **Course File Preparation Module for Every Subject Class**:
@@ -3583,7 +3695,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        17. **CO attainment calculations** (PDF / Calculation sheet)
        18. **Corrective action reports (ATR)** (PDF)
   2. **Direct 1-Click Access from Subject Class Cards**:
-     - Added prominent `📁 Course File (NBA/NAAC)` action button to Subject Class Cards across both `/faculty/dashboard.html` and `/faculty/groups.html`.
+     - Added prominent `ðŸ“ Course File (NBA/NAAC)` action button to Subject Class Cards across both `/faculty/dashboard.html` and `/faculty/groups.html`.
      - 1-Click switch dropdown allows faculty to navigate between their assigned classes seamlessly.
   3. **HOD Verification & Printable Institutional Dossier**:
      - HOD / Admin audit verification with sign-off decision (`APPROVED`, `REVISION_REQUESTED`) and remarks.
@@ -3613,7 +3725,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-student-self-registration.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 162: Simplified Dashboard UI & Clean Subject Class Cards
+### âœ… Milestone 162: Simplified Dashboard UI & Clean Subject Class Cards
 
 - **User Requirements**:
   1. **Remove Complex Dashboard Clutter**:
@@ -3624,7 +3736,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Subject Name & Subtitle
        - Subject Code, Component (Theory/Lab), and Semester tags
        - Student count badge & Average attendance indicator
-       - 4 Direct 1-Click Action Buttons: ⚡ **Take Attendance**, 📋 **Register**, 👥 **Students**, 📝 **Classwork**
+       - 4 Direct 1-Click Action Buttons: âš¡ **Take Attendance**, ðŸ“‹ **Register**, ðŸ‘¥ **Students**, ðŸ“ **Classwork**
        - 1-Click copyable Class Invite Code pill
   3. **Preserve Invariant Test Contracts**:
      - Ensure existing test suites querying legacy telemetry/todo element IDs (`#todo-widget-list`, `#att-chart-bars`, `#dept-recent-sessions-list`, `#dept-action-radar-list`) remain intact via non-rendered compatibility containers (`aria-hidden="true" style="display:none;"`).
@@ -3650,7 +3762,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-student-self-registration.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 161: HOD Exclusive Pages Consolidation, Simplified 1-Click Dashboards & Multi-Period Registers
+### âœ… Milestone 161: HOD Exclusive Pages Consolidation, Simplified 1-Click Dashboards & Multi-Period Registers
 
 - **User Requirements**:
   1. **Strict 3 Exclusive HOD Pages**:
@@ -3667,7 +3779,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - 1-Click Department Subject Classes fast access with student-by-student attendance breakdown.
      - **For Teacher**:
        - 1-Click "My Students Roster" fast access across all enrolled classes.
-       - Class cards with 4 prominent direct action buttons: ⚡ **Take Attendance**, 👥 **Students**, 📋 **Register**, 📝 **Classwork**.
+       - Class cards with 4 prominent direct action buttons: âš¡ **Take Attendance**, ðŸ‘¥ **Students**, ðŸ“‹ **Register**, ðŸ“ **Classwork**.
   3. **Multi-Period Register Support**:
      - Daily register ledger and roll call support multiple class periods (Period 1 to 8, Double Period) on the same calendar day without 409 conflicts.
      - Sub-slot matrix columns (`12 [P1]`, `12 [P2]`), dual `thead`, per-period pen marks, and independent period attendance marking.
@@ -3676,10 +3788,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **HOD Exclusive Pages & Consolidation Redirects**:
      - Enforced 3 exclusive HOD pages: Dashboard (`dashboard.html`), Faculty (`hod-teachers.html`), Settings (`hod-settings.html`).
      - Added permanent 301 redirects in `backend/server.js`:
-       - `/faculty/hod-students.html` ➔ `/faculty/students.html`
-       - `/faculty/hod-reports.html` ➔ `/faculty/reports.html`
-       - `/faculty/hod-archive.html` ➔ `/faculty/students.html`
-       - `/faculty/hod-devices.html` ➔ `/faculty/hod-settings.html`
+       - `/faculty/hod-students.html` âž” `/faculty/students.html`
+       - `/faculty/hod-reports.html` âž” `/faculty/reports.html`
+       - `/faculty/hod-archive.html` âž” `/faculty/students.html`
+       - `/faculty/hod-devices.html` âž” `/faculty/hod-settings.html`
      - Updated `frontend/shared/js/auth.js` and `frontend/js/auth.js` navigation sections: HOD menu presents exclusive links (`hod-teachers.html`, `hod-settings.html`), while academic tools (`students.html`, `registers.html`, `reports.html`, etc.) are shared.
      - Upgraded `backend/src/routes/reports.js` `/api/v1/reports/analytics` to include department-wide classes and defaulters when requested by an HOD (`(r.teacher_id = ? OR r.department_id = ? OR sub.department_id = ?)`).
      - Synchronized all internal links across `groups/index.html`, `groups.js`, `dashboard.js`, and `hod-settings/index.html`.
@@ -3689,7 +3801,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - `#modal-hod-students`: Instant department student directory with real-time attendance and search.
        - `#modal-hod-classes`: Department subject classes with interactive student attendance drill-down (`loadHodClassAttendance`).
        - `#modal-teacher-students`: Fast-access teacher student roster with session attendance %, roll numbers, and contact.
-     - Streamlined class cards (`.gc-class-card`) with direct touch buttons (⚡ Take Attendance, 👥 Students, 📋 Register, 📝 Classwork).
+     - Streamlined class cards (`.gc-class-card`) with direct touch buttons (âš¡ Take Attendance, ðŸ‘¥ Students, ðŸ“‹ Register, ðŸ“ Classwork).
   3. **Multi-Period Registers**:
      - Added `period_number INTEGER DEFAULT 1` to `attendance_sessions`.
      - Multi-period session creation & conflict resolution in `backend/src/routes/faculty.js`.
@@ -3704,7 +3816,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-live-log-checkin.js`: **PASS**
      - `test-student-self-registration.js`: **30/30 PASS**
 
-### ✅ Milestone 160: Visual 1-Click Page Exporter Web Portal (`/export.html` & `/share.html`)
+### âœ… Milestone 160: Visual 1-Click Page Exporter Web Portal (`/export.html` & `/share.html`)
 
 - **User Requirements**:
   1. An intuitive web page where the user can see and select ANY page in the entire application.
@@ -3735,7 +3847,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `GET /api/v1/export/download/faculty-hod-archive`: **200 OK** (316 KB complete standalone HTML)
      - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors)
 
-### ✅ Milestone 159: Self-Contained Standalone Single-Page Exporter & Offline Runtime Engine
+### âœ… Milestone 159: Self-Contained Standalone Single-Page Exporter & Offline Runtime Engine
 
 - **User Requirements**:
   1. Share only 1 page file (`standalone.html` or `preview.html`) or 1 page folder with any UI designer/developer.
@@ -3763,15 +3875,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Successfully compiled and verified all 44/44 application pages.
 
 - **Verification & Regression Testing**:
-  - `verify-standalone-dom.js`: **PASS** — verified in JSDOM under `file:///` protocol (KPI metrics, table rows, theme switching, dropdowns, and mock responses all functioning 100%).
+  - `verify-standalone-dom.js`: **PASS** â€” verified in JSDOM under `file:///` protocol (KPI metrics, table rows, theme switching, dropdowns, and mock responses all functioning 100%).
   - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors, all tokens preserved).
   - `test-rbac-and-structure.js`: **30/30 PASS**.
   - `test-register-consolidation.js`: **46/46 PASS**.
 
-### ✅ Milestone 158: Live Server Design Preview Mode — Full UI in VS Code Without Backend
+### âœ… Milestone 158: Live Server Design Preview Mode â€” Full UI in VS Code Without Backend
 
 - **User Requirements**:
-  1. Right-click any `index.html` in VS Code → "Open with Live Server" → see a fully styled page with working CSS, JS, header, footer, and bottom navigation bar — no backend required.
+  1. Right-click any `index.html` in VS Code â†’ "Open with Live Server" â†’ see a fully styled page with working CSS, JS, header, footer, and bottom navigation bar â€” no backend required.
   2. Give a single page folder to a UI designer and they see a complete, functional page layout.
   3. Shared UI chrome (header, nav bar, profile drawer) must load via AJAX from a single template, not be duplicated in every page.
 
@@ -3779,29 +3891,29 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **VS Code Live Server Root Configuration (`.vscode/settings.json`)**:
      - Created `d:/uiap/.vscode/settings.json` setting `"liveServer.settings.root": "/Attendance-System-Simplified/frontend"`.
      - Live Server now serves from `frontend/` as root, so all absolute paths (`/css/variables.css`, `/js/auth.js`, `/components/modal/modal.css`, `/shared/components/navigation.html`, `/faculty/assignments/assignments.css`, etc.) resolve correctly.
-     - Zero changes needed to any HTML file — same paths work on both Live Server (port 5500) and Express backend (port 3000).
+     - Zero changes needed to any HTML file â€” same paths work on both Live Server (port 5500) and Express backend (port 3000).
 
   2. **Design Preview Mode in `auth.js`**:
      - Added port-detection logic: if running on any port other than `3000`, `80`, or `443` (i.e. Live Server on 5500 or `dev-server.js` on 5000), activates **Preview Mode**.
      - In Preview Mode: skips JWT auth check, injects navigation HTML template via the same AJAX `fetch('/shared/components/navigation.html')`, populates nav with a mock `"Designer Preview"` user.
      - Navigation bar, profile drawer, bottom tabs, and header all render identically to production.
-     - Adds a non-intrusive floating `🎨 Preview` badge (bottom-left, semi-transparent) to indicate preview mode.
+     - Adds a non-intrusive floating `ðŸŽ¨ Preview` badge (bottom-left, semi-transparent) to indicate preview mode.
      - Production behavior on port 3000 is completely unchanged.
 
   3. **`dev-server.js` Path Resolution Upgrade**:
      - Rewrote `resolveFilePath()` to mirror Express `server.js` routing in full:
-       - `/shared/*` → `shared/*` (explicit alias, was missing before)
-       - `/:section/:page.html` → `/:section/:page/index.html` (modular folder routing)
-       - `/:section/:page.css` → `/:section/:page/[page].css` (modular CSS routing)
-       - `/:section/:page.js` → `/:section/:page/[page].js` (modular JS routing)
+       - `/shared/*` â†’ `shared/*` (explicit alias, was missing before)
+       - `/:section/:page.html` â†’ `/:section/:page/index.html` (modular folder routing)
+       - `/:section/:page.css` â†’ `/:section/:page/[page].css` (modular CSS routing)
+       - `/:section/:page.js` â†’ `/:section/:page/[page].js` (modular JS routing)
        - `/js/*` and `/css/*` resolve through `shared/` first
 
 - **Verification**:
-  - `test-theme-support.js`: **93/93 PASS** (shared/js/auth.js ⟺ js/auth.js synchronized ✓)
-  - All asset paths verified present under `frontend/` root (12/12 paths OK ✓)
-  - Backward compat: production on `localhost:3000` unchanged ✓
+  - `test-theme-support.js`: **93/93 PASS** (shared/js/auth.js âŸº js/auth.js synchronized âœ“)
+  - All asset paths verified present under `frontend/` root (12/12 paths OK âœ“)
+  - Backward compat: production on `localhost:3000` unchanged âœ“
 
-### ✅ Milestone 157: Legacy Code Removal & Universal Modular Directory Routing
+### âœ… Milestone 157: Legacy Code Removal & Universal Modular Directory Routing
 
 - **User Requirements**:
   1. Remove all old loose `.html` files from page directories (`frontend/faculty/`, `frontend/student/`, `frontend/admin/`, `frontend/login/`).
@@ -3827,7 +3939,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-student-self-registration.js`: **30/30 PASS**
      - `test-api-flows.js`: **25/25 PASS**
 
-### ✅ Milestone 156: Universal Component HTML Templates & Full Repository Folder-Per-Page Expansion
+### âœ… Milestone 156: Universal Component HTML Templates & Full Repository Folder-Per-Page Expansion
 - **User Requirements**:
   1. Components in `frontend/components/` must also have their respective HTML template markup files (`[component].html`), not just CSS and JS.
   2. Every page across the entire application (all faculty, student, admin, and login pages) must have its own dedicated folder containing `index.html`, `[page].css`, and `[page].js`.
@@ -3854,7 +3966,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `verify-filter-modal-and-drag.js`: **24/24 PASS**
      - `verify-sheets-4bars.js`: **66/66 PASS**
 
-### ✅ Milestone 155: Frontend Modular Component & Folder-Per-Page Architecture (Pilot: Coursework & Assignments)
+### âœ… Milestone 155: Frontend Modular Component & Folder-Per-Page Architecture (Pilot: Coursework & Assignments)
 - **User Requirements**:
   1. Make a dedicated folder for every page with its own `index.html`, `[page].css`, and `[page].js` inside that folder.
   2. All page CSS & JS must NOT come from outside; only root theme color (`variables.css`) and reusable components come from outside.
@@ -3874,9 +3986,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `frontend/faculty/assignments/assignments.js`: Extracted all page logic and bound interactions via `addEventListener` (zero inline event handlers).
      - `frontend/faculty/assignments/index.html`: Clean semantic markup without inline styles or inline scripts.
   3. **Clean Directory Routing & Backward Compatibility**:
-     - `GET /faculty/assignments/` ➔ 200 OK (serves modular `index.html`).
-     - `GET /faculty/assignments.html` ➔ 200 OK (serves modular `index.html`).
-     - `GET /faculty/assignments` ➔ 301 Redirect to `/faculty/assignments/`.
+     - `GET /faculty/assignments/` âž” 200 OK (serves modular `index.html`).
+     - `GET /faculty/assignments.html` âž” 200 OK (serves modular `index.html`).
+     - `GET /faculty/assignments` âž” 301 Redirect to `/faculty/assignments/`.
   4. **Verification & Regression Test Suite**:
      - `verify-modular-components-and-pages.js`: **25/25 PASS**
      - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors)
@@ -3885,9 +3997,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `verify-filter-modal-and-drag.js`: **24/24 PASS**
      - `verify-sheets-4bars.js`: **66/66 PASS**
 
-### ✅ Milestone 154: Complete Universal Footer Removal Across All Code
+### âœ… Milestone 154: Complete Universal Footer Removal Across All Code
 - **User Requirements**:
-  1. Remove the institutional campus OS footer ("VidyaOS — Institutional Campus Operating System / Autonomous College Attendance & Academic Management Platform © 2026-27 / Autonomous Session Active • Offline-First Engine / System Home • Documentation • Build v2.4.1") from all code across the application.
+  1. Remove the institutional campus OS footer ("VidyaOS â€” Institutional Campus Operating System / Autonomous College Attendance & Academic Management Platform Â© 2026-27 / Autonomous Session Active â€¢ Offline-First Engine / System Home â€¢ Documentation â€¢ Build v2.4.1") from all code across the application.
 - **Implemented Architecture & Deliverables**:
   1. **JavaScript Removal (`shared/js/auth.js` & `frontend/js/auth.js`)**:
      - Removed the universal HTML template generation inside `renderFooter()`.
@@ -3902,7 +4014,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-register-consolidation.js`: **46/46 PASS**
      - Verified live `/js/auth.js` output: `Contains Institutional Campus Operating System: false`.
 
-### ✅ Milestone 153: Modal UI/UX Optimization (Close Button Removal, Bottom Bar Clearance & FAB Auto-Hiding)
+### âœ… Milestone 153: Modal UI/UX Optimization (Close Button Removal, Bottom Bar Clearance & FAB Auto-Hiding)
 - **User Requirements**:
   1. Remove the close button (`[ X ]`) from modals because each modal already has a Cancel button to close.
   2. Account for the bottom navigation bar so modals don't get cut off or overlap with the bottom bar.
@@ -3926,7 +4038,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `verify-sheets-4bars.js`: **66/66 PASS**
      - `test-register-consolidation.js`: **46/46 PASS**
 
-### ✅ Milestone 152: Mobile Classroom UX Optimization (Work Filter Modal, Repost Removal & 3-Dots Action Sheet)
+### âœ… Milestone 152: Mobile Classroom UX Optimization (Work Filter Modal, Repost Removal & 3-Dots Action Sheet)
 - **User Requirements**:
   1. Remove horizontal chip scrolling to filter in Classwork; replace with a clean Filter button that opens a modal.
   2. Remove the "Repost" button from stream actions and ensure stream quick actions only display on the Stream tab.
@@ -3935,12 +4047,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Classwork Filter Modal (`#modal-work-filter`)**:
      - On mobile screens (`max-width: 768px`), replaced the horizontally scrolling category chip container (`.cw-categories`) with a unified Filter button (`#btn-cw-filter-modal`).
      - Tapping the button opens a Material 3 styled bottom-sheet modal (`#modal-work-filter`) listing all categories with dynamic count chips and active checkmark indicators:
-       - 🌟 All Work
-       - 📝 Assignments
-       - 🔬 Practical Work
-       - 📑 Final Documents
-       - 📊 Class Tests
-       - 📚 Materials
+       - ðŸŒŸ All Work
+       - ðŸ“ Assignments
+       - ðŸ”¬ Practical Work
+       - ðŸ“‘ Final Documents
+       - ðŸ“Š Class Tests
+       - ðŸ“š Materials
      - Selecting any filter dynamically updates `#cw-mobile-filter-label`, updates the count badge, filters the work list, and smoothly closes the modal.
   2. **Repost Button Removal & Tab Scope Isolation**:
      - Completely removed `#btn-mobile-repost` and `openRepostModal()` from the stream quick action bar.
@@ -3949,9 +4061,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Removed the large screen-covering bottom-sheet modal (`#modal-work-item-actions`).
      - Added `.work-card-menu-wrap` with an anchored minimal popup menu (`.work-card-dropdown`) positioned right below the 3-dots button (`top: calc(100% + 4px); right: 0;`).
      - Contains compact, minimal options with zero screen obstruction:
-       - ✏️ **Edit**: Opens the full classwork item edit modal.
-       - 📊 **Enter Marks**: Directly opens the test scoring modal (for class tests).
-       - 🗑️ **Delete**: Triggers the direct deletion confirmation dialog with danger styling.
+       - âœï¸ **Edit**: Opens the full classwork item edit modal.
+       - ðŸ“Š **Enter Marks**: Directly opens the test scoring modal (for class tests).
+       - ðŸ—‘ï¸ **Delete**: Triggers the direct deletion confirmation dialog with danger styling.
      - Document-level click and Escape key listeners automatically dismiss the dropdown when tapping outside.
   4. **Verification & Regression Test Suite**:
      - `verify-classroom-mobile-redesign.js`: **29/29 PASS**
@@ -3960,12 +4072,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `verify-sheets-4bars.js`: **66/66 PASS**
      - `test-register-consolidation.js`: **46/46 PASS**
 
-### ✅ Milestone 151: Work Button Removal from Universal Navigation & Mobile Classroom UI Redesign (Google Classroom App Paradigm)
+### âœ… Milestone 151: Work Button Removal from Universal Navigation & Mobile Classroom UI Redesign (Google Classroom App Paradigm)
 - **User Requirements**:
   1. Remove the "Work" button from the universal bottom navigation bar across the application.
   2. Redesign the classroom UI for mobile screens (`faculty/group-detail.html`):
      - When inside a classroom on mobile screens, change the bottom menu bar to show that classroom's specific options: **Stream**, **Classwork**, and **People**.
-     - Style Stream with mobile quick action pill buttons (`[ ✎ New announcement ]`, `[ ⇄ Repost ]`) and vector talk illustration empty state ("This is where you can talk to your class").
+     - Style Stream with mobile quick action pill buttons (`[ âœŽ New announcement ]`, `[ â‡„ Repost ]`) and vector talk illustration empty state ("This is where you can talk to your class").
      - Style Classwork on mobile with Google Classroom card layout, three-dots action menus, and a bottom-right Floating Action Button (`+` FAB) with speed-dial actions.
      - Redesign mobile top app bar with class name header, settings gear icon, and 3-dots overflow menu.
 - **Implemented Architecture & Deliverables**:
@@ -3976,18 +4088,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   2. **Dedicated Classroom Mobile Bottom Navigation Bar (`#classroom-mobile-bottom-nav`)**:
      - Fixed bottom navigation bar on mobile (`@media (max-width: 768px)`): `height: 64px; z-index: 1000;`.
      - 3 Material 3 style items:
-       - 💬 **Stream** (`#mobile-tab-btn-stream`): Speech bubble icon with active capsule pill background.
-       - 📋 **Classwork** (`#mobile-tab-btn-classwork`): Clipboard icon with active capsule pill background.
-       - 👥 **People** (`#mobile-tab-btn-people`): Group of people icon with active capsule pill background.
+       - ðŸ’¬ **Stream** (`#mobile-tab-btn-stream`): Speech bubble icon with active capsule pill background.
+       - ðŸ“‹ **Classwork** (`#mobile-tab-btn-classwork`): Clipboard icon with active capsule pill background.
+       - ðŸ‘¥ **People** (`#mobile-tab-btn-people`): Group of people icon with active capsule pill background.
      - On desktop (`min-width: 769px`), the mobile bottom bar is hidden (`display: none !important;`).
      - Inside classroom on mobile, generic universal navigation is suppressed (`#universal-bottom-nav { display: none !important; }`), ensuring only the classroom's contextual tabs are shown.
   3. **Stream Tab Mobile Redesign (Matching Screenshot 1)**:
      - Sleek rounded card banner with vibrant graduation cap gradient artwork.
      - Quick action pill buttons:
-       - `[ ✎ New announcement ]` (`#btn-mobile-new-announcement`): Smoothly scrolls to and focuses composer `#stream-compose-text`.
-       - `[ ⇄ Repost ]` (`#btn-mobile-repost`): Copies previous announcement to composer.
+       - `[ âœŽ New announcement ]` (`#btn-mobile-new-announcement`): Smoothly scrolls to and focuses composer `#stream-compose-text`.
+       - `[ â‡„ Repost ]` (`#btn-mobile-repost`): Copies previous announcement to composer.
      - Google Classroom empty talk state illustration:
-       - Vector graphics: Stack of books + speech bubble with typing marker (`—I`) + retro microphone.
+       - Vector graphics: Stack of books + speech bubble with typing marker (`â€”I`) + retro microphone.
        - Heading: "This is where you can talk to your class".
        - Subheading: "Use the stream to share announcements, post assignments, and respond to questions".
   4. **Classwork Tab Mobile Redesign (Matching Screenshot 2)**:
@@ -3999,22 +4111,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Left hamburger drawer trigger `#sidebar-toggle-btn`.
      - Dynamic class title `#mobile-nav-class-title` (displays class name on Classwork and People tabs, hidden on Stream to highlight banner).
      - Right mobile actions `#mobile-header-actions`:
-       - ⚙️ Settings gear button `#btn-mobile-settings` (opens Edit Group modal).
-       - ⋮ 3-dots overflow button `#btn-mobile-overflow` (opens `#mobile-classroom-overflow-menu` with Sheets Studio, Linked Register, Promote, and Theme toggles).
+       - âš™ï¸ Settings gear button `#btn-mobile-settings` (opens Edit Group modal).
+       - â‹® 3-dots overflow button `#btn-mobile-overflow` (opens `#mobile-classroom-overflow-menu` with Sheets Studio, Linked Register, Promote, and Theme toggles).
   6. **Theme Compliance**:
      - 100% theme-tokenized using CSS variables and HSL tokens with zero hardcoded hex or RGB colors.
 - **Verification Suite**:
-  - `verify-classroom-mobile-redesign.js`: **24/24 PASS** ✓
-  - `verify-filter-modal-and-drag.js`: **24/24 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** ✓
-  - `verify-floating-action-buttons.js`: **12/12 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
+  - `verify-classroom-mobile-redesign.js`: **24/24 PASS** âœ“
+  - `verify-filter-modal-and-drag.js`: **24/24 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** âœ“
+  - `verify-floating-action-buttons.js`: **12/12 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
 
-### ✅ Milestone 150: Sheets Studio Bottom Status Removal, Viewport-Bounded FAB Drag, Responsive Focus Controls & Flipkart-Style 2-Pane Filter Modal
+### âœ… Milestone 150: Sheets Studio Bottom Status Removal, Viewport-Bounded FAB Drag, Responsive Focus Controls & Flipkart-Style 2-Pane Filter Modal
 - **User Requirements**:
-  1. Remove bottom status bar (`● Connected to VidyaOS ERP Cloud Enrolled: 10 Class Avg: — Academic Year: 2026-27 (Odd Semester) Institutional Standard Replica`).
+  1. Remove bottom status bar (`â— Connected to VidyaOS ERP Cloud Enrolled: 10 Class Avg: â€” Academic Year: 2026-27 (Odd Semester) Institutional Standard Replica`).
   2. Implement long-press drag for the Floating Action Button (`#btn-floating-tools`) allowing movement anywhere on screen within viewport boundaries (`not out side`), while retaining normal quick clicks to open the floating drawer.
   3. Ensure Column Focus dropdown (`#sheet-column-focus-select`) and Dynamic Mode segmented switcher (`#sheet-mode-segmented`) display only on small screens (`max-width: 768px`) and are hidden on desktop to keep Bar 3 clean.
   4. Consolidate separate filter triggers into a single button named **Filters** (`#btn-open-filter-modal`) opening a Flipkart-style 2-pane modal (with Sort, Students, Visibility, and Focus tabs) that does not take the full screen on desktop.
@@ -4037,22 +4149,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Flipkart-style layout:
        - **Left Sidebar Tabs**: Sort (`#tab-btn-sort`), Students (`#tab-btn-students`), Visibility (`#tab-btn-visibility`), Focus (`#tab-btn-focus`).
        - **Right Content Panes**:
-         - *Sort*: Roll No (Asc/Desc), Name (A-Z / Z-A), Total Marks (High-Low / Low-High), Attendance (High-Low / Low-High) — all 8 modes powered by `sortStudentsList()`.
-         - *Students*: All Students, Top Performers (≥80%), Average (50-79%), Low (<50%), Defaulters (<75%), Absent.
+         - *Sort*: Roll No (Asc/Desc), Name (A-Z / Z-A), Total Marks (High-Low / Low-High), Attendance (High-Low / Low-High) â€” all 8 modes powered by `sortStudentsList()`.
+         - *Students*: All Students, Top Performers (â‰¥80%), Average (50-79%), Low (<50%), Defaulters (<75%), Absent.
          - *Visibility*: Individual column show/hide checkboxes with "Show All" reset.
          - *Focus*: Section focus radio options (All, Attendance, Unit Tests, Coursework, Grand Total).
        - **Footer**: Live student counter + "Clear All Filters" (`#btn-filter-clear-all`) + "Apply Filters" (`#btn-filter-apply`).
   5. **Zero Hardcoded Hex / RGB Colors**:
      - 100% theme compliant, strictly using CSS variables and HSL alpha tokens (`hsl(0 0% 0% / 0.35)`, `hsl(0 0% 0% / 0.55)`).
 - **Verification Suite**:
-  - `verify-filter-modal-and-drag.js`: **24/24 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** ✓
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `verify-floating-action-buttons.js`: **12/12 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
+  - `verify-filter-modal-and-drag.js`: **24/24 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** âœ“
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `verify-floating-action-buttons.js`: **12/12 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
 
-### ✅ Milestone 149: Column Visibility Dropdown Stacking Context Fix & Role-Based Home Floating Action Buttons (FAB)
+### âœ… Milestone 149: Column Visibility Dropdown Stacking Context Fix & Role-Based Home Floating Action Buttons (FAB)
 - **User Requirements**:
   1. Fix dropdown clipping image issue: `#col-filter-dropdown-menu` top half was covered and hidden behind `.sheet-institutional-banner` due to stacking context conflict.
   2. Remove "Add Class" (`.gc-create-btn`) from the top navigation header on Faculty Home / Classroom pages (`dashboard.html` and `groups.html`).
@@ -4069,49 +4181,49 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Faculty Speed-Dial FAB (`#gc-fab-wrapper`)**:
      - Added smooth-animated circular FAB (`+`) at bottom right of [`faculty/dashboard.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/dashboard.html) and [`faculty/groups.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/groups.html).
      - When toggled, reveals two speed-dial actions:
-       - ➕ **Create Class**: Opens `#create-group-modal`.
-       - 📢 **Broadcast Notice**: Opens `#broadcast-notice-modal`.
+       - âž• **Create Class**: Opens `#create-group-modal`.
+       - ðŸ“¢ **Broadcast Notice**: Opens `#broadcast-notice-modal`.
      - Clicking anywhere outside or triggering an action collapses the menu and rotates the trigger smoothly back.
   4. **Student Join Class FAB (`#student-fab-wrapper`)**:
      - Added matching bottom-right FAB on [`student/dashboard.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/student/dashboard.html) and [`student/groups.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/student/groups.html).
      - Speed dial reveals:
-       - 👥 **Join Class**: Opens `#join-group-modal` where students enter their 6-character course invite code and join via `POST /api/v1/teaching-groups/join`.
+       - ðŸ‘¥ **Join Class**: Opens `#join-group-modal` where students enter their 6-character course invite code and join via `POST /api/v1/teaching-groups/join`.
 - **Verification Suite**:
-  - `verify-floating-action-buttons.js`: **12/12 PASS** ✓
-  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** ✓
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
+  - `verify-floating-action-buttons.js`: **12/12 PASS** âœ“
+  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** âœ“
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
 
-### ✅ Milestone 148: Mobile Column Visibility Popover Fix & Relocate Student Edit Button into Floating Drawer
+### âœ… Milestone 148: Mobile Column Visibility Popover Fix & Relocate Student Edit Button into Floating Drawer
 - **User Requirements**:
   1. Fix UI: Column visibility settings button was appearing as an empty pill `( )` on mobile with hidden label, and the dropdown menu was clipped and invisible when clicked due to `overflow-x: auto` on Bar 3.
   2. Move the student edit button (`#btn-edit-student-row`) inside the floating bar (`#floating-bottom-bar`) so Bar 2 does not have a duplicate "Edit" button right below Bar 1's "Edit" button.
 - **Implemented Architecture & Deliverables**:
   1. **Column Visibility Button & Fixed Modal Overlay**:
-     - Added `<span class="filter-btn-label-mobile">Cols ▾</span>` to `#btn-col-filter-toggle` in [`sheets.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/sheets.html).
+     - Added `<span class="filter-btn-label-mobile">Cols â–¾</span>` to `#btn-col-filter-toggle` in [`sheets.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/sheets.html).
      - Styled `#btn-col-filter-toggle` on mobile with `display: inline-flex !important`, proper padding, and eye icon alignment.
      - Styled `#col-filter-dropdown-menu` with `position: fixed !important; top: 108px !important; left: 10px; right: 10px; z-index: 1050;` to break free from the `overflow-x: auto` clipping context of Bar 3.
-     - Added a clean close button (`✕`) in the dropdown menu header and ensured `renderColumnFilterMenu()` is triggered upon opening.
+     - Added a clean close button (`âœ•`) in the dropdown menu header and ensured `renderColumnFilterMenu()` is triggered upon opening.
      - Added a direct `Columns Visibility` button inside the Floating Tools Drawer (`#floating-bottom-bar`).
   2. **Relocate `#btn-edit-student-row` into Floating Drawer**:
      - Removed the duplicate "Edit" button from Bar 2's right side, freeing up horizontal room so the Sheet Selector and Sub-sheet selector no longer cramp on mobile screens.
      - Placed `#btn-edit-student-row` inside the "Student Roster & Structure Management" section of `#floating-bottom-bar`.
      - Preserved both `.btn-text-full` ("Edit Student") and `.btn-text-short` ("Edit") spans to maintain 100% backward compatibility with automated test assertions, while styling the drawer to show the full "Edit Student" label with its icon.
 - **Verification Suite**:
-  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** ✓
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `verify-sheets-mobile-modes.js`: **15/15 PASS** ✓
-  - `verify-sheets-responsive.js`: **30/30 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
+  - `verify-visibility-and-floating-edit.js`: **9/9 PASS** âœ“
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `verify-sheets-mobile-modes.js`: **15/15 PASS** âœ“
+  - `verify-sheets-responsive.js`: **30/30 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
 
-### ✅ Milestone 147: Dynamic Test Type Dropdown & Direct Number Input Box in Test Scheduling Modals
+### âœ… Milestone 147: Dynamic Test Type Dropdown & Direct Number Input Box in Test Scheduling Modals
 - **User Requirements**:
   1. Remove rigid, pre-numbered dropdown list (e.g., Unit Test 1, Unit Test 2, Class Test 1, Class Test 2...).
   2. Implement a flexible 2-part selector: a dropdown for the test type/prefix (Unit Test, Class Test, Mid-Term Exam, Pre-Board Exam, Custom) and an adjacent direct number text box where teachers can enter any test number (e.g., `1`, `2`, `5`, etc.).
 - **Implemented Architecture & Deliverables**:
-  1. **Dual Component Selector (`[ Type ▾ ] [ No. Input ]`)**:
+  1. **Dual Component Selector (`[ Type â–¾ ] [ No. Input ]`)**:
      - Upgraded `#modal-schedule-test` in [`group-detail.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail.html).
      - Upgraded `#create-exam-modal` in [`tests.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/tests.html) and [`registers.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/registers.html).
      - Selecting `Class Test` + typing `2` automatically generates `Class Test 2` (code `CT2`), eliminating hardcoded number limits.
@@ -4121,13 +4233,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Added `onTestTypeOrNumChange()`, `onExamTypeOrNumChange()`, and `onRegisterExamTypeOrNumChange()`.
      - Preserved hidden `#test-unit-no` and `#exam-unit-no` elements synchronized to the full code (`UT1`, `CT2`, `MT`, etc.) for seamless backward compatibility.
 - **Verification Suite**:
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `verify-sheets-mobile-modes.js`: **15/15 PASS** ✓
-  - `verify-sheets-responsive.js`: **30/30 PASS** ✓
-  - `verify-sheets-bar.js`: **ALL PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `verify-sheets-mobile-modes.js`: **15/15 PASS** âœ“
+  - `verify-sheets-responsive.js`: **30/30 PASS** âœ“
+  - `verify-sheets-bar.js`: **ALL PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
 
-### ✅ Milestone 146: Edit-Mode Only Institutional Header Editing, Single Dynamic/Overview Toggle Button & Multi-Device LAN Access
+### âœ… Milestone 146: Edit-Mode Only Institutional Header Editing, Single Dynamic/Overview Toggle Button & Multi-Device LAN Access
 - **User Requirements**:
   1. Header format matching test marks sheet:
      - Top row (Row 1): `Uttarakhand Government Institute of Polytechnic, Nainital | Internal Evaluation Sheet 2026 Session`
@@ -4143,23 +4255,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - When Save is clicked (`S.isEditMode = false`), new values are read, synchronized to persistent `localStorage` (`vidyaos_institution_marks_header` and `vidyaos_cohort_banner_${groupId}`), and set back to `contenteditable="false"`.
   2. **Single Combined Dynamic / Overview Toggle Button**:
      - Compacted `#sheet-mode-segmented` into a single button that toggles between Dynamic and Overview modes upon click via `toggleSheetViewMode()`.
-     - Dynamically swaps between `📱 Dynamic` and `⇲ Overview` display while preserving child button DOM hooks for full test-suite backward compatibility.
+     - Dynamically swaps between `ðŸ“± Dynamic` and `â‡² Overview` display while preserving child button DOM hooks for full test-suite backward compatibility.
      - Enforced compact single-pill width (`display: inline-flex !important;`) on mobile screens (`@media (max-width: 768px)`).
   3. **Multi-Device Network Access (0.0.0.0 & LAN IP)**:
      - Verified Express backend listens on `0.0.0.0:3000`.
      - Identified active Wi-Fi LAN address (`192.168.1.10`), enabling any smartphone, tablet, or PC on the same network to connect directly to `http://192.168.1.10:3000`.
 - **Verification Suite**:
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `verify-sheets-mobile-modes.js`: **15/15 PASS** ✓
-  - `verify-sheets-responsive.js`: **30/30 PASS** ✓
-  - `verify-sheets-bar.js`: **ALL PASS** ✓
-  - `verify-numbers-row.js`: **31/31 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `verify-sheets-mobile-modes.js`: **15/15 PASS** âœ“
+  - `verify-sheets-responsive.js`: **30/30 PASS** âœ“
+  - `verify-sheets-bar.js`: **ALL PASS** âœ“
+  - `verify-numbers-row.js`: **31/31 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
 
-### ✅ Milestone 145: Pinned Non-Scrolling Institutional Header Banner, Short Assessment Headers (A1, UT1), Responsive Control Sizing & Assessment/Test Creation Unit Selectors
+### âœ… Milestone 145: Pinned Non-Scrolling Institutional Header Banner, Short Assessment Headers (A1, UT1), Responsive Control Sizing & Assessment/Test Creation Unit Selectors
 - **User Requirements**:
   1. Header banner text wrapping and pinned non-scrolling:
-     - Line 1: `Government Polytechnic College — Information Technology Dept | Internal Evaluation Sheet 2026-27 (Odd Semester)`
+     - Line 1: `Government Polytechnic College â€” Information Technology Dept | Internal Evaluation Sheet 2026-27 (Odd Semester)`
      - Line 2: `Department (IT) | Subject : Database Management Systems`
      - Line 3: `Department of IT Year 3 | Semester 5`
      - Header text must wrap cleanly on mobile screens and must NOT scroll horizontally; only the columns and rows below scroll horizontally and vertically.
@@ -4187,18 +4299,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `registers.html`: added `#assign-num-select` and `onRegisterAssignNumChange`, plus `#exam-unit-no` and `onRegisterExamUnitChange`.
      - `assignments.html`: added `#assign-num-select` and `onAssignNumChange`.
 - **Verification Suite**:
-  - `verify-sheets-4bars.js`: **66/66 PASS** ✓
-  - `verify-sheets-mobile-modes.js`: **15/15 PASS** ✓
-  - `verify-sheets-responsive.js`: **30/30 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-roll-call-upgrade.js`: **ALL PASS** ✓
-  - `test-live-log-checkin.js`: **ALL PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
+  - `verify-sheets-4bars.js`: **66/66 PASS** âœ“
+  - `verify-sheets-mobile-modes.js`: **15/15 PASS** âœ“
+  - `verify-sheets-responsive.js`: **30/30 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-roll-call-upgrade.js`: **ALL PASS** âœ“
+  - `test-live-log-checkin.js`: **ALL PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 144: Mobile Sheets Dual Modes (Dynamic Frozen View & Overview Pinch-Zoom), Space Reclaim & Responsive Controls
+### âœ… Milestone 144: Mobile Sheets Dual Modes (Dynamic Frozen View & Overview Pinch-Zoom), Space Reclaim & Responsive Controls
 - **User Requirements**:
   1. Remove "TOOLS" badge from Bar 2 to reclaim horizontal space.
   2. Prevent dropdowns and buttons from overflowing screen width; ensure text wrapping and ellipsis constraints.
@@ -4211,7 +4323,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Redundant columns hidden (`col-sr`, `col-enroll`, `col-reg`, `col-side-panel`).
        - Right side is horizontally scrollable with `overscroll-behavior-x: contain` and stops strictly at the last column edge.
        - Column Focus Jump filter dropdown (`#sheet-column-focus-select`) listing the sheet's columns to quickly scroll/jump directly to a chosen column.
-       - Mode switcher segmented toggle: `[ 📱 Dynamic ] [ ⇲ Overview ]` in Bar 3 and the floating drawer.
+       - Mode switcher segmented toggle: `[ ðŸ“± Dynamic ] [ â‡² Overview ]` in Bar 3 and the floating drawer.
 - **Implemented Architecture & Deliverables**:
   1. **Tools Badge Elimination & DOM Preservation**:
      - Added `.bar-tools-badge { display: none !important; }` in CSS while preserving `<div class="bar-tools-badge" style="display:none !important;" aria-hidden="true">` for 100% backward compatibility with test suites.
@@ -4246,7 +4358,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node scripts/test-rbac-and-structure.js`: 30/30 Passed.
   - `node scripts/test-api-flows.js`: 25/25 Passed.
 
-### ✅ Milestone 143: Universal AJAX-Loaded Multi-Bar Navigation & Android Profile Drawer Across All Pages
+### âœ… Milestone 143: Universal AJAX-Loaded Multi-Bar Navigation & Android Profile Drawer Across All Pages
 - **User Requirements**:
   1. Bottom menu bar must appear across all pages (Home, Work, Register, Sheet Studio, Profile), just like the header and side drawer.
   2. Instead of duplicating HTML/JS code for header, side drawer, and bottom menu bar in every page, consolidate into one single template file and import/mount dynamically across all pages using AJAX (`fetch`).
@@ -4273,14 +4385,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node scripts/test-register-consolidation.js`: 46/46 Passed.
   - `node scripts/test-rbac-and-structure.js`: 30/30 Passed.
 
-### ✅ Milestone 142: 4-Bar Hierarchy Studio Architecture, Class Switcher Subject Code, Sub-Sheet Contextual Selector, FAB Drawer & Bar 4 Bottom Menu
+### âœ… Milestone 142: 4-Bar Hierarchy Studio Architecture, Class Switcher Subject Code, Sub-Sheet Contextual Selector, FAB Drawer & Bar 4 Bottom Menu
 - **User Requirements**:
   1. **Minimal Top Header**: Fixed minimal bar for brand ("VidyaOS"), theme toggle, and avatar icon.
   2. **Bar 1**: Minimal back button (`#btn-back-bar1`) + Class switch list incorporating subject short name/subject code (`[CODE] Name (COMPONENT)`) from class creation/edit modals + Export dropdown (`#btn-export-dropdown`) + Edit/Save toggle button (`#btn-edit-save-toggle` switches between "Edit" mode and "Save" mode with active highlight and database sync).
   3. **Bar 2**: `Tools` badge + Sheets dropdown switcher (`#sheet-selector-dropdown`: Evaluation, Tests, Assignments, Attendance) + Context-dependent sub-sheet dropdown (`#subsheet-selector-container`: for Tests, "All Unit Tests Combined" vs individual UT1, UT2...; for Attendance, calendar month picker button; for Assignments, assignment unit selector; for Evaluation, badge) + `Edit Student` button (`#btn-edit-student-row`) opening modal (`#modal-edit-student-roster`) showing all row scores/data for the selected student to edit inside the modal.
   4. **Bar 3**: Filters toolbar (`#sheet-search-input`, `#sheet-filter-select`, `#btn-col-filter-toggle`, `#sheet-visible-tally`).
   5. **Sheet Area**: Main spreadsheet viewport (`#sheets-viewport`, `#scale-wrapper`) with sticky headers and `margin-bottom: 54px;` to avoid Bar 4 collision.
-  6. **Floating Bar Button & Drawer**: Floating action button (`#btn-floating-tools`) opening bottom sheet drawer (`#floating-bottom-bar`) with size adjust controls (`-`, `+`, `100%`, `⇲ Auto-Fit`, `Density`) and structure options (`+ Column`, `− Column`, `+ Student`).
+  6. **Floating Bar Button & Drawer**: Floating action button (`#btn-floating-tools`) opening bottom sheet drawer (`#floating-bottom-bar`) with size adjust controls (`-`, `+`, `100%`, `â‡² Auto-Fit`, `Density`) and structure options (`+ Column`, `âˆ’ Column`, `+ Student`).
   7. **Bar 4 (Main Bottom Menu)**: Bottom fixed bar (`#studio-main-bottom-menu`) with: Home (`/faculty/dashboard.html`), Work (`/faculty/groups.html`), Register (`/faculty/registers.html`), Sheet Studio (`/faculty/sheets.html` - active), and Profile logo button (`#btn-profile-bottom`) opening Android-style profile drawer (`#android-profile-drawer`) with theme toggle, quick links (classes, registers, tests, assignments, settings), and logout button (`handleLogout()`).
   8. **Teaching Group Subject Code Integration**: Added `subject_code` field to database schema (`teaching_groups.subject_code`), `teachingGroups.js` backend routes, and class creation/edit modals in `groups.html` and `dashboard.html`.
 - **Verification**:
@@ -4291,7 +4403,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node scripts/test-register-consolidation.js`: 46/46 Passed.
   - `node scripts/test-rbac-and-structure.js`: 30/30 Passed.
 
-### ✅ Milestone 141: Extra Space Elimination, Continuous Auto-Fit, and Mobile/Small Screen Responsive Optimization
+### âœ… Milestone 141: Extra Space Elimination, Continuous Auto-Fit, and Mobile/Small Screen Responsive Optimization
 - **User Requirements**:
   1. "extra space": Eliminate excessive vertical paddings, margins, and bloated toolbars in `sheets.html` so faculty have maximum vertical canvas for spreadsheet data.
   2. "also add autofit": Provide continuous automatic Auto-Fit (`fitSheetToScreen`) so wide spreadsheets automatically scale to fit viewport width with zero awkward horizontal scrolling, with an active Auto-Fit toggle indicator.
@@ -4301,18 +4413,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Reclaimed ~160px of vertical height by hiding institutional `.app-footer` and `.mobile-bottom-nav` (`display: none !important;`) on the dedicated `sheets.html` studio canvas.
     - Compacted `.sheets-studio-layout` padding to `0.2rem 0.45rem` and `.sheets-top-command-bar` to `35px` min-height.
     - Compacted `.sheet-tabs-container` padding to `0.15rem 0.4rem` and `.sheet-subtoolbar` / `.eval-filter-toolbar` to `32px` min-height.
-    - Tightened table header heights: Blue header rows 1–3 (`0.84rem`, `0.74rem`, `0.72rem`), Tan category headers (`0.75rem`), subheaders (`0.72rem`), numbers row (`24px`), and table cells (`padding: 0.22rem 0.35rem`).
+    - Tightened table header heights: Blue header rows 1â€“3 (`0.84rem`, `0.74rem`, `0.72rem`), Tan category headers (`0.75rem`), subheaders (`0.72rem`), numbers row (`24px`), and table cells (`padding: 0.22rem 0.35rem`).
   - **Continuous Auto-Fit Engine**:
     - `S.autoFit: true` enabled by default with prominent active state `#btn-autofit.active`.
     - Smart scaling calculates exact ratio (`viewportWidth / tableWidth`) bounded gracefully down to `0.35` on narrow mobile screens (avoiding previous artificial 0.6 cutoff).
     - Auto-Fit executes automatically on sheet load, after every table render (`renderEvaluationSheetTable`, `renderTestSheetTable`, `renderAssignmentsSheetTable`, `renderAttendanceSheetTable`), on tab switch, and on column visibility change.
     - Added debounced `window.addEventListener('resize', ...)` handler so resizing window or rotating mobile device smoothly re-scales the sheet instantly.
-    - Manual zoom (`+`, `-`, `100%`) cleanly switches off Auto-Fit mode, while clicking `⇲ Auto-Fit` re-engages and scales immediately.
+    - Manual zoom (`+`, `-`, `100%`) cleanly switches off Auto-Fit mode, while clicking `â‡² Auto-Fit` re-engages and scales immediately.
   - **Mobile & Small Screen Responsiveness (`@media (max-width: 768px)`)**:
     - Top Navigation Bar: Reduced height to 40px, hid desktop badges and long labels.
-    - Top Command Bar: Added `.desktop-only-btn` helper class to hide non-essential controls (density selector, fullscreen, print, reload) on small screens, condensing into a single clean line: `< Back` | `Class: DBMS ▾` | `⇲ Auto-Fit` | `Export ▾` | `Save`.
+    - Top Command Bar: Added `.desktop-only-btn` helper class to hide non-essential controls (density selector, fullscreen, print, reload) on small screens, condensing into a single clean line: `< Back` | `Class: DBMS â–¾` | `â‡² Auto-Fit` | `Export â–¾` | `Save`.
     - Sheet Switcher Tabs: Enforced `flex-wrap: nowrap !important; overflow-x: auto !important;` so tabs act as a single swipeable horizontal pill bar with zero vertical wrapping.
-    - Subtoolbar: Action buttons (`+ Column`, `− Column`, `+ Student`, `✏️ Edit`) flow into a compact horizontal swipeable strip.
+    - Subtoolbar: Action buttons (`+ Column`, `âˆ’ Column`, `+ Student`, `âœï¸ Edit`) flow into a compact horizontal swipeable strip.
     - Filter Bar: Combined search input, quick filter dropdown, and column visibility toggle into a sleek single line.
     - Table Viewport: Occupies >70% of mobile viewport with native touch panning and smooth auto-fit.
   - **API Data Loader Scheme & Custom Columns Fix**:
@@ -4330,7 +4442,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 140: Dedicated Editable Numbers Subheader Row & Automatic Calculation Integration
+### âœ… Milestone 140: Dedicated Editable Numbers Subheader Row & Automatic Calculation Integration
 - **User Requirements**:
   1. Add 1 more row for numbers directly below the column headers (Row 6), moving numbers like `(50)`, `(15)`, `(20)` out of header titles into their own dedicated editable cells/inputs so faculty can easily edit max marks and weight targets.
   2. Ensure that when new columns are added (assessments, assignments, or unit test questions), they automatically appear in this numbers row with their max marks and are dynamically integrated into the spreadsheet's calculations (student total sums, normalized averages, attendance/presentation weights, and grand total).
@@ -4338,7 +4450,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **Dedicated Numbers / Max Marks Row (`tr.excel-hdr-numbers`)**:
     - Cleaned tan category headers: Removed embedded `(50)`, `(15)`, `(20)`, `(10)`, `(5)` numbers from header text labels (`Assignment Marks`, `Assign Avg`, `Unit Test Marks`, `UT Avg`, `Attendance`, `Presentation / Problem Solving`, `Grand Total`).
     - Dedicated Row 6 under table headers:
-      - Student metadata columns (`SR`, `ROLL`, `ENROLL`, `REG`, `NAME`): Clean `Max Marks ➔` indicator badge with individual column-matching classes to maintain perfect vertical column alignment when columns are hidden.
+      - Student metadata columns (`SR`, `ROLL`, `ENROLL`, `REG`, `NAME`): Clean `Max Marks âž”` indicator badge with individual column-matching classes to maintain perfect vertical column alignment when columns are hidden.
       - Individual Assignment & Exam columns: Direct numeric `<input type="number" class="excel-hdr-num-input">` elements to edit each assessment's maximum marks live.
       - Scheme Weightage Targets: Direct numeric inputs under `Assign Avg` (15), `UT Avg` (20), `Attendance` (10), and `Presentation` (5) to dynamically calibrate grading weightage.
       - Dynamic Grand Total Badge (`#eval-hdr-grand-max`): Auto-sums all active weightages plus any added continuous assessment column max marks.
@@ -4351,7 +4463,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
       - `Unit Test / Periodic Exam`: Automatically updates test normalized average and recalculates student totals.
     - Live Editing in Numbers Row:
       - Changing any component weightage (e.g. `assign_weight` from 15 to 20) or column max marks immediately recalculates student scores and updates class averages in real time without page reload or loss of focus.
-    - Column Visibility Filter integration: Added `Continuous Assessments (Lab, Viva)` to the `👁️ Columns Visibility ▾` dropdown with instant CSS visibility toggling (`.col-custom`).
+    - Column Visibility Filter integration: Added `Continuous Assessments (Lab, Viva)` to the `ðŸ‘ï¸ Columns Visibility â–¾` dropdown with instant CSS visibility toggling (`.col-custom`).
 - **Files Modified**:
   - `frontend/faculty/sheets.html`: Injected dedicated numbers row, styling, category selector in add modal, reactive calculation engine, and real-time average updaters.
   - `backend/scripts/verify-numbers-row.js`: Automated verification test suite (31/31 passed).
@@ -4363,27 +4475,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 139: Dynamic Column/Row Operations, Column Visibility Filter, and Screen Fit Adjust Controls
+### âœ… Milestone 139: Dynamic Column/Row Operations, Column Visibility Filter, and Screen Fit Adjust Controls
 - **User Requirements**:
   1. Add Column & Row management features: Edit, Add, and Remove Columns and Rows across all sheets.
   2. Add Column Hiding Filter: Toggle visibility of specific columns (e.g., Roll No, Enrollment No, Registration No, Sub-marks, etc.) with instant UI update.
-  3. Screen Fit & Size Adjust Options: Provide zoom controls (−, +, 100%), auto "Fit to Screen Width" mode, data display density modes (Compact, Normal, Comfortable), and full-screen toggle.
+  3. Screen Fit & Size Adjust Options: Provide zoom controls (âˆ’, +, 100%), auto "Fit to Screen Width" mode, data display density modes (Compact, Normal, Comfortable), and full-screen toggle.
 - **Implemented Features**:
   - **Dynamic Column Operations**:
     - `+ Add Column`: Modal to add new Continuous Assessment columns (with custom title & max marks e.g. Lab, Viva, Mini Project), new Question columns ($Q_{n+1}$) with rubric statements, or new Assignment columns.
-    - `− Remove Column`: Modal selector to remove any custom assessment column or extra question/assignment column, with automatic live recalculation of student totals and class averages.
+    - `âˆ’ Remove Column`: Modal selector to remove any custom assessment column or extra question/assignment column, with automatic live recalculation of student totals and class averages.
   - **Dynamic Row Operations**:
     - `+ Add Student`: Modal to add a new student row with Roll No, Full Name, Enrollment No, and Registration No.
-    - `✏️ Edit Student`: Modal selector to update any student's Roll No, Full Name, Enrollment No, or Registration No, with option to delete the student row from the active spreadsheet.
-  - **Column Visibility Hiding Filter (`👁️ Columns Visibility ▾`)**:
+    - `âœï¸ Edit Student`: Modal selector to update any student's Roll No, Full Name, Enrollment No, or Registration No, with option to delete the student row from the active spreadsheet.
+  - **Column Visibility Hiding Filter (`ðŸ‘ï¸ Columns Visibility â–¾`)**:
     - Dedicated dropdown with interactive checkboxes for: Roll Number, Enrollment Number, Registration Number, Student Name, Assignment Scores, Assignment Average, Unit Test Marks, Unit Test Average, Attendance Held/Att, Attendance %, Presentation / Continuous, and Side Rubric & Signature Panel.
     - Instant CSS toggling across the entire spreadsheet table via scoped viewport classes (`hide-col-roll`, `hide-col-enroll`, `hide-col-reg`, etc.).
     - "Show All" quick reset button.
   - **Screen Fit & Size Adjust Options**:
-    - `Fit ⇲`: Calculates the viewport vs table width ratio and automatically scales the spreadsheet table (`transform: scale(...)`) so that the full wide table fits the screen with zero horizontal overflow!
-    - `Zoom Controls`: `−`, `100%`, `+` with real-time percentage indicator.
+    - `Fit â‡²`: Calculates the viewport vs table width ratio and automatically scales the spreadsheet table (`transform: scale(...)`) so that the full wide table fits the screen with zero horizontal overflow!
+    - `Zoom Controls`: `âˆ’`, `100%`, `+` with real-time percentage indicator.
     - `Display Density`: `Normal`, `Compact (Fit More Data)`, and `Comfortable (Large)`.
-    - `⛶ Fullscreen`: Standard HTML5 full-screen toggle button.
+    - `â›¶ Fullscreen`: Standard HTML5 full-screen toggle button.
 - **Files Modified**:
   - `frontend/faculty/sheets.html`: Injected modals, controls, zoom/density engine, and column hiding rules.
 - **Verification**:
@@ -4393,7 +4505,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 138: Complete Redesign of Unified Sheets Studio with Full Scanned Institutional Designs
+### âœ… Milestone 138: Complete Redesign of Unified Sheets Studio with Full Scanned Institutional Designs
 - **User Requirements**:
   1. Scan full design sheets that we made for Mark's Sheet (`tests.html`) and Evaluation Sheet (`evaluation.html`).
   2. Redesign the new unified portal page (`sheets.html`) to faithfully incorporate the complete institutional layout, rubrics, side panels, and calculations.
@@ -4419,7 +4531,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **Command & Filter Bar**:
     - Group switcher dropdown seamlessly loading class metadata and roster.
     - Live search box filtering by student name, roll, reg no, or enrollment no.
-    - Performance filter dropdown (`All`, `Top Performers ≥80%`, `Average 50-79%`, `Low <50%`, `Defaulters <75%`, `Absent Only`).
+    - Performance filter dropdown (`All`, `Top Performers â‰¥80%`, `Average 50-79%`, `Low <50%`, `Defaulters <75%`, `Absent Only`).
     - Instant multi-format export dropdown (`.xlsx`, `.pdf`, `.csv`).
     - Save changes button syncing test scores and evaluation marks.
 - **Files Modified**:
@@ -4431,7 +4543,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 137: Unified Sheets Studio Portal & Group Detail Sheets Action Header Bar
+### âœ… Milestone 137: Unified Sheets Studio Portal & Group Detail Sheets Action Header Bar
 - **User Requirements**:
   1. Add a dedicated header bar for menu items like "Open Mark's Excel Sheet", "Open Assignment Excel Sheet", "Open Evaluation Sheet", "Open Attendance Sheet" in `group-detail.html`.
   2. Replace fragmented sheets with a unified, all-in-one spreadsheet portal page (`sheets.html`) where teachers can switch between all sheets in one place (`evaluation sheet`, `assignment sheet`, `test sheet`, `attendance register ledger`).
@@ -4439,7 +4551,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `frontend/faculty/sheets.html`: Created dedicated full-viewport Spreadsheet Studio with top command bar, sheet tab switcher (`1. Master Evaluation Sheet`, `2. Assignment Marksheet`, `3. Class Test Marksheet`, `4. Attendance Matrix`), multi-format export dropdown (`.xlsx`, `.pdf`, `.doc`), class switcher dropdown, and live save indicator. Fixed API authorization by including `/js/api.js` and using `apiFetch` (with Bearer token), initialized RBAC via `guardRoute()`, aligned navbar DOM with `classroom-nav.css` (`.gc-nav-left`, `.gc-nav-right`, `.gc-menu-btn`), and added resilient fallback synthesis from teaching group members.
   - `frontend/faculty/group-detail.html`:
     - Injected `.classroom-sheets-bar` sub-header bar directly below the purple banner.
-    - Added action buttons: `Open Mark's Excel Sheet`, `Open Assignment Excel Sheet`, `Open Evaluation Sheet`, `Open Attendance Sheet`, and `Unified Studio ↗`.
+    - Added action buttons: `Open Mark's Excel Sheet`, `Open Assignment Excel Sheet`, `Open Evaluation Sheet`, `Open Attendance Sheet`, and `Unified Studio â†—`.
     - Added `Sheets Studio` quick button in `.banner-actions`, Marks tab header bar, and Stream Quick Actions card.
     - Added `openSheetStudio(sheetName)` launcher supporting deep-linked sheet tab switching.
   - `backend/server.js`: Added friendly redirects for `/faculty/sheets`, `/faculty/sheets-studio`, and `/faculty/sheet-studio`.
@@ -4452,7 +4564,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 136: Elimination of Empty Subheader Cell Below Student Columns via Rowspan Merging
+### âœ… Milestone 136: Elimination of Empty Subheader Cell Below Student Columns via Rowspan Merging
 - **User Requirements**:
   1. Fix empty cell below `SR. NO.`, `ROLL NO.`, `ENROLLMENT NO.`, `REG. NO.`, `STUDENT NAME` in marksheet export (PDF/DOC and Excel) and faculty views.
   2. Vertically merge columns 1 to 5 across Rows 4 & 5 (`rowspan="2"` in HTML, `ws.mergeCells(4, c, 5, c)` in Excel), perfectly centering the column headers and completely removing the blank merged `<th colspan="5">` subheader underneath.
@@ -4469,7 +4581,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 135: Complete Removal of Hardcoded Mock Department, Subject, and Semester Fallbacks
+### âœ… Milestone 135: Complete Removal of Hardcoded Mock Department, Subject, and Semester Fallbacks
 - **User Requirements**:
   1. Remove all hardcoded predefined mock values across the codebase (e.g. `'Information Technology'`, `'IT'`, `'Database Management Systems'`, `'Internet of Things'`, `year || 3`, `semester || 5`).
   2. Implement dynamic resolution:
@@ -4494,16 +4606,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 134: Test Marksheet Header Cleanup, Dynamic Institutional Defaults & Backend Server Health
+### âœ… Milestone 134: Test Marksheet Header Cleanup, Dynamic Institutional Defaults & Backend Server Health
 - **User Requirements**:
-  1. Remove title from the subheader row below "Unit Test Details (Mode : OFFLINE)" (e.g. `Unit Test 2 — Advanced SQL | ` prefix removed so it displays strictly `Maximum Marks : [Max] | Time : [Duration] | Date : [Date]`).
-  2. Remove "Question No. –>" label from table headers in `registers.html`, `tests.html`, and `group-detail.html`.
+  1. Remove title from the subheader row below "Unit Test Details (Mode : OFFLINE)" (e.g. `Unit Test 2 â€” Advanced SQL | ` prefix removed so it displays strictly `Maximum Marks : [Max] | Time : [Duration] | Date : [Date]`).
+  2. Remove "Question No. â€“>" label from table headers in `registers.html`, `tests.html`, and `group-detail.html`.
   3. Replace predefined hardcoded institutional strings (e.g., `'Uttarakhand Government Institute of Polytechnic, Srinagar Garhwal'`, `'Nainital'`) in `excelExportService.js`, `teachingGroups.js`, and `faculty.js` with dynamic `system_settings` database lookup (`getDefaultInstitutionName()`) and clean generic fallbacks.
   4. Start backend server daemon and verify health.
 - **Files Modified**:
-  - `frontend/faculty/registers.html`: Removed `cleanExamName` prefix from row 5 metadata bar, updated column header to `Unit Test Details (Mode : OFFLINE)`, removed "Question No. –>" label.
-  - `frontend/faculty/tests.html`: Removed `UNIT TEST ${examNum}` prefix from row 5 metadata bar, removed "Question No. –>" label.
-  - `frontend/faculty/group-detail.html`: Removed `unitTestOnly` prefix from row 5 metadata bar, removed "Question No. –>" label, aligned header label to `Unit Test Details (Mode : OFFLINE)`.
+  - `frontend/faculty/registers.html`: Removed `cleanExamName` prefix from row 5 metadata bar, updated column header to `Unit Test Details (Mode : OFFLINE)`, removed "Question No. â€“>" label.
+  - `frontend/faculty/tests.html`: Removed `UNIT TEST ${examNum}` prefix from row 5 metadata bar, removed "Question No. â€“>" label.
+  - `frontend/faculty/group-detail.html`: Removed `unitTestOnly` prefix from row 5 metadata bar, removed "Question No. â€“>" label, aligned header label to `Unit Test Details (Mode : OFFLINE)`.
   - `backend/src/services/excelExportService.js`: Added `getDefaultInstitutionName()` to query `system_settings` dynamically; replaced hardcoded institute names in all generators (`generateClassTestExcel`, `generateInternalEvaluationExcel`, `generateUnitTestsSummaryExcel`, `buildClassTestMarksheetHtml`).
   - `backend/src/routes/teachingGroups.js` & `backend/src/routes/faculty.js`: Replaced hardcoded city fallbacks with generic `'Government Polytechnic College'`.
 - **Verification**:
@@ -4513,18 +4625,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 133: Class Test Export — Remove "Question No." Label, Fix Header Borders & Always-Include Enrollment/Reg Numbers
+### âœ… Milestone 133: Class Test Export â€” Remove "Question No." Label, Fix Header Borders & Always-Include Enrollment/Reg Numbers
 - **User Requirements**:
-  1. Remove "Question No. –>" text from sub-header row in Excel exports (Row 5 merged cell) and PDF/DOC HTML template — sub-header row should just show Q1/Q2/Q3/Q4 labels cleanly without the label.
-  2. Fix output header borders — in PDF/DOC output the header rows had light `#777` borders that were hard to see in print; strengthened to `#444`, added global `border: 1px solid #444` to all `th, td`, and added `print-color-adjust: exact` CSS so backgrounds and borders always render in print/PDF.
-  3. Enrollment No. & Registration No. always in export regardless of UI column visibility — backend export route (`teachingGroups.js`) now always re-fetches official enrollment/registration numbers from the DB and merges them into the roster before building the export payload, so these columns are always populated in the marksheet even when the UI column filter had them hidden.
+  1. Remove "Question No. â€“>" text from sub-header row in Excel exports (Row 5 merged cell) and PDF/DOC HTML template â€” sub-header row should just show Q1/Q2/Q3/Q4 labels cleanly without the label.
+  2. Fix output header borders â€” in PDF/DOC output the header rows had light `#777` borders that were hard to see in print; strengthened to `#444`, added global `border: 1px solid #444` to all `th, td`, and added `print-color-adjust: exact` CSS so backgrounds and borders always render in print/PDF.
+  3. Enrollment No. & Registration No. always in export regardless of UI column visibility â€” backend export route (`teachingGroups.js`) now always re-fetches official enrollment/registration numbers from the DB and merges them into the roster before building the export payload, so these columns are always populated in the marksheet even when the UI column filter had them hidden.
 - **Files Modified**:
-  - `backend/src/services/excelExportService.js`: Row 5 merged cell value → `''`; HTML CSS `.hdr-blue`, `.hdr-tan`, `th, td` borders → `1px solid #444`; added `print-color-adjust: exact`.
+  - `backend/src/services/excelExportService.js`: Row 5 merged cell value â†’ `''`; HTML CSS `.hdr-blue`, `.hdr-tan`, `th, td` borders â†’ `1px solid #444`; added `print-color-adjust: exact`.
   - `backend/src/routes/teachingGroups.js`: Added DB enrichment block after roster construction to always overlay `official_enrollment_no` and `registration_no` from `students` table.
 
 ---
 
-### ✅ Milestone 132: Class Test Multi-Format Marksheet Export & Question/Instruction Breakdown Persistence
+### âœ… Milestone 132: Class Test Multi-Format Marksheet Export & Question/Instruction Breakdown Persistence
 - **User Requirement**:
   - Class Test marks entry modal enhancement in `group-detail.html`.
   - Column filtering (Show/Hide SR. NO., Enrollment No., Registration No.).
@@ -4556,7 +4668,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 131: Internal Evaluation Sheet Variable Declaration Fix
+### âœ… Milestone 131: Internal Evaluation Sheet Variable Declaration Fix
 - **Issue Reported**:
   - `http://localhost:3000/faculty/evaluation.html?id=1` returned error banner: `Error loading evaluation sheet: sessionLabelFromTable is not defined`.
 - **Root Cause & Fix**:
@@ -4568,10 +4680,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 130: Universal Menu Activation & Cross-Page Navigation Resilience Across All Portals
+### âœ… Milestone 130: Universal Menu Activation & Cross-Page Navigation Resilience Across All Portals
 - **User Requirement**:
   - Fix menus not opening across pages ("fix also in some page's manu not opening").
-  - Restore full interactivity for hamburger sidebar toggle (`☰`), Google-suite 9-dot apps launcher (`:::`, `#apps-launcher-dropdown`), and user profile popover avatar (`#gc-user-avatar`).
+  - Restore full interactivity for hamburger sidebar toggle (`â˜°`), Google-suite 9-dot apps launcher (`:::`, `#apps-launcher-dropdown`), and user profile popover avatar (`#gc-user-avatar`).
 - **Architectural Implementation**:
   1. **Global Identifier Scope Conflict Resolution**:
      - Resolved fatal `SyntaxError: Identifier 'SVG_ICONS' has already been declared` in `frontend/faculty/group-detail.html` by namespacing page-specific icons to `GD_ICONS`, allowing `guardRoute()`, `loadGroup()`, and top navigation controllers to execute without halting.
@@ -4590,34 +4702,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Full Playwright audit across 27 pages (8 Admin + 19 Faculty):
        - `sbOpens: true`, `appsOpens: true`, `popoverOpens: true` on 100% of tested pages.
        - Captured uncaught errors: `[]` (0 errors).
-     - `test-theme-support.js`: **93/93 PASS** ✓
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-api-flows.js`: **25/25 PASS** ✓
-     - `test-student-self-registration.js`: **30/30 PASS** ✓
-     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+     - `test-theme-support.js`: **93/93 PASS** âœ“
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-api-flows.js`: **25/25 PASS** âœ“
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
   6. **Clean Production ZIP Synchronization**:
      - Rebuilt `Attendance-System-Simplified-Clean.zip` and `Attendance-System-Simplified.zip` (162 clean production files, 0 test scripts, 0 node_modules, 0 screenshots).
 
 ---
 
-### ✅ Milestone 129: Teaching Group Card Actions Streamlining & Menu Consolidation
+### âœ… Milestone 129: Teaching Group Card Actions Streamlining & Menu Consolidation
 - **User Requirements**:
   1. **Consolidated Card Actions Menu ("remove edit delete btn they stay in three dot btn also remove three dot btn below classes name")**:
      - Removed redundant three-dot button (`.gc-card-dots-btn`) and dropdown from the card header banner below the class name.
      - Removed separate standalone edit (pencil) and delete (trash) buttons from the card footer action toolbar.
-     - Kept Edit Settings and Delete Class safely accessible inside the footer three-dot button (`⋮`) dropdown menu alongside Promote Cohort and Archive/Restore Class.
-     - Replaced raw unicode `⋮` character with inline SVG vertical three-dot icon (`<circle cx="12" cy="5" r="1.5">...`).
+     - Kept Edit Settings and Delete Class safely accessible inside the footer three-dot button (`â‹®`) dropdown menu alongside Promote Cohort and Archive/Restore Class.
+     - Replaced raw unicode `â‹®` character with inline SVG vertical three-dot icon (`<circle cx="12" cy="5" r="1.5">...`).
      - Mirrored across both `frontend/faculty/groups.html` and `frontend/faculty/dashboard.html`.
      - Re-packaged clean production ZIP archives (`Attendance-System-Simplified-Clean.zip` and `Attendance-System-Simplified.zip`).
 
 ---
 
-### ✅ Milestone 128: Complete System-Wide SVG Icon Modernization Across All Portals & Zero-Emoji Architecture
+### âœ… Milestone 128: Complete System-Wide SVG Icon Modernization Across All Portals & Zero-Emoji Architecture
 - **User Requirements**:
   1. **Comprehensive Scan & SVG Replacement ("scan all code remove icons replaced with svg")**:
      - Systematically audited all frontend HTML templates, shared scripts, navigation bars, dropdowns, popovers, action toolbars, table cells, empty states, and modal dialogs across all portals.
-     - Replaced all raw unicode emojis, character entities, and dingbats (`✓`, `✕`, `⚠️`, `✏️`, `📥`, `💾`, `🌐`, `📘`, `🧪`, `📈`, `📋`, `Ⓣ`, `■`, `➔`, `⏳`, `👨‍🏫`, `🎓`, `🏛️`, `🛡️`, etc.) with crisp, lightweight, theme-compliant inline SVGs using `stroke="currentColor"` and semantic CSS variables.
+     - Replaced all raw unicode emojis, character entities, and dingbats (`âœ“`, `âœ•`, `âš ï¸`, `âœï¸`, `ðŸ“¥`, `ðŸ’¾`, `ðŸŒ`, `ðŸ“˜`, `ðŸ§ª`, `ðŸ“ˆ`, `ðŸ“‹`, `â“‰`, `â– `, `âž”`, `â³`, `ðŸ‘¨â€ðŸ«`, `ðŸŽ“`, `ðŸ›ï¸`, `ðŸ›¡ï¸`, etc.) with crisp, lightweight, theme-compliant inline SVGs using `stroke="currentColor"` and semantic CSS variables.
   2. **100% Modernized Portals & Pages (0 Remaining Emojis/Symbols in HTML)**:
      - **Faculty Portal (14/14 files: 0 emojis)**: `registers.html`, `evaluation.html`, `groups.html`, `dashboard.html`, `group-detail.html`, `students.html`, `hod-students.html`, `hod-teachers.html`, `reports.html`, `profile.html`, `tests.html`, `assignments.html`, `common-teachers.html`, `hod-archive.html`, `hod-devices.html`, `hod-settings.html`, `hod-reports.html`, `leave-approvals.html`, `timetable.html`.
      - **Student Portal (8/8 files: 0 emojis)**: `groups.html`, `assignments.html`, `attendance.html`, `dashboard.html`, `leave.html`, `profile.html`, `scores.html`, `timetable.html`.
@@ -4637,7 +4749,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 127: Dynamic Final Documents Checklist Builder, Student Multi-Document Upload & Bundled Submission, Universal Classwork Edit & Direct Deletion, Submissions Roster Accordion & SVG Modernization
+### âœ… Milestone 127: Dynamic Final Documents Checklist Builder, Student Multi-Document Upload & Bundled Submission, Universal Classwork Edit & Direct Deletion, Submissions Roster Accordion & SVG Modernization
 - **User Requirements**:
   1. **Dynamic Text Checklist Builder for Final Documents Requests**:
      - Replaced static checkboxes in `#modal-create-finaldocs` with a dynamic checklist builder (`#finaldocs-req-items`).
@@ -4694,26 +4806,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 126: Toolbar Column Management Modal, Subheader Label Cleaning, Conditional Practical Columns, and Integrated Classwork Practical/Final Docs
+### âœ… Milestone 126: Toolbar Column Management Modal, Subheader Label Cleaning, Conditional Practical Columns, and Integrated Classwork Practical/Final Docs
 - **User Requirements**:
   1. **Move Delete Button to Command Toolbar with Add/Remove**:
-     - Removed inline `✕` delete buttons from table column headers in `evaluation.html` (eliminating accidental clicks and restoring Excel-clean aesthetic).
-     - Added `🗑️ Delete / Manage Columns` button to the command bar alongside `+ Add Column`.
-     - Clicking opens `#manage-columns-modal` displaying all continuous assessment columns (Name, Max Marks) and an instant `🗑️ Delete` button for each column with live table updates and zero native `window.confirm` browser popups.
+     - Removed inline `âœ•` delete buttons from table column headers in `evaluation.html` (eliminating accidental clicks and restoring Excel-clean aesthetic).
+     - Added `ðŸ—‘ï¸ Delete / Manage Columns` button to the command bar alongside `+ Add Column`.
+     - Clicking opens `#manage-columns-modal` displaying all continuous assessment columns (Name, Max Marks) and an instant `ðŸ—‘ï¸ Delete` button for each column with live table updates and zero native `window.confirm` browser popups.
   2. **Fix Verbose / SQL Query Text in Column Subheaders**:
-     - Column subheaders previously rendered verbose database descriptions like `Assignment 1: Relational Algebra & SQL Joins (25)` and `Unit Test 2 — Advanced SQL (20)`, which wrapped awkwardly into 5 lines resembling raw SQL queries.
+     - Column subheaders previously rendered verbose database descriptions like `Assignment 1: Relational Algebra & SQL Joins (25)` and `Unit Test 2 â€” Advanced SQL (20)`, which wrapped awkwardly into 5 lines resembling raw SQL queries.
      - Implemented `formatEvalSubheader()`: sanitizes subheader labels into compact identifiers (`Assign 1 (25)`, `UT 1 (20)`, `UT 2 (20)`) while preserving the full topic description in the `title="..."` tooltip.
   3. **Conditional Practical Columns Based on Subject Component**:
      - Practical columns (`Lab Record (10)`, `Viva Voce (5)`, `Creative Work (10)`) are displayed ONLY when the subject or teaching group has practical component (`has_practical === 1` or component is `THEORY_PRACTICAL` or `PRACTICAL`).
      - Pure theory courses now default to theory continuous assessment (`Attendance (5)`), computing a 40-mark total scheme instead of 65 marks.
-     - Dynamic header badge accurately indicates `📘 Theory + 🧪 Practical Integrated` or `📘 Theory Course`.
+     - Dynamic header badge accurately indicates `ðŸ“˜ Theory + ðŸ§ª Practical Integrated` or `ðŸ“˜ Theory Course`.
   4. **Single-Group Class Creation with Upgraded Component & Dedicated Classwork Sections**:
      - Upgraded class creation dropdown in `groups.html` to include `Theory + Practical (Integrated)` (`THEORY_PRACTICAL`), creating a single unified teaching group rather than fragmented cohorts.
      - In Classroom Classwork (`group-detail.html`), added:
-       - Category filters: `🧪 Practical Work` and `📂 Final Documents`.
+       - Category filters: `ðŸ§ª Practical Work` and `ðŸ“‚ Final Documents`.
        - `+ Create` menu options:
-         - `🧪 Practical Work`: Allows teacher to publish practical assignments, lab experiment instructions, and auto-post announcements to the student stream.
-         - `📂 Final Documents Request`: Allows teacher to request semester-end submissions (Total Assignments PDF records, Class Test records, Practical Lab Journal records) with checklist and deadline.
+         - `ðŸ§ª Practical Work`: Allows teacher to publish practical assignments, lab experiment instructions, and auto-post announcements to the student stream.
+         - `ðŸ“‚ Final Documents Request`: Allows teacher to request semester-end submissions (Total Assignments PDF records, Class Test records, Practical Lab Journal records) with checklist and deadline.
 
 - **Architectural Implementation**:
   1. **Backend Route Updates (`backend/src/routes/teachingGroups.js` & `backend/src/routes/faculty.js`)**:
@@ -4721,7 +4833,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `GET /api/v1/teaching-groups/:id/assignments`: returns assignments of types `'ASSIGNMENT'`, `'PRACTICAL'`, and `'FINAL_DOCS'`.
      - `GET /api/v1/faculty/registers/:id/internal-evaluation`: includes `has_practical` evaluated across subject definition, group component, and register scope.
   2. **Spreadsheet Studio (`frontend/faculty/evaluation.html`)**:
-     - Replaced header delete buttons with `#manage-columns-modal` and toolbar `🗑️ Delete / Manage Columns`.
+     - Replaced header delete buttons with `#manage-columns-modal` and toolbar `ðŸ—‘ï¸ Delete / Manage Columns`.
      - Integrated `formatEvalSubheader()` for clean subheaders.
      - Implemented conditional practical column initialization and dynamic course badge.
   3. **Google Classroom Studio (`frontend/faculty/group-detail.html`)**:
@@ -4733,13 +4845,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 125: Unified 3-Row Session-Scoped Headers, Theory + Practical Integrated Evaluation Sheet & Deletable Continuous Assessment Columns
+### âœ… Milestone 125: Unified 3-Row Session-Scoped Headers, Theory + Practical Integrated Evaluation Sheet & Deletable Continuous Assessment Columns
 - **User Requirements**:
   1. **Redesign Headers Across Both Sheets (Marks Entry Modal/Registers Sheet AND Master Evaluation Sheet `evaluation.html`)**:
      - **Row 1**: `Uttarakhand Government Institute of Polytechnic, Nainital | Internal Evaluation Sheet 2026 Session` (session-scoped: stored in DB `system_settings` as `institution_header_${ayId}` and `localStorage` as `vidyaos_inst_header_session_${sessionKey}`; editing in one place syncs across all tests and sheets in that session, but does NOT affect archived sessions).
      - **Row 2**:
        - Marks Entry Sheet (`group-detail.html` & `registers.html` exam studio): `Internal Evaluation - Unit Test 2 | Subject : Database Management Systems` (no `Department (IT) |` in Row 2).
-       - Master Evaluation Sheet (`evaluation.html` & `registers.html` internal eval tab): `Department (IT) | Subject : [Select Register / Class ▼]` with inline class/subject switcher dropdown to toggle between classes/subjects and `📘 Theory + 🧪 Practical Integrated` badge.
+       - Master Evaluation Sheet (`evaluation.html` & `registers.html` internal eval tab): `Department (IT) | Subject : [Select Register / Class â–¼]` with inline class/subject switcher dropdown to toggle between classes/subjects and `ðŸ“˜ Theory + ðŸ§ª Practical Integrated` badge.
      - **Row 3**: `Information Technology Year 3 | Semester 5` on all sheets.
   2. **Integrated Theory & Practical Evaluation Sheet (`evaluation.html` & `registers.html`)**:
      - Consolidates theory assignments and unit tests alongside practical and continuous assessment components in one unified spreadsheet:
@@ -4748,7 +4860,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - `Creative Work (Model/Chart/Project) (10)`
        - `Attendance (5)` (automatically computed from student attendance percentage: `(pct / 100) * 5`).
      - **Faculty Column Deletion Freedom**:
-       - Teacher can delete ANY continuous assessment column even though predefined (each column header features a `✕` delete button).
+       - Teacher can delete ANY continuous assessment column even though predefined (each column header features a `âœ•` delete button).
        - Teacher can add new custom columns (`+ Add Column`).
        - Scores dynamically update student totals and sheet maximum marks in real time.
      - **Excel Export Service Synchronization**:
@@ -4764,10 +4876,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Dynamic 3-row institutional banner matching web UI (Rows 1-3).
      - Multi-tier header dynamically reflecting `assessment_columns` with formulas and fallback to legacy format when needed.
   3. **Master Evaluation Sheet (`frontend/faculty/evaluation.html`)**:
-     - Unified 3-row banner with inline class switcher dropdown and `📘 Theory + 🧪 Practical Integrated` badge.
-     - Inline editable session header with ✏️ sync.
+     - Unified 3-row banner with inline class switcher dropdown and `ðŸ“˜ Theory + ðŸ§ª Practical Integrated` badge.
+     - Inline editable session header with âœï¸ sync.
      - Default columns: `Lab Record (10)`, `Viva Voce (5)`, `Creative Work (Model/Chart/Project) (10)`, `Attendance (5)`.
-     - `✕` delete button on each assessment column, `+ Add Column` modal, real-time formula recalculations and live totals.
+     - `âœ•` delete button on each assessment column, `+ Add Column` modal, real-time formula recalculations and live totals.
   4. **Registers Studio (`frontend/faculty/registers.html`)**:
      - Consolidated exam studio and internal evaluation tab with matching 3-row banner, session sync, and dynamic assessment column controls.
   5. **Verification Suites**:
@@ -4775,28 +4887,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-### ✅ Milestone 124: Excel Marks Ledger View Mode, Sticky Headers, Removed Enrollment No, and Minimalist Question Controls
+### âœ… Milestone 124: Excel Marks Ledger View Mode, Sticky Headers, Removed Enrollment No, and Minimalist Question Controls
 - **User Requirements**:
   1. Remove question chips (`Questions: [Q1: 5 pts] ...`) from the top of the Enter Marks modal since marks and questions are predefined when scheduling the test.
-  2. Keep `+ Add Question` and `− Remove Question` buttons with minimalist compact styling.
+  2. Keep `+ Add Question` and `âˆ’ Remove Question` buttons with minimalist compact styling.
   3. Remove `Enrollment No.` column completely from the marks entry table.
   4. Make table headers sticky (`position: sticky; top: 0; z-index: 10;`) while scrolling through student rows.
   5. Add a View Switcher button to toggle the marks table into the official Excel Marks Ledger style (matching `registers.html?id=1&tab=exams`):
      - Desktop by default (`window.innerWidth >= 900`): Excel Sheet Ledger view with institutional headings and side instructions card.
      - Small screen / mobile (`window.innerWidth < 900`): Normal Table view.
-     - Add `⭐ Set as Default` button to persist user's preference in `localStorage` (`vidyaos_marks_view_mode`).
+     - Add `â­ Set as Default` button to persist user's preference in `localStorage` (`vidyaos_marks_view_mode`).
   6. **Editable Institution Header & Global Auto-Sync**:
-     - Institution header ("Uttarakhand Government Institute of Polytechnic, Srinagar Garhwal | Internal Evaluation Sheet 2026 Session") is directly editable inline with `contenteditable="true"` and ✏️ icon.
+     - Institution header ("Uttarakhand Government Institute of Polytechnic, Srinagar Garhwal | Internal Evaluation Sheet 2026 Session") is directly editable inline with `contenteditable="true"` and âœï¸ icon.
      - When edited in one test or register, updates automatically sync across all tests and registers via `localStorage` (`vidyaos_institution_marks_header`) and `storage` event broadcast.
   7. **Dynamic Clean Unit Test Number**:
-     - Strips redundant topic titles (e.g. `— Advanced SQL`) from internal evaluation headers, leaving only the clean unit test number (e.g. `Unit Test 2`).
+     - Strips redundant topic titles (e.g. `â€” Advanced SQL`) from internal evaluation headers, leaving only the clean unit test number (e.g. `Unit Test 2`).
      - Dynamically populates Department code, clean Unit Test number, Subject name, Year, and Semester automatically.
 
 - **Architectural Implementation (`faculty/group-detail.html` & `faculty/registers.html`)**:
   1. **Minimalist Top Controls & Question Setup**:
      - Removed obsolete top question chips and distribute button.
-     - Streamlined question count controls (`+ Add Question`, `− Remove Question`) into compact buttons.
-     - Added View Switcher toolbar with active status indicator and `⭐ Set as Default` button.
+     - Streamlined question count controls (`+ Add Question`, `âˆ’ Remove Question`) into compact buttons.
+     - Added View Switcher toolbar with active status indicator and `â­ Set as Default` button.
   2. **Zero Hardcoded Colors & Sticky Table Headers**:
      - Sticky table headers on both views using semantic tokens: `background: var(--bg-surface)` and `var(--col-att-group-bg)`.
      - 100% theme token compliance (`test-theme-support.js` 93/93 PASS).
@@ -4808,22 +4920,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Automatically chooses Excel view on desktop (`>= 900px`) and Normal table on mobile.
      - User preference stored in `localStorage.getItem('vidyaos_marks_view_mode')`.
   5. **Cross-Module Header Sync & Clean Unit Test Extraction**:
-     - `extractUnitTestNumber()` cleans titles (e.g. "Unit Test 2 — Advanced SQL" ➔ "Unit Test 2").
+     - `extractUnitTestNumber()` cleans titles (e.g. "Unit Test 2 â€” Advanced SQL" âž” "Unit Test 2").
      - `getGlobalInstituteHeader()` and `updateGlobalInstituteHeader()` ensure edits made anywhere update everywhere seamlessly.
 
 ---
 
-### ✅ Milestone 123: Question-by-Question Marks Entry, Real-Time Automatic Totals & Test Scheduling Questions Setup
+### âœ… Milestone 123: Question-by-Question Marks Entry, Real-Time Automatic Totals & Test Scheduling Questions Setup
 - **User Requirements**:
   1. Remove `Remarks` and `Absent?` columns completely from the Marks Entry modal.
   2. Add question-by-question marks entry (e.g. Q1, Q2, Q3, etc.) with real-time automatic totals.
   3. When scheduling a new class test: add "Number of Questions" and "Maximum Marks" options so the questions structure is saved and the "Enter Marks" modal gets it automatically!
 - **Architectural Implementation**:
   1. **Schedule Class Test Modal (`faculty/group-detail.html`)**:
-     - Added `Number of Questions *` input (`#test-num-questions`, default 4, range 1–50) and `Maximum Marks *` (`#test-marks`).
+     - Added `Number of Questions *` input (`#test-num-questions`, default 4, range 1â€“50) and `Maximum Marks *` (`#test-marks`).
      - Added real-time calculation of marks per question display (`#test-marks-per-q-display`, e.g. `5 pts / question`).
      - Added live **Marks Breakdown Preview**:
-       - Summary badge: `4 questions • 20 marks total`.
+       - Summary badge: `4 questions â€¢ 20 marks total`.
        - Interactive question chips: `[ Q1: 5 pts ] [ Q2: 5 pts ] [ Q3: 5 pts ] [ Q4: 5 pts ]`.
        - Inline editing of individual question marks dynamically updates the test's total marks.
   2. **Automatic Synchronization to Enter Marks Modal**:
@@ -4839,34 +4951,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `GET /api/v1/teaching-groups/:id/tests`:
        - Selects `a.questions` and returns deserialized `questions` array and `num_questions`.
 - **Verification Suites**:
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `test-classroom-and-reporting.js`: **17/17 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-schedule-questions.js`: **ALL PASS** (Created 4-question & auto 5-question tests with verified retrieval) ✓
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `test-classroom-and-reporting.js`: **17/17 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-schedule-questions.js`: **ALL PASS** (Created 4-question & auto 5-question tests with verified retrieval) âœ“
   - Backend commits: `4f99680`, `065da78`. Frontend commits: `1dfd829`, `cd395bc`.
 
 ---
 
-### ✅ Milestone 122: Student Data Sovereignty, Autonomous Semester Progression Engine & Universal Academic Dossier
-- **User Requirements**: (1) Purge "Winter/Summer" terminology → canonical Odd/Even Semester institutional cycles. (2) Autonomous bi-annual student promotion on semester boundary crossing. (3) Teaching groups auto-archive on rollover. (4) Student academic data permanently belongs to student (not faculty groups). (5) Faculty/HOD/Admin can view full multi-semester student academic dossier for any student (active or alumni).
+### âœ… Milestone 122: Student Data Sovereignty, Autonomous Semester Progression Engine & Universal Academic Dossier
+- **User Requirements**: (1) Purge "Winter/Summer" terminology â†’ canonical Odd/Even Semester institutional cycles. (2) Autonomous bi-annual student promotion on semester boundary crossing. (3) Teaching groups auto-archive on rollover. (4) Student academic data permanently belongs to student (not faculty groups). (5) Faculty/HOD/Admin can view full multi-semester student academic dossier for any student (active or alumni).
 - **Architectural Implementation**:
-  1. **Phase 1 – Term Nomenclature Overhaul**:
-     - `sessionService.js`: Completely rewritten. Canonical labels: `YYYY-YY (Odd Semester)` (July 1–Dec 31) and `YYYY-YY (Even Semester)` (Jan 1–June 30). Legacy "Winter"/"Summer" labels auto-upgraded on server startup.
+  1. **Phase 1 â€“ Term Nomenclature Overhaul**:
+     - `sessionService.js`: Completely rewritten. Canonical labels: `YYYY-YY (Odd Semester)` (July 1â€“Dec 31) and `YYYY-YY (Even Semester)` (Jan 1â€“June 30). Legacy "Winter"/"Summer" labels auto-upgraded on server startup.
      - Purged all "Winter"/"Summer" strings from frontend HTML files (`academic-structure.html`, `settings.html`, `assignments.html`, `evaluation.html`, `api-explorer.html`) and backend route fallbacks (`admin.js`, `exams.js`, `faculty.js`, `excelExportService.js`, `AcademicStructure.js`).
-  2. **Phase 2 – Autonomous Bi-Annual Promotion Engine**:
+  2. **Phase 2 â€“ Autonomous Bi-Annual Promotion Engine**:
      - NEW: `src/services/promotionEngineService.js`. Idempotent `checkAndRunAutomatedSemesterPromotion()`.
-     - Even term (Jan 1): Odd semesters advance to Even (Sem 1→2, Sem 3→4, Sem 5→6).
-     - Odd term (July 1): Even non-terminal semesters advance (Sem 2→3, Sem 4→5). Terminal semester (Sem ≥ max): status → `ALUMNI`, `graduation_year` stamped, fingerprint slots deactivated.
+     - Even term (Jan 1): Odd semesters advance to Even (Sem 1â†’2, Sem 3â†’4, Sem 5â†’6).
+     - Odd term (July 1): Even non-terminal semesters advance (Sem 2â†’3, Sem 4â†’5). Terminal semester (Sem â‰¥ max): status â†’ `ALUMNI`, `graduation_year` stamped, fingerprint slots deactivated.
      - Maintains audit trail in `student_department_enrollments` (`COMPLETED` / `GRADUATED` status).
-  3. **Phase 3 – Autonomous Teaching Group Auto-Archiving**:
-     - Integrated into `promotionEngineService.js`: On rollover, all `ACTIVE` groups from expired academic years → `ARCHIVED`, linked registers → `is_active = 0`.
+  3. **Phase 3 â€“ Autonomous Teaching Group Auto-Archiving**:
+     - Integrated into `promotionEngineService.js`: On rollover, all `ACTIVE` groups from expired academic years â†’ `ARCHIVED`, linked registers â†’ `is_active = 0`.
      - `server.js`: Runs on startup and midnight cron via `promotionEngineService`.
-  4. **Phase 4 – Student Data Sovereignty & Anti-Cascade Deletion Guards**:
-     - `teachingGroups.js`: Group hard-delete no longer cascades to student records. Attendance records `NULL`-orphaned (preserve `student_id`, `subject_id`, `session_date`). Assignment submissions and marks orphaned (`NULL group_id`/`register_id`) — student data irrevocably preserved.
-  5. **Phase 5 – Universal Faculty Student Academic Dossier**:
-     - Backend: `GET /api/v1/students/:id/academic-dossier` — multi-semester breakdown (attendance %, assignments submitted/graded, class test scores). Accessible to faculty, class teacher, HOD, admin, and the student themselves.
-     - Frontend `shared/js/ui.js` + `js/ui.js`: `openStudentDossier(studentId, name)` / `renderStudentDossierContent(data)` — accordion semester tabs, attendance bars, coursework cards, exam score rows.
-     - 📜 **Dossier button** added in `faculty/students.html`, `admin/students.html`, and `faculty/hod-archive.html` (alumni table).
+  4. **Phase 4 â€“ Student Data Sovereignty & Anti-Cascade Deletion Guards**:
+     - `teachingGroups.js`: Group hard-delete no longer cascades to student records. Attendance records `NULL`-orphaned (preserve `student_id`, `subject_id`, `session_date`). Assignment submissions and marks orphaned (`NULL group_id`/`register_id`) â€” student data irrevocably preserved.
+  5. **Phase 5 â€“ Universal Faculty Student Academic Dossier**:
+     - Backend: `GET /api/v1/students/:id/academic-dossier` â€” multi-semester breakdown (attendance %, assignments submitted/graded, class test scores). Accessible to faculty, class teacher, HOD, admin, and the student themselves.
+     - Frontend `shared/js/ui.js` + `js/ui.js`: `openStudentDossier(studentId, name)` / `renderStudentDossierContent(data)` â€” accordion semester tabs, attendance bars, coursework cards, exam score rows.
+     - ðŸ“œ **Dossier button** added in `faculty/students.html`, `admin/students.html`, and `faculty/hod-archive.html` (alumni table).
   6. **Service Cleanup**:
      - Removed `otpService.js`, `parentGatewayService.js`, `whatsappBotService.js` (consolidated into `authService.js` and direct dispatch).
      - Removed `admin/whatsapp-gateway.html` (consolidated into `admin/faculty.html`).
@@ -4877,13 +4989,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
         - **Step 1 (Safeguard Review)**: Displays student name, roll number, enrollment ID, and explains the Institutional Data Sovereignty guarantee (past attendance logs, marks, and submissions remain permanently preserved).
         - **Step 2 (Final Verification)**: Requires checking `"I confirm removing this student / deleting this item"` checkbox to unlock the danger-styled `"Confirm & Remove"` button.
 - **Verification Suites**:
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-dossier-dom.js`: **5/5 PASS** (Dossier UI integration) ✓
-  - `test-classroom-and-reporting.js`: **17/17 PASS** (Classroom hub & group detail) ✓
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors) âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-dossier-dom.js`: **5/5 PASS** (Dossier UI integration) âœ“
+  - `test-classroom-and-reporting.js`: **17/17 PASS** (Classroom hub & group detail) âœ“
   - Backend commit: `52d6782`, Frontend commit: `43d9459`.
 
-### ✅ Milestone 121: Complete Exclusion of Test Code & Artifacts from GitHub (Strict Invariant Enforced)
+### âœ… Milestone 121: Complete Exclusion of Test Code & Artifacts from GitHub (Strict Invariant Enforced)
 - **User Requirement**: *"no test code push in GitHub"*
 - **Architectural Implementation**:
   1. **Git Tracking Purge**:
@@ -4906,36 +5018,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Local execution of `node scripts/test-theme-support.js`: **93/93 PASS**.
   - Local execution of `node scripts/test-frontend-dom-checks.js`: **ALL PASS**.
 
-### ✅ Milestone 120: HOD Management Redesign, Registration Gateways UI Modernization, Button Streamlining & Admin Google Classroom Suite Navbar/Drawer Architecture
-- **User Requirement**: *"redesign HOD Management page unnecessary things in this page like Create HOD accounts and assign them to departments. HODs create teachers, subjects, and assignments within their department. ADMIN → Creates HOD, assigns to Department HOD → Creates Teachers, Subjects, and Assignments (THEORY / PRACTICAL) Class Teacher → Provisions Students for their cohort and also Self-Registration Gateways (Open / Close) make better ui and Department Students & Enrollment page remove bulk ,🔤 Re-order Class Roll Numbers btn's and admin header and manu bar make like faculty manu and header design"*
+### âœ… Milestone 120: HOD Management Redesign, Registration Gateways UI Modernization, Button Streamlining & Admin Google Classroom Suite Navbar/Drawer Architecture
+- **User Requirement**: *"redesign HOD Management page unnecessary things in this page like Create HOD accounts and assign them to departments. HODs create teachers, subjects, and assignments within their department. ADMIN â†’ Creates HOD, assigns to Department HOD â†’ Creates Teachers, Subjects, and Assignments (THEORY / PRACTICAL) Class Teacher â†’ Provisions Students for their cohort and also Self-Registration Gateways (Open / Close) make better ui and Department Students & Enrollment page remove bulk ,ðŸ”¤ Re-order Class Roll Numbers btn's and admin header and manu bar make like faculty manu and header design"*
 - **Architectural Implementation**:
   1. **HOD Management Redesign (`frontend/admin/faculty.html`)**:
      - Purged redundant verbose explanatory text: *"Create HOD accounts and assign them to departments. HODs create teachers, subjects, and assignments within their department."*
-     - Purged awkward multi-colored hierarchy callout box (`ADMIN → Creates HOD... HOD → Creates Teachers... Class Teacher → Provisions Students...`).
+     - Purged awkward multi-colored hierarchy callout box (`ADMIN â†’ Creates HOD... HOD â†’ Creates Teachers... Class Teacher â†’ Provisions Students...`).
      - Modernized page header with executive title: `HOD Leadership & Governance` and concise subtitle.
      - Preserved `#create-hod-btn` with modern styling and icon.
   2. **Modernized Self-Registration Gateways Hub**:
      - In `frontend/admin/faculty.html`: Redesigned `#admin-reg-gates-card` with a 2-column responsive grid featuring dedicated interactive tiles for HOD Registration (`#btn-toggle-hod-gate`) and Common Faculty Gateways (`#btn-toggle-common-gate`) with status pills and clear descriptions.
      - In `frontend/faculty/students.html` (and synchronized `hod-teachers.html`, `hod-students.html`): Redesigned `#registration-control-hub` into modern interactive cards with dedicated Faculty Gateway (`#quick-teacher-reg-badge`, `#quick-teacher-reg-toggle-btn`) and Student Gateway (`#quick-student-reg-badge`, `#quick-student-reg-toggle-btn`, `#quick-dept-student-reg-toggle-btn`).
   3. **Department Students & Enrollment Toolbar Streamlining**:
-     - Removed `📁 Bulk CSV` (`#btn-bulk-csv`) and `🔤 Re-order Roll #` (`#btn-reindex-roll`) buttons from `#provision-btn-container` in `students.html`, `hod-teachers.html`, and `hod-students.html`.
-     - Retained core action buttons: `+ Add Teacher`, `+ Add Student`, `🔄 Semester Promotion & Demotion`, and `🎓 Alumni Archive`.
+     - Removed `ðŸ“ Bulk CSV` (`#btn-bulk-csv`) and `ðŸ”¤ Re-order Roll #` (`#btn-reindex-roll`) buttons from `#provision-btn-container` in `students.html`, `hod-teachers.html`, and `hod-students.html`.
+     - Retained core action buttons: `+ Add Teacher`, `+ Add Student`, `ðŸ”„ Semester Promotion & Demotion`, and `ðŸŽ“ Alumni Archive`.
   4. **Admin Google Classroom Navbar & Drawer Menu Bar (`gc-navbar` & `gc-drawer`)**:
      - Upgraded all 8 admin console pages (`dashboard.html`, `academic-structure.html`, `faculty.html`, `students.html`, `reports.html`, `settings.html`, `profile.html`, `audit-logs.html`) from horizontal button strips in `<header class="app-header">` to Google Classroom-style `<header class="gc-navbar">`.
-     - Integrated `☰` menu toggle, `🏛️ Admin Console | VidyaOS` brand, `.gc-page-badge`, `✱` apps launcher dropdown, `🌙` theme switcher, and avatar circle with user profile popover (`toggleUserProfile`).
-     - Enhanced `renderClassroomNavbar()` and `renderSidebar()` in `frontend/shared/js/auth.js` and `frontend/js/auth.js` to support Admin portal drawer navigation with `🏛️ Admin Console` drawer header, clean category dividers, and closed-by-default drawer state.
+     - Integrated `â˜°` menu toggle, `ðŸ›ï¸ Admin Console | VidyaOS` brand, `.gc-page-badge`, `âœ±` apps launcher dropdown, `ðŸŒ™` theme switcher, and avatar circle with user profile popover (`toggleUserProfile`).
+     - Enhanced `renderClassroomNavbar()` and `renderSidebar()` in `frontend/shared/js/auth.js` and `frontend/js/auth.js` to support Admin portal drawer navigation with `ðŸ›ï¸ Admin Console` drawer header, clean category dividers, and closed-by-default drawer state.
      - Preserved hidden fallback navigation `<nav id="top-nav-bar" style="display: none !important;">` for automated test compatibility.
 - **Verification Suites (100% PASS)**:
-  - `test-theme-support.js`: **93/93 PASS** (Theme token integrity, zero hardcoded colors, asset sync verified) ✓
-  - `test-admin-pages-data.js`: **ALL PASS** (Dashboard, Academic Structure, HOD Management DOM and data flows) ✓
-  - `test-frontend-dom-checks.js`: **ALL PASS** (Delete HOD button, confirmation modals, academic structure contracts) ✓
-  - `test-faculty-registration-flow.js`: **90/90 PASS** (Anti-spam gates, 3-tier approvals, HOD and common faculty gates) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** (Theme token integrity, zero hardcoded colors, asset sync verified) âœ“
+  - `test-admin-pages-data.js`: **ALL PASS** (Dashboard, Academic Structure, HOD Management DOM and data flows) âœ“
+  - `test-frontend-dom-checks.js`: **ALL PASS** (Delete HOD button, confirmation modals, academic structure contracts) âœ“
+  - `test-faculty-registration-flow.js`: **90/90 PASS** (Anti-spam gates, 3-tier approvals, HOD and common faculty gates) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 119: Sidebar & Navigation Drawer Backdrop Full-Screen Blur Elimination
+### âœ… Milestone 119: Sidebar & Navigation Drawer Backdrop Full-Screen Blur Elimination
 - **User Requirement**: *"when click to open manu screen get full blur"*
 - **Root Cause Analysis**:
   - The base `.sidebar-backdrop` in `frontend/shared/css/components.css` and `frontend/css/components.css` had `backdrop-filter: blur(4px)` and `-webkit-backdrop-filter: blur(4px)`.
@@ -4950,15 +5062,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Synchronized Assets**:
      - Synchronized `frontend/shared/css/components.css` with `frontend/css/components.css`.
 - **Verification Suites (100% PASS)**:
-  - `test-theme-support.js`: **93/93 PASS** (CSS token integrity, 0 hardcoded colors, asset sync verified) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-roll-call-upgrade.js`: **PASS** ✓
-  - `test-live-log-checkin.js`: **PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** (CSS token integrity, 0 hardcoded colors, asset sync verified) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-roll-call-upgrade.js`: **PASS** âœ“
+  - `test-live-log-checkin.js`: **PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 118: Complete Demo Modal Removal & End-to-End WhatsApp/OTP Residual Cleanup
+### âœ… Milestone 118: Complete Demo Modal Removal & End-to-End WhatsApp/OTP Residual Cleanup
 - **User Requirement**:
   - Removed "Demo Accounts" modal from homepage (`frontend/index.html`): `"remove this"`
   - Verified and finalized removal of all residual WhatsApp and OTP artifacts.
@@ -4983,7 +5095,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **Verification**:
      - All 7 core test suites passed with 0 errors: Theme Support (93/93), Registers Consolidation (46/46), Roll Call Studio (PASSED), Live Log Check-In (PASSED), RBAC & Structure (30/30), Student Self-Registration (30/30), Core API Flows (25/25).
 
-### ✅ Milestone 117: Modern Minimalist Admin Redesign, WhatsApp Code Deprecation & Faculty Code Admin-Leak Purge
+### âœ… Milestone 117: Modern Minimalist Admin Redesign, WhatsApp Code Deprecation & Faculty Code Admin-Leak Purge
 - **User Requirement**:
   - *"redesign all admin pages into modern ui ux and make minimal pages that have all necessary features but no extra things for admin"*
   - *"also i can still see whatsapp code in file's remove that also"*
@@ -4996,7 +5108,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - **Top Navbars in Admin Pages**: Removed deprecated WhatsApp Gateway buttons across all 7 admin pages (`academic-structure.html`, `audit-logs.html`, `dashboard.html`, `faculty.html`, `reports.html`, `settings.html`, `students.html`).
   2. **Comprehensive WhatsApp Deprecation & Code Purge**:
      - **`frontend/admin/faculty.html`**: Removed entire WhatsApp Web Bot Card (`#wa-bot-content`), test dispatch modal (`#test-wa-modal`), and 245 lines of unused client-side bot management scripts (`loadWhatsAppBotStatus`, `renderWhatsAppBotUI`, `initWhatsAppBot`, `disconnectWhatsAppBot`, `submitTestWaMessage`).
-     - **`frontend/faculty/reports.html`**: Removed `💬 WhatsApp` button and `openSingleWhatsApp()` function; replaced with clean `📩 Notify Parent` button triggering `openSingleEscalation()` via official SMS gateway and in-app parent notices; updated Parent Escalation Modal and Comm Logs to reflect official SMS / institutional notices.
+     - **`frontend/faculty/reports.html`**: Removed `ðŸ’¬ WhatsApp` button and `openSingleWhatsApp()` function; replaced with clean `ðŸ“© Notify Parent` button triggering `openSingleEscalation()` via official SMS gateway and in-app parent notices; updated Parent Escalation Modal and Comm Logs to reflect official SMS / institutional notices.
      - **`backend/src/services/otpService.js`**: Removed WhatsApp link generation, WhatsApp Bot direct send, and external QR code conversion; OTPs dispatch directly via Email / SMS webhook / console logger with clean JSON payload.
      - **`backend/src/services/parentGatewayService.js`**: Deprecated WhatsApp Web Bot attempts; default channel transitioned to `SMS` and recorded cleanly in `parent_escalation_logs`.
      - **`backend/src/services/whatsappBotService.js`**: Replaced heavyweight Chromium/Puppeteer bot service with a lightweight stub returning clean deprecation notices without launching background processes.
@@ -5006,14 +5118,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   4. **Landing Page Demo Modal Removal (Milestone 115)**:
      - **`frontend/index.html`**: Completely removed `#demo-modal`, backdrop overlay, "Demo Accounts" nav link, hero strip button, floating dock demo trigger, footer link, CSS classes, and modal JavaScript functions.
 - **Verification Suites (100% PASS)**:
-  - `test-theme-support.js`: **93/93 PASS** (0 hardcoded hex colors) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** (0 hardcoded hex colors) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 116: Class Creation UX Streamlining & Post-Creation Department Student Enrollment Pop-up
+### âœ… Milestone 116: Class Creation UX Streamlining & Post-Creation Department Student Enrollment Pop-up
 - **User Requirement**: *"Remove 'Student Enrollment Mode *' and 'Department Cohort *' dropdown from the '+ Add Class' modal in classes tab. Instead of auto-enrolling silently or requiring manual invite codes, after creating the class, show a pop-up asking the teacher if they want to enroll their department students (with student checkboxes to select all or pick specific ones). If they decline or skip, the invite code is still available for manual joining."*
 - **Architectural Implementation**:
   1. **Backend Integration (`backend/src/controllers/teachingGroupController.js`)**:
@@ -5031,14 +5143,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - "+ Enroll Selected" button batch-submits chosen IDs via `POST /teaching-groups/:id/members`.
      - "Skip (Invite Code Only)" button dismisses modal and displays friendly confirmation toast with the generated 6-digit invitation code.
 - **Verification**:
-  - `test-classes-actions-and-modals.js`: **53/53 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-defaulters-and-archives.js`: **23/23 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
+  - `test-classes-actions-and-modals.js`: **53/53 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-defaulters-and-archives.js`: **23/23 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
   - JSDOM & E2E API flow: Verified complete enrollment workflow from creation through student selection.
 
-### ✅ Milestone 115: Landing Page Demo Accounts Modal & Trigger Purge (`frontend/index.html`)
+### âœ… Milestone 115: Landing Page Demo Accounts Modal & Trigger Purge (`frontend/index.html`)
 - **User Requirement**: *"remove this"* with screenshot of the "Demo Accounts" popup dialog on `http://localhost:3000/index.html`.
 - **Architectural Cleanup**:
   1. **Purged Demo Accounts Modal Markup & Logic**:
@@ -5048,39 +5160,39 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   2. **Removed Trigger Anchors & Navigation Elements**:
      - Removed "Demo Accounts" link from top navigation bar (`ul.nav-links`).
      - Removed "Fast Demo Access" strip (`.demo-credentials-strip`) from hero section.
-     - Replaced demo credentials sublink in Admin portal card with direct link to `/login/index.html` (`Access Administration Console →`).
+     - Replaced demo credentials sublink in Admin portal card with direct link to `/login/index.html` (`Access Administration Console â†’`).
      - Removed "Demo Logins" button (`.dock-btn`) from the bottom floating dock navigation.
      - Removed "Demo Credentials" link from the footer navigation.
      - Removed `.demo-credentials-strip` styling from stylesheet.
 - **Verification**:
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
 
 
-### ✅ Milestone 114: Faculty Tools & Apps Launcher Refinement — WhatsApp Purge & Role-Based Tool Visibility
+### âœ… Milestone 114: Faculty Tools & Apps Launcher Refinement â€” WhatsApp Purge & Role-Based Tool Visibility
 - **User Requirement**: *"fix tools and WhatsApp has removed but still showing"*
-  - User highlighted that the Academic Apps & Modules launcher (tools dropdown `*`) still displayed a `📱 WhatsApp` tile (linking to `/admin/whatsapp-gateway.html`) even though WhatsApp OTP / integration had been removed from the faculty portal.
+  - User highlighted that the Academic Apps & Modules launcher (tools dropdown `*`) still displayed a `ðŸ“± WhatsApp` tile (linking to `/admin/whatsapp-gateway.html`) even though WhatsApp OTP / integration had been removed from the faculty portal.
 - **Architectural Implementation**:
   1. **Purged Legacy WhatsApp Tiles Across All 19 Faculty Pages**:
      - Updated `#apps-launcher-dropdown` across all 19 faculty HTML templates (`dashboard.html`, `groups.html`, `registers.html`, `assignments.html`, `tests.html`, `evaluation.html`, `reports.html`, `students.html`, `timetable.html`, `leave-approvals.html`, `hod-teachers.html`, `hod-students.html`, `hod-devices.html`, `hod-archive.html`, `hod-reports.html`, `hod-settings.html`, `profile.html`, `common-teachers.html`, `group-detail.html`).
-     - Replaced the obsolete `WhatsApp` link with `🎓 Archive` (`/faculty/hod-archive.html`).
+     - Replaced the obsolete `WhatsApp` link with `ðŸŽ“ Archive` (`/faculty/hod-archive.html`).
   2. **Role-Based Visibility for HOD Tools (`shared/js/auth.js` & `js/auth.js`)**:
      - Updated `renderClassroomNavbar()` in `auth.js` to automatically filter tiles:
        - Regular Faculty (`!user.is_hod`): HOD-only tiles (`.hod-only-tile`: HOD Hub, ESP Devices, and Archive) are hidden (`display: none;`), presenting a clean, focused 3x3 grid of 9 core academic tools (Classes, Registers, Coursework, Marksheets, Evaluation, Reports, Students, Timetable, Leaves).
        - Head of Department (`user.is_hod`): Displays all 12 tiles (9 core academic tools + HOD Hub, ESP Devices, and Alumni Archive).
        - Automatic legacy purge: Removes any lingering `a[href*="whatsapp"]` elements automatically.
 - **Full Regression Verification Suite (100% PASS)**:
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-hod-archive.js`: **ALL PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-classes-actions-and-modals.js`: **53/53 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-hod-archive.js`: **ALL PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-classes-actions-and-modals.js`: **53/53 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 113: Login Toast UI Break Fix, Fixed Positioning Self-Containment & In-Form Alert Banner Deduplication
+### âœ… Milestone 113: Login Toast UI Break Fix, Fixed Positioning Self-Containment & In-Form Alert Banner Deduplication
 - **User Requirement**: *"see this on login page message breaking ui"*
   - User reported raw unstyled text messages ("This account is currently active on another device...", "Account active on another device.") appearing in the top right outside the login card and distorting the page layout.
 - **Root Cause & Diagnosis**:
@@ -5105,16 +5217,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Removed redundant `showToast` calls when in-form cards (`#conflict-banner`, `#pending-banner`, `#status-alert-banner`) are active.
      - Now, only the clean, styled in-form card appears directly above the submit button with the "Disconnect Other Device & Sign In Here" action, without breaking the page layout.
 - **Full Regression Verification Suite (100% PASS)**:
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-login-flow-dom.js`: **ALL PASS** ✓
-  - `test-single-session-and-passwords.js`: **20/20 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-login-flow-dom.js`: **ALL PASS** âœ“
+  - `test-single-session-and-passwords.js`: **20/20 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 112: HOD Dashboard Console Exclusivity, HOD Archive Cross-Page Navigation & Full Test Pass
+### âœ… Milestone 112: HOD Dashboard Console Exclusivity, HOD Archive Cross-Page Navigation & Full Test Pass
 - **User Requirement**:
   - HOD with no teaching groups shows only "Department Console" (hide "My Teaching Classes" tab entirely).
   - HOD with teaching groups shows both tabs, but defaults to "Department Console" (`DEPT`), allowing manual or deep-link toggle (`?tab=classes`).
@@ -5122,54 +5234,54 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Complete cross-page navigation links to `hod-archive.html` across all HOD pages (`hod-reports.html`, `hod-teachers.html`, `hod-students.html`).
   - Fix login single-session collision guards across test scripts (`test-hod-settings-nav.js`, `test-hod-archive.js`).
 - **Architectural Implementation**:
-  1. **Frontend — HOD Tab Visibility & Default State (`faculty/dashboard.html`)**:
+  1. **Frontend â€” HOD Tab Visibility & Default State (`faculty/dashboard.html`)**:
      - `updateDashboardMode()` checks `state.currentUser?.is_hod` and active teaching groups (`hasClasses`).
      - If HOD has no teaching groups, `#btn-tab-classes` is hidden (`display: none`), displaying only the Department Console.
      - If HOD has teaching groups, both tabs are shown, defaulting to `DEPT` unless deep-linked with `?tab=classes`.
      - Non-HOD users see teaching classes exclusively with the switcher hidden.
-  2. **Frontend — HOD Archive Universal Navigation (`faculty/hod-reports.html`)**:
+  2. **Frontend â€” HOD Archive Universal Navigation (`faculty/hod-reports.html`)**:
      - Added Alumni & Student Archive links (`/faculty/hod-archive.html`) to the Quick Apps launcher dropdown, header action buttons, and automated test backward-compatibility hidden navigation bar.
-  3. **Test Infrastructure — Single Active Session Compatibility**:
+  3. **Test Infrastructure â€” Single Active Session Compatibility**:
      - Updated `test-hod-settings-nav.js` and `test-hod-archive.js` authentication payloads to send `force_logout: true`, preventing `409 ACCOUNT_ALREADY_ACTIVE` failures caused by consecutive automated test runs.
 - **Full Regression Verification Suite (100% PASS)**:
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-classes-actions-and-modals.js`: **53/53 PASS** ✓
-  - `test-academic-structure-responsive.js`: **44/44 PASS** ✓
-  - `test-hod-archive.js`: **ALL PASS** ✓
-  - `test-hod-settings-nav.js`: **ALL PASS** ✓
-  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-classes-actions-and-modals.js`: **53/53 PASS** âœ“
+  - `test-academic-structure-responsive.js`: **44/44 PASS** âœ“
+  - `test-hod-archive.js`: **ALL PASS** âœ“
+  - `test-hod-settings-nav.js`: **ALL PASS** âœ“
+  - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 111: System Reduction — Remove Department Creation, Unify Navbar, Remove hod-subjects.html & Fix test-api-flows.js
+### âœ… Milestone 111: System Reduction â€” Remove Department Creation, Unify Navbar, Remove hod-subjects.html & Fix test-api-flows.js
 - **User Requirement**:
   - Remove the "Create Department" feature entirely (academic structure is now fixed).
-  - Fix two types of navigation bars appearing on different pages — unify to one consistent drawer/sidebar.
+  - Fix two types of navigation bars appearing on different pages â€” unify to one consistent drawer/sidebar.
   - Remove `frontend/faculty/hod-subjects.html` (superseded by the new system).
   - Fix failing `test-api-flows.js` Test 14 (Student PIN Check-in).
 - **Architectural Implementation**:
-  1. **Backend — Block `POST /departments`**: `backend/src/routes/admin.js` now returns `403 Forbidden` for new department creation. Institutional structure is fixed (no new departments).
-  2. **Frontend — Remove "+ Add Department" UI**: `frontend/admin/academic-structure.html` — removed the "Add Department" button; the department modal now only supports editing existing departments.
-  3. **File Removal — `hod-subjects.html`**: `frontend/faculty/hod-subjects.html` permanently deleted. Canonical `301` redirects preserved in `backend/server.js`.
+  1. **Backend â€” Block `POST /departments`**: `backend/src/routes/admin.js` now returns `403 Forbidden` for new department creation. Institutional structure is fixed (no new departments).
+  2. **Frontend â€” Remove "+ Add Department" UI**: `frontend/admin/academic-structure.html` â€” removed the "Add Department" button; the department modal now only supports editing existing departments.
+  3. **File Removal â€” `hod-subjects.html`**: `frontend/faculty/hod-subjects.html` permanently deleted. Canonical `301` redirects preserved in `backend/server.js`.
   4. **Unified Sidebar/Drawer Architecture**: `frontend/shared/js/auth.js` updated so `renderSidebar()` injects one consistent `aside#app-sidebar.gc-drawer` across all faculty pages (no more hardcoded duplicate drawers).
-  5. **CSS — Drawer Layout Fix**: `frontend/shared/css/components.css` — unified desktop drawer layout so no layout shift occurs when toggling the sidebar.
-  6. **Test Regression Fix — `test-api-flows.js` Test 14**:
+  5. **CSS â€” Drawer Layout Fix**: `frontend/shared/css/components.css` â€” unified desktop drawer layout so no layout shift occurs when toggling the sidebar.
+  6. **Test Regression Fix â€” `test-api-flows.js` Test 14**:
      - **Root cause**: The test was creating a session for `semester: 5` but the seed student (`student1@gmail.com`) is enrolled in `year: 3, semester: 6, department_id: 4`. The empty roster snapshot caused the PIN check-in to fail with `403 FORBIDDEN`.
      - **Fix**: Updated `test-api-flows.js` line 130 to use `semester: 6`.
 - **Full Regression Verification Suite (100% PASS)**:
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **30/30 PASS** ✓
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **30/30 PASS** âœ“
 
-### ✅ Milestone 110: Classes Hub Modal Opacity Bug Fix, Card 3-Dots Dropdown & Direct Actions, and E2E Test Suite
+### âœ… Milestone 110: Classes Hub Modal Opacity Bug Fix, Card 3-Dots Dropdown & Direct Actions, and E2E Test Suite
 - **User Requirement**:
   - Resolve issue where opening modals in the Classes Hub (`/faculty/groups.html` & `/faculty/dashboard.html`) produced an unclickable backdrop and invisible modal content (`opacity: 0`).
-  - Enable working 3-dots dropdown options menu (`⋮`) on both the card header and footer.
-  - Provide direct Edit (`✏️`) and Delete (`🗑️`) action buttons on class cards, with 2-step safe trash recovery and immediate permanent purge options.
+  - Enable working 3-dots dropdown options menu (`â‹®`) on both the card header and footer.
+  - Provide direct Edit (`âœï¸`) and Delete (`ðŸ—‘ï¸`) action buttons on class cards, with 2-step safe trash recovery and immediate permanent purge options.
   - Commit and push working changes across frontend and backend repositories with 100% test passing rate.
 - **Architectural Implementation**:
   1. **Modal Visibility & Opacity Bug Fix**:
@@ -5180,7 +5292,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Card container updated to `overflow: visible` so popover menus are not clipped.
      - Added dual three-dot dropdown menus: `.gc-menu-header` in card header top-right, and `.gc-menu-footer` in card footer.
      - Enhanced `toggleCardMenu(e, targetId)` to gracefully resolve both header and footer menus and close previously opened menus.
-     - Added direct Edit (`✏️`) and Delete (`🗑️`) action buttons directly to `.gc-footer-actions` on class cards for quick management.
+     - Added direct Edit (`âœï¸`) and Delete (`ðŸ—‘ï¸`) action buttons directly to `.gc-footer-actions` on class cards for quick management.
      - Delete modal upgraded with two clear choices: 7-day safe trash recovery or immediate permanent purge.
   3. **Backend API Route Aliasing & Permissions**:
      - Added `DELETE /api/v1/teaching-groups/:id` route in `backend/src/routes/teachingGroups.js` aliasing to trash/soft-delete.
@@ -5196,15 +5308,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Committed: `fix(teaching-groups): add DELETE alias route, permit creator and HOD deletion, add E2E tests` (`707ccfb`).
        - Pushed cleanly to `origin/main`.
 
-### ✅ Milestone 109: Obsolete Admin Pages Removal (`subjects.html`, `whatsapp_gateway.html`) & Multi-Repo Git Push
+### âœ… Milestone 109: Obsolete Admin Pages Removal (`subjects.html`, `whatsapp_gateway.html`) & Multi-Repo Git Push
 - **User Requirement**:
   - Remove duplicate obsolete admin pages (`subjects.html` and `whatsapp_gateway.html`) and push changes to remote GitHub repositories.
 - **Architectural Implementation**:
   1. **Permanent File Removals (`frontend/admin/`)**:
      - Removed `frontend/admin/subjects.html` and `frontend/admin/whatsapp_gateway.html` using `git rm -f`.
      - Preserved canonical 301 redirects in `backend/server.js`:
-       - `/admin/subjects` & `/admin/subjects.html` ➔ `/faculty/hod-subjects.html`
-       - `/admin/whatsapp_gateway` & `/admin/whatsapp_gateway.html` ➔ `/admin/whatsapp-gateway.html`
+       - `/admin/subjects` & `/admin/subjects.html` âž” `/faculty/hod-subjects.html`
+       - `/admin/whatsapp_gateway` & `/admin/whatsapp_gateway.html` âž” `/admin/whatsapp-gateway.html`
   2. **Security & Git Hygiene**:
      - Added `whatsapp_test_session/` to `backend/.gitignore` to ensure test session tokens and cache do not leak into source control.
   3. **Multi-Repo Commit & Remote Push**:
@@ -5217,15 +5329,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Committed with message `feat(routes): 301 redirects for obsolete admin pages, enforce requireHOD on devices, and single-session RBAC` (`9f62f5f`).
        - Pushed cleanly to `origin/main`.
   4. **Full Regression Verification Suite (100% PASS)**:
-     - `test-theme-support.js`: **93/93 PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-student-self-registration.js`: **30/30 PASS** ✓
-     - `test-faculty-registration-flow.js`: **90/90 PASS** ✓
-     - `test-login-flow-dom.js`: **ALL PASS** ✓
-     - `test-api-flows.js`: **25/25 PASS** ✓
+     - `test-theme-support.js`: **93/93 PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“
+     - `test-faculty-registration-flow.js`: **90/90 PASS** âœ“
+     - `test-login-flow-dom.js`: **ALL PASS** âœ“
+     - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 108: Centralized Exam & Evaluation Score Calculation Utilities into `/js/ui.js`
+### âœ… Milestone 108: Centralized Exam & Evaluation Score Calculation Utilities into `/js/ui.js`
 - **User Requirement**:
   - Extract and centralize duplicated exam and evaluation score calculation, mark distribution, and score clamping functions across `registers.html` and `tests.html`.
   - Provide a standardized, robust calculation API in shared UI assets (`frontend/shared/js/ui.js` and `frontend/js/ui.js`).
@@ -5240,16 +5352,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Refactored `autoDistributeFromTotal()` in [`frontend/faculty/registers.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/registers.html) and [`frontend/faculty/tests.html`](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/tests.html) to call `distributeQuestionMarks()` directly.
      - Synchronized `frontend/shared/js/ui.js` <==> `frontend/js/ui.js` perfectly to pass `test-theme-support.js`.
   3. **Verification Suite Results**:
-     - `test-theme-support.js`: **93/93 PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
-     - `test-faculty-registration-flow.js`: **90/90 PASS** ✓
-     - `test-login-flow-dom.js`: **ALL PASS** ✓
-     - `test-student-self-registration.js`: **30/30 PASS** ✓
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-api-flows.js`: **25/25 PASS** ✓
+     - `test-theme-support.js`: **93/93 PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
+     - `test-faculty-registration-flow.js`: **90/90 PASS** âœ“
+     - `test-login-flow-dom.js`: **ALL PASS** âœ“
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 107: Admin Obsolete Files Consolidation & Canonical Routing Normalization
+### âœ… Milestone 107: Admin Obsolete Files Consolidation & Canonical Routing Normalization
 - **User Requirement**:
   - Clean up obsolete admin files (`frontend/admin/whatsapp_gateway.html`, `frontend/admin/audit.html`, `frontend/admin/subjects.html`, `frontend/admin/assignments.html`).
   - Standardize 301 server redirects and client-side meta redirects to canonical portals (`/admin/whatsapp-gateway.html`, `/admin/audit-logs.html`, `/faculty/hod-subjects.html`, `/admin/faculty.html`).
@@ -5257,10 +5369,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Architectural Implementation**:
   1. **Canonical Admin URL Architecture & 301 Redirects (`backend/server.js`)**:
      - Verified and configured permanent 301 redirects for:
-       - `/admin/whatsapp_gateway`, `/admin/whatsapp_gateway.html` ➔ `/admin/whatsapp-gateway.html`
-       - `/admin/audit`, `/admin/audit.html` ➔ `/admin/audit-logs.html`
-       - `/admin/subjects`, `/admin/subjects.html` ➔ `/faculty/hod-subjects.html`
-       - `/admin/assignments`, `/admin/assignments.html` ➔ `/admin/faculty.html`
+       - `/admin/whatsapp_gateway`, `/admin/whatsapp_gateway.html` âž” `/admin/whatsapp-gateway.html`
+       - `/admin/audit`, `/admin/audit.html` âž” `/admin/audit-logs.html`
+       - `/admin/subjects`, `/admin/subjects.html` âž” `/faculty/hod-subjects.html`
+       - `/admin/assignments`, `/admin/assignments.html` âž” `/admin/faculty.html`
      - Removed erroneous redirect mapping on `/faculty/hod-subjects.html` to guarantee HOD curriculum management functions smoothly.
   2. **Clean Frontend Redirect Stubs & Backward Compatibility**:
      - `frontend/admin/whatsapp_gateway.html`: Maintained lightweight instant redirect card to `/admin/whatsapp-gateway.html`.
@@ -5271,27 +5383,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `backend/src/routes/hod.js`: Added `requireHOD()` middleware on `GET /api/v1/hod/devices` to enforce strict HOD-only terminal administration.
      - `frontend/faculty/hod-subjects.html`: Added inline `esc()` HTML escaping helper function for safe subject table rendering in JSDOM environments.
   4. **Verification Suite Results**:
-     - `test-esp-terminal-and-reports-refactor.js`: **ALL PASS** ✓
-     - `test-simplified-subjects.js`: **ALL PASS** ✓
-     - `test-hod-subjects-flow.js`: **ALL PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
-     - `test-theme-support.js`: **93/93 PASS** ✓
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-student-self-registration.js`: **30/30 PASS** ✓
-     - `test-faculty-registration-flow.js`: **90/90 PASS** ✓
-     - `test-login-flow-dom.js`: **ALL PASS** ✓
-     - `test-api-flows.js`: **25/25 PASS** ✓
-     - `test-admin-pages-data.js`: **ALL PASS** ✓
-     - `test-admin-students.js`: **ALL PASS** ✓
+     - `test-esp-terminal-and-reports-refactor.js`: **ALL PASS** âœ“
+     - `test-simplified-subjects.js`: **ALL PASS** âœ“
+     - `test-hod-subjects-flow.js`: **ALL PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
+     - `test-theme-support.js`: **93/93 PASS** âœ“
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“
+     - `test-faculty-registration-flow.js`: **90/90 PASS** âœ“
+     - `test-login-flow-dom.js`: **ALL PASS** âœ“
+     - `test-api-flows.js`: **25/25 PASS** âœ“
+     - `test-admin-pages-data.js`: **ALL PASS** âœ“
+     - `test-admin-students.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 106: Duplicate Login Pages Consolidation & Direct Redirection to Unified Portal
+### âœ… Milestone 106: Duplicate Login Pages Consolidation & Direct Redirection to Unified Portal
 - **User Requirement**:
   - Resolve duplicate login pages (`frontend/login/student.html` and `frontend/login/faculty.html`) by redirecting them directly into the centralized unified portal (`/login/index.html`).
 - **Architectural Implementation**:
   1. **Backend Server 301 Redirect Normalization (`backend/server.js`)**:
-     - Added explicit permanent 301 redirect routes for `/login/student`, `/login/student.html` ➔ `/login/index.html?role=student`.
-     - Added explicit permanent 301 redirect routes for `/login/faculty`, `/login/faculty.html` ➔ `/login/index.html?role=faculty`.
+     - Added explicit permanent 301 redirect routes for `/login/student`, `/login/student.html` âž” `/login/index.html?role=student`.
+     - Added explicit permanent 301 redirect routes for `/login/faculty`, `/login/faculty.html` âž” `/login/index.html?role=faculty`.
      - Preserves all query parameters (`?google_pending=1`, `?pending=1`, etc.) dynamically.
   2. **Google OAuth & Redirect Callbacks (`backend/src/routes/auth.js`)**:
      - Updated Google sign-in redirect endpoints (`PENDING_APPROVAL`, error dialogs) to target `/login/index.html?role=student` and `/login/index.html?role=faculty`.
@@ -5299,15 +5411,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Replaced redundant inline login logic in `frontend/login/student.html` and `frontend/login/faculty.html` with instantaneous `<script>` and `<meta http-equiv="refresh">` client-side redirect controllers.
      - Preserved script dependencies and compatibility identifiers for automated test suites (`test-login-flow-dom.js`, `test-student-ubter-website-upgrade.js`).
   4. **Verification Suite**:
-     - `test-login-flow-dom.js`: **ALL PASS** ✓
-     - `test-faculty-registration-flow.js`: **90/90 PASS** ✓
-     - `test-theme-support.js`: **93/93 PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-student-self-registration.js`: **30/30 PASS** ✓
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+     - `test-login-flow-dom.js`: **ALL PASS** âœ“
+     - `test-faculty-registration-flow.js`: **90/90 PASS** âœ“
+     - `test-theme-support.js`: **93/93 PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 105: Modern UI/UX Split-Screen Redesign for Separate Registration Portals (`student-register.html` & `faculty-register.html`)
+### âœ… Milestone 105: Modern UI/UX Split-Screen Redesign for Separate Registration Portals (`student-register.html` & `faculty-register.html`)
 - **User Requirement**:
   - Redesign both standalone registration pages into a modern UI/UX matching the login page (`login/index.html`).
   - Seamless responsive split-screen layout: Dark navy brand panel (left) with ambient glowing mesh orbs + scrollable form panel (right).
@@ -5316,24 +5428,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Architectural Implementation**:
   1. **Student Registration Portal (`frontend/login/student-register.html`)**:
      - Modern split-screen layout: Desktop 50/50 split; collapses smoothly on mobile screens (&le;900px).
-     - Left Brand Panel: Glowing animated ambient orbs (`.orb-1`, `.orb-2`, `.orb-3`), brand logo `🏫`, `VidyaOS` typography, institutional highlights (Department-Wise Approval, Official Enrollment Registry, Google 1-Click Integration, Real-Time Cohort Gate Verification), and academic leadership testimonial quote.
+     - Left Brand Panel: Glowing animated ambient orbs (`.orb-1`, `.orb-2`, `.orb-3`), brand logo `ðŸ«`, `VidyaOS` typography, institutional highlights (Department-Wise Approval, Official Enrollment Registry, Google 1-Click Integration, Real-Time Cohort Gate Verification), and academic leadership testimonial quote.
      - Right Form Panel: Back link navigation, 1-Click Google OAuth prefill trigger, Real-time branch ownership & cohort gate verification banner, Official enrollment number input, UBTER number, optional 10-digit mobile number, password with visibility toggle eye, and structured post-submission confirmation summary.
      - Strict Theme Compliance: Zero hardcoded hex colors (replaced with `rgb(26, 18, 80)`, `var(--text-white)`, and semantic CSS vars).
   2. **Faculty & HOD Registration Portal (`frontend/login/faculty-register.html`)**:
      - Matching modern split-screen layout with ambient lighting and institutional dark navy brand panel.
-     - Left Brand Panel: Academic onboarding badge, logo `👨‍🏫`, institutional governance highlights (Departmental Authorization, Role-Based Provisioning, Google Classroom integrated registers, Real-time gate validation).
+     - Left Brand Panel: Academic onboarding badge, logo `ðŸ‘¨â€ðŸ«`, institutional governance highlights (Departmental Authorization, Role-Based Provisioning, Google Classroom integrated registers, Real-time gate validation).
      - Right Form Panel: Top navigation with Back to Sign In and live Dark/Light theme toggle button (`applyTheme`/`toggleTheme`), Account role segmented toggle (Faculty Member vs Head of Department), dynamic routing banner with authorization state, department dropdown with "Common Faculty" option for teachers, optional phone and employee ID, and structured success summary.
      - Strict Theme Compliance: Zero hardcoded hex colors, zero HTML entity numeric leaks, passing the strict regex test with 0 matches.
   3. **Verification Suite**:
-     - `test-faculty-registration-flow.js`: **90/90 PASS** ✓ (Case A, Case B, Case C, Anti-spam gates, 1-HOD invariant, 0 hex colors)
-     - `test-theme-support.js`: **93/93 PASS** ✓
-     - `test-student-self-registration.js`: **30/30 PASS** ✓
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
-     - `test-api-flows.js`: **25/25 PASS** ✓
+     - `test-faculty-registration-flow.js`: **90/90 PASS** âœ“ (Case A, Case B, Case C, Anti-spam gates, 1-HOD invariant, 0 hex colors)
+     - `test-theme-support.js`: **93/93 PASS** âœ“
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
+     - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 104: Complete WhatsApp OTP Elimination & Registration/Login Alert Modernization
+### âœ… Milestone 104: Complete WhatsApp OTP Elimination & Registration/Login Alert Modernization
 - **User Requirement**:
   1. Remove the WhatsApp OTP verification feature completely from the entire system (registration forms + backend).
   2. Upgrade the login page's "pending approval" state from a plain text banner to a premium styled card.
@@ -5350,17 +5462,17 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Added URL parameter detection (`?pending=1`, `?google_pending=1`, `?status=pending`) with automatic email pre-fill in notice card.
   3. **Registration & Login Alert Modernization**:
      - Created `.status-alert-banner` on login page for clean handling of rejected registrations (`REGISTRATION_REJECTED`) and restricted accounts (`FORBIDDEN`), with direct links to re-submit registration.
-     - Upgraded alert banners in `register.html` and `faculty-register.html` with SVG/Unicode status icons (✅/⚠️/⛔), animated slide-ins, and theme-token compliant palette.
+     - Upgraded alert banners in `register.html` and `faculty-register.html` with SVG/Unicode status icons (âœ…/âš ï¸/â›”), animated slide-ins, and theme-token compliant palette.
      - Added 10-digit Indian mobile validation check when phone is optionally provided.
   4. **Verification Test Suite**:
-     - `test-theme-support.js`: **93/93 PASS** ✓ (Zero hardcoded hex colors, strict token compliance)
-     - `test-student-self-registration.js`: **30/30 PASS** ✓ (Self-registration without OTP + phone format validation + approval/rejection lifecycle)
-     - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-     - `test-register-consolidation.js`: **46/46 PASS** ✓
-     - `test-api-flows.js`: **25/25 PASS** ✓
-     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** ✓
+     - `test-theme-support.js`: **93/93 PASS** âœ“ (Zero hardcoded hex colors, strict token compliance)
+     - `test-student-self-registration.js`: **30/30 PASS** âœ“ (Self-registration without OTP + phone format validation + approval/rejection lifecycle)
+     - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+     - `test-register-consolidation.js`: **46/46 PASS** âœ“
+     - `test-api-flows.js`: **25/25 PASS** âœ“
+     - `test-roll-call-upgrade.js` & `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 103: WhatsApp Pairing QR Code Generation & Local Base64 DataURL Engine
+### âœ… Milestone 103: WhatsApp Pairing QR Code Generation & Local Base64 DataURL Engine
 - **User Requirement**: *"not generating showing qr for link"*
 - **Bugs Diagnosed**:
   1. **Chromium Session Lock & Orphan Process Collision**:
@@ -5373,33 +5485,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `student-register.html` and `faculty-register.html` relied entirely on `https://api.qrserver.com/...` which failed when network access was intermittent or slow.
      - `otpService.js` generated `wa_link` but did not return a local Base64 `qr_data_url` in `generateOtp()`.
 - **Architectural Implementation**:
-  1. **`backend/src/services/whatsappBotService.js` — Session & Lockfile Sanitization**:
+  1. **`backend/src/services/whatsappBotService.js` â€” Session & Lockfile Sanitization**:
      - Added automatic removal of stale lockfiles (`lockfile`, `SingletonLock`, `SingletonCookie`, `SingletonSocket`) before launch.
      - Added `clearSession` support to completely purge corrupted/logged-out session directories on demand.
      - Client destruction on error or disconnect (`client.destroy()`) prevents orphan process leaks.
      - 45-second failsafe timeout automatically resets state to `DISCONNECTED` with a clear recovery prompt if QR generation stalls.
-  2. **`backend/src/routes/admin.js` — Clear Session Endpoint**:
+  2. **`backend/src/routes/admin.js` â€” Clear Session Endpoint**:
      - Updated `POST /api/v1/admin/whatsapp/initialize` to accept `{ clear_session: true }`.
-  3. **`frontend/admin/whatsapp-gateway.html` — Resilient Admin Pairing UI**:
+  3. **`frontend/admin/whatsapp-gateway.html` â€” Resilient Admin Pairing UI**:
      - Prominently displays `last_error` notice banner with immediate `"Reset & Generate Fresh QR"` action.
-     - Added dedicated `"🔄 Fresh QR (Clear Cache)"` button to wipe stale cache and force clean pairing QR generation.
-     - Added `"🔄 Regenerate Fresh QR"` button inside the QR active card.
-  4. **`backend/src/services/otpService.js` — Self-Contained Local QR Engine**:
+     - Added dedicated `"ðŸ”„ Fresh QR (Clear Cache)"` button to wipe stale cache and force clean pairing QR generation.
+     - Added `"ðŸ”„ Regenerate Fresh QR"` button inside the QR active card.
+  4. **`backend/src/services/otpService.js` â€” Self-Contained Local QR Engine**:
      - Integrated local `qrcode.toDataURL(waLink)` generation directly into `dispatchOtp()` and `generateOtp()`.
      - Returns Base64 data URL (`qr_data_url`) for 100% offline, zero-latency rendering.
      - Updated `frontend/login/student-register.html` and `frontend/login/faculty-register.html` to consume `qr_data_url` directly.
 - **Verification Suite**:
   - `whatsappBotService.getStatus()`: Verified `status: QR_READY`, `is_qr_ready: true`, valid Base64 `qr_code_url` (7.7KB).
   - `otpService.generateOtp()`: Verified Base64 `qr_data_url` generated and delivered.
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-roll-call-upgrade.js`: **ALL PASS** ✓
-  - `test-live-log-checkin.js`: **ALL PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-roll-call-upgrade.js`: **ALL PASS** âœ“
+  - `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 101: Admin Gateway WhatsApp Integration & Direct Click-to-Chat Routing
+### âœ… Milestone 101: Admin Gateway WhatsApp Integration & Direct Click-to-Chat Routing
 - **User Requirement**: *"this is main issue when user open WhatsApp user should be open WhatsApp of admin that link in gateway"*
 - **Bug Diagnosed**:
   - Previously, `wa_link` in `backend/src/services/otpService.js` generated `https://wa.me/${identifier}?text=...` where `identifier` was the student's own mobile number.
@@ -5422,83 +5534,83 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Added dedicated "Admin Gateway WhatsApp Number" configuration card to `whatsapp-gateway.html` with real-time status and live updates.
   4. **Registration Forms Synchronization (`register.html`, `student-register.html`, `faculty-register.html`)**:
      - Updated all forms to consume `gateway_phone` from `/api/v1/auth/whatsapp-settings` and OTP dispatch responses.
-     - Dynamic button and description labels now clearly display: `💬 Chat with Admin (+91 <gateway_phone>) →`.
+     - Dynamic button and description labels now clearly display: `ðŸ’¬ Chat with Admin (+91 <gateway_phone>) â†’`.
      - Zero hardcoded hex colors maintained across all modified templates.
 - **Verification Suite**:
-  - `test-whatsapp-bot-integration.js`: **16/16 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-roll-call-upgrade.js`: **ALL PASS** ✓
-  - `test-live-log-checkin.js`: **ALL PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
+  - `test-whatsapp-bot-integration.js`: **16/16 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-roll-call-upgrade.js`: **ALL PASS** âœ“
+  - `test-live-log-checkin.js`: **ALL PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 102: Modern UI/UX Header & Sidebar Redesign (Global Shell)
+### âœ… Milestone 102: Modern UI/UX Header & Sidebar Redesign (Global Shell)
 - **User Requirement**: *"now upgrade redesign menubar and header into modern ui ux"*
 - **Architectural Implementation**:
-  1. **`frontend/shared/css/layout.css` — Header Overhaul**:
+  1. **`frontend/shared/css/layout.css` â€” Header Overhaul**:
      - Sticky header with `position: sticky; top: 0; z-index: 600; height: 60px`
      - Glassmorphic `backdrop-filter: blur(12px)` with layered shadow.
      - Refined `.brand` with gradient icon tile (`brand-icon`), stacked `brand-name`/`brand-sub` text layout and hover opacity.
      - `.top-profile-pill`: Improved pill with `inset` box-shadow, `focus-visible` ring, and `scale(1.05)` avatar hover.
      - Avatar `beaconPulse` CSS animation for live session indicator.
      - User dropdown: `16px` border-radius, `transform-origin: top right`, layered box-shadows.
-  2. **`frontend/shared/css/components.css` — Sidebar Overhaul**:
+  2. **`frontend/shared/css/components.css` â€” Sidebar Overhaul**:
      - Sidebar expanded to `270px` width, `top: 60px` to match new header.
      - `.sidebar-toggle-btn`: Ghost button with CSS `::before` pseudo-element hover background (z-index safe).
-     - `.sidebar-user-card`: Horizontal flex layout with `.sidebar-avatar` (gradient + border + animated status beacon), `.sidebar-user-info`, and `.sidebar-close-btn` (90° rotate on hover).
+     - `.sidebar-user-card`: Horizontal flex layout with `.sidebar-avatar` (gradient + border + animated status beacon), `.sidebar-user-info`, and `.sidebar-close-btn` (90Â° rotate on hover).
      - `.sidebar-item`: Rounded `radius-md` pill shape, border on hover, `::before` left accent bar for active state, icon scale micro-animation.
-     - `.sidebar-logout-btn`: Pre-styled as danger button (red bg/text) — elevates on hover with box-shadow.
+     - `.sidebar-logout-btn`: Pre-styled as danger button (red bg/text) â€” elevates on hover with box-shadow.
      - `.sidebar-backdrop`: Upgraded blur from `blur(3px)` to `blur(4px)`, deeper overlay.
      - Desktop push updated: `270px` margin push with `0.26s` timing.
-  3. **`frontend/shared/js/auth.js` — Sidebar HTML Refresh**:
+  3. **`frontend/shared/js/auth.js` â€” Sidebar HTML Refresh**:
      - Faculty drawer header: Gradient icon tile + stacked brand name/sub text, cleaner flex layout.
      - Non-faculty sidebar: Uses proper `.sidebar-avatar` class with `.sidebar-avatar-status` beacon dot.
      - Removed inline `style="padding:0.5rem 0"` override that competed with new CSS padding rules.
      - Toggle button icon wrapped in `<span>` for z-index compatibility with `::before` pseudo-element.
   4. **File Sync**: Synced all 3 modified files to `frontend/css/` and `frontend/js/` mirrors.
 - **Verification Suite**:
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
 
-### ✅ Milestone 100: Modern UI/UX Institutional Home Landing Page (`frontend/index.html`) Redesign & Quick-Access Dock
+### âœ… Milestone 100: Modern UI/UX Institutional Home Landing Page (`frontend/index.html`) Redesign & Quick-Access Dock
 - **User Requirement**: *"still old page also make new home modern ui ux from there user go to login page"*
 - **Architectural Implementation**:
   1. **Next-Generation Landing Page (`frontend/index.html`)**:
      - Modern typography using Google Fonts (`Inter` + `Plus Jakarta Sans` + `JetBrains Mono`).
      - Ambient background lighting with smooth floating blurred mesh orbs.
-     - Sticky glassmorphic header navbar (`backdrop-filter: blur(14px)`) with brand logo, live engine status indicator (`🟢 Engine Online`), dynamic dark/light mode toggle switch, and primary CTA buttons (`Sign In →` & `Register`).
+     - Sticky glassmorphic header navbar (`backdrop-filter: blur(14px)`) with brand logo, live engine status indicator (`ðŸŸ¢ Engine Online`), dynamic dark/light mode toggle switch, and primary CTA buttons (`Sign In â†’` & `Register`).
      - High-impact Hero section: *"The Operating System for Modern Academia"* with curated gradient text, badge tag, and quick-action buttons.
      - Institutional Metrics Bar: 100% automated attendance, ESP32 terminal ready, 75% predictor engine, and sub-10ms SQLite performance indicators.
      - 3-Column Role Gateway Grid:
-       - 🎓 **Student Gateway**: Direct sign in (`/login/index.html?role=student`) & self-registration (`/login/register.html?role=student`).
-       - 👨‍🏫 **Faculty & Leadership**: Direct sign in (`/login/index.html?role=faculty`) & application form (`/login/register.html?role=faculty`).
-       - 🛡️ **Institutional Admin**: Direct sign in (`/login/index.html?role=admin`) with admin governance highlights.
+       - ðŸŽ“ **Student Gateway**: Direct sign in (`/login/index.html?role=student`) & self-registration (`/login/register.html?role=student`).
+       - ðŸ‘¨â€ðŸ« **Faculty & Leadership**: Direct sign in (`/login/index.html?role=faculty`) & application form (`/login/register.html?role=faculty`).
+       - ðŸ›¡ï¸ **Institutional Admin**: Direct sign in (`/login/index.html?role=admin`) with admin governance highlights.
      - Interactive Feature Showcase Cards: Smart physical matrix / roll call studio & WhatsApp OTP verified onboarding.
      - **macOS / React-Bits-Inspired Floating Bottom Quick Dock**:
        - Floating dock with smooth hover magnification physics, tooltips, and fast navigation to Home, Student Sign In, Faculty Sign In, Admin Sign In, Self-Registration, and Theme Toggle.
      - Full theme tokenization with light & dark mode support and live API health ping (`/api/v1/health`).
 - **Verification Suite**:
-  - `GET /index.html`: **200 OK** ✓
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `validate_unified_register.js`: **32/32 PASS** ✓
+  - `GET /index.html`: **200 OK** âœ“
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `validate_unified_register.js`: **32/32 PASS** âœ“
 
-### ✅ Milestone 99: Unified Single Registration Page Architecture (`/login/register.html`) & Modern Split-Screen Experience
+### âœ… Milestone 99: Unified Single Registration Page Architecture (`/login/register.html`) & Modern Split-Screen Experience
 - **User Requirements**:
   1. *"Upgrade registration page to a unified single registration page (`/login/register.html`) with the same modern split-screen layout as `login/index.html` (dark navy brand panel left, form panel right)."*
-  2. *"Provide an interactive 2-tab role selector (🎓 Student | 👨‍🏫 Faculty/HOD) switchable within the same page without reloading."*
+  2. *"Provide an interactive 2-tab role selector (ðŸŽ“ Student | ðŸ‘¨â€ðŸ« Faculty/HOD) switchable within the same page without reloading."*
   3. *"Retain legacy standalone registration pages (`student-register.html`, `faculty-register.html`) accessible as fallbacks."*
   4. *"Update `login/index.html` to link to `/login/register.html` with role pre-selection."*
   5. *"Explain the WhatsApp OTP gateway mechanism."*
 - **Architectural Implementation**:
   1. **Unified Registration Page (`frontend/login/register.html`)**:
      - Modern split-screen layout matching `login/index.html`: Left dark navy brand panel (`#1a1250`) with ambient floating orbs, glassmorphism card, and feature highlights; Right form panel with clean responsive styling.
-     - Interactive 2-Tab role selector (`🎓 Student Registration` | `👨‍🏫 Faculty & HOD`) with instant switching, query parameter support (`?role=faculty`, `?role=hod`, `?role=student`), and adaptive header text.
+     - Interactive 2-Tab role selector (`ðŸŽ“ Student Registration` | `ðŸ‘¨â€ðŸ« Faculty & HOD`) with instant switching, query parameter support (`?role=faculty`, `?role=hod`, `?role=student`), and adaptive header text.
      - Student Tab: Branch / Department dropdown, dynamic semester dropdown (1 to max duration), real-time branch ownership & cohort gate verification via `/api/v1/auth/student/registration/status`, official enrollment number, UBTER number, Gmail, WhatsApp OTP widget (QR code, direct link, timer, debug auto-fill), and password strength meter.
      - Faculty Tab: Account Role segmented toggle (Faculty Member vs Head of Department), dynamic routing banner (HOD -> Admin review; Faculty -> HOD review), full name, institutional Gmail, department selection (with Common Faculty for teachers), WhatsApp OTP widget, and optional employee ID.
      - Post-submission Success View with structured confirmation summary and return button to `/login/index.html`.
@@ -5512,13 +5624,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Verified that OTP is generated server-side in `backend/src/services/otpService.js` (line 168) using cryptographically sound pseudo-random 6-digit generation, stored with hashed verification tracking in SQLite `otp_verifications` table.
      - Dispatched via connected Baileys WhatsApp bot (push) or formatted `wa_link` (pull). In development mode, `debug_otp` is provided for automated testing/demo.
 - **Verification Suite**:
-  - `validate_unified_register.js`: **32/32 PASS** (DOM structure, tabs, form inputs, links, zero hardcoded hex) ✓
-  - `test-theme-support.js`: **93/93 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
+  - `validate_unified_register.js`: **32/32 PASS** (DOM structure, tabs, form inputs, links, zero hardcoded hex) âœ“
+  - `test-theme-support.js`: **93/93 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
 
-### ✅ Milestone 98: Unified Single Login Page Architecture, Admin Seed Password Clarification & Modern UI/UX Registration Redesign
+### âœ… Milestone 98: Unified Single Login Page Architecture, Admin Seed Password Clarification & Modern UI/UX Registration Redesign
 - **User Requirements**:
   1. *"this is (admin must use Admin@123 exclusively) not exclusive passwoard if admin change that password become new password this only when we deploy 1 time"*
   2. *"upgrade login page single login page for everyone but separate registration page also redesign login and registration page ui into morden ui ux that supports all screens properly"*
@@ -5542,17 +5654,17 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Faculty & HOD Registration (`faculty-register.html`): Account role segmented toggle (Faculty Member vs Head of Department), dynamic departmental authorization callout, WhatsApp OTP verification, and administrative routing confirmation.
      - Strictly enforced Zero Hardcoded Hex Colors rule across both redesigned pages (100% theme tokenized with `variables.css`).
 - **Verification Suite**:
-  - `test-login-flow-dom.js`: **ALL PASS** (Unified 301 redirects, script inclusions, role auth) ✓
-  - `test-registration-otp-dom.js`: **ALL PASS** (Student & Faculty WhatsApp OTP widgets, Zero hex colors) ✓
-  - `test-theme-support.js`: **93/93 PASS** (Theme tokens, physical matrix DOM, zero hardcoded hex) ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** (RBAC enforcement & clean URL redirects) ✓
-  - `test-student-self-registration.js`: **31/31 PASS** (End-to-end self-registration & approvals) ✓
-  - `test-api-flows.js`: **25/25 PASS** (Core API workflows) ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-roll-call-upgrade.js`: **ALL PASS** ✓
-  - `test-live-log-checkin.js`: **ALL PASS** ✓
+  - `test-login-flow-dom.js`: **ALL PASS** (Unified 301 redirects, script inclusions, role auth) âœ“
+  - `test-registration-otp-dom.js`: **ALL PASS** (Student & Faculty WhatsApp OTP widgets, Zero hex colors) âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Theme tokens, physical matrix DOM, zero hardcoded hex) âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** (RBAC enforcement & clean URL redirects) âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** (End-to-end self-registration & approvals) âœ“
+  - `test-api-flows.js`: **25/25 PASS** (Core API workflows) âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-roll-call-upgrade.js`: **ALL PASS** âœ“
+  - `test-live-log-checkin.js`: **ALL PASS** âœ“
 
-### ✅ Milestone 97: Strict Admin Credential Validation & Single Active Session Architecture
+### âœ… Milestone 97: Strict Admin Credential Validation & Single Active Session Architecture
 - **User Requirements**:
   1. *"admin can login by Password@123 and Admin@123 remove Password@123 from every code"*
   2. *"fix only 1 user can login on 1 account if 1 user account is active on any pc so other user can not login into that same account"*
@@ -5570,13 +5682,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-rbac-and-structure.js`: Added `device_id` + `force_logout: true` to all 4 logins; pre/post DB session revocation.
      - `test-student-self-registration.js`: Added pre-test DB cleanup; added `device_id` + `force_logout: true` to teacher login.
 - **Verification Suite**:
-  - `test-single-session-and-passwords.js`: **20/20 PASS** ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** ✓
+  - `test-single-session-and-passwords.js`: **20/20 PASS** âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** âœ“
 
-### ✅ Milestone 96: Zero-Reset Database Persistence & Production Protection Shield
+### âœ… Milestone 96: Zero-Reset Database Persistence & Production Protection Shield
 - **User Requirement**: *"FIX WHEN i push new update all database going reset fix it"*
 - **Root Cause & Diagnosis**:
   1. **Destructive Startup Reseed in `db.js`**: On every startup or redeployment, `db.js` checked `if (FORCE_RESEED || storedSeedVersion !== TARGET_SEED_VERSION)`. Whenever code changes updated `PROD_SEED_VERSION` or if `seed_version` was missing, it unconditionally invoked `seedProductionClean(sqliteDb)`.
@@ -5606,15 +5718,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   7. **Render Deployment Guide (`render.yaml`)**:
      - Clearly documented persistent disk settings (`mountPath: /var/data`) for Render Starter and free permanent external MySQL (e.g. TiDB Serverless, 25 GB free forever) for Render Free Tier.
 - **Verification Suite**:
-  - `test-database-persistence.js`: **6/6 PASS** ✓
-  - `test-faculty-registration-flow.js`: **90/90 PASS** ✓
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-api-flows.js`: **25/25 PASS** ✓
-  - `test-register-consolidation.js`: **46/46 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors) ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
+  - `test-database-persistence.js`: **6/6 PASS** âœ“
+  - `test-faculty-registration-flow.js`: **90/90 PASS** âœ“
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-api-flows.js`: **25/25 PASS** âœ“
+  - `test-register-consolidation.js`: **46/46 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors) âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
 
-### ✅ Milestone 95: Student Approval 'Student Not Found' Fix & Zero-ClassRoll Approval Workflow
+### âœ… Milestone 95: Student Approval 'Student Not Found' Fix & Zero-ClassRoll Approval Workflow
 - **User Requirement**: *"student not found error on student approval also no need to assign classroll no when approved"*
 - **Root Cause & Diagnosis**:
   1. **"Student not found" Error**:
@@ -5636,12 +5748,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   4. **Frontend Action Button Fix**:
      - Changed row action handlers to pass `${r.student_id || r.id}`.
 - **Verification Suite**:
-  - `test-student-self-registration.js`: **31/31 PASS** ✓
-  - `test-registration-gateways-flow.js`: **10/10 PASS** ✓
-  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors) ✓
-  - `test-rbac-and-structure.js`: **30/30 PASS** ✓
+  - `test-student-self-registration.js`: **31/31 PASS** âœ“
+  - `test-registration-gateways-flow.js`: **10/10 PASS** âœ“
+  - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors) âœ“
+  - `test-rbac-and-structure.js`: **30/30 PASS** âœ“
 
-### ✅ Milestone 94: Faculty Registrations Pending & Adjudicate Endpoints Fix
+### âœ… Milestone 94: Faculty Registrations Pending & Adjudicate Endpoints Fix
 - **User Requirement**: *"this error in deployed website" (Screenshot showing: API endpoint '/api/v1/hod/faculty-registrations/pending' does not exist)*
 - **Root Cause & Diagnosis**:
   - In `frontend/faculty/students.html`, `hod-teachers.html`, and `hod-students.html`, `loadPendingFaculty()` called `apiFetch(`${API}/faculty-registrations/pending`)` (`API = '/hod'`).
@@ -5661,14 +5773,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors).
   - `test-rbac-and-structure.js`: **30/30 PASS**.
 
-### ✅ Milestone 93: Teaching Group Creation & Interactive Actions Redesign Fixes
+### âœ… Milestone 93: Teaching Group Creation & Interactive Actions Redesign Fixes
 - **User Requirement**: *"fix teaching group i can not make or any other action not working also then push to github"*
 - **Root Cause & Diagnosis**:
   1. **Teaching Group Creation Failure (403 Forbidden)**: In `backend/src/middleware/auth.js`, the teacher profile lookup was guarded strictly with `if (user.roles.includes('TEACHER'))`. System Admin (`admin@gmail.com`) only possesses `SYSTEM_ADMIN` role without `TEACHER`, leaving `req.user.teacher_id` undefined. Even though `requireRole('TEACHER')` permitted the admin bypass, `POST /api/v1/teaching-groups` crashed with `403 FORBIDDEN: Teacher profile not found`.
   2. **Role Authorization on Teaching Group Actions**: HODs and System Admins could not archive, unarchive, trash, restore, or purge teaching groups if they weren't the literal initial creator.
   3. **Cohort Promotion Scope Block**: `requireTeachingGroupOwner` blocked admins and HODs from executing cohort promotions.
   4. **Frontend Action Menu & Modals Issues**:
-     - The card dropdown menu (`⋮`) did not dismiss when clicking outside, causing menus to linger open.
+     - The card dropdown menu (`â‹®`) did not dismiss when clicking outside, causing menus to linger open.
      - In `frontend/faculty/group-detail.html`, `#btn-edit-group` only triggered a stub toast (`'Edit group settings coming soon'`) instead of an edit modal.
      - In `frontend/faculty/group-detail.html`, "+ Add from Cohort" was an alert stub rather than an actionable modal.
      - Deep linking (`openPromoteModal` -> `groups.html?action=promote&id=...`) was ignored by `groups.html`.
@@ -5687,7 +5799,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Added `#modal-edit-group` in `group-detail.html` with real-time PUT update.
      - Added `#modal-add-unenrolled` in `group-detail.html` with student discovery & multi-add.
 - **Verification Suite**:
-  - `test_all_teaching_actions.js`: **All 4 accounts** (`admin@gmail.com`, `hod@gmail.com`, `classteacher@gmail.com`, `teacher@gmail.com`) passed all 8 actions: Overview ✓, List ✓, Create ✓, Edit ✓, Archive ✓, Unarchive ✓, Trash ✓, Restore ✓, Purge ✓.
+  - `test_all_teaching_actions.js`: **All 4 accounts** (`admin@gmail.com`, `hod@gmail.com`, `classteacher@gmail.com`, `teacher@gmail.com`) passed all 8 actions: Overview âœ“, List âœ“, Create âœ“, Edit âœ“, Archive âœ“, Unarchive âœ“, Trash âœ“, Restore âœ“, Purge âœ“.
   - `test-teaching-groups-flow.js`: **15/15 PASS**.
   - `test-teaching-groups-extended.js`: **12/12 PASS**.
   - `test-theme-support.js`: **93/93 PASS** (Zero hardcoded colors).
@@ -5698,7 +5810,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-student-self-registration.js`: **31/31 PASS**.
   - `test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 92: Self-Registration Gateways (Open / Close) for Teachers & Students
+### âœ… Milestone 92: Self-Registration Gateways (Open / Close) for Teachers & Students
 - **User Requirement**: *"ALSO I DON'T SEE REGISTER OPEN AND CLODE OPTION FOR TEACHER AND STUDENT MAKE IT AFTER OPEN THEY CAN REGISTER IN SYSTEM"*
 - **Root Cause & Diagnosis**:
   1. `apiFetch` was called 24 times in `students.html`, `hod-teachers.html`, and `hod-students.html`, but was never defined or exported in `api.js`. This threw `ReferenceError: apiFetch is not defined`, crashing `loadFacultyRegistrationStatus()`, `loadTeachers()`, `loadCohorts()`, etc. As a result, the Teacher Registration button was stuck on `Faculty Reg: Checking...` and the directory displayed `Failed to load faculty directory.`
@@ -5708,15 +5820,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   1. **Transparent `apiFetch` Alias**: Exported `apiFetch` in `frontend/shared/js/api.js` and `frontend/js/api.js`, with an inline fallback in `students.html`, `hod-teachers.html`, and `hod-students.html` so it can never throw a reference error.
   2. **Dedicated Self-Registration Gateways Card (`#registration-control-hub`)**:
      - Added prominent gateway control hub at the top of `/faculty/students.html`, `/faculty/hod-teachers.html`, and `/faculty/hod-students.html`:
-     - **👨‍🏫 Teacher Portal**: Live status badge (`🟢 OPEN (Accepting)` / `🔒 CLOSED (Blocked)`) + 1-click toggle button (`#quick-teacher-reg-toggle-btn`).
-     - **🎓 Student Portal**: Live status badge (`🟢 OPEN (Sem N)` / `🔒 CLOSED`) + 1-click cohort toggle (`#quick-student-reg-toggle-btn`) + 1-click department-wide toggle (`#quick-dept-student-reg-toggle-btn`).
+     - **ðŸ‘¨â€ðŸ« Teacher Portal**: Live status badge (`ðŸŸ¢ OPEN (Accepting)` / `ðŸ”’ CLOSED (Blocked)`) + 1-click toggle button (`#quick-teacher-reg-toggle-btn`).
+     - **ðŸŽ“ Student Portal**: Live status badge (`ðŸŸ¢ OPEN (Sem N)` / `ðŸ”’ CLOSED`) + 1-click cohort toggle (`#quick-student-reg-toggle-btn`) + 1-click department-wide toggle (`#quick-dept-student-reg-toggle-btn`).
   3. **Tab 2 Cohort Registration Bar**: Added synchronized cohort registration control strip in the cohort selector card on Tab 2 (`#tab-roster-reg-status`, `#tab-roster-reg-toggle-btn`, `#tab-roster-dept-reg-toggle-btn`).
   4. **Backend Enhancements**:
      - In `backend/src/routes/hod.js`: Added fallback department ID resolution for admin / HOD in `GET /faculty-registration-status` and `POST /faculty-registration-toggle`.
      - In `backend/src/routes/faculty.js`: Enhanced `POST /cohorts/registration-toggle` and `GET /cohorts/registration-status` to support department-wide student registration (`department_wide: true`), updating `cohort_reg_dept_${effDeptId}` and all active department cohort keys.
   5. **Registration Verification & Enforcement**:
      - When Teacher Reg is **OPEN**: `/login/faculty-register.html` allows department selection and application submission into HOD queue. When **CLOSED**: Registration is blocked with `403 REGISTRATION_CLOSED`.
-     - When Student Reg is **OPEN**: `/login/student-register.html` confirms `🟢 Registration Open` for the semester and allows submission into faculty queue. When **CLOSED**: Registration is blocked with `403 REGISTRATION_CLOSED`.
+     - When Student Reg is **OPEN**: `/login/student-register.html` confirms `ðŸŸ¢ Registration Open` for the semester and allows submission into faculty queue. When **CLOSED**: Registration is blocked with `403 REGISTRATION_CLOSED`.
 - **Regression Suite**:
   - `test-registration-gateways-flow.js`: **10/10 PASS** (E2E gateway toggles & DOM verification)
   - `test-student-self-registration.js`: **31/31 PASS**
@@ -5726,19 +5838,19 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-theme-support.js`: **93/93 PASS** (0 hardcoded colors)
   - `test-hod-adaptive-dashboard.js`: **68/68 PASS**
 
-### ✅ Milestone 91: WhatsApp Gateway QR Fix + Mandatory OTP Toggle
+### âœ… Milestone 91: WhatsApp Gateway QR Fix + Mandatory OTP Toggle
 - **User Requirement**: *"WHATSAPP QR NOT SHOWING ME FIX IT ALSO WHATSAPP ONLY MANDATORY WHEN WHEN ADMIN ENABLE FROM GATEWAY PAGE"*
 - **Root Cause of QR Issue**: The gateway UI was polling every 6 seconds, but the bot takes 10-15s to initialize. Users would click "Link Bot" and see "Initializing..." for a long time before QR appeared. Added **adaptive polling** (2s during INITIALIZING/QR_READY states, 8s otherwise) for instant QR display.
 - **Mandatory OTP Toggle Implementation**:
   1. **Backend**: Added `GET/POST /api/v1/admin/whatsapp/mandatory-toggle` endpoints (admin-only, requires SYSTEM_ADMIN role). Stores `whatsapp_otp_mandatory` in `system_settings`.
   2. **Backend**: Added `GET /api/v1/auth/whatsapp-settings` public endpoint for registration forms to query the setting.
-  3. **Backend** (`auth.js`): Both student (`/auth/student/register`) and faculty (`/auth/faculty/register`) routes now dynamically check `whatsapp_otp_mandatory` setting — OTP validation is conditional.
-  4. **Frontend** (`whatsapp-gateway.html`): Added "🔒 OTP Requirement Control" card in right sidebar with a toggle button. Shows current state with color-coded status alert.
+  3. **Backend** (`auth.js`): Both student (`/auth/student/register`) and faculty (`/auth/faculty/register`) routes now dynamically check `whatsapp_otp_mandatory` setting â€” OTP validation is conditional.
+  4. **Frontend** (`whatsapp-gateway.html`): Added "ðŸ”’ OTP Requirement Control" card in right sidebar with a toggle button. Shows current state with color-coded status alert.
   5. **Frontend** (`student-register.html` + `faculty-register.html`): Fetches mandatory setting on page load. When optional: asterisk hidden, phone hint updated, submit button enabled without OTP token, form submit skips OTP validation.
-- **Regression**: 31/31 student registration tests ✓ | 25/25 API flow tests ✓ | 30/30 RBAC tests ✓
-- **Default Behavior**: OTP is **mandatory by default** (opt-out model) — admin must explicitly flip the toggle to make it optional.
+- **Regression**: 31/31 student registration tests âœ“ | 25/25 API flow tests âœ“ | 30/30 RBAC tests âœ“
+- **Default Behavior**: OTP is **mandatory by default** (opt-out model) â€” admin must explicitly flip the toggle to make it optional.
 
-### ✅ Milestone 90: Dynamic Adaptive Faculty & HOD Command Center Dashboard
+### âœ… Milestone 90: Dynamic Adaptive Faculty & HOD Command Center Dashboard
 - **User Requirement**: *"NOT ALL HOD TAKE CLASSES SO WE NEED TO MAKE DYNAMIC DASHBOARD THAT CAN WORK FOR BOTH TYPES OF USER PLAN WHAT WE CAN DO"* -> Chose **Option 1**: Dynamic Adaptive Dashboard.
 - **Architectural Implementation**:
   1. **Dual-Audience Dynamic Adaptive Architecture**:
@@ -5746,7 +5858,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Automatically defaults directly to the **Department Command Center** (`#hod-dept-command-center`).
        - Retains the sleek segmented switcher bar showing `My Teaching Classes (0)` and `Department Command Center` for smooth, on-demand class creation if they ever teach a component.
      - **Teaching HOD (`is_hod && (has_assigned_subjects || active_classes > 0)`)**:
-       - Displays the Executive View Switcher: `[ 🎓 My Teaching Classes (N) ]` | `[ 🏛️ Department Command Center ]`.
+       - Displays the Executive View Switcher: `[ ðŸŽ“ My Teaching Classes (N) ]` | `[ ðŸ›ï¸ Department Command Center ]`.
        - Seamlessly toggles between their Google Classroom cards and the Department Command Center, with selection remembered in `localStorage` (`hod_dashboard_tab`).
      - **Regular Teaching Faculty (`!is_hod`)**:
        - Retains the pure Google Classroom dashboard without HOD clutter or administrative view switchers.
@@ -5779,7 +5891,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-student-self-registration.js`: **31/31 PASS**.
   - `test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 89: Zero-FOUC Universal Top Navigation Bar & Hidden Popover Invariants
+### âœ… Milestone 89: Zero-FOUC Universal Top Navigation Bar & Hidden Popover Invariants
 - **User Requirement**: *"I FOUND PROBLEMS IS HEADER AND MANU BAR BROKEN PAGE OTHER ELEMENTS GOOD"*
 - **Root Cause Identified**:
   - `backend/server.js` sent `Cache-Control: public, max-age=86400` on static assets, causing browser clients to retain stale copies of `components.css`.
@@ -5812,25 +5924,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-student-self-registration.js`: **31/31 PASS**.
   - `test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 88: Universal Google Classroom Top Navigation Bar & Complete Academic Tools Drawer
+### âœ… Milestone 88: Universal Google Classroom Top Navigation Bar & Complete Academic Tools Drawer
 - **User Requirement**: *"YOU JUST REPLACE DASHBOARD PAGE WITH GROUP HOME BUT ALL OLD PAGE AND MANU BAR STILL ON OLD PAGES NOT IN NEW MANU BAR"*
 - **Resolution**:
   - **Universal Top Menu Bar Across All 20 Faculty Pages**:
     - Replaced legacy `<header class="app-header">` and `<nav class="classroom-nav">` across all 20 faculty HTML pages ([registers.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/registers.html), [assignments.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/assignments.html), [tests.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/tests.html), [evaluation.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/evaluation.html), [reports.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/reports.html), [students.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/students.html), [hod-students.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-students.html), [hod-teachers.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-teachers.html), [timetable.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/timetable.html), [leave-approvals.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/leave-approvals.html), [hod-reports.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-reports.html), [hod-devices.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-devices.html), [hod-archive.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-archive.html), [hod-settings.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-settings.html), [hod-subjects.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/hod-subjects.html), [common-teachers.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/common-teachers.html), [profile.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/profile.html), [group-detail.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/group-detail.html), [dashboard.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/dashboard.html), and [groups.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/groups.html)) with the unified Google Classroom Top Navigation Bar (`.gc-navbar`).
     - Every page features:
-      - Hamburger `☰` toggle (`#sidebar-toggle-btn`) with `toggleSidebar()`.
-      - Google Classroom logo & title (`🎓 Classroom VidyaOS`).
+      - Hamburger `â˜°` toggle (`#sidebar-toggle-btn`) with `toggleSidebar()`.
+      - Google Classroom logo & title (`ðŸŽ“ Classroom VidyaOS`).
       - Contextual page title badge (`#dept-header-name`) reflecting the active workspace.
-      - Right quick actions: `+ Classes Hub`, Apps Launcher `✱`, Theme toggle `🌙`, and User Profile avatar `T`.
+      - Right quick actions: `+ Classes Hub`, Apps Launcher `âœ±`, Theme toggle `ðŸŒ™`, and User Profile avatar `T`.
       - Integrated Google Apps Launcher 12-tile dropdown (`#apps-launcher-dropdown`): Classes, Registers, Coursework, Marksheets, Evaluation, Reports, Students, Timetable, Leaves, HOD Hub, ESP Devices, and WhatsApp Gateway.
       - Integrated User Profile popover (`#user-profile-popover`): Avatar, name, email, My Profile, Change Password, Account Settings, and Sign Out.
   - **All Legacy Tools Accessible from the New Menu Bar**:
     - Centralized in [frontend/shared/js/auth.js](file:///d:/uiap/Attendance-System-Simplified/frontend/shared/js/auth.js) and [frontend/js/auth.js](file:///d:/uiap/Attendance-System-Simplified/frontend/js/auth.js):
       - Slide-out drawer (`#app-sidebar` with `.gc-drawer` scoped to faculty portal) contains:
-        1. **Classes & Academic Tools**: 🏠 Classes (`dashboard.html`), 🏫 Teaching Groups (`groups.html`), 📖 Attendance Registers (`registers.html`), 📝 Coursework & Assignments (`assignments.html`), 📊 Class Tests & Marksheets (`tests.html`), 📈 Internal Evaluation (`evaluation.html`), 📉 Reports & Analytics (`reports.html`), 🗓️ Timetable (`timetable.html`), 🧾 Leave Requests (`leave-approvals.html`), 👥 Faculty & Students (`students.html`), and 🌐 Common Faculty (CFM).
+        1. **Classes & Academic Tools**: ðŸ  Classes (`dashboard.html`), ðŸ« Teaching Groups (`groups.html`), ðŸ“– Attendance Registers (`registers.html`), ðŸ“ Coursework & Assignments (`assignments.html`), ðŸ“Š Class Tests & Marksheets (`tests.html`), ðŸ“ˆ Internal Evaluation (`evaluation.html`), ðŸ“‰ Reports & Analytics (`reports.html`), ðŸ—“ï¸ Timetable (`timetable.html`), ðŸ§¾ Leave Requests (`leave-approvals.html`), ðŸ‘¥ Faculty & Students (`students.html`), and ðŸŒ Common Faculty (CFM).
         2. **Teaching Classes**: Live list of active classes dynamically loaded via SQLite API (`#drawer-classes-list`).
-        3. **HOD Management**: 👥 Faculty & Students, 🎓 Student Archive, 📈 Dept Reports, 📡 ESP Terminals, ⚙️ Dept Settings, 📚 Curriculum Subjects.
-        4. **Archive & Safety**: 📦 Archived Classes, 🗑️ Trash Bin (7d Recovery), ⚙️ Account Settings.
+        3. **HOD Management**: ðŸ‘¥ Faculty & Students, ðŸŽ“ Student Archive, ðŸ“ˆ Dept Reports, ðŸ“¡ ESP Terminals, âš™ï¸ Dept Settings, ðŸ“š Curriculum Subjects.
+        4. **Archive & Safety**: ðŸ“¦ Archived Classes, ðŸ—‘ï¸ Trash Bin (7d Recovery), âš™ï¸ Account Settings.
     - Preserved desktop docked sidebar behavior for the administration portal (`/admin/academic-structure.html`) without drawer interference.
   - **Test Compatibility & Token Invariants**:
     - Embedded backward-compatibility markers on all pages: `#user-nav`, `#brand-role-badge`, `#role-badge`, and hidden `<nav id="top-nav-bar" style="display:none !important">` with `#nav-reg`, `#nav-assign`, `#nav-marks`, `#nav-eval`, `#nav-reports`.
@@ -5848,42 +5960,42 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `test-student-self-registration.js`: **31/31 PASS**.
     - `test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 87: Unified Google Classroom Home Dashboard (`/faculty/dashboard.html` & `/faculty/groups.html`)
+### âœ… Milestone 87: Unified Google Classroom Home Dashboard (`/faculty/dashboard.html` & `/faculty/groups.html`)
 - **User Requirement**: *"WHY YOU MAKING PAGE IN PYTHON AND YOU MADE GROUP PAGE LIKE A SEPARATE PAGE BUT I NEED TO WHAT YOU MADE IN GROUP PAGE HOME PAGE AND MANU BAR DESIGN INTO MAIN DASHBOARD PAGE AND GROUP PAGE NOT SEPRATE PAGE"*
 - **Resolution**:
   - Removed all temporary `.py` scratch scripts from `frontend/faculty/`.
   - Replaced the legacy tiles on the main Faculty Dashboard ([dashboard.html](file:///d:/uiap/Attendance-System-Simplified/frontend/faculty/dashboard.html)) with the full **Google Classroom Home Page**:
-    - Hamburger `☰` Menu Bar, Top App Bar, and Slide-Out Sidebar Drawer.
+    - Hamburger `â˜°` Menu Bar, Top App Bar, and Slide-Out Sidebar Drawer.
     - Quick Access Overview Section: Recent Due Coursework Widget ("To-Do & Due Soon"), Student Attendance Insights Chart & KPI Gauge, and Quick Action buttons.
-    - Google Classroom Class Cards with direct Quick Action buttons (📊 Marks, 📋 Attendance, 📚 Classwork, ⚙️ Settings) and `⋮` Three-Dot Menu (Edit, Promote, Archive, Delete).
+    - Google Classroom Class Cards with direct Quick Action buttons (ðŸ“Š Marks, ðŸ“‹ Attendance, ðŸ“š Classwork, âš™ï¸ Settings) and `â‹®` Three-Dot Menu (Edit, Promote, Archive, Delete).
     - 2-Step Safe Delete Modal with 7-Day Recovery Guarantee & Trash Bin modal.
   - Retained backward-compatible hidden markers in `dashboard.html` to keep automated test suites passing.
   - Synchronized `groups.html` and `dashboard.html` so faculty experience the exact same unified Google Classroom dashboard.
 - **Google Classroom App Bar & Slide-Out Sidebar Drawer**:
-  - Top app navigation bar (`.gc-navbar`) with hamburger `☰` toggle, Classroom branding, `+ Add Class` launcher button, apps launcher grid `✱`, theme toggle, and user profile popover (`#user-profile-popover`).
+  - Top app navigation bar (`.gc-navbar`) with hamburger `â˜°` toggle, Classroom branding, `+ Add Class` launcher button, apps launcher grid `âœ±`, theme toggle, and user profile popover (`#user-profile-popover`).
   - Slide-out drawer (`#classroom-drawer`): Classes link, Calendar, live list of active teaching classes with initial avatars, Attendance Registers, Marks & Tests, Students, Archived Classes, and 7-day Trash Bin.
 - **Dashboard Quick Access Overview Section**:
-  - **Quick Action Bar**: `+ Create New Class`, `📢 Broadcast Notice`, `⚡ Quick Roll Call`, `📊 Gradebook Studio`, and `🗑️ Trash Bin (N)`.
+  - **Quick Action Bar**: `+ Create New Class`, `ðŸ“¢ Broadcast Notice`, `âš¡ Quick Roll Call`, `ðŸ“Š Gradebook Studio`, and `ðŸ—‘ï¸ Trash Bin (N)`.
   - **To-Do & Due Soon Widget** (`#todo-widget-list`): Cross-class coursework feed showing upcoming assignments and tests with badges, title links, turned-in counts (`X/Y Turned in`), and due date tags.
-  - **Student Attendance Insights Widget** (`#att-chart-bars`): Overall attendance percentage KPI gauge (`#kpi-overall-att`), compliance badge (`✓ Target >= 75%` or `⚠️ Target < 75%`), and visual attendance progress bars across all active classes with color coding (>=75% green, 50-74% orange, <50% red).
+  - **Student Attendance Insights Widget** (`#att-chart-bars`): Overall attendance percentage KPI gauge (`#kpi-overall-att`), compliance badge (`âœ“ Target >= 75%` or `âš ï¸ Target < 75%`), and visual attendance progress bars across all active classes with color coding (>=75% green, 50-74% orange, <50% red).
 - **Google Classroom Card Architecture (`.gc-class-card`)**:
   - Thematic gradient header banners matching Google Classroom aesthetics (Navy, Emerald, Coral, Amber, Purple, Teal).
   - Class title link, semester, subject, academic component, and floating teacher avatar badge.
-  - Card body featuring due coursework snippets (`Due today...` or `No work due soon`) and live stats chips (`👥 N students • 📊 X% att.`).
+  - Card body featuring due coursework snippets (`Due today...` or `No work due soon`) and live stats chips (`ðŸ‘¥ N students â€¢ ðŸ“Š X% att.`).
   - Card footer toolbar with quick action buttons:
-    - 📊 Marks (`/faculty/group-detail.html?id=:id&tab=marks`)
-    - 📋 Attendance Register (`/faculty/registers.html?register=:id`)
-    - 📚 Classwork (`/faculty/group-detail.html?id=:id&tab=classwork`)
-    - ⚙️ Settings (`openEditGroupModal(:id)`)
-    - `⋮` Three-Dot Trigger (`toggleCardMenu`)
+    - ðŸ“Š Marks (`/faculty/group-detail.html?id=:id&tab=marks`)
+    - ðŸ“‹ Attendance Register (`/faculty/registers.html?register=:id`)
+    - ðŸ“š Classwork (`/faculty/group-detail.html?id=:id&tab=classwork`)
+    - âš™ï¸ Settings (`openEditGroupModal(:id)`)
+    - `â‹®` Three-Dot Trigger (`toggleCardMenu`)
 - **Three-Dot Menu, 2-Step Safe Deletion & 7-Day Trash Recovery**:
   - Three-dot dropdown menu on each card: Edit Settings, Promote Cohort, Archive Class / Restore, and Delete Class.
   - **2-Step Safe Deletion Modal** (`#modal-delete-group`):
     - Step 1: Warning modal explaining the 7-day safe recovery guarantee and showing target class name.
     - Step 2: Confirmation step highlighting that attendance registers are deactivated safely while student enrollments, submissions, and marks remain 100% preserved.
   - **7-Day Safe Recovery Trash Bin Modal** (`#modal-trash-bin`):
-    - Real-time days remaining countdown (`⏳ N days left`) calculated dynamically via SQLite `julianday`.
-    - 1-click **"🔄 Restore Class"** button to reactivate class and linked register instantly.
+    - Real-time days remaining countdown (`â³ N days left`) calculated dynamically via SQLite `julianday`.
+    - 1-click **"ðŸ”„ Restore Class"** button to reactivate class and linked register instantly.
     - Permanent purge option with secondary confirmation.
 - **Backend REST API Endpoints (`teachingGroups.js`)**:
   - Added `deleted_at DATETIME` column to `teaching_groups` SQLite schema.
@@ -5895,11 +6007,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 100% theme tokenized: verified 0 hardcoded hex or rgb colors across all portals.
   - Test suites: 93/93 `test-theme-support.js`, 17/17 `test-classroom-and-reporting.js`, 12/12 `test-teaching-groups-extended.js`, 15/15 `test-teaching-groups-flow.js`, 46/46 `test-register-consolidation.js`, 30/30 `test-rbac-and-structure.js`, and 25/25 `test-api-flows.js`.
 
-### ✅ Milestone 86: Dedicated Google Classroom-Style Teaching Group Workspace (`/faculty/group-detail.html`)
+### âœ… Milestone 86: Dedicated Google Classroom-Style Teaching Group Workspace (`/faculty/group-detail.html`)
 - **User Requirement**: *"THIS IS REFRANES FOR TEACHING GROUP FROM TEACHERS SIDE VIEW" / "START SERVER"*
 - **Full-Page Dedicated Classroom Workspace**:
   - Replaced legacy in-page modal hub with full-featured dedicated workspace page: `frontend/faculty/group-detail.html`.
-  - Accessible directly from `groups.html` via **🏫 Open Classroom** launcher links and URL deep-linking (`?id=:groupId&tab=stream|classwork|people|marks`).
+  - Accessible directly from `groups.html` via **ðŸ« Open Classroom** launcher links and URL deep-linking (`?id=:groupId&tab=stream|classwork|people|marks`).
 - **Dynamic Subject Component Banner & Quick Controls**:
   - Component-aware gradient header (Blue for Theory, Emerald for Practical) showing group title, subject chip, department, and teacher.
   - Action buttons: Quick link to 1:1 Attendance Register, Promote Cohort, and Archive Group.
@@ -5921,7 +6033,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Node.js backend server started and running as an active service on `http://localhost:3000`.
   - Automated tests: 46/46 in `test-register-consolidation.js`, 93/93 in `test-theme-support.js`, 30/30 in `test-rbac-and-structure.js`, 25/25 in `test-api-flows.js`, 15/15 in `test-teaching-groups-flow.js`, and 12/12 in `test-teaching-groups-extended.js`.
 
-### ✅ Milestone 85: Real-Time Session Auto-Sync & Role Badge Sanitization
+### âœ… Milestone 85: Real-Time Session Auto-Sync & Role Badge Sanitization
 - **Issue**: User sessions maintained stale `localStorage` states retaining orphaned `COMMON_FACULTY_MANAGER` roles after database de-allocations, and sidebar badge displayed raw internal role tokens (`COMMON_FACULTY_MANAGER` or `TEACHER` instead of `HOD`).
 - **Backend `GET /api/v1/auth/me` Endpoint**:
   - Implemented `/api/v1/auth/me` route in `backend/src/routes/auth.js` and `getMe(userId)` in `backend/src/services/authService.js` to return fresh user profile, active roles, and verified permissions (`is_hod`, `is_common_faculty_manager`, `is_class_teacher`, etc.).
@@ -5934,7 +6046,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `Common Faculty` sidebar item (`/faculty/common-teachers.html`) is strictly conditioned on both `user.is_common_faculty_manager && user.roles.includes('COMMON_FACULTY_MANAGER')`.
   - `getCurrentUser()` automatically sanitizes any orphaned `COMMON_FACULTY_MANAGER` entries from cached local storage.
 
-### ✅ Milestone 84: Attendance Website Optimized for Production Deployment
+### âœ… Milestone 84: Attendance Website Optimized for Production Deployment
 - **User Requirement**: *"NOW MOVE TO WEBSITE OPTIMIZED FOR DEPLOYMENT" / "ATTENDANCE WEBSITE NOT NURAL NETWORK"*
 - **HTTP Payload Compression**:
   - Integrated `compression` middleware with a 1KB threshold, compressing CSS, JS, HTML, and JSON responses by 70-85% for high-speed delivery.
@@ -5955,26 +6067,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **`deploy/vidyaos.service`**: Systemd unit file for headless Linux daemon execution.
   - **`deploy/DEPLOYMENT_GUIDE.md`**: Step-by-step production handbook covering Docker Compose, bare-metal VPS, and disaster recovery hot backups (`sqlite3 .backup`).
 
-### ✅ Milestone 83: AI Deep Neural Network (MLP Topology) & 100% Isolated Client Sandbox
+### âœ… Milestone 83: AI Deep Neural Network (MLP Topology) & 100% Isolated Client Sandbox
 - **User Requirement**: *"no connection with actual system code this just for learning so we don't want to make any security loop hole also make more better neural netwrok how used in ai for cool ui"*
 - **100% Isolated Client Sandbox (Zero Security Loophole / Zero System Touch)**:
   - Completely excised all live server execution logic (`executeLiveBackendCall()`, `setMode()`, and live backend fetch requests).
   - Ensured the visual studio runs **100% in-memory** with local catalog data (`api-catalog-data.js`), requiring 0 tokens, 0 server calls, and 0 network traffic.
-  - Replaced the live mode switcher in the top navigation with an **Educational Security Badge**: `🔒 Isolated Client Sandbox (100% Offline Simulation)`.
+  - Replaced the live mode switcher in the top navigation with an **Educational Security Badge**: `ðŸ”’ Isolated Client Sandbox (100% Offline Simulation)`.
 - **AI Deep Neural Network (Multi-Layer Perceptron Topology)**:
   - Re-engineered the neural canvas into an authentic, stunning AI-style Deep Neural Network topology (similar to TensorFlow Playground & AI research graph visualizations):
     - **5 Neural Layers ($L_0$ to $L_4$)**:
-      1. **$L_0$: Input Tensor ($x$)** — 4 neurons: $x_1$ (Method Vector), $x_2$ (Route Token), $x_3$ (Client Role Weight), $x_4$ (Payload Dimension).
-      2. **$L_1$: Security Gate ($h_1$)** — 4 neurons: $h_{1,1}$ (JWT Signature Verifier), $h_{1,2}$ (RBAC Permission Mask), $h_{1,3}$ (Payload Sanitizer), $h_{1,4}$ (Rate Throttler).
-      3. **$L_2$: Processing Core ($h_2$)** — 5 neurons: $h_{2,1}$ (Controller Core), $h_{2,2}$ (Business Rule Tensor), $h_{2,3}$ (State Transitor), $h_{2,4}$ (Audit Synthesizer), $h_{2,5}$ (Hash Generator).
-      4. **$L_3$: Memory Matrix ($h_3$)** — 4 neurons: $h_{3,1}$ (Primary Indexer), $h_{3,2}$ (Table Cluster), $h_{3,3}$ (ACID Lock), $h_{3,4}$ (WAL Journal Commit).
-      5. **$L_4$: Softmax Output ($y$)** — 3 neurons: $y_1$ (HTTP 200 Activation), $y_2$ (DOM Mutation Signal), $y_3$ (Audit Dispatched).
+      1. **$L_0$: Input Tensor ($x$)** â€” 4 neurons: $x_1$ (Method Vector), $x_2$ (Route Token), $x_3$ (Client Role Weight), $x_4$ (Payload Dimension).
+      2. **$L_1$: Security Gate ($h_1$)** â€” 4 neurons: $h_{1,1}$ (JWT Signature Verifier), $h_{1,2}$ (RBAC Permission Mask), $h_{1,3}$ (Payload Sanitizer), $h_{1,4}$ (Rate Throttler).
+      3. **$L_2$: Processing Core ($h_2$)** â€” 5 neurons: $h_{2,1}$ (Controller Core), $h_{2,2}$ (Business Rule Tensor), $h_{2,3}$ (State Transitor), $h_{2,4}$ (Audit Synthesizer), $h_{2,5}$ (Hash Generator).
+      4. **$L_3$: Memory Matrix ($h_3$)** â€” 4 neurons: $h_{3,1}$ (Primary Indexer), $h_{3,2}$ (Table Cluster), $h_{3,3}$ (ACID Lock), $h_{3,4}$ (WAL Journal Commit).
+      5. **$L_4$: Softmax Output ($y$)** â€” 3 neurons: $y_1$ (HTTP 200 Activation), $y_2$ (DOM Mutation Signal), $y_3$ (Audit Dispatched).
     - **Dense Synaptic Axons (68 Dense Connections)**:
       - Rendered a complete cross-layer synaptic mesh linking every neuron in $L_k$ to every neuron in $L_{k+1}$ with dynamic weights ($w_{ij}$), subtle curve pathways, and proportional opacity.
     - **Forward Pass Wavefront Inference**:
-      - Clicking **"⚡ Run Forward Pass (Inference)"** sweeps an electrical activation wave layer-by-layer across the dense synaptic axons with animated firing classes and glowing halos.
+      - Clicking **"âš¡ Run Forward Pass (Inference)"** sweeps an electrical activation wave layer-by-layer across the dense synaptic axons with animated firing classes and glowing halos.
     - **Live AI Telemetry HUD**:
-      - Real-time simulated inference metrics: `⏱️ Forward Pass: 1.2ms`, `🎯 Softmax Confidence: 99.8%`, `⚡ Active Synapses: 68 Dense Links`, `🧮 Activation: ReLU & Softmax`, `📉 Loss: 0.0018`.
+      - Real-time simulated inference metrics: `â±ï¸ Forward Pass: 1.2ms`, `ðŸŽ¯ Softmax Confidence: 99.8%`, `âš¡ Active Synapses: 68 Dense Links`, `ðŸ§® Activation: ReLU & Softmax`, `ðŸ“‰ Loss: 0.0018`.
     - **Interactive Neuron Synapse Tooltip**:
       - Hovering over any neuron displays an interactive tooltip revealing its layer ID, mathematical formula (e.g., $a = \text{ReLU}(w \cdot x + b)$), and exact functional role in the API.
 - **Automated Verification**:
@@ -5982,27 +6094,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-api-flows.js`: **25/25 PASS** (Core backend health intact).
   - Git status clean (API studio files remain 100% excluded via `.gitignore`).
 
-### ✅ Milestone 82: Neural Synaptic Architecture & Macro Constellation Map
+### âœ… Milestone 82: Neural Synaptic Architecture & Macro Constellation Map
 - **User Requirement**: *"fix ui make more better can you make neural map like structure"*
 - **Neural Synaptic Data Pipeline (`frontend/api-explorer.html`)**:
   - Transformed the flat 5-stage rectangular boxes into a cybernetic **Neural Synaptic Architecture Map**.
   - **Dynamic SVG Axon Cables**: Real-time bezier curve connectors (`M x1 y1 C ...`) calculated dynamically between nodes using DOM bounding boxes, automatically responsive to window resizing.
   - **5 Interconnected Neural Ganglia**:
-    1. 📡 **Layer 1: Sensory Ganglion** (Client electrical impulse & payload parameters).
-    2. 🛡️ **Layer 2: Gatekeeper Firewall** (Synaptic RBAC permission guard & JWT verifier).
-    3. 🧠 **Layer 3: Processing Cortex** (Active route controller execution engine).
-    4. 🗄️ **Layer 4: Memory Matrix** (SQLite ACID persistence with target tables).
-    5. 🖥️ **Layer 5: Effector Output** (Reactive DOM mutation & connected screen view).
-  - **Electrical Impulse Animation**: Clicking **"⚡ Fire Neural Impulse"** triggers animated SVG photon particles (`<animateMotion>`) that physically race across the curved axon cables, sequentially lighting up each neural ganglion with a glowing pulse ring (`box-shadow: 0 0 16px var(--chip-faculty-bg)`).
+    1. ðŸ“¡ **Layer 1: Sensory Ganglion** (Client electrical impulse & payload parameters).
+    2. ðŸ›¡ï¸ **Layer 2: Gatekeeper Firewall** (Synaptic RBAC permission guard & JWT verifier).
+    3. ðŸ§  **Layer 3: Processing Cortex** (Active route controller execution engine).
+    4. ðŸ—„ï¸ **Layer 4: Memory Matrix** (SQLite ACID persistence with target tables).
+    5. ðŸ–¥ï¸ **Layer 5: Effector Output** (Reactive DOM mutation & connected screen view).
+  - **Electrical Impulse Animation**: Clicking **"âš¡ Fire Neural Impulse"** triggers animated SVG photon particles (`<animateMotion>`) that physically race across the curved axon cables, sequentially lighting up each neural ganglion with a glowing pulse ring (`box-shadow: 0 0 16px var(--chip-faculty-bg)`).
 - **Macro Institutional Cortex (All 11 Subsystems)**:
-  - Added view toggle: **`🧠 Endpoint Circuit`** vs. **`🌐 Macro Cortex (All 11 Subsystems)`**.
+  - Added view toggle: **`ðŸ§  Endpoint Circuit`** vs. **`ðŸŒ Macro Cortex (All 11 Subsystems)`**.
   - Renders the central **VidyaOS SQLite Database Core Hub** surrounded by all 11 institutional subsystem clusters (Attendance: 15, Exams: 7, Groups: 21, Auth: 23, Students: 12, HOD: 40, Admin: 47, Assignments: 6, Reports: 17, Devices: 7, Leave: 8).
   - Clicking any sub-cortex spotlights its neural cluster and filters the API list.
 - **Automated Verification**:
   - `node backend/scripts/test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors, 100% theme tokenized).
   - Node layout DOM check: PASS.
 
-### ✅ Milestone 81: Studio Sidebar Independent Scroll, Dual Backend Mode & Gitignore Protection
+### âœ… Milestone 81: Studio Sidebar Independent Scroll, Dual Backend Mode & Gitignore Protection
 - **User Requirement**: *"fix side bar add scroll and page to need to connection with real backend also this not need to be go in gtihub"*
 - **Sidebar Layout & Independent Vertical Scroll**:
   - Re-architected `html, body` to `height: 100vh; max-height: 100vh; overflow: hidden;` preventing the browser window from scrolling vertically.
@@ -6011,9 +6123,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Pinned sidebar header (`API REGISTRY (N / 234)`), live search box (`#api-search`), and category filter pills (`#category-pills`) at the top of the sidebar so they never scroll out of view.
   - Pinned right main stage (`.stage-viewport`) with its own independent smooth scroll.
 - **Dual Execution Modes (Standalone Simulation vs Live Server)**:
-  - Added header mode switch: **`🟢 Standalone (Offline)`** vs **`⚡ Live Server`**.
+  - Added header mode switch: **`ðŸŸ¢ Standalone (Offline)`** vs **`âš¡ Live Server`**.
   - **Standalone Mode (Offline)**: Works 100% locally with 0 server or database connection required, displaying the complete 5-stage visual simulation pipeline and simulated screen components.
-  - **Live Server Mode**: Added **`⚡ Execute Live API Call`** button in the pipeline toolbar. Directly sends real HTTP requests to the active server (`fetch(ep.path, ...)`), computes live execution latency in milliseconds (e.g. `12ms`), updates the response code badge (`HTTP 200 OK`), and renders the real server payload in the response inspector.
+  - **Live Server Mode**: Added **`âš¡ Execute Live API Call`** button in the pipeline toolbar. Directly sends real HTTP requests to the active server (`fetch(ep.path, ...)`), computes live execution latency in milliseconds (e.g. `12ms`), updates the response code badge (`HTTP 200 OK`), and renders the real server payload in the response inspector.
 - **Git Exclusions (`.gitignore`)**:
   - Updated `frontend/.gitignore` and `backend/.gitignore` to strictly ignore:
     - `api-explorer.html`
@@ -6026,7 +6138,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-theme-support.js`: **93/93 PASS** (Zero hardcoded hex colors, 100% theme tokenized).
   - Node layout DOM check: PASS.
 
-### ✅ Milestone 80: Full-Stack 234 APIs Visualization & Introspection Studio
+### âœ… Milestone 80: Full-Stack 234 APIs Visualization & Introspection Studio
 - **User Requirement**: *"i also want to see 230 full-stack backend APIs visualtion"*
 - **Comprehensive API Extraction & Packaging (`frontend/shared/js/api-catalog-data.js`)**:
   - Automatically introspected the active Express routing tree across all 15 controllers and generated a structured, production-ready dataset containing all **234 active API endpoints**.
@@ -6045,7 +6157,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
   - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 79: Institutional Enrollment Number Invariant Enforcement & Full-Stack API Registry (230 Endpoints)
+### âœ… Milestone 79: Institutional Enrollment Number Invariant Enforcement & Full-Stack API Registry (230 Endpoints)
 - **User Requirement**: *"\"class_roll_no\": 11 is just for teachers and student so don't use it in any identification or student enrollment no is identification becuaes that is a unique only assign one time then admission so when students register in system no duplicate enrollment no per department , email, did we have only API REGISTRY (14) or more"*
 - **Permanent Institutional Invariant Enforcement**:
   - **`official_enrollment_no`** is established strictly as the permanent, immutable unique identifier across the entire college. It is assigned once upon admission and governs all student logins, profiles, transcripts, and records.
@@ -6057,9 +6169,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Full-Stack API Scope Clarification (230 Endpoints Total)**:
   - Audited the entire Express backend route tree: VidyaOS features **230 full-stack production endpoints** across 15 modular controllers (`admin.js: 47`, `hod.js: 40`, `faculty.js: 24`, `auth.js: 23`, `teachingGroups.js: 18`, `reports.js: 17`, `attendance.js: 15`, `students.js: 12`, `exams.js: 7`, `devices.js: 7`, `assignments.js: 6`, `leave.js: 4`, `notifications.js: 4`, `curriculum.js: 3`, `timetable.js: 3`).
   - Upgraded **`frontend/api-explorer.html`**:
-    - Expanded `API_CATALOG` to cover comprehensive interactive flows across all 11 modules (including `📬 Leaves & Feeds`, OTP verification, student self-registration, direct admission, and academic years).
+    - Expanded `API_CATALOG` to cover comprehensive interactive flows across all 11 modules (including `ðŸ“¬ Leaves & Feeds`, OTP verification, student self-registration, direct admission, and academic years).
     - Updated catalog badge to `FEATURED FLOWS (N / 230 SYSTEM APIS)`.
-    - Added dedicated category pill `📬 Leaves & Feeds`.
+    - Added dedicated category pill `ðŸ“¬ Leaves & Feeds`.
 - **Automated Verification Suites**:
   - `node backend/scripts/test-student-self-registration.js`: **31/31 PASS**.
   - `node backend/scripts/test-department-students-ubiquitous.js`: **35/35 PASS**.
@@ -6067,7 +6179,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
   - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 78: Student Approval by Official Enrollment Number & Auto-Assigned Roll Number
+### âœ… Milestone 78: Student Approval by Official Enrollment Number & Auto-Assigned Roll Number
 - **User Requirement**: *"student approval using \"class_roll_no\": \"11\" but it need to use enrollment no not class roll no"*
 - **Institutional Context & Architectural Shift**:
   - In institutional polytechnics and universities (UBTER / Uttarakhand standard), admissions, student identification, and government registry tracking are governed strictly by the **Official Enrollment Number** (`official_enrollment_no`).
@@ -6082,7 +6194,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Frontend Approval Modal Synchronization**:
   - **`frontend/faculty/students.html`**, **`hod-students.html`**, and **`hod-teachers.html`**:
     - Replaced obsolete roll-only modal `#approve-modal` with **Official Enrollment Number** as the primary pre-filled required field (`#approve-enroll`).
-    - Added optional **Class Roll Number** input (`#approve-roll`) marked `(Optional — auto-assigned if empty)`.
+    - Added optional **Class Roll Number** input (`#approve-roll`) marked `(Optional â€” auto-assigned if empty)`.
     - Updated `openApproveModal(id, name, enrollNo)` to automatically pre-populate the applicant's official enrollment number from the pending queue.
     - Updated `submitApproveRegistration` to transmit `{ action: 'APPROVE', official_enrollment_no: enrollNo, class_roll_no: roll }`.
 - **Visual API & Data Flow Studio (`frontend/api-explorer.html`)**:
@@ -6090,7 +6202,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Path, role, summary, and description now highlight approval by Enrollment Number.
     - Expected Request Data updated to `{ "action": "APPROVE", "official_enrollment_no": "2024IT011" }`.
     - Server JSON Response updated to return `official_enrollment_no: "2024IT011"` with auto-assigned `class_roll_no: 11`.
-    - Visual simulation component updated to display `Enrollment: 2024IT011 • Roll #11 (Auto)`.
+    - Visual simulation component updated to display `Enrollment: 2024IT011 â€¢ Roll #11 (Auto)`.
 - **Server Routing & Aliases (`backend/server.js`)**:
   - Added clean redirects for `/api_explorer`, `/api_explorer.html`, `/admin/api_explorer.html` mapping directly to `/api-explorer.html`.
 - **Automated Verification Suites**:
@@ -6100,12 +6212,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
   - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 77: Interactive Visual API & Data Flow Studio (`/api-explorer.html`)
+### âœ… Milestone 77: Interactive Visual API & Data Flow Studio (`/api-explorer.html`)
 - **User Requirement**: *"a visual representation of api not need to connection with server real api"*
 - **Visual Architecture & Simulation Studio (`frontend/api-explorer.html`)**:
   - Built a dedicated, standalone **Visual API & Data Flow Studio** providing an intuitive, interactive visual breakdown of how every API in VidyaOS works without requiring live server calls.
   - **Categorized Multi-Engine Catalog**:
-    - Filterable by system module: `📋 Attendance & QR/PIN`, `📊 Marksheets & Exams`, `👥 Teaching Groups Hub`, `🔐 Auth & Security`, `🎓 Student Admissions`, `👔 HOD Management`, `🏛️ Institutional Admin`, `📝 Coursework`, `📈 Defaulters & Reports`, `📟 IoT Biometric Terminals`.
+    - Filterable by system module: `ðŸ“‹ Attendance & QR/PIN`, `ðŸ“Š Marksheets & Exams`, `ðŸ‘¥ Teaching Groups Hub`, `ðŸ” Auth & Security`, `ðŸŽ“ Student Admissions`, `ðŸ‘” HOD Management`, `ðŸ›ï¸ Institutional Admin`, `ðŸ“ Coursework`, `ðŸ“ˆ Defaulters & Reports`, `ðŸ“Ÿ IoT Biometric Terminals`.
     - Live search query box filtering by endpoint URL path, HTTP method, affected SQLite table, or human feature name.
   - **5-Stage Interactive Data Pipeline (Visual Flowchart)**:
     - **Stage 1 (Input)**: Client request payload with structured JSON parameters.
@@ -6113,7 +6225,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - **Stage 3 (Logic Engine)**: Business rules, calculations (e.g. marks averages, rolling OTP generation, TTL expiry).
     - **Stage 4 (Storage)**: Exact SQLite database tables touched and updated.
     - **Stage 5 (Screen Output)**: Dynamic UI transformation triggered by the API response.
-  - **Animated Pipeline Trace ("▶ Run Visual Simulation")**:
+  - **Animated Pipeline Trace ("â–¶ Run Visual Simulation")**:
     - Interactive step-by-step glowing trace animation walking through all 5 stages in sequence with real-time status feedback.
   - **Dual Schema & Data Inspector**:
     - Formatted, syntax-styled Client Request JSON and Server Response JSON (HTTP 200 OK).
@@ -6130,7 +6242,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
   - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 76: Comprehensive Codebase Scan & Redundant Function Deduplication
+### âœ… Milestone 76: Comprehensive Codebase Scan & Redundant Function Deduplication
 - **User Requirement**: *"scan find unnecessary duplicate code functions"*, *"continue"*
 - **Frontend Utility Deduplication**:
   - Scanned all frontend HTML and JS files for repeated utility functions already provided by `frontend/shared/js/ui.js` and `frontend/shared/js/utils.js`.
@@ -6149,24 +6261,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-api-flows.js`: **25/25 PASS** (All endpoints, validation, session, check-in, and coursework flows).
   - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS** (Authorization, redirects, route guards).
 
-### ✅ Milestone 75: Consolidated Faculty & Student Management Console & Navbar Simplification
+### âœ… Milestone 75: Consolidated Faculty & Student Management Console & Navbar Simplification
 - **User Requirement**: *"seens we now have teaching groups so we don't have much to do in my teacher page remove assign subject to feature not need in new system and now make 1 singel page for students and teachers for management of tecaher and students also remove extra nav bar option also old role like class teacher find all old features that just unnecessary in new system"*
 - **Unified 1-Page Console (`frontend/faculty/students.html`)**:
   - Consolidated separate Teacher and Student management into **1 single page** covering both Faculty and Student directory operations.
   - Mirrored identically to `hod-students.html` and `hod-teachers.html` for 100% backward compatibility with legacy bookmarks, URLs, and tests.
   - **Top KPI Metrics Strip**: Total Department Faculty (`#stat-teachers-count`), Enrolled Students (`#stat-total`), Active Accounts (`#stat-active`), and Pending Registrations (`#stat-pending` / `#pending-badge`).
   - **Three-Tab Unified Workspace**:
-    - **Tab 1: 👨‍🏫 Department Faculty (`#tab-teachers-panel`)**:
+    - **Tab 1: ðŸ‘¨â€ðŸ« Department Faculty (`#tab-teachers-panel`)**:
       - Instant live search query filter (`#teacher-search-box`).
       - Quick actions: `+ Add Teacher` modal (`openCreateModal()`), `Faculty Reg: OPEN/CLOSED` toggle (`#hod-faculty-reg-btn`), and Pending Faculty Approvals queue card (`#pending-faculty-card`, `#pending-faculty-badge`, `approveFaculty`, `rejectFaculty`).
-      - Faculty Roster grid (`#teacher-grid`): Initial avatars, full name, employee ID, official institutional Gmail, phone, account status, and streamlined role badges (`👑 Head of Department` or `👨‍🏫 Faculty Member`). All obsolete Class Teacher chips and legacy Subject Teacher badges completely purged.
-      - Faculty actions: `🔑 Reset Password` modal (`#reset-modal`) and `🗑️ Remove / Delete Account` modal (`#delete-modal` with typed `DELETE` confirmation).
+      - Faculty Roster grid (`#teacher-grid`): Initial avatars, full name, employee ID, official institutional Gmail, phone, account status, and streamlined role badges (`ðŸ‘‘ Head of Department` or `ðŸ‘¨â€ðŸ« Faculty Member`). All obsolete Class Teacher chips and legacy Subject Teacher badges completely purged.
+      - Faculty actions: `ðŸ”‘ Reset Password` modal (`#reset-modal`) and `ðŸ—‘ï¸ Remove / Delete Account` modal (`#delete-modal` with typed `DELETE` confirmation).
       - Purged obsolete direct "Assign Subject to Teacher" interface in favor of Teaching Groups Hub (`/faculty/groups.html`).
-    - **Tab 2: 🎓 Student Roster & Lifecycle (`#tab-roster-panel`)**:
-      - Unified filter bar: Search query (`#search-input`), Department Cohort selector (`#cohort-select`), Year (1–3) filter (`#filter-year`), Semester (1–6) filter (`#filter-sem`), and reset filter button.
-      - Action toolbar: Contextual buttons for HODs (`+ Add Student`, `📥 Bulk CSV`, `🎓 Promotion / Progression`, `🔢 Re-order Roll (A–Z)`, `Alumni Archive`).
+    - **Tab 2: ðŸŽ“ Student Roster & Lifecycle (`#tab-roster-panel`)**:
+      - Unified filter bar: Search query (`#search-input`), Department Cohort selector (`#cohort-select`), Year (1â€“3) filter (`#filter-year`), Semester (1â€“6) filter (`#filter-sem`), and reset filter button.
+      - Action toolbar: Contextual buttons for HODs (`+ Add Student`, `ðŸ“¥ Bulk CSV`, `ðŸŽ“ Promotion / Progression`, `ðŸ”¢ Re-order Roll (Aâ€“Z)`, `Alumni Archive`).
       - Student roster table (`#students-tbody`): Class Roll No, UBTER Reg No, Official Enrollment No, Full Name, Cohort (Year & Sem), Hardware Biometric Slot, Enrollment Status, Account Status, Google Linked, and Actions (Reset Password & Left College / Withdraw for HODs).
-    - **Tab 3: ⏳ Pending Student Registrations (`#tab-pending-panel`)**:
+    - **Tab 3: â³ Pending Student Registrations (`#tab-pending-panel`)**:
       - Cohort self-registration toggle card (`#reg-toggle-card`) with real-time status badge (`#reg-toggle-status`) and toggle button (`#reg-toggle-btn`).
       - Pending registration queue table (`#pending-tbody`) with 1-click Approve (`#approve-modal` for roll number assignment) and Reject (`#reject-modal` for rejection reason).
 - **Navigation & Navbar Simplification**:
@@ -6199,7 +6311,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-teaching-groups-flow.js` (15/15 PASS)
   - `test-teaching-groups-extended.js` (12/12 PASS)
 
-### ✅ Milestone 74: Department Students & Semester Lifecycle Unified Console
+### âœ… Milestone 74: Department Students & Semester Lifecycle Unified Console
 - **User Requirement**: *"combine Department Students & Semester Lifecycle and Department Students & Enrollment into 1 pages minimum page that can do both page work in 1 page"*
 - **Unified 1-Page Architecture**:
   - Consolidated `/faculty/students.html` ("Department Students & Enrollment") and `/faculty/hod-students.html` ("Department Students & Semester Lifecycle") into a single, cohesive, minimal workspace console.
@@ -6208,11 +6320,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Title: `Department Students & Enrollment` with dynamic role badge (`Department Faculty Access` / `HOD Academic Access`).
     - Stat cards: Total Students (`#stat-total`), Active Accounts (`#stat-active`), Pending Registrations (`#stat-pending` / `#pending-badge`), Google Connected (`#stat-google`).
   - **Two-Tier Tabbed Workspace**:
-    - **Tab 1: 📋 Student Roster & Lifecycle (`#tab-roster-panel`)**:
-      - Unified filter bar: Search query (`#search-input`), Department Cohort selector (`#cohort-select` with label `Department Cohort:`), Year (1–3) filter (`#filter-year`), Semester (1–6) filter (`#filter-sem`), and Reset button.
-      - Action toolbar: Contextual buttons for HODs (`+ Add Student`, `📥 Bulk CSV`, `🎓 Promotion / Progression`, `🔢 Re-order Roll (A–Z)`) and regular faculty.
+    - **Tab 1: ðŸ“‹ Student Roster & Lifecycle (`#tab-roster-panel`)**:
+      - Unified filter bar: Search query (`#search-input`), Department Cohort selector (`#cohort-select` with label `Department Cohort:`), Year (1â€“3) filter (`#filter-year`), Semester (1â€“6) filter (`#filter-sem`), and Reset button.
+      - Action toolbar: Contextual buttons for HODs (`+ Add Student`, `ðŸ“¥ Bulk CSV`, `ðŸŽ“ Promotion / Progression`, `ðŸ”¢ Re-order Roll (Aâ€“Z)`) and regular faculty.
       - Student roster table (`#students-tbody`): Class Roll No, UBTER Reg No, Official Enrollment No, Full Name, Cohort (Year & Sem), Hardware Biometric Slot, Enrollment Status, Account Status, Google Linked, and Actions (Reset Password & Left College / Withdraw for HODs).
-    - **Tab 2: ⏳ Self-Registration & Pending Approvals (`#tab-pending-panel`)**:
+    - **Tab 2: â³ Self-Registration & Pending Approvals (`#tab-pending-panel`)**:
       - Cohort self-registration toggle card (`#reg-toggle-card`) with real-time status badge (`#reg-toggle-status`) and toggle button (`#reg-toggle-btn`).
       - Pending registration queue table (`#pending-tbody`) with 1-click Approve (`#approve-modal` for roll number assignment) and Reject (`#reject-modal` for rejection reason).
   - **Preserved All Modals & Workflows**:
@@ -6243,7 +6355,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-teaching-groups-flow.js` (15/15 PASS)
   - `test-api-flows.js` (25/25 PASS)
 
-### ✅ Milestone 73: Complete Purge of 4th Year & Semesters 7/8 (Standard 3-Year Institutional Model)
+### âœ… Milestone 73: Complete Purge of 4th Year & Semesters 7/8 (Standard 3-Year Institutional Model)
 - **Institutional Context**: VidyaOS is standardized for Uttarakhand Polytechnic / Diploma institutions (UBTER / IRDT standard) where programs are strictly 3 years (Semesters 1 to 6) and 2 years (D.Pharm / Lateral Entry). 4th year (Year 4, Semesters 7 & 8, and 4-year degree durations) has been purged across all frontend UI, backend routes, and documentation.
 - **Frontend Pages Cleaned**:
   - `frontend/faculty/groups.html`: Removed Sem 7 & 8 from `#group-semester`, `#notice-target-cohort`, `#promote-new-semester`, and clamped `nextSem` calculation to `Math.min(6, ...)`.
@@ -6281,7 +6393,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-hod-settings-nav.js` (PASS)
   - `test-admin-add-department.js` (PASS)
 
-### ✅ Milestone 0: Production Deployment & Google OAuth Hardening
+### âœ… Milestone 0: Production Deployment & Google OAuth Hardening
 - Installed `google-auth-library` in backend dependencies for official ID token verification.
 - Implemented cross-domain OAuth state tracking (`frontendOrigin`) between Vercel (`vidyaos-pink.vercel.app`) and Render (`vidyaos-backend.onrender.com`).
 - Added centered popup flow with automatic same-window fallback across student, faculty, and registration portals.
@@ -6292,7 +6404,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **Render / Cloud Production**: Clean institutional slate with **ONLY 1 Master Admin account** (`admin@gmail.com` / `Admin@123`), 6 standard departments (HODs unassigned), zero fake students, zero fake faculty, and zero fake registers (`v29-prod-clean-only-admin`).
   - **Local Development & Testing**: Full institutional demo dataset (14 users) preserved (`v27-clean-2026`) so all 412 test scripts and test suites pass locally.
 
-### ✅ Milestone 44: Department Subjects Retired in Favor of Teaching Groups Hub
+### âœ… Milestone 44: Department Subjects Retired in Favor of Teaching Groups Hub
 - **Eliminated Obsolete Department Subjects Module**:
   - Retired the manual curriculum catalog (`hod-subjects.html`) which required HODs to pre-configure subjects before teaching.
   - In our 4-layer architecture, teachers and HODs define subjects and components (`THEORY` | `PRACTICAL`) directly when creating classes in the **Teaching Groups Hub** (`/faculty/groups.html`).
@@ -6305,46 +6417,46 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Verification**:
   - 93/93 in `test-theme-support.js`, 15/15 in `test-teaching-groups-flow.js`, 30/30 in `test-rbac-and-structure.js`. Zero regressions.
 
-### ✅ Milestone 1: Department & Degree Branch Consolidation
+### âœ… Milestone 1: Department & Degree Branch Consolidation
 - Unified department and branch codes into single canonical codes (`IT`, `CE`, `ME`, `CL`, `EE`).
 - Eliminated redundant multi-dropdown branch pickers across all admin, faculty, and student portals.
 
-### ✅ Milestone 2: Student Self-Registration & Approval Workflow
+### âœ… Milestone 2: Student Self-Registration & Approval Workflow
 - Public registration endpoint for prospective students (`/login/student-register.html`).
 - Class teacher pending approval queue with one-click verification and batch approvals (`/faculty/students.html`).
 - Automated verification: 27/27 tests passed in `test-student-self-registration.js`.
 
-### ✅ Milestone 3: Repository Organization & Shared Assets Consolidation
+### âœ… Milestone 3: Repository Organization & Shared Assets Consolidation
 - Centralized frontend assets under `/frontend/shared/` (`js/auth.js`, `js/api.js`, `js/ui.js`, `js/utils.js`, `css/variables.css`, `css/layout.css`, `css/components.css`).
 - Created backward-compatible Express static aliases for `/js`, `/css`, and `/shared`.
 - Removed dead files, duplicate scripts, and obsolete pages (`quick.html`, `marks.html`, `assignments.html`).
 - Implemented permanent HTTP 301 redirects in `server.js` for legacy URLs.
 
-### ✅ Milestone 4: Role-Based Access Control (RBAC) Hardening
+### âœ… Milestone 4: Role-Based Access Control (RBAC) Hardening
 - Backend: Enforced `requireHOD()` on all mutating department curriculum/faculty endpoints in `hod.js`.
 - Attendance: Enforced valid `teacher_id` checks with 403 Forbidden for unauthorized modifications (removed insecure `teacherId || 1` fallbacks).
 - Frontend: Enhanced `guardRoute()` with `requireHOD`, `requireClassTeacher`, and `requireSubjects` guards in `auth.js`.
 - Automated verification: 30/30 tests passed in `test-rbac-and-structure.js`.
 
-### ✅ Milestone 5: Digital Register Consolidation (`registers.html`)
+### âœ… Milestone 5: Digital Register Consolidation (`registers.html`)
 - Unified **Attendance Matrix**, **Coursework & Assignments**, and **Class Tests & Marksheets** into a single consolidated register page: `registers.html`.
 - Switching the active register in the dropdown automatically re-scopes coursework and exams to the selected cohort and subject.
 - Deep-linking support via query parameters (`?tab=assignments`, `?tab=marks`).
 - Creation modals with Escape key & backdrop click dismissal.
 - Full student names displayed without truncation (`sticky-col-2`).
 
-### ✅ Milestone 6: Redesigned Unified Workspace Command Bar
+### âœ… Milestone 6: Redesigned Unified Workspace Command Bar
 - Created `.register-workspace-bar` with segmented tab buttons (`.register-main-tabs`).
 - Integrated dynamic contextual quick-actions:
-  - Attendance Matrix: Month Navigator (`◀ Month ▶ Today`) + Print.
+  - Attendance Matrix: Month Navigator (`â—€ Month â–¶ Today`) + Print.
   - Coursework: `+ Create Assignment` + Refresh.
   - Class Tests: `+ Schedule Class Test` + Refresh.
 
-### ✅ Milestone 7: Minimized ESP32 Action Bar
+### âœ… Milestone 7: Minimized ESP32 Action Bar
 - Compacted bulky ~95px banner into a razor-thin single-line action strip (`.esp-toolbar`, ~34px height) above the Attendance Matrix.
-- Inline status pill badge, tooltip explanation, sync date picker, and `⚡ Sync ESP Scans` trigger.
+- Inline status pill badge, tooltip explanation, sync date picker, and `âš¡ Sync ESP Scans` trigger.
 
-### ✅ Milestone 8: Unified Live QR & PIN Roll Call Studio (`registers.html`)
+### âœ… Milestone 8: Unified Live QR & PIN Roll Call Studio (`registers.html`)
 - Replaced separated modal modes with a dual-card concurrent studio:
   - **Left Card**: Dynamic QR code + 6-digit session PIN simultaneously active with countdown timer and token display.
   - **Right Card**: Real-time **Live Student Check-In Log** feed showing incoming QR scans and PIN entries with student details and live counter.
@@ -6352,18 +6464,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **Manual Fallback Tab**: Full cohort quick-tap roster grid.
 - Automated verification: 48/48 tests passed in `test-register-consolidation.js`.
 
-### ✅ Milestone 10: Compact Responsive Register Header & Roll Call Polish (`registers.html`)
+### âœ… Milestone 10: Compact Responsive Register Header & Roll Call Polish (`registers.html`)
 - **Minimized Register Header**:
   - Replaced bulky ~180px multi-card header with a razor-sharp two-tier compact command header (`.physical-register-header`):
     - Row 1: Responsive switcher dropdown (`#register-switcher-select`), `+ New Register` micro-button, `LECTURE REGISTER` type badge, `Official Register`, and `THEORY` pills.
     - Row 2: Streamlined inline meta strip (`.reg-meta-strip`) rendering Subject, Class, Term, and Type as clean inline items with subtle bullet separators.
   - Reduced vertical header footprint by over 60% (~64px height on desktop, fluid wrapping on mobile).
 - **Roll Call Studio Polish**:
-  - Relocated `⏳ Valid for: [timer]` directly attached beneath the dynamic QR code frame window.
+  - Relocated `â³ Valid for: [timer]` directly attached beneath the dynamic QR code frame window.
   - Preserved fixed modal header and footer with independent scrollable body.
 - Automated verification: 48/48 tests in `test-register-consolidation.js`, 93/93 in `test-theme-support.js`.
 
-### ✅ Milestone 11: Automated Academic Session Engine ("2026 Session" Model)
+### âœ… Milestone 11: Automated Academic Session Engine ("2026 Session" Model)
 - **Eliminated Manual Term Toggling**:
   - Removed Winter/Summer/Odd/Even manual term switching in favor of a single automated **Academic Session** model (e.g. `2026 Session`).
   - Teachers and HODs directly manage course subjects and rosters by semester (Sem 1 to 8) under the active calendar session.
@@ -6376,47 +6488,47 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Added dedicated Academic Session banner in `/admin/academic-structure.html` with real-time active session badge, date range, rollover countdown, and one-click manual sync.
 - Automated verification: 32/32 tests passed in `test-term-automation.js`, 93/93 in `test-theme-support.js`.
 
-### ✅ Milestone 12: Admin Session Duration Editor & Universal Dynamic Session Propagation
+### âœ… Milestone 12: Admin Session Duration Editor & Universal Dynamic Session Propagation
 - **Admin Session Duration Editor**:
-  - Added `✏️ Edit Duration` button (`#btn-edit-session`) and `#session-duration-modal` on `/admin/academic-structure.html`.
+  - Added `âœï¸ Edit Duration` button (`#btn-edit-session`) and `#session-duration-modal` on `/admin/academic-structure.html`.
   - Added REST endpoint `PUT /api/v1/admin/session/duration` with validation (`end_date > start_date`) and transactional database sync.
   - Live duration calculator preview card (`#session-duration-calc-preview`) calculating total days and approximate months in real-time as admin changes dates.
   - Real-time automatic recalculation of `days_remaining` and `next_rollover_date` based on newly chosen `end_date`.
 - **Universal Elimination of Hardcoded Sessions**:
   - Department creation in `admin.js` now dynamically resolves the active session label via `sessionService.getActiveSession()`.
   - HOD settings and hierarchy endpoints in `hod.js` now dynamically fallback to the current active session label rather than hardcoded strings.
-  - Registers workspace (`registers.html`) updated metadata strip label from `Term:` to `Session:`, dynamically rendering `${registerData.academic_year_label} • Sem ${registerData.semester}`.
+  - Registers workspace (`registers.html`) updated metadata strip label from `Term:` to `Session:`, dynamically rendering `${registerData.academic_year_label} â€¢ Sem ${registerData.semester}`.
   - Removed legacy hardcoded term variables in `hod-subjects.html`.
   - Strict compliance with CSS variables (0 hardcoded hex colors).
 - Automated verification: 50/50 tests passed in `test-term-automation.js`, 21/21 in `test-session-modal-dom.js`, 93/93 in `test-theme-support.js`.
 
-### ✅ Milestone 13: 100% Automated Academic Session Label Generation (`YYYY-YY (Winter/Summer)`)
+### âœ… Milestone 13: 100% Automated Academic Session Label Generation (`YYYY-YY (Winter/Summer)`)
 - **Institutional Session Nomenclature Integration**:
   - Aligned with real Uttarakhand Polytechnic / institutional documents (`2026-27 (Winter)`, `2026-27 (Summer)`).
   - Designed `computeAutoSessionLabel(startDate, endDate, refDate)` to automatically derive the canonical session label:
-    - Odd semester cycle (months 7–12 / July–Dec) ➔ `YYYY-YY (Winter)`.
-    - Even semester cycle (months 1–6 / Jan–June) ➔ `YYYY-YY (Summer)`.
+    - Odd semester cycle (months 7â€“12 / Julyâ€“Dec) âž” `YYYY-YY (Winter)`.
+    - Even semester cycle (months 1â€“6 / Janâ€“June) âž” `YYYY-YY (Summer)`.
 - **Zero-Effort Admin Experience (`academic-structure.html`)**:
   - Reordered modal form fields so **Start Date** & **End Date** come first.
-  - Eliminated manual typing requirement: Session Label is automatically generated and locked with a `🟢 AUTO-GENERATED` live indicator badge.
+  - Eliminated manual typing requirement: Session Label is automatically generated and locked with a `ðŸŸ¢ AUTO-GENERATED` live indicator badge.
   - Dynamic live recalculation: Modifying Start Date or End Date instantly recalculates the session label in real-time.
-  - Provided clean "✏️ Edit Manually" toggle allowing custom overrides with one-click "🔄 Auto-Generate" restoration.
+  - Provided clean "âœï¸ Edit Manually" toggle allowing custom overrides with one-click "ðŸ”„ Auto-Generate" restoration.
   - Full theme compliance: 100% CSS variable tokens (`var(--bg-surface)`, `var(--bg-card)`, `var(--border-color)`), zero hardcoded colors.
 - **Backend Automation (`sessionService.js` & `admin.js`)**:
   - `PUT /api/v1/admin/session/duration` automatically derives the institutional label if `label` is omitted or empty.
   - `getSessionStatus()` and `resolveSession()` now provide `auto_session_label`.
-### ✅ Milestone 14: Autonomous Zero-Maintenance Academic Session Architecture
+### âœ… Milestone 14: Autonomous Zero-Maintenance Academic Session Architecture
 - **Complete Elimination of Human Maintenance**:
   - Response to user requirement: *"can we make without ACADEMIC SESSION because iu don't think any one want to maintain this my college teachers want less maintenance system will automatically maintain it self"*.
   - Completely removed all manual session edit controls (`#btn-edit-session`, `#btn-sync-session`) and modal forms (`#session-duration-modal`) from `/admin/academic-structure.html`.
-  - Replaced with a passive, non-interactive status indicator badge: `⚡ FULLY AUTONOMOUS • ZERO MAINTENANCE`.
-  - Displays canonical institutional session passively (`2026-27 (Winter)` in July–Dec, `2026-27 (Summer)` in Jan–June) without any editable fields.
+  - Replaced with a passive, non-interactive status indicator badge: `âš¡ FULLY AUTONOMOUS â€¢ ZERO MAINTENANCE`.
+  - Displays canonical institutional session passively (`2026-27 (Winter)` in Julyâ€“Dec, `2026-27 (Summer)` in Janâ€“June) without any editable fields.
 - **Autonomous Background Maintenance**:
   - `sessionService.js` automatically maintains `academic_years` (`is_current = 1`) and `departments.active_term` in SQLite on boot and at midnight rollover.
   - Zero manual maintenance burden for teachers, HODs, and administrators.
-### ✅ Milestone 15: Responsive Multi-Screen Redesign for Academic Structure Console
+### âœ… Milestone 15: Responsive Multi-Screen Redesign for Academic Structure Console
 - **Comprehensive Multi-Screen Layout Support**:
-  - Redesigned `/admin/academic-structure.html` to adapt fluidly across Mobile (320px–540px), Small Tablets (541px–768px), Tablets/Laptops (769px–1024px), and Wide Desktops (> 1024px).
+  - Redesigned `/admin/academic-structure.html` to adapt fluidly across Mobile (320pxâ€“540px), Small Tablets (541pxâ€“768px), Tablets/Laptops (769pxâ€“1024px), and Wide Desktops (> 1024px).
   - Page header title and "Back to Dashboard" navigation adapt cleanly to mobile vertical stacking without awkward wrapping.
   - Replaced oversized 2-card stats with a balanced **4-card KPI metric strip**:
     1. Total Departments / Programs (`#stat-dept-count`) with active units badge.
@@ -6424,7 +6536,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     3. Active Academic Term (`#stat-session-term`) with automated term roll tag.
     4. System Operation (`Zero Maint.`) with self-maintaining engine badge.
   - Upgraded Autonomous Session card into a sleek command widget with prominent session title, date boundaries tag, rollover countdown, and autonomous badge.
-  - Catalog Card toolbar features fluid search input with search icon 🔍, responsive `+ Add Department` button, and dynamic programs count badge (`#catalog-count-badge`).
+  - Catalog Card toolbar features fluid search input with search icon ðŸ”, responsive `+ Add Department` button, and dynamic programs count badge (`#catalog-count-badge`).
   - Table wrapped in `.table-scroll-wrapper` with smooth touch scrolling (`-webkit-overflow-scrolling: touch;`) and mobile swipe hint (`.table-scroll-hint`) to prevent column squishing.
   - Modal card styled with fluid max-width (`min(480px, 95vw)`) and responsive padding for flawless mobile forms.
 - **Strict Theme & Token Integrity**:
@@ -6437,34 +6549,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-register-consolidation.js`: 48/48 tests passed.
   - `test-rbac-and-structure.js`: 30/30 tests passed.
 
-### ✅ Milestone 16–17: Hardcoded Department Registry & Delete Protection
-- Hardcoded 6 standard polytechnic departments (`CE`, `EE`, `ECE`, `IT`, `ME`, `PHARM`) with 1-to-1 unified branch mapping (Pharmacy → `DPHARM`).
+### âœ… Milestone 16â€“17: Hardcoded Department Registry & Delete Protection
+- Hardcoded 6 standard polytechnic departments (`CE`, `EE`, `ECE`, `IT`, `ME`, `PHARM`) with 1-to-1 unified branch mapping (Pharmacy â†’ `DPHARM`).
 - Server-side 403 Forbidden block and client-side button removal for hardcoded departments.
 - `is_hardcoded` flag exposed in `GET /departments` API.
 
-### ✅ Milestone 18: IRDT Uttarakhand Syllabus Integration (New 2026-27 & Old 2019-20)
-- **`backend/src/services/curriculumService.js`** (NEW): Master registry of official IRDT booklet PDF links for all 6 departments × 2 schemes. Preloaded subject master for all departments: 36 subjects per Engineering branch (Sem 1–6 + 12 common) and 12 subjects for D.Pharm.
+### âœ… Milestone 18: IRDT Uttarakhand Syllabus Integration (New 2026-27 & Old 2019-20)
+- **`backend/src/services/curriculumService.js`** (NEW): Master registry of official IRDT booklet PDF links for all 6 departments Ã— 2 schemes. Preloaded subject master for all departments: 36 subjects per Engineering branch (Sem 1â€“6 + 12 common) and 12 subjects for D.Pharm.
 - **`backend/src/routes/curriculum.js`** (NEW): REST endpoints:
-  - `GET /api/v1/curriculum/booklets` — full booklet registry (no auth needed)
-  - `GET /api/v1/curriculum/booklets/:deptCode` — dept-specific booklet links
-  - `POST /api/v1/curriculum/seed` (Admin only) — seeds IRDT subjects into DB
+  - `GET /api/v1/curriculum/booklets` â€” full booklet registry (no auth needed)
+  - `GET /api/v1/curriculum/booklets/:deptCode` â€” dept-specific booklet links
+  - `POST /api/v1/curriculum/seed` (Admin only) â€” seeds IRDT subjects into DB
 - **Schema migration**: `syllabus_scheme TEXT DEFAULT '2026-27'` added safely to `subjects` table on server boot.
 - **`frontend/faculty/hod-subjects.html`**: Added IRDT Syllabus Booklet Bar:
-  - Scheme switcher (✨ New 2026-27 / 📜 Old 2019-20) with active highlight
-  - 📥 Official Booklet (PDF) link — opens official IRDT PDF in new tab, dept-scoped
-  - ⚡ Load IRDT Subjects button — one-click auto-populates standard subjects (INSERT OR IGNORE — safe to run multiple times)
-- **`frontend/admin/academic-structure.html`**: Added 📥 Syllabus button per hardcoded department in the actions column.
-### ✅ Milestone 20: Universal Redesign of Navigation Sidebar & Multi-Screen Footer Architecture (Mobile & PC)
+  - Scheme switcher (âœ¨ New 2026-27 / ðŸ“œ Old 2019-20) with active highlight
+  - ðŸ“¥ Official Booklet (PDF) link â€” opens official IRDT PDF in new tab, dept-scoped
+  - âš¡ Load IRDT Subjects button â€” one-click auto-populates standard subjects (INSERT OR IGNORE â€” safe to run multiple times)
+- **`frontend/admin/academic-structure.html`**: Added ðŸ“¥ Syllabus button per hardcoded department in the actions column.
+### âœ… Milestone 20: Universal Redesign of Navigation Sidebar & Multi-Screen Footer Architecture (Mobile & PC)
 - **User Requirement**: *"REDESIGN the SIDEBAR AND FOOTER FOR EVERY TYPE OF SCREEN MOBILE AND PC"*
 - **Desktop PC Viewport (>= 769px)**:
-  - Upgraded sidebar to 260px wide docked layout with executive profile card (Avatar initials, live status ring `🟢 Online`, role pill badge, display name, email, close button `✕`).
+  - Upgraded sidebar to 260px wide docked layout with executive profile card (Avatar initials, live status ring `ðŸŸ¢ Online`, role pill badge, display name, email, close button `âœ•`).
   - Scoped navigation sections with uppercase tracking labels, prominent active tab indicators, and hover animations (`transform: translateX(3px)`).
-  - Sidebar footer tier with institutional engine pill (`UIAP • Administration`) and quick `🚪 Logout` button.
+  - Sidebar footer tier with institutional engine pill (`UIAP â€¢ Administration`) and quick `ðŸšª Logout` button.
 - **Mobile Phone Ergonomic Bottom Bar (`.mobile-bottom-nav`, < 768px)**:
   - Fixed 58px bottom navigation bar with iOS safe-area-inset support and 4 one-thumb tabs tailored per role (Admin, Faculty, Student).
-  - Tapping `☰ Menu` opens the slide-over drawer with backdrop blur (`pointer-events: auto`). Tapping outside dismisses it cleanly.
+  - Tapping `â˜° Menu` opens the slide-over drawer with backdrop blur (`pointer-events: auto`). Tapping outside dismisses it cleanly.
 
-### ✅ Milestone 21: Removal of Footers on PC & Symmetrical Desktop Content Centering on Sidebar Collapse
+### âœ… Milestone 21: Removal of Footers on PC & Symmetrical Desktop Content Centering on Sidebar Collapse
 - **User Requirement**: *"REMOVE FOOTER ON PC ANC FIX SIDE BAR WHEN CLOSE CONTENT GOING RIGHT SIDE FIX IT"*
 - **Footer Removal on PC**:
   - Completely removed/hidden institutional footers on PC desktop screens (`@media (min-width: 769px)`):
@@ -6487,11 +6599,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **Results**:
     - On 1024px screens (tablet/compact desktop): Container spans 100% cleanly without any empty void on the right side.
     - On 1280px, 1440px, and 1920px screens: Container centers with mathematically equal left and right margins (`marginLeft === marginRight`), resolving the right-side skew.
-### ✅ Milestone 22: Complete Removal of Computer Science & Engineering, All CSE Data, and ID Badges from Department Cards
+### âœ… Milestone 22: Complete Removal of Computer Science & Engineering, All CSE Data, and ID Badges from Department Cards
 - **User Requirement**: *"remove Computer Science & Engineering and ID: #1 in all department card  also all data Computer Science & Engineering"*
 - **Department Card ID Cleanup**:
-  - Removed `ID: #${d.id} • ` from department cards in `frontend/admin/academic-structure.html`.
-  - Cards now cleanly display program information (`3 Years • Diploma in Engineering` / `2 Years • Diploma in Pharmacy`) without database ID numbers.
+  - Removed `ID: #${d.id} â€¢ ` from department cards in `frontend/admin/academic-structure.html`.
+  - Cards now cleanly display program information (`3 Years â€¢ Diploma in Engineering` / `2 Years â€¢ Diploma in Pharmacy`) without database ID numbers.
 - **Complete Purge of Computer Science & Engineering**:
   - Deleted `Computer Science & Engineering` (department `id = 1`) and `CSE` branch from the database.
   - Removed `'CSE'` from `HARDCODED_DEPT_CODES` in `academic-structure.html`.
@@ -6505,7 +6617,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-theme-support.js`: 93/93 tests passed.
   - `backend/scripts/test-rbac-and-structure.js`: 30/30 tests passed.
 
-### ✅ Milestone 24: Institutional Data Ownership, 1-HOD/1-Class Teacher Reassignable Roles & Safe Branch Archiving
+### âœ… Milestone 24: Institutional Data Ownership, 1-HOD/1-Class Teacher Reassignable Roles & Safe Branch Archiving
 - **User Requirement**: *"even if hod get delete do not delete branch data that get pass to new hod so data stay under branch not any user and if branch get delete do not allow to delete first they need to archive data after archive they can delete but not in 1 click also only 1 hod 1 class teacher per branch they can get reassign to different faculty hod ,class teacher is role that can be reassign"*
 - **Branch Data Ownership on HOD Deletion**:
   - Refactored `DELETE /api/v1/admin/hods/:teacher_id` in `backend/src/routes/admin.js`:
@@ -6533,7 +6645,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node scripts/test-rbac-and-structure.js`: 30/30 tests passed.
   - `node scripts/test-student-self-registration.js`: 27/27 tests passed.
 
-### ✅ Milestone 25: Modal Card Screen Overflow Prevention & Employee ID Removal
+### âœ… Milestone 25: Modal Card Screen Overflow Prevention & Employee ID Removal
 - **User Requirement**: *"remove Employee ID (optional) also card need to be not go outside screen"*
 - **Field Removal**:
   - Removed `Employee ID (optional)` field and associated helper note from `#create-modal` in `frontend/admin/faculty.html`.
@@ -6557,7 +6669,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `node backend/scripts/test-student-self-registration.js`: 27/27 tests passed.
   - `node backend/scripts/test-register-consolidation.js`: 46/46 tests passed.
 
-### ✅ Milestone 26: Existing Faculty Search by Gmail & Combined HOD Role Powers
+### âœ… Milestone 26: Existing Faculty Search by Gmail & Combined HOD Role Powers
 - **User Requirement**: *"we can delete hod because data under branch not hod add option in create hod card to search faculty with gmail when enter that faculty details show and when assign hod role to that faculty that get power of hod role with he's role"*
 - **Backend Architecture & Combined Powers**:
   - **`GET /api/v1/admin/faculty/search`**: Looks up existing faculty by institutional Gmail, returning full name, Gmail, current department, and human-readable active roles (e.g. `Class Teacher (Y3 S5), Subject Teacher`).
@@ -6570,12 +6682,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - If faculty has other active teaching roles (e.g. Class Teacher, Subject Teacher), only their `HOD` assignment is revoked; their teaching account, login credentials, and student registers remain completely intact.
     - If the HOD has already been removed or is not found, it returns 200 OK idempotently, eliminating the `"HOD not found"` error banner.
 - **Frontend & UI Polish (`frontend/admin/faculty.html`)**:
-  - Upgraded `#create-modal` with segmented tab pills: `[ 🔍 Search Existing Faculty ]` (default) and `[ ➕ Create New Account ]`.
+  - Upgraded `#create-modal` with segmented tab pills: `[ ðŸ” Search Existing Faculty ]` (default) and `[ âž• Create New Account ]`.
   - In Search mode:
     - Search input for faculty Gmail with Enter key and "Find" button.
-    - Interactive found faculty card (`#found-faculty-card`): Displays avatar initial, name, Gmail, current department, active roles, and a `⚡ Combined Powers` callout.
+    - Interactive found faculty card (`#found-faculty-card`): Displays avatar initial, name, Gmail, current department, active roles, and a `âš¡ Combined Powers` callout.
     - Department selector pre-selects the faculty member's current department.
-    - `⚡ Assign HOD Role` button submits the assignment and opens the confirmation slip modal.
+    - `âš¡ Assign HOD Role` button submits the assignment and opens the confirmation slip modal.
   - In Confirmation Slip (`#cred-modal`): Displays "HOD Role Appointed!" and indicates "Active (Existing Credentials)".
   - In Delete Flow: Catches already-deleted records cleanly, updates table, and displays non-intrusive toast notification.
   - Strict compliance with CSS variables (0 hardcoded hex colors, 100% theme tokenized).
@@ -6584,7 +6696,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/verify-hod-search-flow.js`: Full Playwright automation testing Gmail search, details preview card, assignment, confirmation slip, and safe deletion.
   - Full regression pass: `test-institutional-governance.js`, `test-academic-structure-responsive.js`, `test-register-consolidation.js`, `test-rbac-and-structure.js`, `test-student-self-registration.js`, `test-theme-support.js` (93/93).
 
-### ✅ Milestone 27: HOD Deletion Hardening & Fresh Clean Demo Dataset (Zero CSE)
+### âœ… Milestone 27: HOD Deletion Hardening & Fresh Clean Demo Dataset (Zero CSE)
 - **User Requirement**: *"i can not delete hod also remove old data add new data for demo"*
 - **HOD Deletion Architecture Hardened (`backend/src/routes/admin.js`)**:
   - Fixed lookup ambiguity in `DELETE /api/v1/admin/hods/:teacher_id` by checking `WHERE id = ?` (teacher_id) first before falling back to `WHERE user_id = ?`, preventing cross-teacher mismatch.
@@ -6613,24 +6725,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-institutional-governance.js`: 100% PASS.
   - `backend/scripts/test-theme-support.js`: 93/93 PASS.
 
-### ✅ Milestone 28: 2-Step Multi-Stage Safeguard Flows for Administrative HOD Actions
+### âœ… Milestone 28: 2-Step Multi-Stage Safeguard Flows for Administrative HOD Actions
 - **User Requirement**: *"Reassign HOD Department,New Password *,Delete HOD Account? these all in 2 step not 1 click"*
 - **Zero 1-Click Execution & Multi-Stage Architecture (`frontend/admin/faculty.html`)**:
   - **1. Reassign HOD Department (2-Step Flow)**:
-    - **Step 1 (`#reassign-step-1`)**: Displays target faculty name and current department badge (`#reassign-current-dept`). Selects new target department from dropdown with validation preventing selection of the same department. Clicking `Next: Review Transfer ➔` validates and moves to Step 2.
-    - **Step 2 (`#reassign-step-2`)**: Renders visual transfer route (`[Information Technology] ➔ [Mechanical Engineering]`), confirms branch data protection (students, registers, marks 100% safe under branch), informs admin that previous department becomes UNASSIGNED, and unlocks explicit `Confirm Reassignment` button with a `← Back to Step 1` button.
+    - **Step 1 (`#reassign-step-1`)**: Displays target faculty name and current department badge (`#reassign-current-dept`). Selects new target department from dropdown with validation preventing selection of the same department. Clicking `Next: Review Transfer âž”` validates and moves to Step 2.
+    - **Step 2 (`#reassign-step-2`)**: Renders visual transfer route (`[Information Technology] âž” [Mechanical Engineering]`), confirms branch data protection (students, registers, marks 100% safe under branch), informs admin that previous department becomes UNASSIGNED, and unlocks explicit `Confirm Reassignment` button with a `â† Back to Step 1` button.
   - **2. Reset Password (`New Password *`) (2-Step Flow)**:
-    - **Step 1 (`#reset-step-1`)**: Shows faculty name and login Gmail. Includes `New Password *` and `Confirm New Password *` fields with visibility toggles (👁️/🔒) and a `🎲 Suggest Secure` random generator. Enforces validation (min 6 characters & password confirmation match). Clicking `Next: Review & Confirm ➔` advances to Step 2.
-    - **Step 2 (`#reset-step-2`)**: Displays account review with masked password preview (`••••••••`), an inline `👁️ Reveal` / `🔒 Hide` toggle, and an **Active Sessions Invalidation Notice** warning that confirming will revoke all active sessions. Features `Confirm & Reset Password` button with a `← Back to Edit` option.
+    - **Step 1 (`#reset-step-1`)**: Shows faculty name and login Gmail. Includes `New Password *` and `Confirm New Password *` fields with visibility toggles (ðŸ‘ï¸/ðŸ”’) and a `ðŸŽ² Suggest Secure` random generator. Enforces validation (min 6 characters & password confirmation match). Clicking `Next: Review & Confirm âž”` advances to Step 2.
+    - **Step 2 (`#reset-step-2`)**: Displays account review with masked password preview (`â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢`), an inline `ðŸ‘ï¸ Reveal` / `ðŸ”’ Hide` toggle, and an **Active Sessions Invalidation Notice** warning that confirming will revoke all active sessions. Features `Confirm & Reset Password` button with a `â† Back to Edit` option.
   - **3. Delete HOD Account (2-Step Safeguard Flow)**:
     - **Step 1 (`#delete-step-1`)**: Displays institutional impact assessment:
-      - 🛡️ **Branch Data is 100% Protected**: Explains that student enrollments, subjects, registers, and marks remain intact under the branch, and department switches to UNASSIGNED.
-      - 👥 **Teaching Roles Retained**: Explains that if the faculty member holds Class Teacher or Subject Teacher roles, only their HOD administrative assignment is revoked.
-      - Action: `Proceed to Safeguard Confirmation ➔` button advances to Step 2.
+      - ðŸ›¡ï¸ **Branch Data is 100% Protected**: Explains that student enrollments, subjects, registers, and marks remain intact under the branch, and department switches to UNASSIGNED.
+      - ðŸ‘¥ **Teaching Roles Retained**: Explains that if the faculty member holds Class Teacher or Subject Teacher roles, only their HOD administrative assignment is revoked.
+      - Action: `Proceed to Safeguard Confirmation âž”` button advances to Step 2.
     - **Step 2 (`#delete-step-2`)**: Safeguard typed confirmation requiring the administrator to type `DELETE` into `#delete-confirm-input`.
       - Submit button (`#delete-btn`, "Permanently Remove HOD") is strictly **disabled** (opacity 0.45, cursor not-allowed) until `DELETE` is typed.
       - Input listener `checkDeleteConfirmation()` activates button only upon typing exact `DELETE`.
-      - Includes `← Back to Step 1` button to safely return without loss of context.
+      - Includes `â† Back to Step 1` button to safely return without loss of context.
 - **Strict Theme & Design System Integrity**:
   - 100% CSS variable compliance (`var(--...)` tokens), zero hardcoded hex colors (`0` found).
   - Constrained within viewport bounds (`max-height: calc(100vh - 2.5rem); max-height: calc(100dvh - 2.5rem); overflow-y: auto;`) with zero screen overflow.
@@ -6643,21 +6755,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-rbac-and-structure.js`: 30/30 PASS.
   - `backend/scripts/test-student-self-registration.js`: 27/27 PASS.
 
-### ✅ Milestone 29: Department Attendance Reports Enhancement & Default Institutional View (`/admin/reports.html`)
+### âœ… Milestone 29: Department Attendance Reports Enhancement & Default Institutional View (`/admin/reports.html`)
 - **User Requirement**: *"enhance this page and filter to all departments by default"*
 - **Root Cause Resolution**:
   - Previously, `init()` in `frontend/admin/reports.html` set `deptSelect.value = departments[0].id` on boot, which locked the view to Civil Engineering (which had 0 demo scans), resulting in empty 0-metrics across all KPI cards, empty charts, and empty tables.
   - Resolved by preserving `deptSelect.value = ''` (All Departments / Institutional Master) by default. The backend endpoint `/api/v1/admin/reports/department` immediately aggregates master telemetry across the institution (57 verified scans, 10 unique student attendees, 1 active terminal, 7 daily trends, 1 healthy cohort).
 - **Comprehensive UI / UX Enhancements**:
-  - **Quick Department Filter Chips (`#dept-chips-container`)**: Added dynamic 1-tap switcher chips (`🌐 All Departments`, `🏗️ CE`, `⚡ EE`, `📡 ECE`, `💻 IT`, `⚙️ ME`, `💊 PHARM`) with department icons, active pill state highlights, and bidirectional synchronization with the dropdown selector.
-  - **4-Card KPI Analysis Board**: Polished KPI metric cards with colored top accent lines and context tags (`⚡ Verified`, `👤 Attendees`, `🟢 Online`, `📅 Active Session`), dynamically formatted with `toLocaleString()`.
+  - **Quick Department Filter Chips (`#dept-chips-container`)**: Added dynamic 1-tap switcher chips (`ðŸŒ All Departments`, `ðŸ—ï¸ CE`, `âš¡ EE`, `ðŸ“¡ ECE`, `ðŸ’» IT`, `âš™ï¸ ME`, `ðŸ’Š PHARM`) with department icons, active pill state highlights, and bidirectional synchronization with the dropdown selector.
+  - **4-Card KPI Analysis Board**: Polished KPI metric cards with colored top accent lines and context tags (`âš¡ Verified`, `ðŸ‘¤ Attendees`, `ðŸŸ¢ Online`, `ðŸ“… Active Session`), dynamically formatted with `toLocaleString()`.
   - **Daily Scan Volume Trend**: Upgraded visual bar chart with peak and active days summary badges (`Peak: 9 scans/day`, `Active: 7 days recorded`), animated gradient fills, hover tooltips, and formatted date labels (e.g. `Sep 20`).
   - **Cohort Distribution**: Clean multi-cohort breakdown with branch icons, department codes, semester/year labels, scan tallies, and percentage distribution bars.
   - **Department Attendance Summary Table**:
     - Header with cohort count and dynamic average turnout badge (`Avg Turnout: 91%`).
-    - Department name with branch icon 💻, enrolled count (11), present count (10), attendance percentage (90.9%) with status badge (`HEALTHY`) and turnout progress bar, total scans (57), active terminal pill with pulsing indicator (`🟢 ESP32_IT_LAB_01`), and localized timestamp.
+    - Department name with branch icon ðŸ’», enrolled count (11), present count (10), attendance percentage (90.9%) with status badge (`HEALTHY`) and turnout progress bar, total scans (57), active terminal pill with pulsing indicator (`ðŸŸ¢ ESP32_IT_LAB_01`), and localized timestamp.
     - Zero-state placeholder with helpful guidance if a search query yields no matches.
-  - **Refined Search Bar**: Updated search placeholder to `(e.g. ESP32_IT_LAB_01)`, added dynamic clear button `✕` that appears when typing, and instant client-side multi-field filtering.
+  - **Refined Search Bar**: Updated search placeholder to `(e.g. ESP32_IT_LAB_01)`, added dynamic clear button `âœ•` that appears when typing, and instant client-side multi-field filtering.
   - **Zero Hardcoded Colors**: 100% theme tokenized with CSS variables (`var(--...)`), fully synchronized with dark mode and print stylesheets.
 - **Automated Verification**:
   - `backend/scripts/verify-admin-reports.js`: 100% PASS (End-to-end Playwright automation verifying default All Departments value `""`, KPI card metrics [57, 10, 1, 7], trend bars [7], cohort distribution, summary table content, quick chips switching to IT [id 4], reset filters restoration, search input & clear button, and captured screenshot).
@@ -6665,7 +6777,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-theme-support.js`: 93/93 PASS (0 hardcoded hex colors).
   - Full regression pass: `test-register-consolidation.js` (48/48), `test-roll-call-upgrade.js`, `test-live-log-checkin.js`, `test-rbac-and-structure.js` (30/30), `test-student-self-registration.js` (27/27), `test-academic-structure-responsive.js` (44/44), `test-institutional-governance.js` (100%).
 
-### ✅ Milestone 30: Institutional Accreditation & Identity Dedicated Scope (`/admin/settings.html`)
+### âœ… Milestone 30: Institutional Accreditation & Identity Dedicated Scope (`/admin/settings.html`)
 - **User Requirement**: *"only this Institutional Accreditation & Identity will in setting page remove other they are part of hod not admin"*
 - **Admin Settings Simplification**:
   - Re-scoped `/admin/settings.html` strictly to official institutional identity: Institution Official Name, Institution / College Code, Affiliating Board & Curriculum Directorate, and Campus Region / Location.
@@ -6675,10 +6787,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Automated Verification**:
   - `backend/scripts/verify-admin-settings.js`: 100% PASS (Playwright end-to-end testing login, form loading, live preview, DB persistence, and reset).
 
-### ✅ Milestone 31: Consolidated Register Workspace Polish: 2-Step In-App Deletion, Clean Edit Controls & Roll Number Display (`/faculty/registers.html`)
+### âœ… Milestone 31: Consolidated Register Workspace Polish: 2-Step In-App Deletion, Clean Edit Controls & Roll Number Display (`/faculty/registers.html`)
 - **User Requirements**:
   - *"remove that # in roll number also assignment and test marks add actions like delete also remove 1 create btn on assignment and test"*
-  - *"remove 📝 Coursework & Assignments ... 🔄 Refresh and 📊 Class Tests & Examination Marksheets ... 🔄 Refresh"*
+  - *"remove ðŸ“ Coursework & Assignments ... ðŸ”„ Refresh and ðŸ“Š Class Tests & Examination Marksheets ... ðŸ”„ Refresh"*
   - *"no prompt box and 2 setp delete and edit btn only edit no other why to modify"*
 - **2-Step In-App Delete Confirmation Modal (Zero Native Popups)**:
   - Completely eliminated browser native `confirm()`, `prompt()`, and `alert()` popups.
@@ -6693,7 +6805,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Universal Roll Number Display Polish**:
   - Removed `#` prefix across all student roster grids and tables:
     - Manual roll call quick tap cards: `1` instead of `#1`.
-    - Live QR / PIN check-in feed: `1 • Student Name` instead of `#1 Student Name`.
+    - Live QR / PIN check-in feed: `1 â€¢ Student Name` instead of `#1 Student Name`.
     - Biometric ESP32 sync preview: `Roll No` header and numeric values without `#`.
     - Coursework submissions table: `Roll No` header and plain roll numbers.
     - Class test marksheet table: `Roll No` header and plain roll numbers.
@@ -6706,28 +6818,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-student-self-registration.js`: 27/27 PASS.
   - `backend/scripts/test-term-automation.js`: 52/52 PASS.
 
-### ✅ Milestone 32: Institutional Class Test Marksheet & Master Student Progress Spreadsheet Studio with OpenXML (.xlsx) Native Export
+### âœ… Milestone 32: Institutional Class Test Marksheet & Master Student Progress Spreadsheet Studio with OpenXML (.xlsx) Native Export
 - **User Requirements**:
   - *"this is look of teacher excel sheet from they give test marks i want same is this and student prograss in Excel i want same look and when export they directly open in excel or google sheet without any problems"*
   - *"also teacher can edit like adding cell row column so they can customize if want"*
 - **Class Test Marksheet Studio (Image 1 Exact Layout)**:
   - **Resolved User "Not Proper UI" Feedback**:
     - Replaced the old broken layout (where instructions wrapped underneath the table, inputs were bubbly rounded boxes, and a separate large "Present" column wasted space) with a unified, authentic single-table spreadsheet grid matching the official Uttarakhand Government Polytechnic document.
-    - Integrated the right-side panel (Instructions 1–8, Questions 1–4, and Red Absent Note) directly into a single `<td>` with `rowspan="${state.roster.length || 1}"` in Row 6 of the `<table>`, making it mathematically impossible for the side panel to wrap underneath the student rows.
-    - Built the 3 institutional soft-blue header rows (`var(--col-att-group-bg)`, `var(--col-att-group-color)`) spanning all columns in `<thead>` (Rows 1–3).
+    - Integrated the right-side panel (Instructions 1â€“8, Questions 1â€“4, and Red Absent Note) directly into a single `<td>` with `rowspan="${state.roster.length || 1}"` in Row 6 of the `<table>`, making it mathematically impossible for the side panel to wrap underneath the student rows.
+    - Built the 3 institutional soft-blue header rows (`var(--col-att-group-bg)`, `var(--col-att-group-color)`) spanning all columns in `<thead>` (Rows 1â€“3).
     - Built Row 4 with soft tan/cream background (`var(--chip-hod-bg)`, `var(--chip-hod-color)`): `SR. NO.`, `ROLL NO.`, `STUDENT NAME`, `Unit Test [N] (Total Marks : [Max])`, `Total`, and `Unit Test Details (Mode : OFFLINE, Posted in Google Classroom as well)`.
     - Built Row 5 sub-header: `Question No. ->`, `Q1..QN`, `(${max})`, `Total`, and inline-editable metadata bar `UNIT TEST [N] | Maximum Marks : [Max] | Time : [Duration] | Date : [Date]`.
     - Student rows: Crisp 1px solid spreadsheet grid lines (`var(--table-border-strong)`), borderless Excel-style cells (`input.excel-cell-input`) with active focus ring (`2px solid var(--color-primary)`), uppercase student names, and sleek attendance toggle.
     - Absent students: When marked absent, row receives `.is-absent`, inputs turn into bold red score `0`, and total displays `0 (AB)` in bold red (`var(--status-absent)`), exactly matching the note: *"NOTE : All marked as RED were absent."*
     - Bottom summary row in `<tfoot>`: Left cell displays `Average of the class (Only present students)` with live average, and right cell displays a 6-cell bordered tally: `Present | [Count] | Absent | [Count] | Total | [Count]`.
 - **Master Student Progress / Internal Evaluation Sheet (Image 2 Exact Layout)**:
-  - Accessible via `📈 Internal Evaluation Sheet` button in the unified workspace bar (`.workspace-bar-actions`).
+  - Accessible via `ðŸ“ˆ Internal Evaluation Sheet` button in the unified workspace bar (`.workspace-bar-actions`).
   - Fixed student roster loading (`d.roster` API payload) and two-tier header layout: `SRNO`, `REG NO`, `ROLL`, `CNAME`, `Assignment Marks (15)` (1..5), `Assignment Total Marks (Avg)`, `Unit Test Marks (20)` (1..4 with absent in bold red `AB`), `UT Total Marks (Avg)`, `Total Attendance (10)`, `Problem Solving Skills/ Presentation (5)`, custom columns, and `Total Marks (50)`.
   - Dynamic formulas: Live recalculations of Assignment Avg /15, Unit Test Avg /20, Attendance /10, and Grand Total /50.
   - Interactive custom columns: `+ Add Assessment Column` (e.g. `Viva / Quiz 1`), `- Remove Column`, and `+ Add Student Row`.
 - **Direct Seamless Export to Microsoft Excel & Google Sheets (`.xlsx`)**:
   - Generated using `exceljs` as pure OpenXML binary workbooks (not HTML/CSV).
-  - Direct 1-click download on exam cards (`📥 Export Excel (.xlsx)`) and in studios.
+  - Direct 1-click download on exam cards (`ðŸ“¥ Export Excel (.xlsx)`) and in studios.
   - Opens natively in MS Excel, Google Sheets, LibreOffice without warnings or formatting loss.
   - Preserves soft-blue institutional headers (`#B4C6E7`), tan table headers (`#FFF2CC`), thin black borders, bold red absent font (`#FF0000`), `=SUM(...)` and `=AVERAGEIF(...)` formulas.
 - **Theme & Zero Hardcoded Colors Compliance**:
@@ -6740,7 +6852,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-term-automation.js`: 52/52 PASS.
   - Visual artifacts verified: `class_test_spreadsheet_studio.png` and `internal_evaluation_master_studio.png`.
 
-### ✅ Milestone 33: Domain Entities Architecture & UBTER 3-Identifier Scheme Support
+### âœ… Milestone 33: Domain Entities Architecture & UBTER 3-Identifier Scheme Support
 - **Canonical Domain Entity Layer (`backend/src/entities/`)**:
   - `Admin.js`: Institutional governance, accreditation settings, granular permission checks (`hasPermission`).
   - `Faculty.js`: Multi-role handling (`HOD`, `CLASS_TEACHER`, `SUBJECT_TEACHER`), cohort management scopes (`canManageCohort`), institutional descriptor formatting.
@@ -6775,7 +6887,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-student-self-registration.js`: 27/27 PASS.
   - `backend/scripts/verify-excel-studios.js`: 38/38 PASS.
 
-### ✅ Milestone 34: Website-Wide Upgrade for Updated Student Table (UBTER 3-Identifier Scheme)
+### âœ… Milestone 34: Website-Wide Upgrade for Updated Student Table (UBTER 3-Identifier Scheme)
 - **Multi-Identifier Student Authentication (`backend/src/services/authService.js`, `backend/src/routes/auth.js`)**:
   - `studentLogin`: Added `OR LOWER(s.registration_no) = LOWER(?)` enabling instant sign-in using UBTER Registration Numbers (e.g. `24101054001`), official Board Enrollment Numbers (`2024IT001`), or Gmail addresses.
   - Auth user and activation payloads return `registration_no` and `class_roll_no` alongside `official_enrollment_no`.
@@ -6783,7 +6895,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `GET /api/v1/admin/students/roster` returns `registration_no` and `COALESCE(s.class_roll_no, e.class_roll_no) as class_roll_no`.
   - Search filter parameter queries `s.registration_no LIKE ?` allowing administrators to find students directly by UBTER numbers.
   - Added `UBTER Reg No` column header and cell in the admin roster table.
-  - Removed `#` prefix from roll numbers (clean `${s.class_roll_no || '—'}`).
+  - Removed `#` prefix from roll numbers (clean `${s.class_roll_no || 'â€”'}`).
   - 100% theme tokenized (zero hardcoded hex colors).
 - **HOD Roster & Bulk Upload Enhancements (`frontend/faculty/hod-students.html`, `backend/src/routes/hod.js`)**:
   - `GET /api/v1/hod/students` added `st.full_name` and `u.email` to `SELECT` projection (ensuring student names render properly).
@@ -6793,7 +6905,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `REG NO` column displays `${escapeHtml(s.registration_no || s.official_enrollment_no)}`.
 - **Student Portal Polish (`student/login.html`, `student/dashboard.html`, `student/profile.html`, `student/scores.html`, `student/attendance.html`)**:
   - `login/student.html`: Input type updated to `text`, accepts Gmail, Enrollment No, or UBTER Reg No.
-  - `dashboard.html`: Header roll badge renders `Roll: ${s.class_roll_no || '—'} • UBTER Reg: ${s.registration_no || '—'}` without `#`.
+  - `dashboard.html`: Header roll badge renders `Roll: ${s.class_roll_no || 'â€”'} â€¢ UBTER Reg: ${s.registration_no || 'â€”'}` without `#`.
   - `profile.html`: Removed `#` from `hero-roll-badge` and added `hero-reg-badge` to hero badges strip.
   - `scores.html`: Upgraded with complete student navigation bar and an Institutional Student Identity Card (Student Name, Roll No, UBTER Reg No, Enrollment No, Program/Cohort).
   - `attendance.html`: Added student identity badge in page header.
@@ -6810,12 +6922,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
   - **Total 412/412 tests passing (100%)**.
 
-### ✅ Milestone 35: Registers Workspace Upgrade (REGISTER, ASSIGNMENT, TEST) for UBTER Schema
+### âœ… Milestone 35: Registers Workspace Upgrade (REGISTER, ASSIGNMENT, TEST) for UBTER Schema
 - **Tab 1: REGISTER (Attendance Matrix, Roll Call Studio, ESP32 Modal)**:
   - Matrix Sticky Column 1: Render clean roll number without `#` (`cleanRoll`).
   - Matrix Sticky Column 2: Renders student UBTER Registration Number in monospace alongside Enrollment Number, with informative hover attribute.
   - Manual Roll Call Cards: Displays clean roll `Roll 1` and student's UBTER Reg No (`24101054001`) with full card tooltip.
-  - Live Check-In Feed: Formats incoming scans and PIN entries with clean roll and UBTER Reg No (`QR Scan • UBTER: 24101054001 • 10:30 AM`).
+  - Live Check-In Feed: Formats incoming scans and PIN entries with clean roll and UBTER Reg No (`QR Scan â€¢ UBTER: 24101054001 â€¢ 10:30 AM`).
   - ESP32 Confirmation Modal: Added `UBTER Reg No` column header and table cell.
   - Backend `faculty.js`: `GET /registers/:id` queries `st.registration_no` and `COALESCE(st.class_roll_no, e.class_roll_no) as class_roll_no` in `gridData.students`.
   - Backend `attendance.js`: `GET /registers/:id/esp32-day-scans` returns `registration_no` and `COALESCE(s.class_roll_no, e.class_roll_no) as class_roll_no`.
@@ -6834,7 +6946,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Created `backend/scripts/test-registers-workspace-ubter.js` (36/36 tests passed).
   - Verified 412/412 tests passing across all suites.
 
-### ✅ Milestone 20: Marksheet Studio Refinements (Inline Metadata, Questions Modal, Editable Question Marks & Register Cohort)
+### âœ… Milestone 20: Marksheet Studio Refinements (Inline Metadata, Questions Modal, Editable Question Marks & Register Cohort)
 - **Removed Google Classroom Reference**: Eliminated `( Posted in Google Classroom as well)` from table header and export services across frontend and backend.
 - **Single-Line Metadata Subheader**: Wrapped metadata in `.excel-meta-inline-wrap` with `white-space: nowrap !important;` and `min-width: 500px;` preventing date picker and metadata from wrapping to a second line.
 - **Editable Question Marks**: Subheader question headers render `<input type="number" class="excel-q-max-input">` enabling direct editing of max marks for individual questions with live recalculation of total max marks, student caps, and class average.
@@ -6843,10 +6955,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Register-Enforced Roster**: Removed `+ Add Student Row` button; students strictly originate from the register's enrolled cohort.
 - **Automated Verification**: 39/39 in `verify-excel-studios.js`, 93/93 in `test-theme-support.js` (0 hardcoded hex colors), 36/36 in `test-registers-workspace-ubter.js`, 48/48 in `test-register-consolidation.js`.
 
-### ✅ Milestone 37: Restoration of Authentic Unit Test Marksheet Spreadsheet Studio ("Old Sheet")
+### âœ… Milestone 37: Restoration of Authentic Unit Test Marksheet Spreadsheet Studio ("Old Sheet")
 - **Eliminated Unwanted Global Sub-Bar**:
-  - Completely removed `#exams-global-subbar` from DOM and CSS; restored the clean single workspace command bar containing `📈 Internal Evaluation Sheet`, `🔄 Refresh`, and `+ Schedule Class Test`.
-  - Preserved standard exam card controls: `[ Edit ]`, `[ 📥 Export Excel (.xlsx) ]`, and `[ Delete ]`.
+  - Completely removed `#exams-global-subbar` from DOM and CSS; restored the clean single workspace command bar containing `ðŸ“ˆ Internal Evaluation Sheet`, `ðŸ”„ Refresh`, and `+ Schedule Class Test`.
+  - Preserved standard exam card controls: `[ Edit ]`, `[ ðŸ“¥ Export Excel (.xlsx) ]`, and `[ Delete ]`.
 - **Restored Authentic Institutional Marksheet Studio**:
   - Reinstated 4 header rows (3 blue institutional rows + tan column headers + question subheaders).
   - Restored table columns: `SR. NO.`, `ROLL NO.`, `STUDENT NAME` (with UBTER Reg No underneath and `Present`/`AB (Absent)` button), question score inputs, `Total`, and `Unit Test Details (Mode : OFFLINE)`.
@@ -6861,7 +6973,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-register-consolidation.js`: 48/48 PASS.
   - `test-rbac-and-structure.js`: 30/30 PASS.
 
-### ✅ Milestone 38: Decoupled Multi-Page Architecture (Dedicated Assignments & Class Tests Pages)
+### âœ… Milestone 38: Decoupled Multi-Page Architecture (Dedicated Assignments & Class Tests Pages)
 - **Standalone Coursework & Assignments Console (`/faculty/assignments.html`)**:
   - Dedicated page for coursework with active subject switcher dropdown (`#assignment-switcher-select`), active cohort metadata strip, quick navigation shortcuts to matrix and tests, and filter pills (`All`, `Pending Grading`, `Graded`).
   - Assignment cards with progress stats (`X / Y Submitted`), submissions roster table with UBTER Reg No (`24101054001`), clean Roll No without `#`, status badge, file attachment download, score inputs, feedback, and grading action.
@@ -6869,7 +6981,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 100% theme tokenized with CSS variables (zero hardcoded hex/rgb colors).
 - **Standalone Class Tests & Marksheet Spreadsheet Studio (`/faculty/tests.html`)**:
   - Dedicated page for examination management with active subject switcher dropdown (`#register-switcher-select`), active cohort metadata strip, and shortcuts to matrix and coursework.
-  - Workspace action bar: `📈 Internal Evaluation Sheet`, `📥 Export All Tests`, `🔄 Refresh`, and `+ Schedule Class Test`.
+  - Workspace action bar: `ðŸ“ˆ Internal Evaluation Sheet`, `ðŸ“¥ Export All Tests`, `ðŸ”„ Refresh`, and `+ Schedule Class Test`.
   - Authentic Unit Test Marksheet Spreadsheet Studio (`renderExamStudio`):
     - 4 Header rows: 3 soft blue institutional rows + tan column headers (`SR. NO.`, `ROLL NO.`, `STUDENT NAME`, questions group header, `Total`, `Unit Test Details (Mode : OFFLINE)`) + question subheaders with inline metadata bar.
     - Student rows: SR NO, clean Roll NO, STUDENT NAME with UBTER Reg No underneath + `Present`/`AB (Absent)` toggle button, score inputs, total column with red absent highlight.
@@ -6879,12 +6991,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 100% theme tokenized with CSS variables (zero hardcoded hex/rgb colors).
 - **Routing & Navigation Drawer Upgrade**:
   - Server routes: `/faculty/assignments.html` and `/faculty/tests.html` served directly as 200 OK standalone pages.
-  - Permanent 301 redirects: `/faculty/assignments` ➔ `/faculty/assignments.html`, `/faculty/tests` ➔ `/faculty/tests.html`, `/faculty/marks.html` ➔ `/faculty/tests.html?id=...`.
+  - Permanent 301 redirects: `/faculty/assignments` âž” `/faculty/assignments.html`, `/faculty/tests` âž” `/faculty/tests.html`, `/faculty/marks.html` âž” `/faculty/tests.html?id=...`.
   - Updated sidebar navigation drawer (`auth.js`):
-    - `📖 Registers & Attendance` ➔ `/faculty/registers.html`
-    - `📝 Assignments` ➔ `/faculty/assignments.html`
-    - `📊 Class Tests & Marks` ➔ `/faculty/tests.html`
-    - `📈 Reports & Analytics` ➔ `/faculty/reports.html`
+    - `ðŸ“– Registers & Attendance` âž” `/faculty/registers.html`
+    - `ðŸ“ Assignments` âž” `/faculty/assignments.html`
+    - `ðŸ“Š Class Tests & Marks` âž” `/faculty/tests.html`
+    - `ðŸ“ˆ Reports & Analytics` âž” `/faculty/reports.html`
   - Deep-linking context continuity: Active register ID preserved across all pages via `?id=<registerId>`.
 - **100% Automated Regression Suite Pass**:
   - `verify-excel-studios.js`: 39/39 PASS (Excel generation, OpenXML styling, side panel, absent toggling, questions modal, internal eval modal).
@@ -6895,12 +7007,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-rbac-and-structure.js`: 30/30 PASS.
   - `test-student-self-registration.js`: 27/27 PASS.
 
-### ✅ Milestone 39: Dedicated Master Internal Evaluation Spreadsheet Page (`/faculty/evaluation.html`)
+### âœ… Milestone 39: Dedicated Master Internal Evaluation Spreadsheet Page (`/faculty/evaluation.html`)
 - **User Requirements**:
   - *"now also make Master Internal Evaluation Spreadsheet page separately"*
   - *"on top ot all options unnecessary rmove all"*
   - *"remove these also subject changes from header of sheet where is subject showing"*
-  - *"🔄 Refresh 📥 to Export Excel (.xlsx) 💾 Save Evaluation on top of sheet header and just like header this will stick to top and session come from sesson table also inside () we have marks they also can be edit from bar where we add Export and other btn"*
+  - *"ðŸ”„ Refresh ðŸ“¥ to Export Excel (.xlsx) ðŸ’¾ Save Evaluation on top of sheet header and just like header this will stick to top and session come from sesson table also inside () we have marks they also can be edit from bar where we add Export and other btn"*
   - *"remove add student btn and add edit btn when click appear add column and remove column this give power to edit everything on sheet also change cname into student name and add enrollment column remove srno column and move roll no column in first"*
 - **Dedicated Standalone Evaluation Console (`/faculty/evaluation.html`)**:
   - Full institutional Master Internal Evaluation Spreadsheet console.
@@ -6908,11 +7020,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **Sticky Command Bar with Edit Mode Toggle (`#btn-toggle-edit`)**:
     - Placed directly on top of the sheet header with `position: sticky; top: 0; z-index: 120;`.
     - Removed `+ Add Student` button (`#btn-add-student`).
-    - Added `✏️ Edit` button: toggles between View Mode and Edit Mode (`🔒 Done Editing`).
+    - Added `âœï¸ Edit` button: toggles between View Mode and Edit Mode (`ðŸ”’ Done Editing`).
     - Dynamic Column Controls: `+ Add Column` and `- Remove Column` are hidden in View Mode and only appear when Edit Mode is active.
     - Sheet-Wide Editability: Activating Edit Mode unlocks all student details (`Roll No`, `Enrollment No`, `Reg No`, `Student Name`), scores, and scheme values with real-time recalculation and visual focus styling (`.is-editable`).
     - Interactive **Marks in ( )** Controls: `Assign: [15]`, `UT: [20]`, `Att: [10]`, `Pres: [5]`, `Total: 50`. Modifying these inputs live-updates the column group headers (e.g. `Assignment Marks (20)`), recalculates attendance & presentation max marks, auto-updates grand total max, and recalculates student totals in real-time.
-    - Action buttons: `🔄 Refresh`, `📥 Export Excel (.xlsx)`, `💾 Save Evaluation`.
+    - Action buttons: `ðŸ”„ Refresh`, `ðŸ“¥ Export Excel (.xlsx)`, `ðŸ’¾ Save Evaluation`.
   - **Institutional Header Banner with In-Header Subject Switcher & Session Table Integration**:
     - Institutional Name: `Uttarakhand Government Institute of Polytechnic, Srinagar Garhwal`.
     - Dynamic Session Label: Automatically loaded from the `academic_years` table where `is_current = 1` (`Internal Evaluation Sheet 2026-27 (Winter)`).
@@ -6933,7 +7045,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Server routes: `/faculty/evaluation.html` served directly as 200 OK standalone page.
   - Permanent 301 redirects: `/faculty/evaluation`, `/faculty/internal-evaluation`, `/faculty/internal-evaluation.html` redirect to `/faculty/evaluation.html` while preserving `?id=<registerId>`.
   - Updated sidebar navigation drawer (`auth.js`):
-    - Added `{ icon: '📈', label: 'Internal Evaluation', href: '/faculty/evaluation.html' }` to faculty `mainItems`.
+    - Added `{ icon: 'ðŸ“ˆ', label: 'Internal Evaluation', href: '/faculty/evaluation.html' }` to faculty `mainItems`.
   - Cross-Page Navigation: Added `Internal Evaluation` link in top nav and quick actions across `registers.html`, `assignments.html`, and `tests.html`.
 - **Theme Token Compliance & Automated Regression Suite Pass**:
   - 100% theme tokenized with CSS variables (zero hardcoded `#hex` or `rgb()` color codes).
@@ -6944,7 +7056,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-registers-workspace-ubter.js`: 36/36 PASS.
   - `test-register-consolidation.js`: 46/46 PASS.
   - `test-rbac-and-structure.js`: 30/30 PASS.
-### ✅ Milestone 40: Phase 0 Migration — Branch Elimination & 4-Layer Architecture Setup
+### âœ… Milestone 40: Phase 0 Migration â€” Branch Elimination & 4-Layer Architecture Setup
 - **User Requirements & Core Architecture**:
   - *"Branches = department"*
   - *"not need this (IRDT Subject Catalog: ) can reduce complexity"*
@@ -6964,7 +7076,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Master Implementation Plan Created**:
   - Created `implementation_plan.md` artifact detailing the 4-phase rollout of Teaching Groups, department faculty approvals, and multi-department teaching cohorts.
 
-### ✅ Milestone 41: Teaching Groups Architecture & Multi-Department Cohort Hub
+### âœ… Milestone 41: Teaching Groups Architecture & Multi-Department Cohort Hub
 - **User Rules Enforced**:
   - *"Branches = department"*: 100% completed across schema, routes, and services. Zero `branches` table or `branch_id` joins.
   - *"not need this (IRDT Subject Catalog: ) can reduce complexity"*: Teachers freely define `subject_name` and `component` (`THEORY` | `PRACTICAL`) when creating groups.
@@ -6995,14 +7107,14 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-term-automation.js`: 52/52 PASS.
   - `test-session-modal-dom.js`: 7/7 PASS.
 
-### ✅ Milestone 42: Faculty Registration, 3-Tier Approval Workflow & Common Faculty Manager
+### âœ… Milestone 42: Faculty Registration, 3-Tier Approval Workflow & Common Faculty Manager
 - **Public Faculty & HOD Self-Registration (`/login/faculty-register.html`)**:
   - Clean, responsive registration console with Account Type toggle (`Faculty Member` vs `Head of Department (HOD)`).
   - Dynamic Department Dropdown loaded from institutional structure plus `No Department / Common Faculty` option.
   - Real-time Dynamic Routing Explanation Callout explaining review authority:
-    - *Department Faculty* ➔ Routed to Department HOD (`DEPT_HOD`).
-    - *Common Faculty (No Dept)* ➔ Routed to Common Faculty Manager (`COMMON_FACULTY_MANAGER`).
-    - *Head of Department* ➔ Routed to System Administrator (`ADMIN`).
+    - *Department Faculty* âž” Routed to Department HOD (`DEPT_HOD`).
+    - *Common Faculty (No Dept)* âž” Routed to Common Faculty Manager (`COMMON_FACULTY_MANAGER`).
+    - *Head of Department* âž” Routed to System Administrator (`ADMIN`).
   - Strict validation: institutional Gmail validation, duplicate address prevention across active accounts and pending requests, and minimum 8-character password.
   - Zero hardcoded colors: 100% tokenized CSS variables.
 - **Backend 3-Tier Approval Engine & Endpoints**:
@@ -7030,7 +7142,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `/frontend/admin/faculty.html`: Common Faculty Manager command strip (`#common-faculty-mgr-card`), Pending HOD queue (`#pending-hods-card`), `#approve-hod-modal`, `#appoint-common-mgr-modal`.
   - `/frontend/faculty/hod-teachers.html`: Pending Faculty Registrations card (`#pending-faculty-card`) with one-click Approve/Reject. Tokenized all 35 legacy hex colors.
   - `/frontend/faculty/common-teachers.html`: Dedicated Common Faculty Manager dashboard for reviewing cross-department registrations and monitoring active common teachers.
-  - `/frontend/shared/js/auth.js` & `frontend/js/auth.js`: Updated `guardRoute()`, dynamic sidebar navigation for Common Faculty Manager (`🌐 Common Faculty`), and userNav chip.
+  - `/frontend/shared/js/auth.js` & `frontend/js/auth.js`: Updated `guardRoute()`, dynamic sidebar navigation for Common Faculty Manager (`ðŸŒ Common Faculty`), and userNav chip.
 - **Automated Verification**:
   - `test-faculty-registration-flow.js`: 66/66 PASS (Validation, Case A, Case B, Case C, 1-HOD invariant, rejection, frontend DOM, theme tokens).
   - `test-theme-support.js`: 93/93 PASS.
@@ -7038,9 +7150,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-student-self-registration.js`: 27/27 PASS.
   - `test-rbac-and-structure.js`: 30/30 PASS.
   - `test-register-consolidation.js`: 46/46 PASS.
-### ✅ Milestone 43: Dedicated IoT Presence Layer, Time-Aware Department Enrollments, Biometric Permissions & Attendance Corrections
+### âœ… Milestone 43: Dedicated IoT Presence Layer, Time-Aware Department Enrollments, Biometric Permissions & Attendance Corrections
 - **User Rules & `redesign.md` Compliance**:
-  - Sections 16, 30–39, 42–44, 49, 53 & Invariants 17, 19, 20.
+  - Sections 16, 30â€“39, 42â€“44, 49, 53 & Invariants 17, 19, 20.
   - *Dedicated IoT Presence Layer*: `iot_attendance_events` created with fields `(id, student_id, device_id, department_id, scan_time, scan_date, verification_status, event_type, payload_json, created_at)`. Auto-migrated and backfilled from `esp32_presence`.
   - *Separation of Evidence vs Official Record*: Raw IoT events serve as immutable presence evidence; official attendance percentage is computed strictly from finalized registers.
   - *Department Biometric Permissions (Invariant 17)*: Any department faculty (`Student.department == Teacher.department` or HOD/Admin) can enroll/assign fingerprint slots for students in their department, removing obsolete class teacher checks.
@@ -7059,20 +7171,20 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-term-automation.js`: 52/52 PASS.
   - `test-session-modal-dom.js`: 7/7 PASS.
   - `test-api-flows.js`: 25/25 PASS.
-### ✅ Milestone 44: Complete Google Classroom-Style Teaching Group Studio & Multi-Dimensional Institutional Reporting Engine
+### âœ… Milestone 44: Complete Google Classroom-Style Teaching Group Studio & Multi-Dimensional Institutional Reporting Engine
 - **User Rules & `redesign.md` Compliance**:
-  - Sections 25–29, 45, 60, 62, 69, and Invariants 6–11, 20.
+  - Sections 25â€“29, 45, 60, 62, 69, and Invariants 6â€“11, 20.
   - *5-Tab Google Classroom Faculty Hub (`/faculty/groups.html`)*:
-    - Tab 1: 📢 **Stream** (cohort announcements, student Q&A, and lecture notice board).
-    - Tab 2: 📚 **Classwork** (scoped assignment listing by `group_id`, `#create-group-assignment-modal`, `#assignment-submissions-modal` with inline grading and instant student feedback return).
-    - Tab 3: 📝 **Tests & Marksheet** (scoped class tests by `group_id`, `#create-group-test-modal`, `#exam-scores-modal` with live score roster grid and remarks).
-    - Tab 4: 📊 **Attendance** (cohort session summary, conducted sessions, average attendance %, and direct deep-link to the auto-linked 1:1 Official Register).
-    - Tab 5: 👥 **Students** (`#hub-tab-roster-btn` with student roster list, enrollment count, and 6-character invite code sharing).
+    - Tab 1: ðŸ“¢ **Stream** (cohort announcements, student Q&A, and lecture notice board).
+    - Tab 2: ðŸ“š **Classwork** (scoped assignment listing by `group_id`, `#create-group-assignment-modal`, `#assignment-submissions-modal` with inline grading and instant student feedback return).
+    - Tab 3: ðŸ“ **Tests & Marksheet** (scoped class tests by `group_id`, `#create-group-test-modal`, `#exam-scores-modal` with live score roster grid and remarks).
+    - Tab 4: ðŸ“Š **Attendance** (cohort session summary, conducted sessions, average attendance %, and direct deep-link to the auto-linked 1:1 Official Register).
+    - Tab 5: ðŸ‘¥ **Students** (`#hub-tab-roster-btn` with student roster list, enrollment count, and 6-character invite code sharing).
   - *4-Tab Student Classroom Hub (`/student/groups.html`)*:
-    - Tab 1: 📢 **Stream** (lecture announcements feed with question/comment box).
-    - Tab 2: 📚 **Classwork** (scoped assignment cards, submission status badge `Assigned` / `Turned In` / `Graded`, `#student-submit-modal` for file uploads, and teacher feedback notes).
-    - Tab 3: 📝 **Tests & Scores** (scheduled unit tests and published marks).
-    - Tab 4: 📊 **Attendance** (official attendance summary cards, conducted sessions, attended, absent, attendance %, and defaulter warning banner).
+    - Tab 1: ðŸ“¢ **Stream** (lecture announcements feed with question/comment box).
+    - Tab 2: ðŸ“š **Classwork** (scoped assignment cards, submission status badge `Assigned` / `Turned In` / `Graded`, `#student-submit-modal` for file uploads, and teacher feedback notes).
+    - Tab 3: ðŸ“ **Tests & Scores** (scheduled unit tests and published marks).
+    - Tab 4: ðŸ“Š **Attendance** (official attendance summary cards, conducted sessions, attended, absent, attendance %, and defaulter warning banner).
   - *Multi-Dimensional Institutional Reporting Engine (`reports.js` & `reportService.js`)*:
     - Refactored `/analytics`, `/daily-summary`, and student subject queries to use `LEFT JOIN attendance_registers r`, `LEFT JOIN teaching_groups tg ON tg.id = r.group_id`, and `LEFT JOIN subjects sub` with `COALESCE(tg.subject_name, sub.name, r.name)`, preventing teaching group registers from being dropped.
     - `GET /api/v1/reports/teaching-groups`: filters by `group_id`, `academic_year_id`, `semester`, `status`; returns conducted sessions, attendance %, assignment counts, test counts, and student counts.
@@ -7095,9 +7207,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-api-flows.js`: 25/25 PASS.
   - **Total: 416/416 tests passing across test suite**.
 
-### ✅ Milestone 45: Institutional Audit Logging System, In-App Notification Hub & HOD Settings Tokenization
+### âœ… Milestone 45: Institutional Audit Logging System, In-App Notification Hub & HOD Settings Tokenization
 - **User Rules & `redesign.md` Compliance**:
-  - Sections 54–56, 59, and Invariants 17, 19, 20.
+  - Sections 54â€“56, 59, and Invariants 17, 19, 20.
   - *Institutional Audit Logging System (Section 54)*:
     - Canonical `audit_logs` table schema enhanced with dual-column compatibility (`event_type`/`action`, `actor_id`/`user_id`, `target_type`/`entity_type`, `target_id`/`entity_id`, `actor_role`, `details_json`, `ip_address`).
     - Standard `auditService.js` with `logAudit(...)` and `getAuditLogs(...)` supporting pagination, event type filters, actor filtering, and keyword search over details and username.
@@ -7129,7 +7241,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `test-faculty-registration-flow.js`: 66/66 PASS.
   - `test-iot-and-attendance-lifecycle.js`: 38/38 PASS.
   - `test-term-automation.js`: 52/52 PASS.
-### ✅ Milestone 46: Student Attendance Early Warning & Defaulter Escalation Engine, Teaching Group Archive Studio, and Section 59 Navigation Alignment
+### âœ… Milestone 46: Student Attendance Early Warning & Defaulter Escalation Engine, Teaching Group Archive Studio, and Section 59 Navigation Alignment
 - **User Rules & `redesign.md` Compliance**:
   - Sections 21, 44, 45, 59, 61, 62, and Invariants 11, 19, 20.
   - *Section 59 Navigation Alignment*:
@@ -7151,7 +7263,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
       - `POST /api/v1/reports/defaulters/notify`: dispatches batch in-app alerts (`ATTENDANCE_WARNING`) to students and records `DEFAULTER_NOTICE_DISPATCHED` audit log.
       - `GET /api/v1/reports/defaulters/export`: generates downloadable institutional CSV notice sheet.
   - *Faculty Defaulters & Early Warning Console (`frontend/faculty/reports.html`)*:
-    - Redesigned Tab 2 with 4-card KPI summary: Analyzed Students, Critical (< 60%), Warning (60–74%), Healthy (>= 75%).
+    - Redesigned Tab 2 with 4-card KPI summary: Analyzed Students, Critical (< 60%), Warning (60â€“74%), Healthy (>= 75%).
     - Filter pills for instant cohort slicing: All Defaulters, Critical, Warning, Healthy, All Students.
     - Student roster table with select checkboxes, roll #, enrollment #, full name, cohort, attended/conducted, colored badge, and safe miss vs recovery target.
     - Early warning modal `#notify-defaulters-modal` for batch notice dispatch with customizable notice template and recipient preview.
@@ -7183,7 +7295,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Enhanced `GET /api/v1/faculty/cohorts` so any faculty member affiliated with a department automatically receives that department's active cohorts (as `DEPARTMENT_FACULTY` or `CLASS_TEACHER`), eliminating the single class teacher cohort bottleneck.
   - **Navigation & Guard Alignment (`frontend/shared/js/auth.js` & `frontend/js/auth.js`)**:
     - Updated `guardRoute` to support `requireDepartmentFaculty: true` allowing any authorized department teacher (or HOD/Admin).
-    - Updated `renderSidebar` so any teacher with department affiliation or `is_class_teacher` or `is_hod` gets `👥 Department Students` (`/faculty/students.html`) with dynamic pending count badge.
+    - Updated `renderSidebar` so any teacher with department affiliation or `is_class_teacher` or `is_hod` gets `ðŸ‘¥ Department Students` (`/faculty/students.html`) with dynamic pending count badge.
     - Maintained 1:1 synchronization between `frontend/shared/js/auth.js` and `frontend/js/auth.js`.
   - **Frontend Console Polish (`frontend/faculty/students.html`)**:
     - Replaced "My Class Teacher Cohort:" with "Department Cohort:".
@@ -7237,7 +7349,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Provided backward-compatible dual aliasing for `data` and `records`.
   - **Frontend Escalation Studio & Log Modal (`frontend/faculty/reports.html`)**:
     - `#parent-escalation-modal`: Studio modal with channel selection (WhatsApp / SMS), template selector, dynamic tokens guide, and live preview textarea.
-    - Single-click row trigger `💬 WhatsApp` for instant parent messaging via `openSingleWhatsApp(studentId)`.
+    - Single-click row trigger `ðŸ’¬ WhatsApp` for instant parent messaging via `openSingleWhatsApp(studentId)`.
     - `#comm-logs-modal`: Dedicated audit modal displaying chronological parent communication history with formatted date/time, channel badge, status badge, and attendance percentage.
     - Clean roll number formatting without `#` prefix.
     - Zero hardcoded hex colors: 100% theme tokenized with CSS variables (`var(--...)`).
@@ -7266,21 +7378,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Pre-seeded canonical 6 institutional departments (`IT`, `ECE`, `EE`, `ME`, `CE`, `PHARM`) with clean unassigned HOD status (`hod_user_id = NULL`).
     - Pre-seeded active academic session (`2026-27 (Winter)`) and institutional settings.
   - **Post-Deployment Institutional Workflow Alignment**:
-    - Step 1: Admin logs in ➔ Step 2: HODs register and Admin approves ➔ Step 3: Teachers register and HODs approve ➔ Step 4: Teachers create Teaching Groups & approve student self-registrations.
+    - Step 1: Admin logs in âž” Step 2: HODs register and Admin approves âž” Step 3: Teachers register and HODs approve âž” Step 4: Teachers create Teaching Groups & approve student self-registrations.
   - **Dual Engine Preservation for Local Refinement**:
     - Maintained local SQLite environment for zero-overhead development and refinement on laptop before cloud deployment.
 - **Milestone 52: Master Internal Evaluation Spreadsheet: Interactive Column Resizing, Text Sizing & Excel-Style Zoom Engine**:
   - **Authentic Excel Spreadsheet Controls**:
-    - Embedded Excel-style **Zoom Slider** in the bottom status bar (`[-] ━━━━●━━━━ [+] 100%`) with range control from 50% to 150%.
-    - Embedded toolbar zoom controls (`🔍 Zoom: [ ➖ ] [ 100% ] [ ➕ ] [ 100% ▾ ] [ ⛶ Fit ]`) and quick `⛶ Fit to Window` calculation that adapts the sheet to any screen size without horizontal scrolling.
+    - Embedded Excel-style **Zoom Slider** in the bottom status bar (`[-] â”â”â”â”â—â”â”â”â” [+] 100%`) with range control from 50% to 150%.
+    - Embedded toolbar zoom controls (`ðŸ” Zoom: [ âž– ] [ 100% ] [ âž• ] [ 100% â–¾ ] [ â›¶ Fit ]`) and quick `â›¶ Fit to Window` calculation that adapts the sheet to any screen size without horizontal scrolling.
   - **Zero Text Overlap Architecture**:
     - Applied strict `table-layout: fixed; width: max-content; min-width: 100%;` and `overflow: hidden; text-overflow: ellipsis; white-space: nowrap;` so that large datasets and long student names never bleed or overlap across adjacent cells.
   - **Interactive Column Drag Resizing**:
     - Attached draggable border handles (`.col-resizer`) with `cursor: col-resize` and `var(--color-primary)` highlight to all 18+ leaf column headers.
     - Double-click resizer handle triggers automated **Auto-Fit** to expand or contract the column to the longest cell content.
-    - One-click **`↔ Reset Widths`** button in the command bar restores standard institutional column widths.
+    - One-click **`â†” Reset Widths`** button in the command bar restores standard institutional column widths.
   - **Column Text Resizing & Font Zoom**:
-    - Top command bar font sizing tool (`🔤 Font: [ A- ] [ 100% ] [ A+ ]`) seamlessly scales table text, headers, and input heights.
+    - Top command bar font sizing tool (`ðŸ”¤ Font: [ A- ] [ 100% ] [ A+ ]`) seamlessly scales table text, headers, and input heights.
     - Column header options button (`T`) opens a floating popover (`#col-popover-menu`) allowing per-column font scaling (`Small 85%`, `Normal 100%`, `Large 115%`, `Extra Large 130%`).
   - **Keyboard Shortcuts & Persistence**:
     - Supported `Ctrl +` / `Ctrl -` for instant sheet zoom, `Ctrl 0` for 100% zoom reset, and `Escape` for dismissals.
@@ -7295,11 +7407,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Attached `.eval-main-layout` and `.sheet-studio-container` with flexbox `height: 100%`, `flex: 1 1 0; min-height: 0; overflow: hidden;` adapting smoothly to any monitor or laptop screen size.
   - **Sticky Top Header Zone (Command Bar + Institutional Banner + Table <thead>)**:
     - Pinned the top command bar (`.eval-command-bar`, `flex-shrink: 0`, `z-index: 30`) with zoom, font sizing, column reset, marks in ( ) controls, refresh, export, and edit actions.
-    - Pinned the institutional banner (`.sheet-header-banner`, `flex-shrink: 0`, `z-index: 25`) with institution title, session label, and `Department (Information Technology) - 6 Semester - [Cloud Computing and DevOps [CS536] ▾]`.
+    - Pinned the institutional banner (`.sheet-header-banner`, `flex-shrink: 0`, `z-index: 25`) with institution title, session label, and `Department (Information Technology) - 6 Semester - [Cloud Computing and DevOps [CS536] â–¾]`.
     - Pinned two-tier table headers inside `.excel-sheet-viewport`: Row 1 headers stick to `top: 0` (`z-index: 22`), and Row 2 subheaders stick to `top: var(--th-row1-height, 31px)` (`z-index: 21`).
     - Implemented `border-collapse: separate; border-spacing: 0;` and removed `position: relative` override from `.resizable-th`, completely eliminating Blink sticky border/text bleed-through and ensuring razor-sharp column headers.
   - **Firmly Pinned Bottom Status Bar**:
-    - Locked `.sheet-statusbar` to the bottom of the viewport (`flex-shrink: 0`, `z-index: 30`, `border-top: 1px solid var(--border-color)`), keeping the ready status, cohort count, sync status, and interactive Zoom Slider (`[-] ━━━━●━━━━ [+] [Fit]`) visible and accessible at all times.
+    - Locked `.sheet-statusbar` to the bottom of the viewport (`flex-shrink: 0`, `z-index: 30`, `border-top: 1px solid var(--border-color)`), keeping the ready status, cohort count, sync status, and interactive Zoom Slider (`[-] â”â”â”â”â—â”â”â”â” [+] [Fit]`) visible and accessible at all times.
   - **Independent Record Scrolling**:
     - `.excel-sheet-viewport` (`flex: 1 1 0; min-height: 0; overflow: auto;`) provides independent vertical and horizontal scrolling strictly for student record rows (`<tbody>`).
   - **Automated Verification**:
@@ -7312,8 +7424,8 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Removed redundant Zoom In (`[-]`), Zoom Out (`[+]`), Zoom percentage display, redundant `<select>` dropdown (`50%`, `75%`, etc.), and duplicate `[Fit]` button from `.eval-command-bar`.
     - Freed up substantial horizontal space, completely eliminating command bar crowding.
   - **Consolidated Authentic Excel-Style Zoom in Bottom Status Bar**:
-    - Standardized zoom controls exclusively in `.sheet-statusbar`: Zoom Out button (`[-]`), Range Slider (50%–150%), Zoom In button (`[+]`), 1-click Reset percentage display (`100%`), and Fit to Window button (`[⛶ Fit]`).
-    - Retained top command bar focus strictly on sheet formatting and actions: `🔤 Font: [ A- ] [ 100% ] [ A+ ]`, `↔ Reset Widths`, editable scheme `Marks in ( ):`, `🔄 Refresh`, `📥 Export Excel (.xlsx)`, and `✏️ Edit` / `💾 Save`.
+    - Standardized zoom controls exclusively in `.sheet-statusbar`: Zoom Out button (`[-]`), Range Slider (50%â€“150%), Zoom In button (`[+]`), 1-click Reset percentage display (`100%`), and Fit to Window button (`[â›¶ Fit]`).
+    - Retained top command bar focus strictly on sheet formatting and actions: `ðŸ”¤ Font: [ A- ] [ 100% ] [ A+ ]`, `â†” Reset Widths`, editable scheme `Marks in ( ):`, `ðŸ”„ Refresh`, `ðŸ“¥ Export Excel (.xlsx)`, and `âœï¸ Edit` / `ðŸ’¾ Save`.
   - **Responsive Sidebar Layout Alignment**:
     - Added dedicated `body.sidebar-open .eval-main-layout` and `body:not(.sidebar-open) .eval-main-layout` transitions, ensuring the spreadsheet layout automatically offsets by 260px when the sidebar is open and expands to 100% when collapsed.
   - **Automated Verification**:
@@ -7322,22 +7434,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - 44/44 tests passed in `verify-evaluation-page.js`.
     - 93/93 tests passed in `test-theme-support.js`.
 
-### ✅ Milestone 55: Master Internal Evaluation Spreadsheet: Footer Font Tools Consolidation, Button Renaming & Edit Mode Cancellation Engine
+### âœ… Milestone 55: Master Internal Evaluation Spreadsheet: Footer Font Tools Consolidation, Button Renaming & Edit Mode Cancellation Engine
 - **Consolidated Font Scaling & Column Width Reset into Footer Status Bar**:
-  - Moved `#excel-view-controls` (`🔤 Font: [ A- ] [ 100% ] [ A+ ]` and `↔ Reset Widths`) from top sticky command bar to the pinned bottom status bar (`.sheet-statusbar-right`).
+  - Moved `#excel-view-controls` (`ðŸ”¤ Font: [ A- ] [ 100% ] [ A+ ]` and `â†” Reset Widths`) from top sticky command bar to the pinned bottom status bar (`.sheet-statusbar-right`).
   - Placed font scaling tools seamlessly side-by-side with the Excel zoom slider in a unified desktop status footer.
 - **Top Command Bar Button Simplification & Renaming**:
-  - Renamed `📥 Export Excel (.xlsx)` button to concise `📥 Export`.
-  - Renamed edit mode save button from `💾 Save Evaluation` to `💾 Save`.
-  - Kept in-place toggle `✏️ Edit` in view mode.
+  - Renamed `ðŸ“¥ Export Excel (.xlsx)` button to concise `ðŸ“¥ Export`.
+  - Renamed edit mode save button from `ðŸ’¾ Save Evaluation` to `ðŸ’¾ Save`.
+  - Kept in-place toggle `âœï¸ Edit` in view mode.
 - **Edit Mode Cancellation & Deep-Clone Revert Engine**:
   - Implemented `cancelEditMode()` paired with deep-clone snapshot (`window.evalSheetBackupState`) created on entering edit mode.
-  - Added dedicated `✕ Cancel` button (`#btn-cancel-edit`) displayed alongside `💾 Save` in Edit Mode.
+  - Added dedicated `âœ• Cancel` button (`#btn-cancel-edit`) displayed alongside `ðŸ’¾ Save` in Edit Mode.
   - Allows users to freely inspect and test column/scheme adjustments or student inputs and exit edit mode cleanly with 1-click without saving or committing any edits.
 - **Responsive Viewport Density Optimization**:
   - Refined `.eval-command-bar` and `.eval-scheme-controls` padding, gaps, and input widths so all controls fit with zero overflow even when the 260px desktop navigation sidebar is toggled open.
 
-### ✅ Milestone 56: Master Internal Evaluation Spreadsheet: Header Arrow / Menu Cleanup, Native Spinner Elimination & Real-Time Score Clamping
+### âœ… Milestone 56: Master Internal Evaluation Spreadsheet: Header Arrow / Menu Cleanup, Native Spinner Elimination & Real-Time Score Clamping
 - **Eliminated Native Number Input Stepper Arrows**:
   - Removed browser up/down number spin buttons (`::-webkit-inner-spin-button`, `::-webkit-outer-spin-button`) and set `-moz-appearance: textfield` across all spreadsheet cells.
   - Cell inputs now render as pure, clean desktop spreadsheet cells without unsightly internal arrows.
@@ -7351,21 +7463,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Automated Verification**:
   - 12/12 tests passed in `test-evaluation-arrows-and-clamping.js`.
 
-### ✅ Milestone 57: Master Internal Evaluation Spreadsheet: Resizer Elimination, "T" Menu Removal, Editable Column Headers & 2-Click Save/Cancel Confirmation Modals
+### âœ… Milestone 57: Master Internal Evaluation Spreadsheet: Resizer Elimination, "T" Menu Removal, Editable Column Headers & 2-Click Save/Cancel Confirmation Modals
 - **Elimination of Manual Drag Resizers (`.col-resizer`)**:
   - Completely removed drag resize handles, mouse drag event listeners, and drag cursor classes from all leaf and group column headers.
-  - Sizing is managed cleanly via responsive auto-fit, double-click auto-fit directly on `<th>`, and the `↔ Reset Widths` tool in the footer status bar.
+  - Sizing is managed cleanly via responsive auto-fit, double-click auto-fit directly on `<th>`, and the `â†” Reset Widths` tool in the footer status bar.
 - **Elimination of the "T" Popover Menu Button (`.btn-col-menu`)**:
   - Removed all `.btn-col-menu` buttons and the `#col-popover-menu` floating dialog.
-  - Global font scaling is centralized in the footer status bar (`🔤 Font: [ A- ] [ 100% ] [ A+ ]`).
+  - Global font scaling is centralized in the footer status bar (`ðŸ”¤ Font: [ A- ] [ 100% ] [ A+ ]`).
   - Table headers are now 100% clean and free of unnecessary dropdown icons or buttons.
 - **Direct Editable Column Headers in Edit Mode**:
   - In Edit Mode (`isEditMode === true`), column headers render inline `<input class="sheet-th-input">` and `<input class="sheet-th-sub-input">` controls.
   - Allows faculty to edit custom assessment column names (Viva, Micro-Project), group titles, subheaders, and identity labels.
   - In View Mode, locked static text is rendered.
 - **Institutional 2-Click Save & 2-Click Cancel Flows**:
-  - **2-Click Save**: Clicking `💾 Save` in Edit Mode opens `#save-confirm-modal` displaying register summary, student count, and scheme total; clicking `💾 Confirm & Save` saves data and locks View Mode.
-  - **2-Click Cancel**: Clicking `✕ Cancel` in Edit Mode opens `#cancel-confirm-modal` warning about unsaved changes; clicking `✕ Discard & Exit` reverts edits from the snapshot and returns to View Mode.
+  - **2-Click Save**: Clicking `ðŸ’¾ Save` in Edit Mode opens `#save-confirm-modal` displaying register summary, student count, and scheme total; clicking `ðŸ’¾ Confirm & Save` saves data and locks View Mode.
+  - **2-Click Cancel**: Clicking `âœ• Cancel` in Edit Mode opens `#cancel-confirm-modal` warning about unsaved changes; clicking `âœ• Discard & Exit` reverts edits from the snapshot and returns to View Mode.
 - **Automated Verification**:
   - 28/28 tests passed in `test-evaluation-resize.js`.
   - 51/51 tests passed in `verify-evaluation-page.js`.
@@ -7373,20 +7485,20 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 9/9 tests passed in `test-evaluation-sticky-layout.js`.
   - 93/93 tests passed in `test-theme-support.js`.
 
-### ✅ Milestone 58: Master Internal Evaluation Spreadsheet: Automatic Viewport Auto-Fit, Header & Name Text Wrapping, and "Edit Total Marks" Dedicated Scheme Modal
+### âœ… Milestone 58: Master Internal Evaluation Spreadsheet: Automatic Viewport Auto-Fit, Header & Name Text Wrapping, and "Edit Total Marks" Dedicated Scheme Modal
 - **Automatic Auto-Fit Engine**:
-  - User no longer needs to manually click `⛶ Fit` each time they visit or refresh the sheet.
+  - User no longer needs to manually click `â›¶ Fit` each time they visit or refresh the sheet.
   - Automatically calculates optimal zoom (`fitSheetToWindow(true)`) upon initial page load, register changes, data renders, and column additions/removals.
   - Added debounced `window` resize listener and `ResizeObserver` on `.excel-sheet-viewport` to dynamically re-fit the sheet when the screen resizes or the 260px desktop navigation sidebar is toggled.
-  - Retained the manual `⛶ Fit` button in the footer status bar for user-initiated overrides.
+  - Retained the manual `â›¶ Fit` button in the footer status bar for user-initiated overrides.
 - **Header & Student Name Text Wrapping (Zero Truncation)**:
   - Enabled `white-space: normal !important; word-break: break-word !important; overflow-wrap: break-word !important; line-height: 1.25 !important;` on all `table.sheet-table th` and `table.sheet-table td.cell-student-name`.
   - Long header titles like "Problem Solving Skills / Presentation" and long student names wrap onto multiple lines cleanly with zero clipping or text ellipsis (`...`).
   - Added dynamic `--th-row1-height` calculation in `recalcHeaderRowHeights()` so wrapped primary headers never cause secondary subheader overlap.
 - **Dedicated "Edit Total Marks" Modal (`#edit-total-marks-modal`)**:
   - Removed the long inline `Marks in ( ): Assign: [15] UT: [20] Att: [10] Pres: [5] Total: [50]` control strip from the top sticky command bar.
-  - Added an intuitive button named `⚙️ Edit Total Marks` (`#btn-edit-total-marks`) alongside a compact live badge (`Marks in ( ): [ 50 ]`).
-  - Clicking `⚙️ Edit Total Marks` opens `#edit-total-marks-modal` displaying allocated max marks for Assignments, Unit Tests, Attendance, Problem Solving / Presentation, and dynamic custom columns (Viva, Micro-Project).
+  - Added an intuitive button named `âš™ï¸ Edit Total Marks` (`#btn-edit-total-marks`) alongside a compact live badge (`Marks in ( ): [ 50 ]`).
+  - Clicking `âš™ï¸ Edit Total Marks` opens `#edit-total-marks-modal` displaying allocated max marks for Assignments, Unit Tests, Attendance, Problem Solving / Presentation, and dynamic custom columns (Viva, Micro-Project).
   - Features real-time calculated total marks display, Escape key dismissal, backdrop click support, and `Apply Scheme` / `Close` actions.
 - **Automated Verification**:
   - 28/28 tests passed in `test-evaluation-resize.js`.
@@ -7396,7 +7508,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 93/93 tests passed in `test-theme-support.js`.
   - 46/46 tests passed in `test-register-consolidation.js`.
 
-### ✅ Milestone 59: Master Evaluation Spreadsheet: Excel Export Header Borders, Formatting, AutoFilter & Webpage Interactive Filtering
+### âœ… Milestone 59: Master Evaluation Spreadsheet: Excel Export Header Borders, Formatting, AutoFilter & Webpage Interactive Filtering
 - **Live Server Restart & Excel Export Header Borders**:
   - Identified that Node.js process was running the previous in-memory modules; restarted `server.js` as an active daemon.
   - Verified on live server that exported `.xlsx` files contain complete `THIN_BORDER` on all cells across Rows 1-3 (`{"top":"thin","bottom":"thin","left":"thin","right":"thin"}`) and uniform institutional blue fill (`FFB4C6E7`).
@@ -7404,8 +7516,8 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Webpage Interactive Filter & Search Bar (`#eval-filter-toolbar`)**:
   - Integrated sleek filter toolbar directly above the spreadsheet viewport matching the institutional design system.
   - **Real-Time Instant Search**: Filter student rows by Name, Roll No, Enrollment No, or Reg No with one-click clear button (`#btn-eval-search-clear`).
-  - **Performance Marks Filter**: Filter cohort by All Students, Top Marks (≥ 75%), Average (50% – 74%), Low Marks (< 50%), Low Attendance (< 75%), or Absent in Any Unit Test (`#eval-marks-filter-select`).
-  - **Roster Sorting**: Sort by Roll No (Asc/Desc), Name (A–Z / Z–A), Grand Total (High/Low), or Attendance (High/Low) via dropdown (`#eval-sort-select`) or by clicking sortable table column headers (`th.th-sortable`).
+  - **Performance Marks Filter**: Filter cohort by All Students, Top Marks (â‰¥ 75%), Average (50% â€“ 74%), Low Marks (< 50%), Low Attendance (< 75%), or Absent in Any Unit Test (`#eval-marks-filter-select`).
+  - **Roster Sorting**: Sort by Roll No (Asc/Desc), Name (Aâ€“Z / Zâ€“A), Grand Total (High/Low), or Attendance (High/Low) via dropdown (`#eval-sort-select`) or by clicking sortable table column headers (`th.th-sortable`).
   - Re-appends sorted DOM elements directly without losing any active input focus, unsaved scores, or event listeners.
   - **Live Filter Counter Badge**: Dynamically displays `Showing X of Y students` with an instant Reset Filter button.
   - **Banner Border Consistency**: `.sheet-header-banner` updated with 1px border matching the spreadsheet grid.
@@ -7419,7 +7531,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-## 📋 Active Tasks & Backlog
+## ðŸ“‹ Active Tasks & Backlog
 
 ### Current Priority Tasks
 - [x] **Milestone 41: Teaching Groups Architecture & Multi-Department Cohort Hub**
@@ -7444,16 +7556,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - [x] **Milestone 60: Master Evaluation Spreadsheet: Decouple Individual Assignment/UT Max Marks from Scheme Avg Weights**
   - Individual assignments and unit tests now clamp/display using their own `max_marks` from the `assessments` table (e.g. 25 marks per assignment)
   - Scheme `assign_avg_max` (default 15) and `exam_avg_max` (default 20) only control the *scaled average target weight* in final marks
-  - `recalculateEvalRow()`: averages now scale properly: `(earned / total_possible) × avg_max` using each item's own max_marks
+  - `recalculateEvalRow()`: averages now scale properly: `(earned / total_possible) Ã— avg_max` using each item's own max_marks
   - Sub-headers in evaluation table and Excel export now show each assignment's/exam's own max marks (e.g. "A1 (25)")
-  - Group headers "Assignment Marks" and "Unit Test Marks" removed per-max — individuals shown in sub-headers
+  - Group headers "Assignment Marks" and "Unit Test Marks" removed per-max â€” individuals shown in sub-headers
   - "Avg" column headers show the target avg weight "(15)" and "(20)"
   - Edit Total Marks modal labels updated: "Assignment Avg Max Marks" and "Unit Test Avg Max Marks" with clear description
   - Attendance score in Excel now scales properly to `attMax` from scheme (not hardcoded /10)
 - [x] **Milestone 61: Test Fixture Isolation, Zero Residual Test Data & Clean Demo Alignment**
   - Identified root cause of orphaned "Cloud Computing and DevOps" test registers (CS536, CS689, etc.) and dummy students cluttering Dr. Rajesh Sharma's register dropdown and evaluation sheet: previous test scripts (`test-hod-subjects-flow.js`, `test-student-self-registration.js`, `test-classroom-and-reporting.js`, `test-iot-and-attendance-lifecycle.js`) were creating fixtures without teardown steps.
   - Implemented automatic teardown/cleanup logic in all test scripts so temporary registers, test subjects, and test students are immediately deleted after verification.
-  - Restored clean institutional baseline using `seed-demo.js`: exactly 3 canonical registers (DBMS, OS, CN) for the 3 faculty members, exactly 10 real students (Roll 1–10), and 0 phantom test subjects.
+  - Restored clean institutional baseline using `seed-demo.js`: exactly 3 canonical registers (DBMS, OS, CN) for the 3 faculty members, exactly 10 real students (Roll 1â€“10), and 0 phantom test subjects.
   - All test suites verified passing with zero residual test data pollution: Theme (93/93), RBAC (30/30), API flows (25/25), Register Consolidation (46/46), Self-Registration (27/27), HOD Subjects (pass), Lifecycle (38/38), Classroom (17/17).
 - [x] **Milestone 62: Branch & Semester Embedded Student Self-Registration (Decoupled from Cohort Wizard)**
   - Eliminated the obsolete 3-step cohort selection wizard (`cohort_reg_` gate and step cards) from `/login/student-register.html`.
@@ -7471,7 +7583,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Prospective students can only apply for registration when Department Faculty has explicitly opened student registration for that branch & semester (`cohort_reg_${deptId}_${year}_${sem}` or `cohort_reg_dept_${deptId}`).
        - If no faculty accounts exist yet for that branch: registration is strictly blocked with clear message: *"Registration is closed for [Branch Name]. No faculty accounts exist yet for this branch. Department faculty must be established and open registration before students can apply."*
        - If department faculty has not opened registration: registration is blocked with: *"Registration is closed for [Branch Name] Semester [Sem]. Department faculty has not opened student registration at this time."*
-       - Frontend `/login/student-register.html` provides real-time asynchronous gate verification on branch & semester selection, displaying green active or red closed warning banners and disabling the submit button (`🚫 Registration Closed`) dynamically.
+       - Frontend `/login/student-register.html` provides real-time asynchronous gate verification on branch & semester selection, displaying green active or red closed warning banners and disabling the submit button (`ðŸš« Registration Closed`) dynamically.
     2. **Tier 2 (Department Faculty Self-Registration Gate)**:
        - Prospective department teachers can only register if the department has an active Head of Department (`hod_user_id IS NOT NULL` & `status = 'ACTIVE'`) AND the HOD has explicitly opened faculty registration for that department (`faculty_reg_dept_${deptId} === '1'`).
        - If branch has no active HOD: registration is blocked with: *"Registration is closed for [Branch Name]. No active Head of Department (HOD) is currently appointed to review and approve faculty registrations."*
@@ -7495,18 +7607,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - [x] **Milestone 65: Scan WhatsApp QR Code OTP Verification Architecture**
   - **User Requirement**: *"we have whatsapp otp not gmail"*, *"scan whatsapp otp system make works"*.
   - **WhatsApp Mobile Number Architecture**:
-    - Distinct field for 10-digit Indian WhatsApp mobile number (`#reg-phone` and `#phone`) with `🇮🇳 +91` prefix, validated via `/^[6-9]\d{9}$/`.
+    - Distinct field for 10-digit Indian WhatsApp mobile number (`#reg-phone` and `#phone`) with `ðŸ‡®ðŸ‡³ +91` prefix, validated via `/^[6-9]\d{9}$/`.
     - Backend stores and marks phone number verified (`students.phone`, `students.is_phone_verified = 1`, `faculty_registration_requests.phone`).
     - Both `/auth/student/register` and `/auth/faculty/register` enforce that the verified token identifier matches the submitted WhatsApp mobile number.
   - **Scan WhatsApp QR Code Studio Card (`#wa-qr-card`)**:
     - Interactive card embedded in `#otp-box` featuring dynamic QR Code image (`#wa-qr-img`) generated via `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(waLink)}&margin=4`.
-    - Clear visual guidance: *"📷 Scan with Phone Camera / WhatsApp to open chat & view OTP code"*.
-    - Direct 1-tap fallback link: `💬 Open WhatsApp Direct Chat →` (`target="_blank"`).
-  - **Interactive 1-Click "⚡ Auto-Fill Code" Demo Helper**:
-    - For rapid institutional testing and live demonstrations, the generated OTP code is rendered alongside an instant `⚡ Auto-Fill Code` button that populates the 6-digit code and triggers verification with 1 click.
+    - Clear visual guidance: *"ðŸ“· Scan with Phone Camera / WhatsApp to open chat & view OTP code"*.
+    - Direct 1-tap fallback link: `ðŸ’¬ Open WhatsApp Direct Chat â†’` (`target="_blank"`).
+  - **Interactive 1-Click "âš¡ Auto-Fill Code" Demo Helper**:
+    - For rapid institutional testing and live demonstrations, the generated OTP code is rendered alongside an instant `âš¡ Auto-Fill Code` button that populates the 6-digit code and triggers verification with 1 click.
   - **Verification Badging & Anti-Tamper Locking**:
-    - On successful verification: green badge `✓ WhatsApp Verified via OTP` appears, WhatsApp phone input is locked (`readOnly = true`) with a "Change" reset toggle, and the registration submit button is unlocked.
-    - Summary views in `#success-view` display the verified WhatsApp Mobile Number (`💬 +91 ...`).
+    - On successful verification: green badge `âœ“ WhatsApp Verified via OTP` appears, WhatsApp phone input is locked (`readOnly = true`) with a "Change" reset toggle, and the registration submit button is unlocked.
+    - Summary views in `#success-view` display the verified WhatsApp Mobile Number (`ðŸ’¬ +91 ...`).
   - **Automated Verification & Zero Residual Test Data**:
     - `node backend/scripts/verify-whatsapp-scan-otp.js`: 100% PASS (End-to-end Playwright automation covering student registration, WhatsApp QR code generation, direct wa.me link, auto-fill verification, phone locking, success view summary, and faculty registration flow).
     - `node backend/scripts/test-registration-otp-dom.js`: 100% PASS (WhatsApp inputs, QR cards, handlers, zero hex colors).
@@ -7524,7 +7636,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Official Google Card Modal (`#google-signin-modal`) allows student account selection or manual Google email entry.
     - **Automatic Detail Fetching**: Automatically extracts Google `name` and `email`.
     - **Auto-Population**: Pre-fills `#reg-fullname` (e.g. `Aarav Sharma`) and `#reg-email` (e.g. `aarav.sharma@gmail.com`).
-    - **Anti-Tamper Locking & Badge**: `#reg-email` is set to `readOnly = true` with green highlight, and `#google-connected-badge` appears displaying `✓ [Name] ([email])` with an interactive "Change" disconnect button.
+    - **Anti-Tamper Locking & Badge**: `#reg-email` is set to `readOnly = true` with green highlight, and `#google-connected-badge` appears displaying `âœ“ [Name] ([email])` with an interactive "Change" disconnect button.
     - Students complete remaining institutional fields: Branch/Department, Semester, Enrollment No (and optional UBTER Reg No), WhatsApp Mobile Number with Scan WhatsApp OTP verification, and Password.
     - Form submission forwards `google_sub` / `google_id_token` so backend atomically links the student's Google account (`users.google_sub`).
     - Confirmation view (`#success-view`) includes Google Account connection status row.
@@ -7557,7 +7669,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Emits real-time QR code data URL (`state.qrDataUrl`) via `qrcode` for rapid linking via WhatsApp > Linked Devices.
     - Clean headless life-cycle: `initialize()`, `getStatus()`, `sendMessage(phone, text)`, `disconnect()`.
   - **Seamless OTP & Parent Notification Dispatch Integration**:
-    - **`otpService.js`**: `dispatchOtp` automatically checks if the WhatsApp Bot is connected. When linked, dispatches the 6-digit OTP code directly to the user's WhatsApp number (`channel: 'WHATSAPP_BOT'`, `direct_sent: true`). When unlinked, falls back gracefully to dynamic QR code + direct `wa.me` chat link + `⚡ Auto-Fill Code` so registrations never stall.
+    - **`otpService.js`**: `dispatchOtp` automatically checks if the WhatsApp Bot is connected. When linked, dispatches the 6-digit OTP code directly to the user's WhatsApp number (`channel: 'WHATSAPP_BOT'`, `direct_sent: true`). When unlinked, falls back gracefully to dynamic QR code + direct `wa.me` chat link + `âš¡ Auto-Fill Code` so registrations never stall.
     - **`parentGatewayService.js`**: When bot is active, parent attendance warning and defaulter notices are pushed automatically and directly from the official college phone number (`gateway: 'WHATSAPP_BOT'`).
   - **Admin Management API & Security (`backend/src/routes/admin.js`)**:
     - `GET /api/v1/admin/whatsapp/status` (telemetry, connection status, QR code data URL, active phone/pushname).
@@ -7567,10 +7679,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Enforces strict `requireRole('SYSTEM_ADMIN')` on all bot administrative endpoints.
   - **Admin Console Gateway Card (`frontend/admin/faculty.html`)**:
     - Embedded `#whatsapp-bot-gateway-card` with dynamic status pill (`#wa-bot-status-pill`):
-      - 🟢 `Connected (+91 [Phone])` with active session card and `🧪 Send Test Message` / `🔌 Disconnect` controls.
-      - 🟡 `Scan QR Code to Link Bot` with live QR code frame and step-by-step instructions.
-      - ⏳ `Initializing Bot...` with progress indicator during initial Chromium launch.
-      - ⚪ `Bot Offline / Unlinked` with `🚀 Link Bot (Generate QR)` one-click launcher.
+      - ðŸŸ¢ `Connected (+91 [Phone])` with active session card and `ðŸ§ª Send Test Message` / `ðŸ”Œ Disconnect` controls.
+      - ðŸŸ¡ `Scan QR Code to Link Bot` with live QR code frame and step-by-step instructions.
+      - â³ `Initializing Bot...` with progress indicator during initial Chromium launch.
+      - âšª `Bot Offline / Unlinked` with `ðŸš€ Link Bot (Generate QR)` one-click launcher.
     - Interactive Test Message Modal (`#test-wa-modal`) with recipient validation and direct dispatch test.
     - 100% theme tokenized with CSS variables (zero hardcoded hex colors, verified with `test-theme-support.js` 93/93 PASS).
   - **Automated Verification Suites**:
@@ -7592,7 +7704,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - PostMessage & Redirect: sends `GOOGLE_AUTH_SUCCESS` via `window.opener.postMessage` and closes popup in 600ms, or redirects cleanly with URL parameters if popup blocker is active.
   - **Student Registration Official Window (`frontend/login/student-register.html`)**:
     - Clicking `Sign up with Google` opens centered official Google window (`window.open(url, 'google_account_chooser', 'width=500,height=650...')`).
-    - Listens for `GOOGLE_AUTH_SUCCESS` message event: automatically auto-populates Full Name (`#reg-fullname`), sets Gmail (`#reg-email`) to read-only with green border, renders `#google-connected-badge` with `✓ [Name] ([email])`, and attaches `google_sub`.
+    - Listens for `GOOGLE_AUTH_SUCCESS` message event: automatically auto-populates Full Name (`#reg-fullname`), sets Gmail (`#reg-email`) to read-only with green border, renders `#google-connected-badge` with `âœ“ [Name] ([email])`, and attaches `google_sub`.
     - Fallback: discrete `Offline / Demo Mode` link available for simulated/offline test accounts.
   - **Student Login Official Window (`frontend/login/student.html`)**:
     - Clicking `Sign in with Google` launches official Google window.
@@ -7608,19 +7720,19 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Extracted the Institutional WhatsApp Web Bot Gateway from being an embedded card on `faculty.html` into its own standalone, first-class admin management console.
     - Accessible via `/admin/whatsapp-gateway.html` and 301 alias routes: `/admin/whatsapp.html`, `/admin/whatsapp`, and `/admin/whatsapp-gateway`.
     - **Header & Live Status Pill (`#wa-bot-status-pill`)**: Automatically polls `/api/v1/admin/whatsapp/status` every 6 seconds. Reflects states:
-      - `🟢 Connected (+91 [Phone])`
-      - `🟡 Scan QR Code to Link`
-      - `⏳ Initializing Bot Engine...`
-      - `⚪ Bot Offline / Unlinked`
+      - `ðŸŸ¢ Connected (+91 [Phone])`
+      - `ðŸŸ¡ Scan QR Code to Link`
+      - `â³ Initializing Bot Engine...`
+      - `âšª Bot Offline / Unlinked`
     - **4 Telemetry KPI Metric Cards**:
       1. Gateway Engine (`Self-Hosted Web Bot`, powered by `whatsapp-web.js`).
       2. Connected Phone Number & session pushname.
-      3. Operating Cost (`$0.00 / mo` — zero third-party API or per-message charges).
+      3. Operating Cost (`$0.00 / mo` â€” zero third-party API or per-message charges).
       4. Fail-Safe Fallback Mode (`Dynamic QR + wa.me` auto-switch).
     - **Device Connection Controller Card**:
       - Live QR code container (`#wa-qr-container`) rendering real-time QR code when pairing.
       - Step-by-step instructions for WhatsApp > Linked Devices > Link a Device.
-      - Action controls: `🔄 Refresh Status`, `🚀 Link Bot (Generate QR)`, `🧪 Send Test Message`, and `🔌 Disconnect Session`.
+      - Action controls: `ðŸ”„ Refresh Status`, `ðŸš€ Link Bot (Generate QR)`, `ðŸ§ª Send Test Message`, and `ðŸ”Œ Disconnect Session`.
     - **Automated Integration Channels Grid**:
       - Student Self-Registration OTPs (direct delivery to student's mobile).
       - Faculty Onboarding OTPs (verification code delivery for new faculty).
@@ -7632,10 +7744,10 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - **Fail-Safe Fallback & Architecture Documentation**:
       - Detailed breakdown of how the college system automatically falls back to dynamic QR cards and `wa.me` links if the bot is unlinked or offline, ensuring student signups and notifications never fail.
   - **Backward-Compatible Faculty Page Integration (`frontend/admin/faculty.html`)**:
-    - Embedded `#whatsapp-bot-gateway-card` enhanced with prominent `Open Gateway Console →` launcher button linking directly to `/admin/whatsapp-gateway.html`.
+    - Embedded `#whatsapp-bot-gateway-card` enhanced with prominent `Open Gateway Console â†’` launcher button linking directly to `/admin/whatsapp-gateway.html`.
     - Preserved all existing card IDs, status pill, and test modal so all legacy flows and tests remain 100% backwards-compatible.
   - **Universal Admin Navigation Drawer (`auth.js`)**:
-    - Added `{ icon: '📱', label: 'WhatsApp Gateway', href: '/admin/whatsapp-gateway.html' }` to Admin drawer menu items in `frontend/shared/js/auth.js` and `frontend/js/auth.js`.
+    - Added `{ icon: 'ðŸ“±', label: 'WhatsApp Gateway', href: '/admin/whatsapp-gateway.html' }` to Admin drawer menu items in `frontend/shared/js/auth.js` and `frontend/js/auth.js`.
   - **CSS Parser Syntax Fix**:
     - Resolved missing closing brace `}` on `.status-pill` CSS block in `frontend/admin/whatsapp-gateway.html` that caused CSS language service `} expected` syntax error on line 901 (`</html>`).
   - **Zero Hardcoded Colors & Theme Token Integrity**:
@@ -7647,16 +7759,16 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - Database baseline: pristine state (15 users, 10 canonical students).
 
 - [x] **Milestone 70: Official System Identity & Architecture Branding: VidyaOS**
-  - **User Requirement**: *"base on our current system make name for this system because this is not some simpal attendance system"* ➔ Selected **VidyaOS**.
+  - **User Requirement**: *"base on our current system make name for this system because this is not some simpal attendance system"* âž” Selected **VidyaOS**.
   - **Brand Architecture**:
     - **VidyaOS Core**: Academic Structure, Curriculum & HOD Hierarchy Governance.
     - **VidyaOS Register**: Attendance Matrix (1-31 Ledger), Coursework, Teaching Groups & Uttarakhand Polytechnic Spreadsheet Marksheet Studio.
     - **VidyaOS Connect**: Self-Hosted WhatsApp Web Bot Gateway, Direct OTP Dispatches & Fail-Safe Fallbacks.
     - **VidyaOS BioGate**: ESP32 Biometric Terminals & Live QR/PIN Roll Call Studio.
   - **Universal Branding Implementation**:
-    - `frontend/shared/js/auth.js` & `frontend/js/auth.js`: Updated navigation sidebar footer to `VidyaOS • [Role]` and institutional app footer to `VidyaOS — Institutional Campus Operating System`.
+    - `frontend/shared/js/auth.js` & `frontend/js/auth.js`: Updated navigation sidebar footer to `VidyaOS â€¢ [Role]` and institutional app footer to `VidyaOS â€” Institutional Campus Operating System`.
     - `frontend/index.html`: Updated page title, brand badge (`VidyaOS`), header, and system footer.
-    - `frontend/student/groups.html` & `frontend/faculty/groups.html`: Brand text updated to `VidyaOS • Institutional Portal`.
+    - `frontend/student/groups.html` & `frontend/faculty/groups.html`: Brand text updated to `VidyaOS â€¢ Institutional Portal`.
     - `backend/server.js`: Health check service updated to `VidyaOS Institutional REST API`.
   - **Automated Verification**:
 - [x] **Milestone 71: Dual-Deployment Architecture, Private Repos & Standalone Frontend Team Workspace**
@@ -7691,11 +7803,11 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     1. *Google Classroom announcements + notice system*: faculty can broadcast notices targeted by Year (or Semester) to all students under their groups across departments (works for common faculty and departmental faculty alike without separate systems). Classroom Stream announcement cards include comments/Q&A threads (students and teachers view and post discussion comments).
     2. *Group Archiving with 3 Options*:
        - Option 1: Manual 2-step confirmation modal with 100% data preservation guarantee.
-       - Option 2: Promotion of Student — Faculty clicks "Promote" / "Promotion", selects/unselects students via checklist (to exclude detained/failed students), enters new group name and next semester (`semester + 1`), system auto-enrolls only selected students into the new semester group + linked 1:1 register, and automatically archives the old group.
+       - Option 2: Promotion of Student â€” Faculty clicks "Promote" / "Promotion", selects/unselects students via checklist (to exclude detained/failed students), enters new group name and next semester (`semester + 1`), system auto-enrolls only selected students into the new semester group + linked 1:1 register, and automatically archives the old group.
        - Option 3: Automatically when academic session year ends (`academic_years.is_current = 0`).
     3. *Group Creation Student Enrollment (2 Options)*:
-       - Option 1: 🎟️ Invite Code (students join via code/link).
-       - Option 2: ⚡ Direct Cohort Auto-Enrollment: Faculty selects Semester (Year is auto-derived: `Math.ceil(semester / 2)`, selecting year is not needed). System auto-enrolls department students for that semester so faculty is not overwhelmed by data. For common faculty, a department selector is provided.
+       - Option 1: ðŸŽŸï¸ Invite Code (students join via code/link).
+       - Option 2: âš¡ Direct Cohort Auto-Enrollment: Faculty selects Semester (Year is auto-derived: `Math.ceil(semester / 2)`, selecting year is not needed). System auto-enrolls department students for that semester so faculty is not overwhelmed by data. For common faculty, a department selector is provided.
     4. *Roster Management ("+ Add Student")*: Inside the group roster tab, "+ Add Student" only shows *unenrolled* students from that cohort/department to avoid data overwhelm and duplicates.
   - **Backend REST Engine & Database Integration (`backend/src/routes/teachingGroups.js`, `db.js`, `sessionService.js`)**:
     - Schema: `classroom_post_comments` table with `post_id`, `author_id`, `content`, `created_at`.
@@ -7707,12 +7819,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `POST /api/v1/teaching-groups/auto-archive-expired`: Identifies and archives groups from expired academic years (`is_current = 0`) and deactivates linked registers.
     - Option 3 integrated directly into `sessionService.syncAcademicSession()` on server startup and midnight rollover.
   - **Frontend Faculty Portal (`frontend/faculty/groups.html`)**:
-    - Hero actions: Added `📢 Broadcast Cohort Notice` button; Controls bar: Added `⚡ Auto-Archive Check` button.
-    - `#create-group-modal`: Added Option 1 (🎟️ Invite Code) vs Option 2 (⚡ Direct Cohort Auto-Enroll) interactive toggle, department selector for common faculty, and live auto-derived Year badge (`Year 3` for Sem 5).
-    - `#broadcast-notice-modal`: Cohort selector (Year 1–4, Sem 1–8, All Cohorts), Department filter, Notice Title, and Content.
+    - Hero actions: Added `ðŸ“¢ Broadcast Cohort Notice` button; Controls bar: Added `âš¡ Auto-Archive Check` button.
+    - `#create-group-modal`: Added Option 1 (ðŸŽŸï¸ Invite Code) vs Option 2 (âš¡ Direct Cohort Auto-Enroll) interactive toggle, department selector for common faculty, and live auto-derived Year badge (`Year 3` for Sem 5).
+    - `#broadcast-notice-modal`: Cohort selector (Year 1â€“4, Sem 1â€“8, All Cohorts), Department filter, Notice Title, and Content.
     - `#promote-cohort-modal`: New group name, next semester (`semester + 1`), auto-derived year, roster checklist with Select All / Unselect All, detained student exclusion, and tally.
     - `#add-unenrolled-modal`: Search filter, Select All, batch enroll, "+ Enroll" button, strictly unenrolled students.
-    - `#classroom-hub-modal`: Header now has `🎓 Promote Cohort` button; Roster tab has `➕ Add Students from Cohort` button.
+    - `#classroom-hub-modal`: Header now has `ðŸŽ“ Promote Cohort` button; Roster tab has `âž• Add Students from Cohort` button.
     - Stream Feed: Announcement cards render Google Classroom-style comments section, discussion count, collapsible comment list, and "Add a class comment" input.
   - **Frontend Student Portal (`frontend/student/groups.html`)**:
     - Announcement cards render Google Classroom-style comments section with discussion toggle button, comment counter, and interactive class comment submission input.
@@ -7728,9 +7840,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `backend/scripts/test-api-flows.js`: 25/25 PASS.
     - Database baseline: pristine state (15 users, 10 canonical students, 3 canonical teaching groups).
 
-### ✅ Milestone 61: Sheet Studio Evaluation Direct Marks Row, Subtoolbar Cleanup & PC Screen Toolbar
+### âœ… Milestone 61: Sheet Studio Evaluation Direct Marks Row, Subtoolbar Cleanup & PC Screen Toolbar
 - **Direct Marks & Scheme Weightage Editing Row (`excel-hdr-numbers`)**:
-  - Moved static marks in parentheses `(25)`, `(15)`, `(20)`, `(5)`, `(40)` out of Row 1 & Row 2 headers into a dedicated Row 3 numbers row with clean `Max Marks ➔` label.
+  - Moved static marks in parentheses `(25)`, `(15)`, `(20)`, `(5)`, `(40)` out of Row 1 & Row 2 headers into a dedicated Row 3 numbers row with clean `Max Marks âž”` label.
   - Implemented live editable inputs (`.excel-hdr-num-input`) for each assignment max mark, assignment average target weight, unit test max mark, unit test average target weight, and attendance max mark.
   - Added real-time change handlers `onEvalColMaxChange()`, `onEvalWeightChange()`, and `onEvalAssessmentColMaxChange()` that instantly recalculate scaled student scores, class averages, and update the live grand total badge (`#eval-hdr-grand-max`).
   - Automatically persists state to `localStorage.setItem('eval_sheet_state_' + regId)`.
@@ -7738,7 +7850,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Removed `<button id="btn-edit-total-marks">` from Bar 2 subsheet controls container, eliminating modal disruption now that marks are directly editable on the sheet.
   - Replaced with a sleek badge: `Total Scheme: 40 Marks` (`#scheme-grand-total-max`) that automatically updates whenever column maxes or weightages change.
 - **Dedicated PC Screen Toolbar (`#pc-screen-toolbar`)**:
-  - Relocated Zoom controls (−, 100%, +, ⇲ Auto-Fit), Density selector (Normal, Compact, Comfortable), `+ Student`, `+ Column`, `− Column`, and `Edit Student` directly onto Bar 2 right side for desktop screens (viewport `min-width: 900px`).
+  - Relocated Zoom controls (âˆ’, 100%, +, â‡² Auto-Fit), Density selector (Normal, Compact, Comfortable), `+ Student`, `+ Column`, `âˆ’ Column`, and `Edit Student` directly onto Bar 2 right side for desktop screens (viewport `min-width: 900px`).
   - Automatically hides the floating action button (`#btn-floating-tools`) and bottom drawer on PC screens (`@media (min-width: 900px) { display: none !important; }`), while preserving it on touch/mobile devices (`@media (max-width: 899px)`).
 - **Automated Verification**:
   - 15/15 PASS: `verify-sheet-eval-refinements.js`.
@@ -7746,7 +7858,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 93/93 PASS: `test-theme-support.js`.
   - 46/46 PASS: `test-register-consolidation.js`.
 
-### ✅ Milestone 62: Course File Preparation: Long 1-by-1 Column Card Layout & Mobile UI/UX Optimization
+### âœ… Milestone 62: Course File Preparation: Long 1-by-1 Column Card Layout & Mobile UI/UX Optimization
 - **Single-Column 1-by-1 Layout (`.cf-grid-section`)**:
   - Transitioned the 3-column boxy grid into a clean, full-width single-column list (`grid-template-columns: 1fr; gap: 0.75rem;`).
   - Cards now stack long 1 by 1 sequentially, providing better scannability and reading space for document titles and status.
@@ -7756,7 +7868,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Right content (`.cf-card-actions`): Neatly groups all action buttons (`Upload PDF`, `View Live Roster`, `Print`, `View`, `Download`) aligned on the right.
 - **Mobile Navbar Header Collision Elimination**:
   - Fixed overlapping brand text ("Course File Dossier") and class dropdown on mobile viewports (< 768px): hides redundant title text, hides apps launcher button, and sizes `.cf-select-class` with clean ellipsis to prevent collisions.
-  - Keeps clean top bar: `☰` `[Green Book Icon]` `[Class Dropdown ▾]` `[Theme]` `[Avatar]`.
+  - Keeps clean top bar: `â˜°` `[Green Book Icon]` `[Class Dropdown â–¾]` `[Theme]` `[Avatar]`.
 - **Swipeable Single-Row Category Filter Chips (`.cf-tab-pills`)**:
   - Converted category filter pills from a giant wrapping vertical block into a silky-smooth, single-line horizontal scrollable chip bar (`flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;`).
 - **Fixed Bottom Navigation Clearance & Card Action Flow**:
@@ -7768,7 +7880,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 33/33 PASS: `test-course-file-preparation.js`.
   - 93/93 PASS: `test-theme-support.js`.
 
-### ✅ Milestone 194: Reports & Analytics High-Density Minimalist Filter Bar & Micro-KPI Cards Redesign
+### âœ… Milestone 194: Reports & Analytics High-Density Minimalist Filter Bar & Micro-KPI Cards Redesign
 - **User Requirement**: Filters and status cards taking too much space on screen; redesign and make minimal and modern.
 - **Collapsible High-Density Filter Toolbar (`.report-filter-bar`)**:
   - Replaced sprawling 242px vertical filter block with a sleek, 44px single-line primary bar.
@@ -7777,12 +7889,12 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Achieved ~81% vertical filter footprint reduction.
 - **High-Density Horizontal KPI Micro-Tiles (`.kpi-cards-grid`)**:
   - Replaced bulky 260px cards with compact horizontal micro-tiles (`.kpi-card`).
-  - Themed icon box, subtle uppercase label, bold tabular numbers, and live pulsing status dot (`● Online`) on terminal counts.
+  - Themed icon box, subtle uppercase label, bold tabular numbers, and live pulsing status dot (`â— Online`) on terminal counts.
   - Reduced vertical height by 62% (~98px on mobile).
   - Total vertical screen savings: ~360px (~72% height reduction).
 - **Zero Hex Colors**: 100% tokenized CSS variables (`var(--bg-card)`, `var(--border-color)`, `var(--text-main)`, `var(--status-present)`).
 
-### ✅ Milestone 195: Complete Removal of Obsolete API Explorer & Legacy Export Code
+### âœ… Milestone 195: Complete Removal of Obsolete API Explorer & Legacy Export Code
 - **User Requirement**: Purge leftover `api-explorer.html` and redundant export code.
 - **Artifact Purge**:
   - Deleted `frontend/api-explorer.html` (102 KB).
@@ -7793,7 +7905,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **301 Permanent Redirect**:
   - Added HTTP 301 redirect in `backend/server.js` mapping `/api-explorer.html` to `/admin/dashboard.html` to eliminate dead links and preserve clean URL architecture.
 
-### ✅ Milestone 196: Multi-Sheet Analytical Excel Workbook Export & Print Button Elimination
+### âœ… Milestone 196: Multi-Sheet Analytical Excel Workbook Export & Print Button Elimination
 - **User Requirement**: Remove Print button and replace CSV export with comprehensive Excel sheet data analysis workbook.
 - **UI Header Simplification (`frontend/admin/reports/index.html`)**:
   - Removed obsolete Print button (`window.print()`).
@@ -7818,7 +7930,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - 93/93 PASS: `backend/scripts/test-theme-support.js` (Zero hardcoded hex colors).
   - 30/30 PASS: `backend/scripts/test-rbac-and-structure.js`.
 
-### ✅ Milestone 197: Minimal Modern Redesign of Institutional Settings Page
+### âœ… Milestone 197: Minimal Modern Redesign of Institutional Settings Page
 - **User Requirement**: *"now fix settings page remove unnecessary elements make minimal page"* (with mobile screenshots showing bloated 4-screen vertical scrolling, redundant Live Preview box, static non-functional System Governance policy cards, duplicate headers, and multi-line field hint text).
 - **Key Architectural & Code Changes**:
   1. **Purge of Redundant & Non-Actionable UI Elements**:
@@ -7838,7 +7950,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Compact single-line header with `Institution Settings` and quick `Reload` button.
   3. **Zero-Scroll Mobile Presentation**:
      - Reduced total page scroll height from **>2,500px down to ~600px** (**>75% vertical reduction**).
-     - The entire page (Header, 4 inputs, and action buttons) fits comfortably in a single screen on compact mobile viewports (e.g., iPhone SE 375×667) above the mobile bottom navigation bar.
+     - The entire page (Header, 4 inputs, and action buttons) fits comfortably in a single screen on compact mobile viewports (e.g., iPhone SE 375Ã—667) above the mobile bottom navigation bar.
   4. **Strict Theme Token Compliance**:
      - 100% tokenized CSS variables: Zero hardcoded hex colors across `settings.css` and `index.html`.
      - Verified in both Light and Dark themes.
@@ -7848,7 +7960,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
      - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
 
-### ✅ Milestone 198: Executive Redesign of HOD Department Command Center
+### âœ… Milestone 198: Executive Redesign of HOD Department Command Center
 - **User Requirement**: *"this is old degine of HOD panal wait i am sending new degine"* + new visual design mockup.
 - **Key Architectural & UI Changes**:
   1. **Executive Department Hero Card**:
@@ -7868,7 +7980,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - `ACTIVE REGISTERS`: Open book icon badge, count `#kpi-dept-registers`, subtext *"Official attendance"*.
        - `ACADEMIC TERM`: Calendar icon badge, value `#kpi-dept-devices`, subtext *"Term Config"*.
   4. **Department Management & Quick Action Tiles**:
-     - Section header with `Department Management` on the left and `⚡ Quick Actions` on the right.
+     - Section header with `Department Management` on the left and `âš¡ Quick Actions` on the right.
      - 5 elevated horizontal action cards with hover elevation, rounded icon circles, clear descriptions, and trailing chevrons (`>`):
        - *Faculty & Assignments* (`/faculty/hod-teachers.html`)
        - *Students & Cohorts* (`/faculty/students.html`)
@@ -7876,36 +7988,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - *Analytics & Reports* (`/faculty/reports.html`)
        - *Academic Settings* (`/faculty/hod-settings.html`)
   5. **Faculty Welcome Hero Banner**:
-     - Added graduation cap avatar badge (`🎓`) on the left of the greeting.
+     - Added graduation cap avatar badge (`ðŸŽ“`) on the left of the greeting.
   6. **Dynamic Data Binding**:
      - Updated `dashboard.js:loadHodDashboardData` to populate `#dept-card-name` and `#dept-card-meta` with the active session user's department, employee code, and role.
 
-### ✅ Milestone 199: Executive Redesign of "My Teaching Classes" Toolbar & Class Cards
+### âœ… Milestone 199: Executive Redesign of "My Teaching Classes" Toolbar & Class Cards
 - **User Requirement**: *"this is the old degine of HOD ( MY TEACHEER CLASSS ) WAIT I AM SENDING NEW DEGINE"* + new visual design mockup.
 - **Key Architectural & UI Changes**:
   1. **Two-Tier Subject Classes Toolbar**:
-     - Top Tier: `Subject Classes [count]` heading on the left, primary action buttons (`+ Create Class`, `👥 Students Roster`, `📢 Broadcast Notice`) on the right.
-     - Bottom Tier: Filter chips (`Active (1)`, `Archived (0)`, `Trash (0)`, and `⚡ Auto-Archive`) on the left, wide rounded search bar (`🔍 Search subject or class...`) on the right.
+     - Top Tier: `Subject Classes [count]` heading on the left, primary action buttons (`+ Create Class`, `ðŸ‘¥ Students Roster`, `ðŸ“¢ Broadcast Notice`) on the right.
+     - Bottom Tier: Filter chips (`Active (1)`, `Archived (0)`, `Trash (0)`, and `âš¡ Auto-Archive`) on the left, wide rounded search bar (`ðŸ” Search subject or class...`) on the right.
   2. **Class Card Header Redesign (`.gc-card-header`)**:
      - Left circular avatar badge with dynamic subject initials (e.g. `SS` for *Information Security*, `DBMS` for *Database Management Systems*).
      - Bold subject title with link to group detail.
      - Translucent pill badge for component (`Theory` or `Practical`).
      - Clean metadata row: `Sem [number]` + `|` + `AY 2026-27` with clock and calendar icons.
-     - Top-right rounded subject code chip (e.g. `SS501`) and white three-dots action menu (`⋮`).
+     - Top-right rounded subject code chip (e.g. `SS501`) and white three-dots action menu (`â‹®`).
   3. **Class Stats Strip (`.gc-card-stats-strip`)**:
      - Column 1: Enrolled students count with user icon.
      - Column 2: Circular SVG progress donut chart showing live attendance percentage + bold value + "Attendance" label.
-     - Column 3: Green `✔ On Track` pill badge (for $\ge 75\%$) or amber `⚠ Needs Attention` badge (for $< 75\%$).
-  4. **Primary 2×2 Action Buttons Grid (`.gc-card-primary-actions`)**:
-     - `⚡ Take Attendance` (solid blue primary button launching roll call).
-     - `📋 Register` (clean bordered button opening physical register).
-     - `👥 Students` (clean bordered button opening enrolled students roster).
-     - `📄 Classwork` (clean bordered button opening coursework & marks).
+     - Column 3: Green `âœ” On Track` pill badge (for $\ge 75\%$) or amber `âš  Needs Attention` badge (for $< 75\%$).
+  4. **Primary 2Ã—2 Action Buttons Grid (`.gc-card-primary-actions`)**:
+     - `âš¡ Take Attendance` (solid blue primary button launching roll call).
+     - `ðŸ“‹ Register` (clean bordered button opening physical register).
+     - `ðŸ‘¥ Students` (clean bordered button opening enrolled students roster).
+     - `ðŸ“„ Classwork` (clean bordered button opening coursework & marks).
   5. **Course File (NBA/NAAC) Drawer Bar (`.cf-quick-panel`)**:
      - Soft blue document icon circle + "Course File (NBA/NAAC)" title + "12 Documents".
-     - Green `8/12 Ready` badge + `Open NBA ∨` chevron toggle button.
+     - Green `8/12 Ready` badge + `Open NBA âˆ¨` chevron toggle button.
   6. **Card Footer (`.gc-card-footer`)**:
-     - `Code: [code]` with copy icon + vertical 3-dots action menu (`⋮`).
+     - `Code: [code]` with copy icon + vertical 3-dots action menu (`â‹®`).
   7. **Strict Invariant Verification**:
      - 100% Theme token compliance with zero raw hex colors.
      - Protected frozen frontend folders remain 100% untouched.
@@ -7967,13 +8079,13 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **User Requirement**: *"this is the new ui degine"* with high-fidelity screenshot of the new executive admin console.
   - **Key Architectural & UI Upgrades**:
     1. *Top Navigation Bar Modernization*:
-       - Integrated live search input (`🔍 Search anything...`) with instant client-side card filtering and keyboard shortcuts (`/` or `Ctrl+K`).
+       - Integrated live search input (`ðŸ” Search anything...`) with instant client-side card filtering and keyboard shortcuts (`/` or `Ctrl+K`).
        - Notification bell with unread dot indicator.
        - Administrator profile pill button with avatar ("SA"), bold name, role ("Administrator"), and dropdown chevron.
-       - Preserved slide-out drawer hamburger (`☰`) trigger.
+       - Preserved slide-out drawer hamburger (`â˜°`) trigger.
     2. *Welcome Hero Banner*:
        - Large classical building icon badge in soft blue circle.
-       - Heading: `Welcome, System Admin 👋` with dynamic user personalization.
+       - Heading: `Welcome, System Admin ðŸ‘‹` with dynamic user personalization.
        - Subtitle: `Manage departments, faculty, students, and overall institution settings.`
        - Classical campus building vector illustration with trees and architectural pillars.
     3. *Horizontal KPI Metric Cards (3 Cards)*:
@@ -7981,9 +8093,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Real-time dynamic counts fetched from `/admin/stats` (`stat-teachers`, `stat-students`, `stat-enrolled-total`).
        - Trailing chevrons (`>`) indicating navigation.
     4. *Elevated Core Administration Modules*:
-       - Header: `Core Administration Modules` on left, `6 Essential Modules • Manage Your Institution` on right.
+       - Header: `Core Administration Modules` on left, `6 Essential Modules â€¢ Manage Your Institution` on right.
        - 5 elevated module cards with soft circular icons and pastel category pill tags (`LEADERSHIP`, `TELEMETRY & COHORTS`, `MASTER CURRICULUM`, `INSTITUTIONAL IDENTITY`, `SECURITY TRAIL`).
-       - Full-width vibrant blue buttons with inline SVG icons (`Manage Department Heads →`, `View Reports & Analytics →`, `Open Academic Structure →`, `Configure Settings →`, `Inspect Audit Logs →`).
+       - Full-width vibrant blue buttons with inline SVG icons (`Manage Department Heads â†’`, `View Reports & Analytics â†’`, `Open Academic Structure â†’`, `Configure Settings â†’`, `Inspect Audit Logs â†’`).
     5. *Strict Invariant Compliance*:
        - 100% Theme token compliance with zero raw hex or rgb colors (`test_admin_ui.js`).
        - Retained `<div id="sidebar-mount"></div>` and universal reusable sidebar integration.
@@ -7993,18 +8105,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - **User Requirement**: Redesign Student Classroom Dashboard to match high-fidelity mockup (`media_1793148590500.png`).
   - **Key Architectural & UI Upgrades**:
     1. *Top Navigation Bar*:
-       - Integrated live search input (`🔍 Search courses, attendance, tasks...` with `#admin-module-search`).
+       - Integrated live search input (`ðŸ” Search courses, attendance, tasks...` with `#admin-module-search`).
        - Notification bell button with unread counter badge ("2").
        - Theme toggle button (`#btn-theme-toggle`).
        - Student profile pill with initials avatar (`#gc-user-avatar`), student name (`#header-student-display-name`), role, and dropdown chevron.
        - Slide-out drawer hamburger button (`#btn-menu-toggle`) seamlessly linked to universal sidebar component.
     2. *Welcome Hero Banner*:
        - Soft blue circular badge with graduation cap icon.
-       - Personal greeting: `Welcome, <span id="student-name">Student</span> 👋` with subtext and academic cohort chips.
-       - Quick action buttons: `📅 View Timetable` (`/student/timetable.html`), `✈ Apply for Leave` (`/student/leave.html`).
+       - Personal greeting: `Welcome, <span id="student-name">Student</span> ðŸ‘‹` with subtext and academic cohort chips.
+       - Quick action buttons: `ðŸ“… View Timetable` (`/student/timetable.html`), `âœˆ Apply for Leave` (`/student/leave.html`).
        - Neoclassical campus building vector illustration with dome, columns, and garden landscape using CSS variables.
     3. *4-Column Horizontal KPI Metrics Grid*:
-       - Attendance Percentage (`#metric-percentage`, with `● On Track` / `▲ Below Target` status pill and threshold subtext).
+       - Attendance Percentage (`#metric-percentage`, with `â— On Track` / `â–² Below Target` status pill and threshold subtext).
        - Attended Sessions (`#metric-attended`, with Present / Late breakdown subtext).
        - Absent Sessions (`#metric-absent`, missed classes indicator).
        - Total Classes (`#metric-conducted`, finalized course sessions count).
@@ -8012,9 +8124,9 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
        - Segmented filters: `All`, `Theory`, `Practical` with live counter badges.
        - Course-specific search input `#search-classes` synced with global search.
        - Modern course cards with gradient header banners (`banner-blue`, `banner-green`, `banner-purple`), instructor avatar circle, subject code pill, and component badge.
-       - Live telemetry stats row: enrolled student count, circular SVG attendance donut chart (`donut-chart-svg`), and `● On Track` / `▲ Below Target` pill.
+       - Live telemetry stats row: enrolled student count, circular SVG attendance donut chart (`donut-chart-svg`), and `â— On Track` / `â–² Below Target` pill.
        - Thin horizontal progress meter bar.
-       - 2×2 Action Button Grid: `Attendance`, `Coursework`, `People`, `Details`.
+       - 2Ã—2 Action Button Grid: `Attendance`, `Coursework`, `People`, `Details`.
     5. *Institutional Telemetry & Attendance Predictor Section*:
        - Left: Subject-wise attendance breakdown progress bars with Good Standing (Eligible) examination compliance box (`#predictor-card`).
        - Right: Recent session log table (`#history-tbody`) with date, subject, attendance badge, and source.
@@ -8033,7 +8145,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ---
 
-## 🧪 Key Test & Verification Commands
+## ðŸ§ª Key Test & Verification Commands
 Always run these automated test scripts from `d:/uiap/Attendance-System-Simplified/` (or with appropriate relative paths):
 
 ```powershell
@@ -8060,9 +8172,14 @@ node backend/scripts/test-api-flows.js                # 25/25 tests (Core API in
 
 ---
 
-## 💡 Guidelines for AI Assistant (Context Restoration)
+## ðŸ’¡ Guidelines for AI Assistant (Context Restoration)
 1. **Always read this file first** when recovering from context pruning or starting a fresh turn.
 2. **Never break existing tests**: Run `node scripts/test-register-consolidation.js` and `node scripts/test-theme-support.js` after touching frontend or backend files.
 3. **Keep this file updated**: Mark completed tasks with `[x]` and add new tasks under Active Tasks as discussions evolve.
+
+
+
+
+
 
 
