@@ -1,4 +1,40 @@
 
+### 🏛️ Milestone 298: Full-Stack MySQL Dialect Compatibility & Comprehensive Aiven Cloud Schema Upgrade
+- **Status**: 🟢 Completed & Pushed to GitHub
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `68ba0cc`)
+- **User Request**:
+  - Provided live Render startup logs showing 5 backend issues during Aiven MySQL boot:
+    1. `Bind parameters must not contain undefined` in academic session synchronization.
+    2. `BLOB, TEXT, GEOMETRY or JSON column 'syllabus_scheme' can't have a default value`.
+    3. `Syntax error near 'PRAGMA table_info('students')'` & `users`.
+    4. `Syntax error near 'AUTOINCREMENT'` in IoT and correction tables.
+    5. `Syntax error near '('now')'` in auto-close attendance session scanner.
+- **Root Cause & Structural Analysis**:
+  - SQLite and MySQL dialects diverged across date functions (`datetime('now')` vs `NOW()`), column inspection (`PRAGMA table_info` vs `information_schema.columns`), auto-increment keywords (`AUTOINCREMENT` vs `AUTO_INCREMENT`), column default restrictions (MySQL disallows defaults on `TEXT`), and upsert idioms (`ON CONFLICT(...) DO UPDATE SET` vs `ON DUPLICATE KEY UPDATE`).
+  - In addition, the MySQL production database was missing columns (`auto_close_at`, `verification_pin`, `device_id`, etc.) and tables (`classroom_post_comments`, `course_files`, `course_file_documents`, `faculty_media_assets`) created in recent milestones.
+- **Implementation & Architectural Upgrades**:
+  1. **Intelligent MySQL SQL Dialect Translator (`src/config/db.js`)**:
+     - Automatically translates SQLite-isms to MySQL syntax:
+       - `PRAGMA table_info('table')` ➔ `SELECT COLUMN_NAME as name, DATA_TYPE as type FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'table'`
+       - `datetime('now')` ➔ `NOW()`
+       - `datetime('now', '-X days')` ➔ `DATE_SUB(NOW(), INTERVAL X DAY)`
+       - `datetime(col, '+X hours')` ➔ `DATE_ADD(col, INTERVAL X HOUR)`
+       - `AUTOINCREMENT` ➔ `AUTO_INCREMENT`
+       - `TEXT DEFAULT 'val'` ➔ `VARCHAR(255) DEFAULT 'val'`
+       - `ON CONFLICT(...) DO UPDATE SET ...` ➔ `ON DUPLICATE KEY UPDATE ...`
+  2. **Parameter Undefined Guard**:
+     - Normalized query parameter arrays (`params.map(p => p === undefined ? null : p)`), preventing `mysql2` bind parameter exceptions.
+  3. **Standardized Transaction Connection Interface**:
+     - Wrapped MySQL pool connection in `getConnection()` and `withTransaction()` so `conn.query(sql)` returns normalized row objects identical to SQLite and `db.query()`.
+  4. **Production Schema Upgrade on Aiven MySQL**:
+     - Added all missing columns to `attendance_sessions`, `user_sessions`, `students`, `devices`, `assessments`, `teaching_groups`, and `leave_applications`.
+     - Created missing tables: `classroom_post_comments`, `course_files`, `course_file_documents`, and `faculty_media_assets`.
+  5. **Startup Migrations Compatibility**:
+     - Updated `curriculumModel.js` (`VARCHAR(50) DEFAULT '2026-27'`), `studentMigrationService.js`, and `iotMigrationService.js` to run safely and idempotently across both SQLite and MySQL.
+- **Verification**:
+  - Executed end-to-end verification of all 7 startup services against live Aiven MySQL: 100% PASS with ZERO warnings or errors.
+  - Pushed to `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `68ba0cc`).
+
 ### 🏛️ Milestone 297: Mobile Admin Dashboard & Sidebar Drawer Alignment with Design Reference
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `f4b5fd3`)
