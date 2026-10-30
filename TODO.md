@@ -1,4 +1,37 @@
 
+### 🚀 Milestone 293: Eliminate Fake Data & Connect Real-Time Database Metrics Across Admin & Faculty Dashboards
+- **Status**: ✅ Completed & Pushed to GitHub
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `51a4f5d`)
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `d4a7c05`)
+- **User Request**:
+  - *"admin dashboard has fake data fix it also check facultiy dashboard for fake data"*
+- **Root Cause Analysis**:
+  1. **Admin Dashboard**:
+     - Hardcoded HTML fallbacks in `dashboard.html`: `stat-students` had default `248`, Donut had static `79% Present` and `248 Enrolled`, Campus Avg had `78.7%`, and Department Breakdown had static dummy bars for `82% IT`, `76% CE`, `80% EE`, `71% ME`, `85% EC`, `78% AP` (including non-existent department `AP`).
+     - In `dashboard.js`: `d.total_enrolled_students || d.total_students || 248` and `estPresent = Math.round(totalStudents * 0.79)` fell back to fake 248 when the count was 0.
+     - Backend `AdminModel.getStats()` lacked live daily attendance aggregation and department-by-department telemetry.
+  2. **Faculty / HOD Dashboard**:
+     - Hardcoded HTML fallbacks in `faculty/dashboard/dashboard.html`: `kpi-dept-teachers` had `4`, `kpi-dept-students` had `142`, `kpi-dept-subjects` had `18`, `kpi-dept-registers` had `12`, with static trends `+8% ↑`, `+5% ↑`, `+3% ↑`.
+     - In `faculty/dashboard/dashboard.js`: fallback operators `?? 4`, `?? 142`, `?? 18`, `?? 12` were used because `hodModel.js` returned metrics wrapped in `data.counts.*` rather than top-level fields.
+     - Component `dept-hero.js` had hardcoded default `'Department of Computer Science'` fallback.
+- **Fixes Applied**:
+  - **Backend (`src/models/adminModel.js`, `src/models/hodModel.js`)**:
+    - Upgraded `AdminModel.getStats()` to execute real SQL aggregation for today's active sessions, computing true `today_attendance` (`present_count`, `absent_count`, `total_records`, `attendance_pct`, `has_records`).
+    - Added real dynamic `department_breakdown` querying all institutional departments (`ECE`, `EE`, `IT`, `ME`, `CE`, `PHARM`) with live student enrollments, marked scans, and attendance rates.
+    - Upgraded `HodModel.getDashboard(deptId)` to expose flattened real metrics directly (`total_teachers`, `total_students`, `total_subjects`, `active_registers`, `department_name`) alongside `counts`.
+  - **Frontend Admin Dashboard (`admin/dashboard/`)**:
+    - Completely replaced static bars in `dashboard.html` with dynamic SVG/DOM generator in `dashboard.js`.
+    - Dynamic Donut Chart: reactive to actual records today (defaults to 0% and 0 enrolled on a fresh system).
+    - Department Filter Dropdown: populated dynamically from live institutional departments.
+    - Department Breakdown: renders actual active departments from database telemetry.
+  - **Frontend Faculty Dashboard (`faculty/dashboard/`, `dept-hero/`)**:
+    - Replaced all hardcoded HTML metrics (`4`, `142`, `18`, `12`) with `0` and clean semantic tags (`Staff`, `Enrolled`, `Curriculum`, `Active`).
+    - Eliminated all fake number fallbacks in `dashboard.js`: now reads `d.total_teachers ?? d.counts?.teachers ?? 0`, etc.
+    - Updated `dept-hero.js` to resolve real department names dynamically from user session and department data rather than falling back to fake Computer Science.
+- **Verification**:
+  - Tested `/api/v1/admin/stats` and verified it returns 100% real database metrics: exact student count, exact teacher count, exact departments, and 0% today attendance when no sessions exist.
+  - Tested `/api/v1/hod/dashboard` and verified it returns authentic real counts with zero mock defaults.
+
 ### 🚀 Milestone 292: Untrack SQLite Database from Remote & Implement Render Environment Admin Bootstrapping
 - **Status**: ✅ Completed & Pushed to GitHub
   - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `81fd8b0`)
