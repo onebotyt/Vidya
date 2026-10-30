@@ -1,4 +1,39 @@
 
+### 🏛️ Milestone 299: Universal SQL Syntax Harmonization Across MySQL & SQLite (Teaching Groups, Admin, HOD, and Student Models)
+- **Status**: 🟢 Completed & Pushed to GitHub
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `f631b3a`)
+- **User Request**:
+  - Provided error screenshot:
+    `You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '', '-2 days')) ORDER BY a.due_date ASC LIMIT 1) as upcoming_work, ' at line 16`
+  - Requested full audit of all SQL code in backend, identifying all dialect-specific syntax errors and fixing them permanently.
+- **Root Cause & Comprehensive Audit**:
+  1. **Two-Argument `date()` in MySQL**:
+     - `teachingGroupModel.js` line 153 used `date('now', '-2 days')`. In MySQL, `DATE()` only takes 1 argument. Passing 2 arguments causes `syntax error near '', '-2 days'))`.
+  2. **SQLite Pipe Concatenation (`||`)**:
+     - `a.title || ':::' || COALESCE(a.due_date, '') || ':::' || a.type` in MySQL evaluates as logical OR instead of string concatenation.
+  3. **Non-Existent MySQL Functions**:
+     - `julianday('now')` and `CAST(... AS INTEGER)` in line 155 of `teachingGroupModel.js` fail in MySQL (`FUNCTION julianday does not exist` and `INTEGER` is an invalid cast target in MySQL).
+  4. **Scalar `MAX()` vs `GREATEST()`**:
+     - `MAX(0, 7 - ...)` fails in MySQL because `MAX` is purely an aggregate function across rows, whereas scalar maximum requires `GREATEST()`.
+  5. **`DATE('now')` Literal Strings**:
+     - Multiple models (`adminModel.js`, `hodModel.js`, `studentModel.js`) used `DATE('now')`, which evaluates to `NULL` or throws syntax errors in MySQL instead of `CURDATE()`.
+- **Implementation & Architectural Upgrades**:
+  1. **Teaching Groups Model Refactoring (`teachingGroupModel.js`)**:
+     - Standardized `upcoming_work` to use `CONCAT(a.title, ':::', COALESCE(a.due_date, ''), ':::', a.type)`.
+     - Standardized date window to `a.due_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)`.
+     - Standardized remaining days calculation to `GREATEST(0, 7 - DATEDIFF(NOW(), COALESCE(tg.deleted_at, NOW())))`.
+  2. **Universal SQLite Function Registry (`db.js`)**:
+     - Registered `CONCAT`, `DATEDIFF`, `GREATEST`, `LEAST`, `YEAR`, `MONTH`, and `DAY` custom functions in SQLite.
+     - Ensures that modern, portable SQL syntax runs 100% natively in BOTH SQLite (local dev) and MySQL (Aiven Cloud production).
+  3. **Universal SQL Translator Enhancement (`db.js`)**:
+     - Added automatic runtime translation for `date('now', '-X days')`, `julianday(...)`, scalar `MAX(0, ...)`, `strftime('%Y')`, and pipe concatenation to MySQL syntax.
+  4. **Global Model Cleanup**:
+     - Replaced all `DATE('now')` queries with standard `CURDATE()` in `adminModel.js`, `hodModel.js`, and `studentModel.js`.
+     - Replaced `strftime('%Y')` with `YEAR()` in `hodModel.js`.
+- **Verification**:
+  - Live execution of `AdminModel.getStats()`, `HodModel.getDashboard()`, `TeachingGroupModel.listGroups()` (Admin and Faculty), and `TeachingGroupModel.getOverviewData()` on Aiven MySQL: 100% PASS with ZERO errors.
+  - Pushed to `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `f631b3a`).
+
 ### 🏛️ Milestone 298: Full-Stack MySQL Dialect Compatibility & Comprehensive Aiven Cloud Schema Upgrade
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `68ba0cc`)

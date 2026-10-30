@@ -73,7 +73,7 @@ class HodModel {
        FROM attendance_sessions s
        JOIN subjects sub ON s.subject_id = sub.id
        JOIN teachers t ON s.teacher_id = t.id
-       WHERE s.department_id = ? AND s.session_date = DATE('now')
+       WHERE s.department_id = ? AND s.session_date = CURDATE()
        ORDER BY s.id DESC`, [deptId]
     );
 
@@ -90,20 +90,34 @@ class HodModel {
        ORDER BY e.year, e.semester`, [deptId, deptId]
     );
 
+    const counts = {
+      teachers: teachersCount?.total || 0,
+      subjects: subjectsCount?.total || 0,
+      students: studentsCount?.total || 0,
+      active_registers: activeRegisters?.total || 0,
+      avg_attendance_pct: avgAttendance?.avg_pct || 0,
+      devices_total: devicesSummary?.total || 0,
+      devices_online: devicesSummary?.online || 0,
+      pending_students: pendingStudents?.total || 0,
+      pending_leaves: pendingLeaves?.total || 0,
+      pending_faculty: pendingFaculty?.total || 0
+    };
+
     return {
       department: deptInfo,
-      counts: {
-        teachers: teachersCount?.total || 0,
-        subjects: subjectsCount?.total || 0,
-        students: studentsCount?.total || 0,
-        active_registers: activeRegisters?.total || 0,
-        avg_attendance_pct: avgAttendance?.avg_pct || 0,
-        devices_total: devicesSummary?.total || 0,
-        devices_online: devicesSummary?.online || 0,
-        pending_students: pendingStudents?.total || 0,
-        pending_leaves: pendingLeaves?.total || 0,
-        pending_faculty: pendingFaculty?.total || 0
-      },
+      department_name: deptInfo?.name || '',
+      department_code: deptInfo?.code || '',
+      total_teachers: counts.teachers,
+      total_subjects: counts.subjects,
+      total_students: counts.students,
+      active_registers: counts.active_registers,
+      avg_attendance_pct: counts.avg_attendance_pct,
+      devices_total: counts.devices_total,
+      devices_online: counts.devices_online,
+      pending_students: counts.pending_students,
+      pending_leaves: counts.pending_leaves,
+      pending_faculty: counts.pending_faculty,
+      counts,
       today_sessions: todaySessions,
       cohorts
     };
@@ -261,12 +275,25 @@ class HodModel {
    */
   static async deleteTeacher(id, deptId, userId) {
     await withTransaction(async (conn) => {
-      await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [id]);
+      // 1. Clean up registers and child attendance records
+      await conn.execute(`DELETE FROM register_attendance WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id]);
+      await conn.execute(`DELETE FROM attendance_sessions WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id]);
       await conn.execute(`DELETE FROM attendance_registers WHERE teacher_id = ?`, [id]);
+      await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [id]);
+      try { await conn.execute(`UPDATE teaching_groups SET teacher_id = NULL WHERE teacher_id = ?`, [id]); } catch (_) {}
+      try { await conn.execute(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [userId]); } catch (_) {}
+
+      // 2. Delete teacher row
       await conn.execute(`DELETE FROM teachers WHERE id = ?`, [id]);
-      await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
-      await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
-      await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+
+      // 3. Clean up user credentials, sessions and roles
+      if (userId) {
+        await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+        try { await conn.execute(`UPDATE audit_logs SET user_id = NULL WHERE user_id = ?`, [userId]); } catch (_) {}
+        await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+      }
     });
     return true;
   }
@@ -1249,25 +1276,57 @@ class HodModel {
    * @returns {Promise<boolean>}
    */
   static async deleteStudent(id, deptId) {
-    const sRows = await query(
-      `SELECT s.id, s.user_id, e.year, e.semester, e.academic_year_id FROM students s
-       JOIN enrollments e ON e.student_id = s.id
-       WHERE s.id = ? AND e.department_id = ?`,
-      [id, deptId]
+    let sRows = await query(
+      `SELECT s.id, s.user_id, e.year, e.semester, e.academic_year_id, e.department_id FROM students s
+       LEFT JOIN enrollments e ON e.student_id = s.id
+       WHERE s.id = ? ${deptId ? 'AND (e.department_id = ? OR e.department_id IS NULL)' : ''}`,
+      deptId ? [id, deptId] : [id]
     );
-    if (!sRows.length) return false;
+    if (!sRows.length) {
+      sRows = await query(`SELECT id, user_id FROM students WHERE id = ?`, [id]);
+      if (!sRows.length) return false;
+    }
     const { user_id: userId, year, semester, academic_year_id: ayId } = sRows[0];
+    const actualDeptId = sRows[0].department_id || deptId;
 
     await withTransaction(async (conn) => {
+      // 1. Clean up all child foreign key constraints on student_id
+      await conn.execute(`DELETE FROM assessment_submissions WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM register_attendance WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM attendance_session_students WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM student_self_attendance WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM esp32_presence WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM fingerprint_slots WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM iot_attendance_events WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM attendance_corrections WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM teaching_group_members WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM leave_applications WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM student_department_enrollments WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM enrollments WHERE student_id = ?`, [id]);
-      await conn.execute(`DELETE FROM students WHERE id = ?`, [id]);
-      await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
-      await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
 
-      if (year && semester && ayId) {
-        await HodModel.reindexCohortRollNumbers(deptId, year, semester, ayId, conn);
+      try {
+        await conn.execute(`UPDATE faculty_media_assets SET student_id = NULL WHERE student_id = ?`, [id]);
+      } catch (_) {}
+
+      // 2. Delete the student record
+      await conn.execute(`DELETE FROM students WHERE id = ?`, [id]);
+
+      // 3. Clean up user credentials, sessions, roles and activities
+      if (userId) {
+        await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM classroom_post_comments WHERE author_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM classroom_posts WHERE author_id = ?`, [userId]);
+        try {
+          await conn.execute(`UPDATE audit_logs SET user_id = NULL WHERE user_id = ?`, [userId]);
+        } catch (_) {}
+        await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+      }
+
+      // 4. Reindex cohort roll numbers without gaps
+      if (actualDeptId && year && semester && ayId) {
+        await HodModel.reindexCohortRollNumbers(actualDeptId, year, semester, ayId, conn);
       }
     });
     return true;
@@ -1283,112 +1342,6 @@ class HodModel {
    */
   static async resetStudentPassword(userId, passwordHash) {
     await query(`UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [passwordHash, userId]);
-    return true;
-  }
-
-  /**
-   * Retrieve department academic configuration and attendance threshold settings
-   * @calledBy HodController.getSettings() (controllers/hodController.js)
-   * @route GET /api/v1/hod/settings (routes/hod.js)
-   * @param {number} deptId Department ID
-   * @returns {Promise<Object|null>}
-   */
-  static async getSettings(deptId) {
-    const deptRows = await query(
-      `SELECT d.id, d.name, d.code, d.degree_duration_years, d.active_term,
-              COALESCE(t.full_name, u.username) as hod_name, u.email as hod_email, u.username as hod_username
-       FROM departments d
-       LEFT JOIN users u ON d.hod_user_id = u.id
-       LEFT JOIN teachers t ON t.user_id = u.id
-       WHERE d.id = ?`,
-      [deptId]
-    );
-    if (!deptRows.length) return null;
-
-    const threshRow = await query(`SELECT setting_value FROM system_settings WHERE setting_key = ?`, [`dept_${deptId}_attendance_threshold`]);
-    const threshold = threshRow.length ? parseInt(threshRow[0].setting_value, 10) : 75;
-
-    const teachersCount = (await query(`SELECT COUNT(*) as cnt FROM teacher_assignments WHERE department_id = ? AND is_active = 1`, [deptId]))[0]?.cnt || 0;
-    const studentsCount = (await query(`SELECT COUNT(DISTINCT student_id) as cnt FROM enrollments WHERE department_id = ? AND status = 'ENROLLED'`, [deptId]))[0]?.cnt || 0;
-    const terminalsCount = (await query(`SELECT COUNT(*) as cnt FROM devices WHERE department_id = ? AND is_active = 1`, [deptId]))[0]?.cnt || 0;
-    const currentAy = (await query('SELECT label FROM academic_years WHERE is_current = 1 LIMIT 1'))[0];
-    const defaultTerm = currentAy?.label || 'Active Session';
-
-    return {
-      department_id: deptId,
-      department_name: deptRows[0].name,
-      department_code: deptRows[0].code,
-      degree_duration_years: deptRows[0].degree_duration_years || 3,
-      active_term: deptRows[0].active_term || defaultTerm,
-      defaulter_threshold_percent: threshold,
-      attendance_threshold: threshold,
-      below_threshold_percent: threshold,
-      hod_name: deptRows[0].hod_name || 'HOD In-Charge',
-      hod_email: deptRows[0].hod_email,
-      teachers_count: teachersCount,
-      students_count: studentsCount,
-      terminals_count: terminalsCount
-    };
-  }
-
-  /**
-   * Update departmental settings (duration, active term, attendance threshold)
-   * @calledBy HodController.updateSettings() (controllers/hodController.js)
-   * @route PUT /api/v1/hod/settings (routes/hod.js)
-   * @param {number} deptId Department ID
-   * @param {Object} fields Fields to update
-   * @param {number} userId User ID making change
-   * @returns {Promise<void>}
-   */
-  static async updateSettings(deptId, { degreeDurationYears, activeTerm, threshold }, userId) {
-    if (degreeDurationYears !== undefined || activeTerm !== undefined) {
-      const sets = [], params = [];
-      if (degreeDurationYears !== undefined) { sets.push('degree_duration_years = ?'); params.push(degreeDurationYears); }
-      if (activeTerm !== undefined) { sets.push('active_term = ?'); params.push(activeTerm); }
-      params.push(deptId);
-      await query(`UPDATE departments SET ${sets.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
-    }
-
-    if (threshold !== undefined) {
-      await query(
-        `INSERT INTO system_settings (setting_key, setting_value, updated_by, updated_at)
-         VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_by = excluded.updated_by, updated_at = CURRENT_TIMESTAMP`,
-        [`dept_${deptId}_attendance_threshold`, String(threshold), userId]
-      );
-    }
-  }
-
-  /**
-   * Retrieve department degree duration and active term configuration
-   * @calledBy HodController.getDurationSettings() (controllers/hodController.js)
-   * @route GET /api/v1/hod/settings/duration (routes/hod.js)
-   * @param {number} deptId Department ID
-   * @returns {Promise<Object|null>}
-   */
-  static async getDurationSettings(deptId) {
-    const rows = await query('SELECT degree_duration_years, active_term, name, code FROM departments WHERE id = ?', [deptId]);
-    if (!rows.length) return null;
-    const currentAy = (await query('SELECT label FROM academic_years WHERE is_current = 1 LIMIT 1'))[0];
-    const defaultTerm = currentAy?.label || 'Active Session';
-    return {
-      degree_duration_years: rows[0].degree_duration_years || 3,
-      active_term: rows[0].active_term || defaultTerm,
-      department_name: rows[0].name,
-      department_code: rows[0].code
-    };
-  }
-
-  /**
-   * Update department degree duration years
-   * @calledBy HodController.updateDurationSettings() (controllers/hodController.js)
-   * @route POST /api/v1/hod/settings/duration (routes/hod.js)
-   * @param {number} deptId Department ID
-   * @param {number} durationYears Duration in years
-   * @returns {Promise<boolean>}
-   */
-  static async updateDurationSettings(deptId, durationYears) {
-    await query('UPDATE departments SET degree_duration_years = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [durationYears, deptId]);
     return true;
   }
 
@@ -1860,7 +1813,7 @@ class HodModel {
     const params = [deptId];
 
     if (batch_year) {
-      filter += ` AND (s.graduation_year = ? OR strftime('%Y', e.updated_at) = ?)`;
+      filter += ` AND (s.graduation_year = ? OR YEAR(e.updated_at) = ?)`;
       params.push(parseInt(batch_year, 10), String(batch_year));
     }
 
@@ -1871,7 +1824,7 @@ class HodModel {
 
     const students = await query(
       `SELECT s.id as student_id, s.user_id, s.official_enrollment_no, s.full_name,
-              s.admission_year, COALESCE(s.graduation_year, CAST(strftime('%Y', e.updated_at) AS INTEGER)) as graduation_year,
+              s.admission_year, COALESCE(s.graduation_year, YEAR(e.updated_at)) as graduation_year,
               s.entry_mode, s.is_lateral_entry,
               e.id as enrollment_id, e.year as final_year, e.semester as final_semester, e.class_roll_no as final_class_roll_no,
               e.status as enrollment_status, u.email, u.status as user_status,

@@ -7,6 +7,7 @@
  */
 
 const { query, withTransaction } = require('../config/db');
+const bcrypt = require('bcrypt');
 
 class AdminModel {
   /**
@@ -27,14 +28,69 @@ class AdminModel {
     const [deptsCount] = await query(`SELECT COUNT(*) as total FROM departments WHERE is_active = 1`);
     const [devicesCount] = await query(`SELECT COUNT(*) as total FROM devices WHERE is_active = 1`);
     const [todaySessions] = await query(
-      `SELECT COUNT(*) as total FROM attendance_sessions WHERE session_date = DATE('now')`
+      `SELECT COUNT(*) as total FROM attendance_sessions WHERE session_date = CURDATE()`
     );
     const [openSessions] = await query(
       `SELECT COUNT(*) as total FROM attendance_sessions WHERE state = 'OPEN'`
     );
 
+    // Compute real today attendance statistics across all active sessions
+    const [todayAtt] = await query(`
+      SELECT 
+        COUNT(CASE WHEN ar.attendance_status IN ('PRESENT', 'LATE') THEN 1 END) as present_count,
+        COUNT(CASE WHEN ar.attendance_status = 'ABSENT' THEN 1 END) as absent_count,
+        COUNT(ar.id) as total_records
+      FROM register_attendance ar
+      JOIN attendance_sessions s ON ar.session_id = s.id
+      WHERE s.session_date = CURDATE()
+    `);
+
+    const presentCount = todayAtt?.present_count || 0;
+    const absentCount = todayAtt?.absent_count || 0;
+    const totalTodayRecords = todayAtt?.total_records || 0;
+    const todayPct = totalTodayRecords > 0 ? Math.round((presentCount / totalTodayRecords) * 100) : 0;
+
+    // Real department breakdown from live database
+    const deptRows = await query(`
+      SELECT 
+        d.id, 
+        d.name, 
+        d.code,
+        (SELECT COUNT(*) FROM students s 
+         JOIN enrollments e ON e.student_id = s.id 
+         WHERE e.department_id = d.id AND e.status = 'ENROLLED') as student_count,
+        (SELECT COUNT(CASE WHEN ar.attendance_status IN ('PRESENT', 'LATE') THEN 1 END) 
+         FROM register_attendance ar
+         JOIN attendance_sessions s ON ar.session_id = s.id
+         WHERE s.department_id = d.id AND s.session_date = CURDATE()) as dept_present,
+        (SELECT COUNT(ar.id) 
+         FROM register_attendance ar
+         JOIN attendance_sessions s ON ar.session_id = s.id
+         WHERE s.department_id = d.id AND s.session_date = CURDATE()) as dept_total
+      FROM departments d
+      WHERE d.is_active = 1
+      ORDER BY d.id ASC
+    `);
+
+    const departmentBreakdown = (deptRows || []).map(dept => {
+      const dTotal = dept.dept_total || 0;
+      const dPresent = dept.dept_present || 0;
+      const pct = dTotal > 0 ? Math.round((dPresent / dTotal) * 100) : 0;
+      return {
+        id: dept.id,
+        name: dept.name,
+        code: dept.code,
+        student_count: dept.student_count || 0,
+        present_count: dPresent,
+        total_records: dTotal,
+        attendance_pct: pct
+      };
+    });
+
+    const totalStudents = activeStudents?.total || allTimeStudents?.total || 0;
+
     return {
-      total_students: activeStudents?.total || allTimeStudents?.total || 0,
+      total_students: totalStudents,
       total_teachers: teachersCount?.total || 0,
       total_enrolled_students: allTimeStudents?.total || 0,
       total_hods: hodsCount?.total || 0,
@@ -42,7 +98,15 @@ class AdminModel {
       total_branches: deptsCount?.total || 0,
       total_devices: devicesCount?.total || 0,
       today_sessions: todaySessions?.total || 0,
-      open_sessions: openSessions?.total || 0
+      open_sessions: openSessions?.total || 0,
+      today_attendance: {
+        present_count: presentCount,
+        absent_count: absentCount,
+        total_records: totalTodayRecords,
+        attendance_pct: todayPct,
+        has_records: totalTodayRecords > 0
+      },
+      department_breakdown: departmentBreakdown
     };
   }
 
@@ -1380,6 +1444,102 @@ class AdminModel {
        VALUES (?, 'REGISTRATION_GATE_TOGGLED', 'system_settings', ?, ?, CURRENT_TIMESTAMP)`,
       [userId, settingKey, JSON.stringify({ target, is_open: isOpen })]
     );
+  }
+
+  /**
+   * Retrieve list of all administrators
+   */
+  static async getAdministrators() {
+    const rows = await query(`
+      SELECT 
+        u.id, 
+        u.username, 
+        u.email, 
+        u.status, 
+        u.created_at,
+        t.full_name,
+        t.employee_id,
+        t.phone
+      FROM users u
+      JOIN user_roles ur ON u.id = ur.user_id AND ur.role = 'SYSTEM_ADMIN'
+      LEFT JOIN teachers t ON t.user_id = u.id
+      ORDER BY u.id ASC
+    `);
+
+    const envEmail = (process.env.ADMIN_EMAIL || process.env.INITIAL_ADMIN_EMAIL || '').trim().toLowerCase();
+
+    return rows.map(r => ({
+      ...r,
+      is_env_admin: Boolean(envEmail && r.email && r.email.toLowerCase() === envEmail)
+    }));
+  }
+
+  /**
+   * Create a new administrator account
+   */
+  static async createAdministrator({ email, password, full_name, phone, employee_id }) {
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = await query(`SELECT id FROM users WHERE LOWER(email) = ?`, [cleanEmail]);
+
+    if (existing && existing.length > 0) {
+      const existingId = existing[0].id;
+      const existingRoles = await query(`SELECT role FROM user_roles WHERE user_id = ? AND role = 'SYSTEM_ADMIN'`, [existingId]);
+      if (existingRoles && existingRoles.length > 0) {
+        throw new Error('An administrator account with this email already exists');
+      }
+      // Upgrade existing user to SYSTEM_ADMIN
+      await query(`INSERT INTO user_roles (user_id, role) VALUES (?, 'SYSTEM_ADMIN')`, [existingId]);
+      return { id: existingId, email: cleanEmail, full_name };
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const insertUser = await query(
+      `INSERT INTO users (username, email, password_hash, must_change_password, status) VALUES (?, ?, ?, 0, 'ACTIVE')`,
+      [cleanEmail, cleanEmail, passwordHash]
+    );
+
+    const newUserId = insertUser.insertId || insertUser.lastID || (
+      await query(`SELECT id FROM users WHERE LOWER(email) = ?`, [cleanEmail])
+    )[0]?.id;
+
+    await query(`INSERT INTO user_roles (user_id, role) VALUES (?, 'SYSTEM_ADMIN')`, [newUserId]);
+
+    const depts = await query(`SELECT id FROM departments ORDER BY id ASC LIMIT 1`);
+    const deptId = (depts && depts.length > 0) ? depts[0].id : 1;
+    const empId = employee_id || `ADMIN-${Math.floor(100 + Math.random() * 900)}`;
+
+    await query(
+      `INSERT INTO teachers (user_id, department_id, full_name, employee_id, phone) VALUES (?, ?, ?, ?, ?)`,
+      [newUserId, deptId, full_name || 'Administrator', empId, phone || '']
+    );
+
+    return { id: newUserId, email: cleanEmail, full_name, employee_id: empId };
+  }
+
+  /**
+   * Delete an administrator account
+   */
+  static async deleteAdministrator(adminId, currentUserId) {
+    if (parseInt(adminId, 10) === parseInt(currentUserId, 10)) {
+      throw new Error('You cannot delete your own active administrator account');
+    }
+
+    const adminCount = await query(`SELECT COUNT(*) as c FROM user_roles WHERE role = 'SYSTEM_ADMIN'`);
+    if (adminCount[0]?.c <= 1) {
+      throw new Error('Cannot delete the sole remaining administrator account');
+    }
+
+    // Remove SYSTEM_ADMIN role
+    await query(`DELETE FROM user_roles WHERE user_id = ? AND role = 'SYSTEM_ADMIN'`, [adminId]);
+
+    // If user has no other roles, delete teachers & user record
+    const remainingRoles = await query(`SELECT role FROM user_roles WHERE user_id = ?`, [adminId]);
+    if (!remainingRoles || remainingRoles.length === 0) {
+      await query(`DELETE FROM teachers WHERE user_id = ?`, [adminId]);
+      await query(`DELETE FROM users WHERE id = ?`, [adminId]);
+    }
+
+    return true;
   }
 }
 

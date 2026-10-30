@@ -27,7 +27,10 @@ class StudentModel {
               d.name as department_name, d.code as department_code,
               d.name as branch_name, d.code as branch_code,
               ay.label as academic_year_label,
-              u.username, u.email, u.status as account_status, u.created_at as account_created_at
+              u.username, u.email, u.status as account_status, u.created_at as account_created_at,
+              s.phone as student_phone, s.parent_phone, s.parent_name,
+              s.address, s.aadhar_number, s.father_name, s.mother_name, s.dob, s.gender, s.category,
+              COALESCE(s.profile_completed, 0) as profile_completed
        FROM students s
        JOIN users u ON s.user_id = u.id
        JOIN enrollments e ON e.student_id = s.id AND e.status = 'ENROLLED'
@@ -97,6 +100,46 @@ class StudentModel {
       `UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       [passwordHash, userId]
     );
+  }
+
+  /**
+   * Updates student demographic and KYC details.
+   * @param {number} studentId - Student primary key
+   * @param {Object} details - Details to update
+   * @returns {Promise<void>}
+   */
+  static async updateStudentDetails(studentId, details = {}) {
+    const allowed = [
+      'address',
+      'aadhar_number',
+      'father_name',
+      'mother_name',
+      'dob',
+      'gender',
+      'category',
+      'phone',
+      'profile_completed'
+    ];
+    const setClauses = [];
+    const params = [];
+
+    for (const [k, v] of Object.entries(details)) {
+      if (allowed.includes(k) && v !== undefined) {
+        setClauses.push(`${k} = ?`);
+        params.push(v === '' ? null : v);
+      }
+    }
+
+    if (!setClauses.length) return;
+    setClauses.push('updated_at = CURRENT_TIMESTAMP');
+    params.push(studentId);
+
+    await query(`UPDATE students SET ${setClauses.join(', ')} WHERE id = ?`, params);
+  }
+
+  static async getStudentIdByUserId(userId) {
+    const rows = await query(`SELECT id FROM students WHERE user_id = ?`, [userId]);
+    return rows[0]?.id || null;
   }
 
   /**
@@ -240,7 +283,7 @@ class StudentModel {
       try {
         await conn.execute(
           `INSERT INTO student_department_enrollments (student_id, department_id, academic_year_id, year, semester, class_roll_no, start_date, status)
-           VALUES (?, ?, ?, ?, ?, ?, DATE('now'), 'ACTIVE')`,
+           VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
           [studentId, departmentId, ayId, year, semester, finalRoll]
         );
       } catch (_) {}
@@ -478,7 +521,7 @@ class StudentModel {
         try {
           await conn.execute(
             `INSERT INTO student_department_enrollments (student_id, department_id, academic_year_id, year, semester, class_roll_no, start_date, status)
-             VALUES (?, ?, ?, ?, ?, ?, DATE('now'), 'ACTIVE')`,
+             VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
             [actualStudentId, student.department_id, student.academic_year_id, student.year, student.semester, finalRollNo]
           );
         } catch (_) {}
@@ -544,7 +587,7 @@ class StudentModel {
     return await withTransaction(async (conn) => {
       await conn.execute(
         `UPDATE student_department_enrollments 
-         SET end_date = DATE('now'), status = 'TRANSFERRED', updated_at = CURRENT_TIMESTAMP 
+         SET end_date = CURDATE(), status = 'TRANSFERRED', updated_at = CURRENT_TIMESTAMP 
          WHERE student_id = ? AND status = 'ACTIVE'`,
         [studentId]
       );
@@ -552,7 +595,7 @@ class StudentModel {
       await conn.execute(
         `INSERT INTO student_department_enrollments 
          (student_id, department_id, academic_year_id, year, semester, class_roll_no, start_date, status)
-         VALUES (?, ?, ?, ?, ?, ?, DATE('now'), 'ACTIVE')`,
+         VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
         [studentId, newDepartmentId, student.academic_year_id, student.year, student.semester, student.class_roll_no]
       );
 
