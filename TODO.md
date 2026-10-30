@@ -1,4 +1,38 @@
-﻿
+
+### 🚀 Milestone 292: Untrack SQLite Database from Remote & Implement Render Environment Admin Bootstrapping
+- **Status**: ✅ Completed & Pushed to GitHub
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `81fd8b0`)
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `622c2e8`)
+- **User Request**:
+  1. Never push local SQLite database into Render anymore (`college_attendance.sqlite` removed from git tracking).
+  2. Configure admin in Render environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) so on initial deployment the administrator can log in with env credentials.
+  3. Once logged in, the admin can create a new permanent admin directly in the database.
+  4. Afterwards, the user can safely delete the environment variables from Render, and the database admin persists.
+- **Backend Architecture & Changes**:
+  - **Git Untracking**: Removed `!college_attendance.sqlite` exemption in `.gitignore`, enforced full ignore on `*.sqlite`, `*.db`, `college_attendance.sqlite`, and executed `git rm --cached college_attendance.sqlite` so the database is no longer in Git or pushed to Render.
+  - **`AdminBootstrapService` (`src/services/adminBootstrapService.js`)**:
+    - Automatically checks `process.env.ADMIN_EMAIL` and `process.env.ADMIN_PASSWORD` on server startup.
+    - If present, synchronizes/upserts the account into `users` (`status = 'ACTIVE'`, `role = 'SYSTEM_ADMIN'`) and provisions the institutional teacher profile.
+    - If env credentials are not present, checks if active administrators exist in the database and preserves them.
+    - Local fallback provisions development admin if database has 0 users.
+  - **Production Seed Upgrade (`scripts/seed-production-clean.js`)**:
+    - Dynamically respects `process.env.ADMIN_EMAIL` and `process.env.ADMIN_PASSWORD` instead of hardcoded demo credentials.
+  - **Render Config (`render.yaml`)**:
+    - Added documented `ADMIN_EMAIL` and `ADMIN_PASSWORD` entries under `envVars`.
+  - **REST API Endpoints for Administrator Management**:
+    - `GET /api/v1/admin/administrators`: Lists all system administrators with identification of current active session and Render environment bootstrap status.
+    - `POST /api/v1/admin/administrators`: Securely provisions new permanent database administrators (email, bcrypt password, full name, employee ID, phone).
+    - `DELETE /api/v1/admin/administrators/:id`: Safely deletes administrator accounts with guards preventing deletion of the current active session or sole remaining administrator.
+- **Frontend Architecture & Changes**:
+  - **Administrator Profile (`admin/profile/profile.html`, `profile.js`, `profile.css`)**:
+    - Added "Institutional Administrators & System Authority" section with full live roster of master accounts.
+    - Added `+ New Administrator` modal for creating permanent database administrators.
+    - Added delete confirmation modal with instant feedback.
+    - 100% theme token compliant (zero hardcoded hex colors).
+- **Verification**:
+  - Verified local startup on port 3001 with active administrator preservation log.
+  - End-to-end integration test executed: login, fetch admins, create new admin, new admin login, self-deletion prevention guard (400), and deletion of test admin.
+
 ### 🟢 Milestone 291: Fix Vercel /register 404 & Verify Render SQLite Database Deployment
 - **Status**: ✅ Completed & Pushed to GitHub
   - Frontend Repo: https://github.com/onebotyt/VidyaOS.git (Commit: 7410506)
