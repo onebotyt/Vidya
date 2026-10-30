@@ -1,4 +1,19 @@
 ﻿
+### 🟢 Milestone 291: Fix Vercel /register 404 & Verify Render SQLite Database Deployment
+- **Status**: ✅ Completed & Pushed to GitHub
+  - Frontend Repo: https://github.com/onebotyt/VidyaOS.git (Commit: 7410506)
+  - Backend Repo: https://github.com/onebotyt/VidyaOS_BackEnd.git (Commit: 4e722b7)
+- **Part 1: Fix /register 404 on Vercel**:
+  - **Root Cause**: The registration page existed at /login/register/register.html. On Vercel, requests to /register were rewritten to /login/register/index.html. Furthermore, with cleanUrls: true enabled in ercel.json, Vercel prioritizes clean static root files (egister.html or egister/index.html). Because neither root file existed, Vercel returned 404: NOT_FOUND.
+  - **Resolution**:
+    - Created egister.html at root (deployfolder/VidyaOS/register.html).
+    - Created egister/ directory with index.html, egister.css, and egister.js.
+    - Maintained full parity in login/register/index.html.
+    - Verified all 10 registration route variants return HTTP 200 OK on the dev server.
+- **Part 2: SQLite Database on Render Verification**:
+  - Confirmed college_attendance.sqlite is tracked in git and actively pushed to onebotyt/VidyaOS_BackEnd.git on branch main.
+  - In src/config/db.js, getSqliteDb() loads path.resolve(__dirname, '../../college_attendance.sqlite') when DB_CLIENT=sqlite, meaning Render runs with the pre-seeded demo database out of the box.
+  - Documented Render's ephemeral filesystem behavior (resets to pre-seeded git state upon cold restart/redeploy, ideal for presentations).
 ### 🟢 Milestone 290: Fix Delete & Withdrawal Modal Cancel Button & Dismissal
 - **Status**: ✅ Completed & Verified
   - Scope: deployfolder/VidyaOS (Frontend)
@@ -8176,6 +8191,7 @@ node backend/scripts/test-api-flows.js                # 25/25 tests (Core API in
 1. **Always read this file first** when recovering from context pruning or starting a fresh turn.
 2. **Never break existing tests**: Run `node scripts/test-register-consolidation.js` and `node scripts/test-theme-support.js` after touching frontend or backend files.
 3. **Keep this file updated**: Mark completed tasks with `[x]` and add new tasks under Active Tasks as discussions evolve.
+
 
 
 
