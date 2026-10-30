@@ -1,4 +1,40 @@
 
+### 🏛️ Milestone 297: Mobile Admin Dashboard & Sidebar Drawer Alignment with Design Reference
+- **Status**: 🟢 Completed & Pushed to GitHub
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `f4b5fd3`)
+- **User Request**:
+  - *"this is admin dashboard which u make i want to change it wait i'll send what degine i want"* followed by *"i want this degine"* with reference images (`media_1793377599879_89a747fa.jpg` & current screenshots).
+- **Root Cause & Visual Defect Analysis**:
+  1. **Squashed Desktop Hero Card on Mobile**:
+     - On `<= 768px`, `.hero-campus-card` (desktop card with text, quote, and photo) was not hidden, causing it to collapse into an awkward 108px vertical strip with truncated text next to the welcome hero, while the mobile photo was pushed down below.
+  2. **Duplicated Sidebar Drawer Labels on Mobile**:
+     - `.sidebar-nav-short-label` was visible on mobile drawer because `.admin-sidebar` uses `.open` rather than `.desktop-open`. Both the short label and full label were displayed together (e.g. `Structure Academic Structure`, `Faculty HOD Management`).
+  3. **Header Brand Typography Alignment**:
+     - Header brand subtitle updated from `UBTER Nainital` to `UGIP Nainital` per the reference design.
+  4. **Quick Action Descriptions Precision**:
+     - Subtexts aligned with the visual specification:
+       - Home: `Dashboard overview`
+       - Academic Structure: `Manage departments, classes and sections`
+       - HOD Leadership: `Manage HODs and leadership`
+       - Reports & Analytics: `View attendance and academic reports`
+       - Institutional Audit Logs: `View system activity logs`
+       - Institution Settings: `Manage system settings`
+- **Implementation & Architectural Upgrades**:
+  1. **Mobile Hero Banner Perfection**:
+     - Added `display: none !important;` to `.desktop-only-showcase`, `.hero-campus-card`, `.desktop-campus-card`, and `.hero-illustration` on `<= 768px`.
+     - Styled `.admin-welcome-hero` with clean 2-column grid (`1fr 125px`) displaying:
+       - Left: Welcome heading, descriptive subtitle, and dynamic date/time pill badge.
+       - Right: High-quality Nainital campus photograph (`campus-nainital.jpg`, `125px x 100px`, `border-radius: 12px`, `object-fit: cover`).
+  2. **Sidebar Drawer Label Cleanup**:
+     - Enforced `.sidebar-nav-short-label { display: none !important; }` and `.sidebar-nav-label { display: block !important; }` in mobile drawer media query, eliminating duplicate label text.
+  3. **Multi-Repo Synchronization & Vercel Trigger**:
+     - Synchronized changes across `deployfolder/VidyaOS/` and `frontend/`.
+     - Pushed commit `f4b5fd3` to `https://github.com/onebotyt/VidyaOS.git` (main branch), triggering live redeployment on `https://vidyaos-pink.vercel.app`.
+- **Verification**:
+  - Verified mobile hero grid layout and visibility rules.
+  - Verified sidebar navigation markup and single clean labels.
+  - Pushed to `https://github.com/onebotyt/VidyaOS.git` (Commit: `f4b5fd3`).
+
 ### 🏛️ Milestone 296: Aiven Cloud MySQL Integration with SSL CA for Permanent Zero-Data-Loss Persistence
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `12b9cc5`)
