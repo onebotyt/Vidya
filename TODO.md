@@ -3,6 +3,26 @@
 
 
 
+### 🏛️ Milestone 303: Replaced HOD Roster Action Buttons with 3-Dot Kebab Menu Dropdown
+- **Status**: 🟢 Completed & Pushed to GitHub
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `d6dd769`)
+- **User Request**:
+  - *"replace the action button place in 3 dot which contain ressing dept , reset password , delete inside the 3 dots"*
+  - Attached screenshot: `media_1793422327309_81bbd9d8.png` showing the "All HOD Accounts" roster table with the three inline buttons (`[Reassign Dept] [Reset Pwd] [Delete]`) in the ACTIONS column.
+- **Implementation & Architectural Upgrades**:
+  1. **CSS Styling for 3-Dot Kebab Menu & Table Overflow (`admin/faculty/faculty.css`)**:
+     - Added `.kebab-menu-container`, `.kebab-btn`, `.kebab-dropdown`, `.kebab-item`, and `.kebab-divider` classes strictly using CSS variables (`var(--bg-card)`, `var(--border-color)`, `var(--text-muted)`, `var(--color-primary)`, `var(--status-absent)`, `var(--status-absent-bg)`).
+     - Configured `#hod-table-wrap { overflow-x: auto; overflow-y: visible; min-height: 240px; padding-bottom: 2.5rem; }` to ensure dropdown menus are never clipped when few rows are displayed.
+  2. **Dropdown Action Implementation (`admin/faculty/faculty.js`)**:
+     - Desktop View: In `renderHODTable()`, replaced the inline buttons with a 3-dots kebab trigger button and dropdown menu containing:
+       - **Reassign Dept** (calls `openReassignModal(teacher_id, name)`)
+       - **Reset Password** (calls `openResetModal(teacher_id, name)`)
+       - **Delete** (calls `openDeleteModal(teacher_id, name)`)
+     - Mobile Cards: Updated `.hod-mobile-card-header` to house the 3-dots kebab dropdown menu, cleanly collapsing actions out of the card body.
+     - Event Handling: Implemented `toggleHodKebab(event, containerId)`, `closeAllKebabs()`, and outside click / `Escape` key handlers to auto-dismiss open menus.
+- **Verification**:
+  - Verified 3-dot dropdown functionality, styling token compliance (0 hardcoded hex colors), and seamless action triggering.
+
 ### 🏛️ Milestone 302: Streamlined Department Student Register Roster (Removed Biometric Slot, Status, and Google Columns)
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `e2a79a5`)
