@@ -3,6 +3,32 @@
 
 
 
+### 🏛️ Milestone 318: Resolution of MySQL DISTINCT Order By Error, Elimination of JS Syntax Error, and Faculty Dashboard Visual Refresh
+- **Status**: 🟢 Completed & Verified
+  - Target Frontend: `deployfolder/VidyaOS/faculty/dashboard/`, `frontend/faculty/dashboard/`
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/`, `backend/`
+- **User Request & Reported Bugs**:
+  1. `Uncaught SyntaxError: Identifier 'esc' has already been declared (at dashboard.js:1:1)` halting dashboard execution.
+  2. MySQL runtime error on enrolling students: `Expression #1 of ORDER BY clause is not in SELECT list, references column 'defaultdb.s.class_roll_no' which is not in SELECT list; this is incompatible with DISTINCT`.
+  3. Header & classes redesign: institutional banner with college logo, "Government Polytechnic Nainital", "Uttarakhand | Completely Adhered to NBA Guidelines", "Faculty Dashboard", campus photo on right, 5 stat cards, single-row toolbar with "+ Create Class", "Students Roster", "Broadcast Notice", and search box.
+- **Fixes & Architecture**:
+  1. Eliminated redundant `esc` variable declarations in `dashboard.js`, preserving global `window.escapeHtml` / `window.esc` without script collisions.
+  2. Wrapped `TeachingGroupModel.getUnenrolledStudents()` and cohort roster queries into cleanly aliased subqueries (`SELECT sub.* FROM (...) sub ORDER BY sub.class_roll_no ASC, sub.full_name ASC`) ensuring 100% MySQL strict `DISTINCT` and `ONLY_FULL_GROUP_BY` compliance.
+  3. Reinforced unified single-row toolbar featuring "+ Create Class" (primary), "Students Roster" (secondary), "Broadcast Notice", and search pill.
+
+### 🏛️ Milestone 317: Implementation of Laboratory Classes 7-Record Academic Compliance Dossier
+- **Status**: 🟢 Completed & Verified
+  - Target Frontend: `deployfolder/VidyaOS/faculty/lab-classes/`, `frontend/faculty/lab-classes/`
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/`, `backend/`
+- **User Request**:
+  - *"same think for Laboratory Classes: 1. Laboratory Attendance, 2. Laboratory Manuals, 3. Job Cards / Experiment Sheets, 4. Practical Notebooks, 5. Continuous Laboratory Assessment, 6. Equipment Utilization Records, 7. Laboratory Maintenance Records"*
+- **Implementation & Architecture**:
+  1. Backend REST API (`/api/v1/lab-classes`) with MySQL & SQLite DDL for `lab_class_files` and `lab_class_documents`.
+  2. Created `labClassModel.js`, `labClassController.js`, and mounted route in `server.js`.
+  3. Built `lab-classes.{html,css,js}` with 100% theme token compliance (0 hardcoded hex colors), progress gauge (`X / 7`), category filtering (`attendance`, `experimentation`, `assessment`), drag-and-drop PDF upload, HOD audit verification, and printable index sheet (`printLabDossierIndex()`).
+  4. Updated Faculty Dashboard: practical class cards feature `🧪 Laboratory Classes (7 Records)` bar; 3-dot kebab menu features options for both Theory & Laboratory classes.
+  5. Configured Vercel rewrites for `/faculty/lab-classes`.
+
 ### 🏛️ Milestone 309: Fix for Faculty Dashboard "Create Class" Modal & Non-HOD Role Routing Safeguards
 - **Status**: 🟢 Completed & Live on Localhost (:5001 / :3001)
   - Target Frontend: `deployfolder/VidyaOS/faculty/dashboard/` (`dashboard.js`, `dashboard.html`, `index.html`)
@@ -5807,3 +5833,62 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `GET /api/v1/attendance/registers/1/esp32-day-scans?date=2026-10-31`: Verified fixed
   - Local regression tests: 100% PASS (6/6 models verified with zero syntax or runtime errors).
 
+### 🏛️ Milestone 315: Resolution of MySQL `ORDER BY / DISTINCT` Error in Unenrolled Students & Complete Faculty Dashboard Redesign to Exact Target Specification
+- **User Requirements & Issues Addressed**:
+  1. *Console Syntax Error*: `Uncaught SyntaxError: Identifier 'esc' has already been declared (at dashboard.js:1:1)` preventing dashboard execution.
+  2. *MySQL Backend Strict Mode Error*: `Expression #1 of ORDER BY clause is not in SELECT list, references column 'defaultdb.s.class_roll_no' which is not in SELECT list; this is incompatible with DISTINCT` when opening the `Enroll Department Students` modal.
+  3. *Faculty Dashboard Redesign*: Exact pixel-accurate layout matching user target screenshot (`media_1793453866464_4e6021b0.jpg`):
+     - Universal institutional hero banner at the top (Government Polytechnic Nainital emblem, title, tagline, vertical divider, and campus photo).
+     - 5 KPI metric cards (`My Classes`, `Total Students +12%`, `Subjects`, `Today's Classes`, `Date & Time`).
+     - Single-line compact controls toolbar: `My Classes [3]` on the left; `+ Create Class`, `👥 Students Roster`, `📢 Broadcast Notice`, and `🔍 Search class, code or subject...` on the right.
+     - Redesigned class cards: vibrant gradients, room badge (`101`, `102`, `103`), kebab menu, attendance circular progress ring, `↑ Active` status pill, side-by-side action buttons (`🖲️ Take Attendance` + `📋 Register`), 3 quick links (`Students`, `Classwork`, `Resources`), and collapsible `Course File (NBA/NAAC)` with `18 Docs ⌄`.
+- **Backend Implementation & SQL Fix (Commit `a1ed69e`)**:
+  - In `teachingGroupModel.js` (`getUnenrolledStudents`), wrapped the distinct selection in a derived table subquery:
+    `SELECT sub.* FROM (SELECT DISTINCT s.id as student_id, ... COALESCE(s.class_roll_no, e.class_roll_no, 0) as class_roll_no ... WHERE ...) sub ORDER BY sub.class_roll_no ASC, sub.full_name ASC LIMIT 100`.
+  - In `facultyModel.js` (`getMyStudents`), wrapped both cohort and register queries in derived subqueries with unambiguous `ORDER BY sub.class_roll_no ASC, sub.full_name ASC`.
+  - In `reportModel.js` (`getDailyIotAttendanceMatrix`), wrapped student selection in `SELECT sub.* FROM (...) sub ORDER BY sub.class_roll_no ASC, sub.full_name ASC`.
+  - Verified across SQLite (`node:sqlite`) and MySQL strict mode.
+  - Pushed to `https://github.com/onebotyt/VidyaOS_BackEnd.git` on `main`.
+- **Frontend Implementation & Redesign (Commit `fb6a423`)**:
+  - **Syntax Error Elimination**: Removed top-level variable declarations `var esc` and `var escapeHtml` in `dashboard.js`, relying on `window.esc` and `window.escapeHtml` to avoid identifier collisions.
+  - **Universal Hero Mount**: Moved `<div id="dept-hero-container">` to the very top of `<main class="page-main-container">`, removing duplicate ID instances that collided inside `#hod-dept-command-center`.
+  - **Single-Row Controls Toolbar**: Built `.classes-single-row-toolbar` in `dashboard.html` and `dashboard.css`, aligning `My Classes (3)` on the left and all 4 controls on the right in a single horizontal flex line without separate wrapped rows.
+  - **High-Fidelity Class Card Template**: Updated `renderGroups()` in `dashboard.js` with vibrant gradient headers (`#1d4ed8` blue for IOT, `#4c1d95` purple for DBMS, `#065f46` emerald for Web Tech), rounded room badge, SVG circular attendance ring, `↑ Active` status pill, prominent `Take Attendance` + `Register` buttons, centered quick links, and 18-doc collapsible NBA dossier footer.
+  - Bumped cache-busting asset versions to `v=20261031_v7`.
+  - Pushed to `https://github.com/onebotyt/VidyaOS.git` on `main`.
+- **Deployment Status**:
+  - Live Frontend: `https://vidyaos-pink.vercel.app/faculty/dashboard` (Vercel automatic deployment triggered via commit `fb6a423`).
+  - Live Backend: `https://vidyaos-backend.onrender.com` (Render automatic deployment triggered via commit `a1ed69e`).
+
+
+
+
+### 🏛️ Milestone 316: Theory Classes 7-Record Academic Dossier System & Dedicated Web Page
+- **Status**: 🟢 Completed, Pushed & Live on Remote Repositories
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (`main`, Commit: `0372700`)
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`, Commit: `a305634`)
+  - Vercel Live Deployment: `https://vidyaos-pink.vercel.app/faculty/theory-classes`
+- **User Request**:
+  - *"Just like NBA doucement summit make a option name Theory Classes inside this Attendance Register, Teacher's Diary, Lesson Plan Completion Record, Course Coverage Report, Teaching-Learning Material, ICT-Enabled Teaching Records, Assignment Records in all this teacher caan upload PDF and make a web page for Theory Classes Page like the photo i send"*
+- **The 7 Theory Class Academic Compliance Records**:
+  1. `#1 Attendance Register`: 31-day institutional matrix ledger + Signed PDF upload option.
+  2. `#2 Teacher's Diary`: Daily lecture log, pedagogical activities & reflections PDF upload.
+  3. `#3 Lesson Plan Completion Record`: Planned vs actual lecture delivery tracker with dates PDF upload.
+  4. `#4 Course Coverage Report`: Periodic syllabus completion report & HOD sign-offs PDF upload.
+  5. `#5 Teaching-Learning Material`: Course notes, lecture PPTs/PDFs, reference sheets PDF upload.
+  6. `#6 ICT-Enabled Teaching Records`: Smart classroom logs, LMS activities & online quizzes PDF upload.
+  7. `#7 Assignment Records`: Coursework assignments, evaluation rubrics & submission ledger + Signed PDF upload.
+- **Backend Architecture & Database**:
+  - Auto-provisioned `theory_class_files` and `theory_class_documents` with robust SQLite and MySQL table definitions.
+  - Implemented `theoryClassModel.js`: Data access layer for 7 items, group details, student turnout summary, assignments integration, document versioning, and disk cleanup.
+  - Implemented `theoryClassController.js`: Handlers for `GET /definitions`, `GET /`, `POST /:id/documents` (with 100MB file limit), `DELETE /:id/documents/:item_key`, and `POST /:id/audit`.
+  - Mounted `/api/v1/theory-classes` in `server.js` using `makeUploader('theory_classes')`.
+- **Frontend Architecture & Visual Parity**:
+  - Built `faculty/theory-classes/theory-classes.{html,css,js}` with 100% Theme Token Compliance (zero raw `#hex` or `rgb()` values).
+  - Header Hero Banner: Subject title, component, semester, academic year, subject code, department, teacher in-charge, and Audit Readiness meter (`X / 7`, percentage bar, readiness caption).
+  - Quick action toolbar: `🖨️ Print Theory Dossier Index`, `👆 Take Attendance`, `📋 Register`, `📚 Classwork`.
+  - Category filter pills: `All 7 Records (7)`, `Attendance & Log (2)`, `Curriculum & Coverage (2)`, `Pedagogy & Assessment (3)`.
+  - Search input: Real-time filtering across titles, descriptions, and record numbers.
+  - Interactive PDF Upload Modal: Drag-and-drop target zone, PDF validation, title, optional remarks, and upload progress feedback.
+  - Faculty Dashboard Class Card Integration: Added direct `Theory Classes (7 Records)` action bar and 3-dot kebab menu option to launch the Theory Classes page for any subject.
+  - Added clean URL rewrites in `vercel.json` for `/faculty/theory-classes`.
