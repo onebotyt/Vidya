@@ -3,6 +3,28 @@
 
 
 
+### 🏛️ Milestone 319: Laboratory Classes Universal PDF Upload Option & Live Deployment Synchronization
+- **Status**: 🟢 Completed & Pushed
+  - Target Frontend: `deployfolder/VidyaOS/faculty/lab-classes/`, `frontend/faculty/lab-classes/`
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/`, `backend/`
+- **User Request & Issue Diagnosis**:
+  1. *"in this teacher can upload PDF soo add pdf add option in that teacher can add pdf"* (attached screenshot `media_1793462293912_906651d6.png` of `/faculty/lab-classes.html` where rows lacked upload buttons and category tabs were unformatted text).
+  2. Resolving MySQL runtime error in student enrollment modal (`Expression #1 of ORDER BY clause is not in SELECT list, references column 'defaultdb.s.class_roll_no' which is not in SELECT list; this is incompatible with DISTINCT`).
+- **Implementation & Architecture**:
+  1. **Universal PDF Upload Across All 7 Records (`lab-classes.js`, `labClassModel.js`)**:
+     - Flagged `can_upload: true` on all 7 laboratory compliance records (Laboratory Attendance, Laboratory Manuals, Job Cards / Experiment Sheets, Practical Notebooks, Continuous Laboratory Assessment, Equipment Utilization Records, Laboratory Maintenance Records).
+     - Rendered primary `Upload PDF` (or `Replace PDF`) action button on every record row calling `openDirectUploadModal(item.key, item.title)`.
+     - Preserved live register shortcut actions: `#1 Laboratory Attendance` -> `View Register` and `#5 Continuous Laboratory Assessment` -> `Lab Marks`.
+     - Added `View PDF` and `Delete` buttons for uploaded artifacts.
+  2. **Filter Tabs & Modal ID Alignment (`lab-classes.css`, `lab-classes.js`)**:
+     - Aligned CSS classes `.cf-tab-pills`, `.cf-tab-pill`, and `.cf-tab-count` with 100% theme token compliance (0 hardcoded hex colors).
+     - Aligned modal IDs with HTML: `#upload-modal-overlay`, `#modal-upload-item-name`, `#doc-title-input`, `#doc-notes-input`, `#file-input-element`, `#file-preview-info`, `#preview-filename`, `#preview-filesize`, `#btn-submit-upload`.
+     - Drag-and-drop PDF dropzone handler with automatic file size formatting and preview.
+  3. **Repository Push & Live Cloud Sync**:
+     - Pushed `deployfolder/VidyaOS_BackEnd` to `origin/main` (delivering the MySQL `DISTINCT ORDER BY` subquery fix and Laboratory Classes API).
+     - Pushed `deployfolder/VidyaOS` to `origin/main` (delivering the refreshed Faculty Dashboard with institutional branding, dual Theory & Lab bars, and Laboratory Classes PDF upload UI).
+     - Synchronized changes to monorepo `feature/student-dashboard-redesign`.
+
 ### 🏛️ Milestone 318: Resolution of MySQL DISTINCT Order By Error, Elimination of JS Syntax Error, and Faculty Dashboard Visual Refresh
 - **Status**: 🟢 Completed & Verified
   - Target Frontend: `deployfolder/VidyaOS/faculty/dashboard/`, `frontend/faculty/dashboard/`
