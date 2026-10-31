@@ -22,6 +22,7 @@ const studentMigrationService = require('./src/services/studentMigrationService'
 const iotMigrationService = require('./src/services/iotMigrationService');
 const dbSyncService = require('./src/services/dbSyncService');
 const promotionEngineService = require('./src/services/promotionEngineService');
+const adminBootstrapService = require('./src/services/adminBootstrapService');
 const { generalLimiter } = require('./src/middleware/rateLimiter');
 
 // Import Route Handlers & Controllers
@@ -43,6 +44,7 @@ const teachingGroupRoutes = require('./src/routes/teachingGroups');
 const notificationRoutes = require('./src/routes/notifications');
 const courseFileRoutes = require('./src/routes/courseFile');
 const mediaRoutes = require('./src/routes/media');
+const ocrRoutes = require('./src/routes/ocr');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -99,12 +101,32 @@ app.get(['/login/faculty-register.html', '/login/faculty-register', '/register/f
   const query = req.url.includes('?') ? '&' + req.url.split('?')[1] : '';
   res.redirect(301, `/login/register.html?role=faculty${query}`);
 });
-app.get('/admin/academic_structure.html', (req, res) => res.redirect(301, '/admin/academic-structure.html'));
+app.get(['/admin/academic_structure.html', '/admin/academic_structure'], (req, res) => res.redirect(301, '/admin/academic-structure.html'));
+app.get(['/admin/audit_logs.html', '/admin/audit_logs'], (req, res) => res.redirect(301, '/admin/audit-logs.html'));
 app.get('/admin/departments.html', (req, res) => res.redirect(301, '/admin/academic-structure.html?tab=departments'));
 app.get('/faculty/analytics.html', (req, res) => res.redirect(301, '/faculty/reports.html?tab=analytics'));
-app.get(['/faculty/marks.html', '/faculty/marks'], (req, res) => {
-  const regId = req.query.id || req.query.register_id;
-  res.redirect(301, `/faculty/tests.html${regId ? `?id=${regId}` : ''}`);
+
+// Consolidated Register Tabs 301 Redirects (Rule 4 & Milestone Consolidation)
+app.get(['/faculty/assignments.html', '/faculty/assignments', '/faculty/assignments/'], (req, res) => {
+  const regId = req.query.id || req.query.register_id || req.query.subject_id;
+  res.redirect(301, `/faculty/registers.html?tab=assignments${regId ? `&register_id=${regId}` : ''}`);
+});
+app.get(['/faculty/tests.html', '/faculty/tests', '/faculty/tests/', '/faculty/marks.html', '/faculty/marks', '/faculty/marks/'], (req, res) => {
+  const regId = req.query.id || req.query.register_id || req.query.subject_id;
+  res.redirect(301, `/faculty/registers.html?tab=marks${regId ? `&register_id=${regId}` : ''}`);
+});
+app.get(['/faculty/hod-teachers.html', '/faculty/hod-teachers', '/faculty/hod-teachers/'], (req, res) => {
+  res.redirect(301, '/faculty/students.html');
+});
+app.get(['/faculty/hod-settings.html', '/faculty/hod-settings', '/faculty/hod-settings/'], (req, res) => {
+  res.redirect(301, '/faculty/dashboard.html');
+});
+app.get(['/faculty/common-teachers.html', '/faculty/common-teachers', '/faculty/common-teachers/'], (req, res) => {
+  res.redirect(301, '/faculty/dashboard.html');
+});
+app.get(['/faculty/evaluation.html', '/faculty/evaluation', '/faculty/evaluation/'], (req, res) => {
+  const regId = req.query.id || req.query.register_id || req.query.subject_id;
+  res.redirect(301, `/faculty/sheets.html${regId ? `?register_id=${regId}` : ''}`);
 });
 app.get(['/faculty/attendance/quick.html', '/faculty/attendance/quick'], (req, res) => res.redirect(301, '/faculty/registers.html'));
 app.get('/student/attendance/subjects.html', (req, res) => res.redirect(301, '/student/attendance.html'));
@@ -131,6 +153,12 @@ if (fs.existsSync(sharedDir)) {
   app.use('/css', express.static(path.join(sharedDir, 'css'), staticOptions));
 }
 
+// Serve Components Library (/components)
+const componentsDir = path.join(frontendBase, 'components');
+if (fs.existsSync(componentsDir)) {
+  app.use('/components', express.static(componentsDir, staticOptions));
+}
+
 // Serve ExcelJS standalone browser bundle for client-side genuine .xlsx generation
 app.get(['/js/exceljs.min.js', '/shared/js/exceljs.min.js'], (req, res, next) => {
   const p1 = path.join(frontendBase, 'shared/js/exceljs.min.js');
@@ -150,16 +178,46 @@ app.get(['/js/exceljs.min.js', '/shared/js/exceljs.min.js'], (req, res, next) =>
 // Universal Single-Engine Google Classroom Workspace:
 // Route student classroom to the unified Google Classroom workspace engine
 app.get(['/student/group-detail.html', '/student/group-detail', '/student/group-detail/'], (req, res) => {
+  const namedGroupDetail = path.join(frontendBase, 'faculty/group-detail/group-detail.html');
+  if (fs.existsSync(namedGroupDetail)) {
+    return res.sendFile(namedGroupDetail);
+  }
   res.sendFile(path.join(frontendBase, 'faculty/group-detail/index.html'));
 });
 app.use('/student/group-detail', express.static(path.join(frontendBase, 'faculty/group-detail')));
 
-// Universal rewrite for legacy .html requests to modular folder index.html
+// Universal rewrite for legacy and clean .html requests to modular folder named html or index.html
 app.get('/:section/:page.html', (req, res, next) => {
   const { section, page } = req.params;
+  const namedPath = path.join(frontendBase, `${section}/${page}/${page}.html`);
+  if (fs.existsSync(namedPath)) {
+    return res.sendFile(namedPath);
+  }
   const modularPath = path.join(frontendBase, `${section}/${page}/index.html`);
   if (fs.existsSync(modularPath)) {
     return res.sendFile(modularPath);
+  }
+  next();
+});
+
+// Canonical folder redirect & modular loader: /faculty/assignments -> 301 -> /faculty/assignments/ -> assignments.html
+app.get('/:section/:page', (req, res, next) => {
+  const { section, page } = req.params;
+  if (page.includes('.')) return next();
+  const folderPath = path.join(frontendBase, `${section}/${page}`);
+  if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
+    if (!req.path.endsWith('/')) {
+      const q = req.url.includes('?') ? '?' + req.url.split('?')[1] : '';
+      return res.redirect(301, `${req.path}/${q}`);
+    }
+    const namedPath = path.join(folderPath, `${page}.html`);
+    if (fs.existsSync(namedPath)) {
+      return res.sendFile(namedPath);
+    }
+    const modularPath = path.join(folderPath, 'index.html');
+    if (fs.existsSync(modularPath)) {
+      return res.sendFile(modularPath);
+    }
   }
   next();
 });
@@ -211,12 +269,13 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static(uploadsDir, staticOptions));
 
-// Health Check
-app.get('/api/v1/health', (req, res) => {
+// Health Check & Cloud Wake-Up Ping
+app.get(['/health', '/ping', '/api/v1/health', '/api/v1/ping'], (req, res) => {
   res.status(200).json({
     success: true,
     data: {
       status: 'ONLINE',
+      uptime: process.uptime(),
       timestamp: new Date().toISOString(),
       service: 'VidyaOS Institutional REST API'
     }
@@ -253,15 +312,18 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/course-files', courseFileRoutes);
 app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/search', mediaRoutes);
+app.use('/api/v1/ocr', ocrRoutes);
+
+// Ensure all unhandled /api/* requests across all HTTP verbs return JSON, never HTML
+app.all('/api/*', (req, res) => {
+  return res.status(404).json({
+    success: false,
+    error: { code: 'NOT_FOUND', message: `API endpoint '${req.path}' does not exist` }
+  });
+});
 
 // Fallback Route for SPA/Frontend
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({
-      success: false,
-      error: { code: 'NOT_FOUND', message: `API endpoint '${req.path}' does not exist` }
-    });
-  }
   const frontendIndex = path.join(__dirname, '../frontend/index.html');
   if (fs.existsSync(frontendIndex)) {
     return res.sendFile(frontendIndex);
@@ -296,8 +358,18 @@ setInterval(() => {
 
 // Initialize Server & Database Test
 async function startServer() {
-  dbSyncService.initDatabasePersistence();
+  await dbSyncService.initDatabasePersistence();
   await testConnection();
+
+  // Ensure compatibility views (exams, exam_scores, assignments, etc.) exist across MySQL / SQLite
+  try {
+    const { ensureCompatibilityViews } = require('./src/config/db');
+    if (typeof ensureCompatibilityViews === 'function') {
+      await ensureCompatibilityViews();
+    }
+  } catch (err) {
+    logger.warn(`Failed to auto-create compatibility views: ${err.message}`);
+  }
 
   // Automatically synchronize active academic session & run semester promotion on startup
   try {
@@ -350,6 +422,13 @@ async function startServer() {
     logger.warn(`Failed to migrate IoT and correction tables: ${err.message}`);
   }
 
+  // Bootstrap or synchronize administrator from environment (Render/Cloud initial setup)
+  try {
+    await adminBootstrapService.bootstrap();
+  } catch (err) {
+    logger.warn(`Failed to bootstrap administrator from environment: ${err.message}`);
+  }
+
   const serverInstance = app.listen(PORT, '0.0.0.0', () => {
     logger.info(`College Attendance System Backend running:`);
     logger.info(`  ➜ Local:   http://localhost:${PORT}`);
@@ -364,11 +443,30 @@ async function startServer() {
     logger.info(`REST API Base URL: http://localhost:${PORT}/api/v1`);
   });
 
+  // Cloud Keep-Alive Self-Ping (Prevents Render.com free-tier 15min idle shutdown during activity)
+  if (process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.ENABLE_KEEPALIVE === 'true') {
+    const KEEPALIVE_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    const httpsMod = require('https');
+    setInterval(() => {
+      try {
+        const pingUrl = process.env.RENDER_EXTERNAL_URL
+          ? `${process.env.RENDER_EXTERNAL_URL}/api/v1/health`
+          : 'https://vidyaos-backend.onrender.com/api/v1/health';
+        httpsMod.get(pingUrl, (res) => {
+          logger.info(`[KEEPALIVE] Autonomous health self-ping status: ${res.statusCode}`);
+        }).on('error', (e) => {
+          logger.debug(`[KEEPALIVE] Self-ping notice: ${e.message}`);
+        });
+      } catch (_) {}
+    }, KEEPALIVE_INTERVAL);
+    logger.info('[KEEPALIVE] Autonomous self-ping keep-alive initialized (10m interval)');
+  }
+
   // Graceful shutdown handling for Docker / Kubernetes / systemd / PM2 / Render
-  const gracefulShutdown = (signal) => {
-    logger.info(`Received ${signal}. Capturing pre-shutdown snapshot and shutting down gracefully...`);
+  const gracefulShutdown = async (signal) => {
+    logger.info(`Received ${signal}. Capturing pre-shutdown snapshot and synchronizing cloud persistence...`);
     try {
-      dbSyncService.capturePreShutdownSnapshot();
+      await dbSyncService.capturePreShutdownSnapshot();
     } catch (_) {}
     serverInstance.close(() => {
       logger.info('HTTP server closed. Exiting process.');
@@ -377,7 +475,7 @@ async function startServer() {
     setTimeout(() => {
       logger.error('Forcefully terminating server after timeout.');
       process.exit(1);
-    }, 10000);
+    }, 15000);
   };
 
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

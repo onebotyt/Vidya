@@ -14,8 +14,8 @@ class ReportModel {
    * @returns {Promise<Array<Object>>} Class attendance summaries
    */
   async getAnalyticsClasses({ teacherId, isHod, deptId }) {
-    const whereClause = isHod && deptId 
-      ? '(r.teacher_id = ? OR r.department_id = ? OR sub.department_id = ?)' 
+    const whereClause = isHod && deptId
+      ? '(r.teacher_id = ? OR r.department_id = ? OR sub.department_id = ?)'
       : 'r.teacher_id = ?';
     const params = isHod && deptId ? [teacherId || -1, deptId, deptId] : [teacherId];
 
@@ -32,7 +32,7 @@ class ReportModel {
        JOIN attendance_sessions s ON s.register_id = r.id AND s.state = 'FINALIZED'
        LEFT JOIN register_attendance ra ON ra.session_id = s.id
        WHERE ${whereClause}
-       GROUP BY r.id, tg.id, sub.id
+       GROUP BY r.id, tg.id, sub.id, tg.subject_name, sub.name, r.name
        ORDER BY subject_name ASC`,
       params
     );
@@ -110,7 +110,7 @@ class ReportModel {
          LEFT JOIN register_attendance ra ON ra.session_id = s.id AND ra.student_id = ass.student_id
          WHERE ${trendWhere}
          GROUP BY ass.student_id
-         HAVING total > 0 AND (CAST(attended AS REAL) / total) * 100 < ?
+         HAVING total > 0 AND ((attended * 100.0) / total) < ?
        ) d`,
       trendParams
     );
@@ -271,7 +271,8 @@ class ReportModel {
        LEFT JOIN attendance_session_students ass ON ass.session_id = asess.id AND ass.included = 1
        LEFT JOIN register_attendance ra ON ra.session_id = asess.id AND ra.student_id = ass.student_id
        ${where}
-       GROUP BY asess.id
+       GROUP BY asess.id, asess.label, asess.session_type, asess.state, asess.session_date,
+                tg.subject_name, sub.name, r.name, sub.code, t.full_name, d.name, asess.year, asess.semester
        ORDER BY asess.id DESC`,
       params
     );
@@ -426,7 +427,7 @@ class ReportModel {
        LEFT JOIN enrollments e ON e.student_id = s.id AND e.status = 'ENROLLED'
        LEFT JOIN departments d ON e.department_id = d.id
        ${studentFilter}
-       ORDER BY COALESCE(e.class_roll_no, s.class_roll_no) ASC, s.full_name ASC`,
+       ORDER BY class_roll_no ASC, s.full_name ASC`,
       params
     );
 

@@ -40,15 +40,15 @@ function getSqliteDb() {
     sqliteDb.function('NOW', () => new Date().toISOString().replace('T', ' ').slice(0, 19));
     sqliteDb.function('CURDATE', () => new Date().toISOString().slice(0, 10));
     sqliteDb.function('DATE', (d) => (d ? String(d).slice(0, 10) : null));
-    sqliteDb.function('CONCAT', (...args) => args.filter(a => a !== null && a !== undefined).join(''));
+    sqliteDb.function('CONCAT', { varargs: true }, (...args) => args.filter(a => a !== null && a !== undefined).join(''));
     sqliteDb.function('DATEDIFF', (d1, d2) => {
       if (!d1 || !d2) return 0;
       const ms1 = new Date(d1).getTime();
       const ms2 = new Date(d2).getTime();
       return Math.floor((ms1 - ms2) / (1000 * 60 * 60 * 24));
     });
-    sqliteDb.function('GREATEST', (...args) => Math.max(...args.map(Number)));
-    sqliteDb.function('LEAST', (...args) => Math.min(...args.map(Number)));
+    sqliteDb.function('GREATEST', { varargs: true }, (...args) => Math.max(...args.map(Number)));
+    sqliteDb.function('LEAST', { varargs: true }, (...args) => Math.min(...args.map(Number)));
     sqliteDb.function('YEAR', (d) => (d ? new Date(d).getFullYear() : null));
     sqliteDb.function('MONTH', (d) => (d ? new Date(d).getMonth() + 1 : null));
     sqliteDb.function('DAY', (d) => (d ? new Date(d).getDate() : null));
@@ -461,6 +461,13 @@ function translateSqlForSqlite(sql) {
   // Handle MySQL CURDATE() -> SQLite CURRENT_DATE
   trans = trans.replace(/CURDATE\s*\(\s*\)/gi, "CURRENT_DATE");
 
+  // Handle MySQL GREATEST / LEAST -> SQLite scalar MAX / MIN
+  trans = trans.replace(/\bGREATEST\s*\(/gi, 'MAX(');
+  trans = trans.replace(/\bLEAST\s*\(/gi, 'MIN(');
+
+  // Handle MySQL INSERT IGNORE INTO -> SQLite INSERT OR IGNORE INTO
+  trans = trans.replace(/\bINSERT\s+IGNORE\s+INTO\b/gi, 'INSERT OR IGNORE INTO');
+
   return trans;
 }
 
@@ -550,6 +557,18 @@ function translateSqlForMysql(sql) {
   trans = trans.replace(/ON\s+CONFLICT\s*(\([^)]*\))?\s*DO\s+UPDATE\s+SET/gi, 'ON DUPLICATE KEY UPDATE');
   trans = trans.replace(/excluded\.([a-zA-Z0-9_]+)/gi, 'VALUES($1)');
 
+  // 13. INSERT OR IGNORE INTO -> INSERT IGNORE INTO (MySQL syntax)
+  trans = trans.replace(/\bINSERT\s+OR\s+IGNORE\s+INTO\b/gi, 'INSERT IGNORE INTO');
+
+  // 14. CAST(... AS INTEGER) -> CAST(... AS SIGNED) (MySQL requires SIGNED)
+  trans = trans.replace(/\bAS\s+INTEGER\b/gi, 'AS SIGNED');
+
+  // 15. CAST(... AS REAL) -> CAST(... AS DECIMAL(10,2)) (MySQL portability)
+  trans = trans.replace(/\bAS\s+REAL\b/gi, 'AS DECIMAL(10,2)');
+
+  // 16. ORDER BY COALESCE(s.class_roll_no, ...) with DISTINCT -> ORDER BY class_roll_no
+  trans = trans.replace(/ORDER\s+BY\s+COALESCE\s*\(\s*(?:s|st|e)\.class_roll_no[^)]+\)/gi, 'ORDER BY class_roll_no');
+
   return trans;
 }
 
@@ -610,6 +629,15 @@ function getPool() {
       timezone: '+00:00',
       dateStrings: true
     });
+
+    // Ensure session sql_mode removes ONLY_FULL_GROUP_BY for seamless MySQL compatibility
+    try {
+      pool.on('connection', (conn) => {
+        try {
+          conn.query("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))", () => {});
+        } catch (_) {}
+      });
+    } catch (_) {}
   }
   return pool;
 }
@@ -674,7 +702,9 @@ async function query(sql, params = []) {
         lastInsertRowid: insertId
       };
 
-      try { db.exec('PRAGMA wal_checkpoint(PASSIVE);'); } catch (_) {}
+      try {
+        db.exec('PRAGMA wal_checkpoint(PASSIVE);');
+      } catch (_) {}
 
       const resultArr = [resultObj];
       resultArr.insertId = insertId;
@@ -682,6 +712,7 @@ async function query(sql, params = []) {
       return resultArr;
     }
   } catch (err) {
+    console.error('[SQL ERROR]', err.message, '\nSQL:', transSql, '\nPARAMS:', normParams);
     if (err.message && err.message.includes('UNIQUE constraint failed')) {
       err.code = 'ER_DUP_ENTRY';
     }
@@ -813,6 +844,102 @@ async function withTransaction(callback) {
 }
 
 /**
+ * Automatically creates compatibility views for legacy schemas (exams, exam_scores, assignments, etc.)
+ * Ensures that both MySQL (Render/Aiven) and SQLite (Local dev) have matching schema views.
+ */
+async function ensureCompatibilityViews() {
+  if (DB_CLIENT === 'mysql') {
+    const p = getPool();
+    if (!p) return;
+    try {
+      try {
+        await p.execute("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
+      } catch (_) {}
+      await p.execute(`
+        CREATE OR REPLACE VIEW exams AS
+        SELECT id, teacher_id, subject_id, department_id, group_id, year, semester, academic_year_id,
+               title AS name, due_date AS exam_date, max_marks, unit_name, instructions, questions, created_at, updated_at
+        FROM assessments
+        WHERE type = 'EXAM'
+      `);
+      await p.execute(`
+        CREATE OR REPLACE VIEW exam_scores AS
+        SELECT id, assessment_id AS exam_id, student_id, marks_obtained, feedback AS remarks,
+               graded_by AS entered_by, created_at, updated_at
+        FROM assessment_submissions
+      `);
+      await p.execute(`
+        CREATE OR REPLACE VIEW assignments AS
+        SELECT id, teacher_id, subject_id, department_id, group_id, year, semester, academic_year_id,
+               title, description, attachment_path, attachment_name, due_date, max_marks, unit_name, instructions, questions, created_at, updated_at
+        FROM assessments
+        WHERE type = 'ASSIGNMENT'
+      `);
+      await p.execute(`
+        CREATE OR REPLACE VIEW assignment_submissions AS
+        SELECT id, assessment_id AS assignment_id, student_id, file_path, original_filename,
+               submitted_at, status, marks_obtained, feedback, graded_at, graded_by, created_at, updated_at
+        FROM assessment_submissions
+      `);
+      await p.execute(`
+        CREATE OR REPLACE VIEW attendance_session_pins AS
+        SELECT id AS session_id, verification_pin AS pin_code, verification_expires_at AS expires_at, created_at
+        FROM attendance_sessions
+        WHERE verification_pin IS NOT NULL
+      `);
+      await p.execute(`
+        CREATE OR REPLACE VIEW attendance_session_qr AS
+        SELECT id AS session_id, verification_qr_hash AS token_hash, verification_expires_at AS expires_at, created_at
+        FROM attendance_sessions
+        WHERE verification_qr_hash IS NOT NULL
+      `);
+      logger.info('MySQL compatibility views (exams, exam_scores, assignments, etc.) verified successfully.');
+    } catch (err) {
+      logger.warn('Failed to ensure MySQL compatibility views', { error: err.message });
+    }
+  } else {
+    // SQLite
+    const db = getSqliteDb();
+    if (!db) return;
+    try {
+      db.exec(`
+        CREATE VIEW IF NOT EXISTS exams AS
+        SELECT id, teacher_id, subject_id, department_id, group_id, year, semester, academic_year_id,
+               title AS name, due_date AS exam_date, max_marks, unit_name, instructions, questions, created_at, updated_at
+        FROM assessments
+        WHERE type = 'EXAM';
+
+        CREATE VIEW IF NOT EXISTS exam_scores AS
+        SELECT id, assessment_id AS exam_id, student_id, marks_obtained, feedback AS remarks,
+               graded_by AS entered_by, created_at, updated_at
+        FROM assessment_submissions;
+
+        CREATE VIEW IF NOT EXISTS assignments AS
+        SELECT id, teacher_id, subject_id, department_id, group_id, year, semester, academic_year_id,
+               title, description, attachment_path, attachment_name, due_date, max_marks, unit_name, instructions, questions, created_at, updated_at
+        FROM assessments
+        WHERE type = 'ASSIGNMENT';
+
+        CREATE VIEW IF NOT EXISTS assignment_submissions AS
+        SELECT id, assessment_id AS assignment_id, student_id, file_path, original_filename,
+               submitted_at, status, marks_obtained, feedback, graded_at, graded_by, created_at, updated_at
+        FROM assessment_submissions;
+
+        CREATE VIEW IF NOT EXISTS attendance_session_pins AS
+        SELECT id AS session_id, verification_pin AS pin_code, verification_expires_at AS expires_at, created_at
+        FROM attendance_sessions
+        WHERE verification_pin IS NOT NULL;
+
+        CREATE VIEW IF NOT EXISTS attendance_session_qr AS
+        SELECT id AS session_id, verification_qr_hash AS token_hash, verification_expires_at AS expires_at, created_at
+        FROM attendance_sessions
+        WHERE verification_qr_hash IS NOT NULL;
+      `);
+    } catch (_) {}
+  }
+}
+
+/**
  * Test DB connection and report readiness
  */
 async function testConnection() {
@@ -821,6 +948,7 @@ async function testConnection() {
       const p = getPool();
       const [result] = await p.query('SELECT 1 + 1 AS solution');
       logger.info('MySQL Database connected successfully.', { solution: result[0].solution });
+      await ensureCompatibilityViews();
       return true;
     } catch (err) {
       logger.warn(
@@ -840,6 +968,7 @@ async function testConnection() {
       solution: row.solution,
       db_file: process.env.SQLITE_FILE || 'college_attendance.sqlite'
     });
+    await ensureCompatibilityViews();
     return true;
   } catch (err) {
     logger.error('SQLite Database initialization error', { error: err.message });
@@ -852,5 +981,6 @@ module.exports = {
   query,
   getConnection,
   withTransaction,
-  testConnection
+  testConnection,
+  ensureCompatibilityViews
 };

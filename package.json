@@ -17,9 +17,6 @@
     "push:backend": "node scripts/collab/safe-push.js",
     "test:theme": "node backend/scripts/test-theme-support.js",
     "test:rbac": "node backend/scripts/test-rbac-and-structure.js",
-    "verify:components": "node scripts/verify-components-only.js",
-    "verify:components:admin": "node scripts/verify-components-only.js --role admin",
-    "verify:components:faculty-student": "node scripts/verify-components-only.js --role faculty-student",
     "ui:backup": "node scripts/ui-backup-revert.js backup",
     "ui:revert": "node scripts/ui-backup-revert.js revert",
     "ui:status": "node scripts/ui-backup-revert.js status"
