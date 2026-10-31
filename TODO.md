@@ -5701,6 +5701,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - `GET /api/v1/teaching-groups/overview`: 200 OK (All classes and recent due work returned).
   - `POST /api/v1/teaching-groups`: 201 Created (Creates class, register, and stream announcement).
 
+### 🏛️ Milestone 314: Faculty Classes Page Redesign, Dynamic Institutional Hero Showcase, Admin Branding Upload & Archive Classes Action
+- **User Requirement**:
+  - *"new desgin for tacher classes page you can see on top element we have colloage name logo ,collage image now in admin setting add option to upload collage logo and image option from that this element get collage name and logo ,image also we have in compont this element but diffreant desgin so update that so same compont can be used in any whare and in below right side of cerate btn image show student roster btn replace with that arcive btn"*
+- **Architectural Implementation**:
+  1. **Institutional Branding Backend**:
+     - `GET /api/v1/settings/institution`: Open/authenticated endpoint returning college name, code, tagline, logo URL, and campus banner URL with default institutional fallbacks.
+     - `POST /api/v1/admin/branding/upload`: Multipart upload for institutional logo and panoramic campus photo, saving to `uploads/branding/` and updating `system_settings`.
+  2. **Admin Settings Branding & Media Uploader (`admin/settings/`)**:
+     - Added college logo file upload, instant circular preview (`#preview-logo-img`), and default reset button.
+     - Added campus building photo file upload, instant panoramic preview (`#preview-banner-img`), and default reset button.
+     - Added institution subtitle/tagline input (`#setting-inst-tagline`, "Uttarakhand | Completely Adhered to NBA Guidelines").
+     - Added real-time live mockup header preview showing exactly how the header renders across the portals.
+  3. **Universal Institutional Hero Component (`faculty/components/dept-hero/`)**:
+     - Completely redesigned to match `media_1793443232006_f00ffc72.jpg`:
+       - Circular college logo badge (`college-logo.svg`).
+       - Bold college name + tagline.
+       - Vertical divider `|`.
+       - Page title + subtitle.
+       - Panoramic college building photograph on the right (`campus-nainital.jpg`).
+     - Hydrates asynchronously from `/api/v1/settings/institution` with zero-flicker `localStorage` cache.
+     - Listens to `institution-settings-updated` custom event to refresh immediately.
+  4. **Teacher Classes Page Redesign (`faculty/dashboard/` & `faculty/groups/`)**:
+     - Mounted the universal institutional hero banner directly at the top of the teacher classes view.
+     - Added the 5 modern KPI metric cards (My Classes, Total Students with `+12%`, Subjects, Today's Classes, and dynamic Day/Date & Live Time clock ticker).
+     - Renamed heading to "My Classes".
+     - Replaced `Students Roster` button on the right of `+ Create Class` with `Archived Classes` toggle button (`#btn-toggle-archived`).
+     - Added `toggleArchivedClassesView()` to toggle between Active and Archived classes and update button state and pill counters.
+
 ### 🚀 Milestone 313: Fix MySQL DISTINCT ORDER BY Expression Mismatch in Unenrolled Students & Cohorts
 - **User Requirement**: *"fix it"* (Screenshot showing modal error: `Expression #1 of ORDER BY clause is not in SELECT list, references column 'defaultdb.s.class_roll_no' which is not in SELECT list; this is incompatible with DISTINCT`).
 - **Root Cause Analysis**:
