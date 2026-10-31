@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "VidyaOS — Institutional Campus & Academic Operating System",
   "scripts": {
-    "start": "cd backend && node server.js",
+    "start": "powershell -ExecutionPolicy Bypass -File deployfolder/start-all.ps1",
+    "start:updated": "powershell -ExecutionPolicy Bypass -File deployfolder/start-all.ps1",
+    "start:backend": "cd deployfolder/VidyaOS_BackEnd && node server.js",
+    "start:frontend": "cd deployfolder/VidyaOS && node server.js",
+    "start:old": "cd backend && node server.js",
     "collab:pull": "node scripts/collab/pull-dev2.js",
     "collab:diff": "node scripts/collab/diff-dev2.js",
     "collab:apply": "node scripts/collab/apply-dev2.js",

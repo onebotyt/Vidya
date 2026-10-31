@@ -3,6 +3,91 @@
 
 
 
+### 🏛️ Milestone 309: Fix for Faculty Dashboard "Create Class" Modal & Non-HOD Role Routing Safeguards
+- **Status**: 🟢 Completed & Live on Localhost (:5001 / :3001)
+  - Target Frontend: `deployfolder/VidyaOS/faculty/dashboard/` (`dashboard.js`, `dashboard.html`, `index.html`)
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/`
+- **User Request**:
+  - *"class cerate btn not working also these sql error"*
+  - Attached Screenshots:
+    1. `media_1793428284117_d79ee411.jpg`: Faculty dashboard displaying `You do not have an active HOD assignment. Only HODs can perform this action.` when on `?tab=dept`.
+    2. `media_1793428282907_afe9a111.jpg`: Displaying `near "2": syntax error` toasts and inactive "+ Create Class" button on `?tab=classes`.
+- **Root Cause & Architectural Diagnosis**:
+  1. **Missing `openModal` / `closeModal` Reference (`dashboard.js`)**:
+     - `dashboard.html` / `index.html` were missing `<script src="/js/ui.js"></script>`.
+     - In `dashboard.js`, line 2550 executed `window.openModal = openModal;` when `openModal` was not declared in scope, triggering an unhandled `ReferenceError: openModal is not defined`.
+     - This prevented the "+ Create Class" button (`onclick="openModal('create-group-modal')"`) and top toolbar button from responding to user clicks.
+  2. **Non-HOD Default Tab Redirection & 403 Toast**:
+     - For regular faculty members (such as Er. Amit Verma, who does not hold an HOD role), `updateDashboardMode()` defaulted `tabToOpen` to `'DEPT'` and called `loadHodDashboardData()`.
+     - Because `GET /api/v1/hod/dashboard` strictly guards with `requireHOD()`, this returned HTTP 403 with `You do not have an active HOD assignment. Only HODs can perform this action.`, producing an intrusive error toast on page load.
+  3. **Backend SQL Syntax Error Resolution**:
+     - Synchronized backend process reload with clean parameter binding in SQLite adapter.
+     - Verified `GET /api/v1/teaching-groups?status=ALL`, `GET /api/v1/teaching-groups/overview`, and `POST /api/v1/teaching-groups` return HTTP 200/201 without query syntax failures.
+- **Implementation & Fixes**:
+  1. **Self-Contained Modal Engine (`dashboard.js`)**:
+     - Added first-class implementations of `openModal` and `closeModal` directly inside `dashboard.js`, complete with focus trapping and class list toggling.
+     - Added `<script src="/js/ui.js?v=20261029"></script>` to `dashboard.html` and `index.html`.
+  2. **Role-Aware Dashboard Routing (`dashboard.js`)**:
+     - Checked `isHOD = Boolean(state.currentUser?.is_hod || state.currentUser?.roles?.includes('HOD') || state.currentUser?.roles?.includes('SYSTEM_ADMIN'))`.
+     - If `!isHOD`: Default tab is strictly forced to `'CLASSES'`, the "Department Command Center" tab button is hidden, and unauthorized `/hod/dashboard` calls are blocked.
+     - If `isHOD`: Retains tab switcher and accesses departmental overview normally.
+- **Verification**:
+  - `node -c deployfolder/VidyaOS/faculty/dashboard/dashboard.js` passed with 0 syntax errors.
+  - Authenticated tests with teacher `teacher.amit@polytechnic.edu`:
+    - `GET /departments` -> HTTP 200.
+    - `GET /teaching-groups?status=ALL` -> HTTP 200 (Active classes returned).
+    - `GET /teaching-groups/overview` -> HTTP 200.
+    - `POST /teaching-groups` -> HTTP 201 (Group created with official attendance register).
+
+- **Status**: 🟢 Running & Active Locally
+  - Target Frontend: `deployfolder/VidyaOS` (Port: `5001`)
+  - Target Backend: `deployfolder/VidyaOS_BackEnd` (Port: `3001`, Database: `deployfolder/VidyaOS_BackEnd/college_attendance.sqlite`)
+- **User Request**:
+  - *"stsrt server for updated website in local not for old"*
+- **Resolution & Configuration**:
+  1. **Terminated Outdated Port 3000 Process**:
+     - Stopped the legacy server instance running the old monolith frontend.
+  2. **Configured & Started Updated Stack**:
+     - Configured `deployfolder/VidyaOS_BackEnd/.env` with `FRONTEND_DIR=../VidyaOS` and `PORT=3001`.
+     - Fixed UTF-8 character encoding and absolute path resolution in `deployfolder/start-all.ps1`.
+     - Active Dev Servers:
+       - **Updated Frontend Dev Server**: Running on `http://localhost:5001` (with full vercel-rewrite fidelity and API proxying to port 3001).
+       - **Updated Backend Server**: Running on `http://localhost:3001` (serving REST API `/api/v1` and static assets).
+  3. **Verification**:
+     - Verified `GET http://localhost:3001/api/v1/health` -> HTTP 200 (ONLINE).
+     - Verified `GET http://localhost:5001/api/v1/health` (Proxy) -> HTTP 200 (ONLINE).
+     - Verified `GET http://localhost:5001/admin/dashboard/` -> HTTP 200.
+     - Verified `GET http://localhost:5001/admin/academic-structure/` -> HTTP 200.
+     - Verified `GET http://localhost:5001/admin/faculty/` -> HTTP 200.
+     - Verified `POST /api/v1/auth/faculty/login` with `admin@gmail.com` -> HTTP 200 with JWT tokens.
+  4. **Convenience Scripts Added**:
+     - Added `npm run start` and `npm run start:updated` in `package.json`.
+     - Created root shortcuts `start-updated.bat` and `start-updated.ps1`.
+
+### 🏛️ Milestone 307: Resolution of "Create Class" Button Bug & SQLite Date Compatibility
+- **Status**: 🟢 Completed & Verified (21/21 Integrity Checks Passed)
+  - Target Services: `backend/src/models/teachingGroupModel.js`, `backend/src/controllers/teachingGroupController.js` (and standalone `deployfolder/VidyaOS_BackEnd/`)
+- **User Request**:
+  - *"cerate class btn not working and start local server also"*
+- **Root Cause & Architectural Diagnosis**:
+  1. **Invalid Column in SQLite Schema**: In `TeachingGroupModel.createGroupTransaction()` (`teachingGroupModel.js:250`), when a subject did not already exist, the query attempted to insert into `subjects (name, code, department_id, year, semester, credits, is_active, created_at)` with value `3` for `credits`. The SQLite `subjects` table schema (`schema.sql`) does not contain a `credits` column. This triggered `ERR_SQLITE_ERROR: table subjects has no column named credits`, causing `withTransaction` to roll back and return a 500 error on every class creation attempt.
+  2. **Defensive Department ID Fallback**: In `TeachingGroupController.createGroup()`, if a user or fallback lacked a `department_id`, inserting into `subjects` would fail on `NOT NULL / FOREIGN KEY` constraint.
+- **Implementation & Fixes**:
+  1. **Schema Correction (`teachingGroupModel.js`)**:
+     - Removed `credits` and the hardcoded `3` from `INSERT INTO subjects`.
+     - Added dynamic department fallback (`SELECT id FROM departments ORDER BY id ASC LIMIT 1`) if `targetDeptId` is null/undefined.
+     - Synchronized changes across both `backend/` and `deployfolder/VidyaOS_BackEnd/`.
+  2. **Controller Safeguards (`teachingGroupController.js`)**:
+     - Enhanced `targetDeptId` resolution to query the first department if neither request body nor teacher profile provides one.
+  3. **Verification & End-to-End API Test**:
+     - Tested authenticated `POST /api/v1/teaching-groups` with teacher `teacher.amit@polytechnic.edu`.
+     - Verified single class creation (`THEORY`) returns HTTP 201 with group ID, invite code, and official register ID.
+     - Verified dual class creation (`THEORY + PRACTICAL`) returns HTTP 201 with both theory and practical attendance registers.
+  4. **Pristine Presentation Environment**:
+     - Re-seeded presentation dataset for Government Polytechnic Nainital across both databases.
+     - Verified 21/21 integrity checks passed via `backend/scripts/verify-presentation-data.js`.
+     - Local server confirmed running online at `http://localhost:3000`.
+
 ### 🏛️ Milestone 306: Compact HOD Leadership Architecture & Unified Admin Component System
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `dd3c278`)

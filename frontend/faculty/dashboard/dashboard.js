@@ -2475,6 +2475,33 @@
       }
     });
 
+    // Modal Helpers
+    function openModal(idOrEl) {
+      const modal = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+      if (modal) {
+        modal.classList.add('open');
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+        modal.style.pointerEvents = 'auto';
+        document.body.classList.add('modal-open');
+        const firstInput = modal.querySelector('input:not([disabled]), select:not([disabled]), button:not([disabled])');
+        if (firstInput) setTimeout(() => firstInput.focus(), 50);
+      }
+    }
+
+    function closeModal(idOrEl) {
+      const modal = idOrEl ? (typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl) : document.querySelector('.modal-backdrop.open, .modal.open');
+      if (modal) {
+        modal.classList.remove('open');
+        modal.style.display = 'none';
+        modal.style.opacity = '';
+        modal.style.pointerEvents = '';
+        if (!document.querySelector('.modal-backdrop.open, .modal.open')) {
+          document.body.classList.remove('modal-open');
+        }
+      }
+    }
+
     // Expose modal helpers globally
     window.openModal = openModal;
     window.closeModal = closeModal;

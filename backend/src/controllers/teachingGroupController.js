@@ -90,7 +90,11 @@ class TeachingGroupController {
         exists = await TeachingGroupModel.checkInviteCode(inviteCode);
       }
 
-      const targetDeptId = department_id ? Number(department_id) : (teacher.department_id || null);
+      let targetDeptId = department_id ? Number(department_id) : (teacher.department_id || null);
+      if (!targetDeptId) {
+        const defaultDept = await query(`SELECT id FROM departments ORDER BY id ASC LIMIT 1`);
+        targetDeptId = defaultDept[0]?.id || 2;
+      }
       const finalName = (name && name.trim()) ? name.trim() : subject_name.trim();
       const finalUnits = Math.min(20, Math.max(1, parseInt(total_units) || 5));
 
