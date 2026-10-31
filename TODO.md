@@ -3,6 +3,35 @@
 
 
 
+### 🏛️ Milestone 304: Universal Typed Delete Confirmation Modal Across Admin, Faculty, and Student Portals
+- **Status**: 🟢 Completed & Synchronized
+  - Repositories: `onebotyt/VidyaOS.git` & `onebotyt/Vidya.git`
+- **User Request**:
+  - *"make compont for deldet box that have confromtion text to enter before deleting and make this in admin,facucltiy,student 3 compontens for eche when evry user need to delet any thing this conmpont will use"*
+- **Implementation & Architectural Upgrades**:
+  1. **Delete Confirmation Engine (`delete-modal.js`)**:
+     - Built a secure, accessible, zero-dependency confirmation modal dialog engine.
+     - **Typed Confirmation Safeguard**: Requires users to explicitly type a confirmation phrase (default: `"DELETE"`, or specific item name/code) before the `"Permanently Delete"` button is enabled.
+     - Real-time input listener: Validates match dynamically, switches input border and state icon, and displays feedback.
+     - Supports both Promise (`await VidyaDeleteModal.confirm({...})`) and callback (`VidyaDeleteModal.open({...})`) paradigms.
+     - Built-in loading state with spinner on execution, keyboard trapping (`Escape` to cancel, `Enter` to submit when unlocked), backdrop dismiss, and automatic scroll locking.
+  2. **100% Theme Token Compliant Styling (`delete-modal.css`)**:
+     - 0 hardcoded `#hex` or `rgb()` color codes.
+     - Styled using institutional design tokens: `var(--bg-card)`, `var(--bg-surface)`, `var(--border-color)`, `var(--text-main)`, `var(--text-muted)`, `var(--status-absent)`, `var(--status-absent-bg)`, `var(--status-present)`.
+     - Mobile-optimized responsive layout with touch-friendly 44px buttons.
+  3. **3 Scoped Components for Portals**:
+     - **Admin**: `admin/components/delete-modal/` (`delete-modal.css`, `delete-modal.js`, `delete-modal.html`).
+     - **Faculty**: `faculty/components/delete-modal/` (`delete-modal.css`, `delete-modal.js`, `delete-modal.html`).
+     - **Student**: `student/components/delete-modal/` (`delete-modal.css`, `delete-modal.js`, `delete-modal.html`).
+     - **Shared Assets**: `shared/js/delete-modal.js` & `shared/css/delete-modal.css`.
+  4. **Active Portal Wiring**:
+     - **Admin**: Connected into `admin/faculty/faculty.js` for HOD/teacher deletion and `admin/faculty/index.html`.
+     - **Faculty**: Enhanced `faculty/components/confirm-dialog/confirm-dialog.js` to route teacher deletions and student withdrawals through the typed confirmation modal.
+     - **Student & Global**: Exposed globally as `window.VidyaDeleteModal`, `window.openDeleteModal`, and `window.confirmDelete`.
+- **Verification**:
+  - CSS verification: 0 hardcoded colors, 100% theme variable compliance.
+  - Integration verification: Script execution and callback handling validated.
+
 ### 🏛️ Milestone 303: Replaced HOD Roster Action Buttons with 3-Dot Kebab Menu Dropdown
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `d6dd769`)
