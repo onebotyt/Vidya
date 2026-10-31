@@ -2,6 +2,24 @@
 
 
 
+
+### 🏛️ Milestone 302: Streamlined Department Student Register Roster (Removed Biometric Slot, Status, and Google Columns)
+- **Status**: 🟢 Completed & Pushed to GitHub
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `e2a79a5`)
+- **User Request**:
+  - *"remove Biometric Slot, Status , Google no need of this"*
+  - Attached screenshot: `media_1793410025268_e20fcbd5.png` showing the 4 students loaded and requesting removal of `Biometric Slot`, `Status`, and `Google` columns from the table.
+- **Implementation**:
+  1. **Table Header Cleaned (`faculty/students/students.html`, `faculty/students/index.html`)**:
+     - Removed `<th>Biometric Slot</th>`, `<th>Status</th>`, and `<th>Google</th>`.
+     - Retained essential roster columns: `Roll #`, `UBTER Reg. #`, `Official Enrollment`, `Full Name`, `Cohort`, and `Actions`.
+  2. **Row Rendering Streamlined (`faculty/students/students.js`)**:
+     - Removed `bioDisplay`, `statusBadge`, and `googleDisplay` cell outputs from `students.map(...)`.
+     - Updated empty-state and error-state `colspan` attributes from `9` to `6`.
+- **Verification**:
+  - Verified table headers and dynamic rows are now strictly 6 columns without horizontal overcrowding.
+  - Pushed to `onebotyt/VidyaOS.git` (`e2a79a5`).
+
 ### 🏛️ Milestone 301: Missing GET /api/v1/students Endpoint & Department Faculty Student Roster Restoration
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `e75a3d8`)
