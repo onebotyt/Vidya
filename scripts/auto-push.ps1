@@ -4,7 +4,12 @@ param(
 
 $gitExe = "C:\Users\hp\PortableGit\cmd\git.exe"
 if (-not (Test-Path $gitExe)) {
-    $gitExe = "git"
+    $altGit = "C:\Users\hp\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe"
+    if (Test-Path $altGit) {
+        $gitExe = $altGit
+    } else {
+        $gitExe = "git"
+    }
 }
 
 $RootDir = Split-Path -Parent $PSScriptRoot

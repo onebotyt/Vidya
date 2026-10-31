@@ -1,0 +1,129 @@
+name: Components Isolation & PR Guard
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches:
+      - 'feature/component*'
+      - 'feature/dev*'
+      - 'collab/*'
+
+jobs:
+  verify-components-isolation:
+    name: Verify PR Touches Components Only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check Component Path Isolation
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login || github.actor }}
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: |
+          echo "==============================================================="
+          echo "🔍 VIDYAOS COMPONENT ISOLATION & PATH GUARD (CI)"
+          echo "==============================================================="
+          echo "PR Author / Actor: $PR_AUTHOR"
+          echo "Target Base Branch: $BASE_REF"
+          echo "---------------------------------------------------------------"
+
+          # Allow Lead Architect / Repository Owner to bypass component restriction
+          if [ "$PR_AUTHOR" = "onebotyt" ]; then
+            echo "👑 Lead Architect ($PR_AUTHOR) detected. Global bypass active."
+            echo "✅ Path guard check passed."
+            exit 0
+          fi
+
+          # Get changed files in this PR
+          if [ -n "${{ github.base_ref }}" ]; then
+            git fetch origin ${{ github.base_ref }} --depth=1 || true
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1...HEAD)
+          fi
+
+          echo "Files changed in this PR/Push:"
+          echo "$CHANGED_FILES"
+          echo "---------------------------------------------------------------"
+
+          DISALLOWED=()
+          ALLOWED_COUNT=0
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            # 1. Allow documentation and milestone tracking
+            if [[ "$file" =~ \.md$ || "$file" == "TODO.md" || "$file" =~ ^docs/ ]]; then
+              echo "  ✅ ALLOWED (Docs): $file"
+              ((ALLOWED_COUNT++))
+              continue
+            fi
+
+            # 2. Check if inside authorized component folders
+            # Handles both monorepo paths (frontend/.../components/ or deployfolder/VidyaOS/.../components/)
+            # and standalone paths (admin/components/, faculty/components/, student/components/, components/)
+            if [[ "$file" =~ (^|/)components/ ]] || \
+               [[ "$file" =~ admin/components/ ]] || \
+               [[ "$file" =~ faculty/components/ ]] || \
+               [[ "$file" =~ student/components/ ]]; then
+              
+              # Enforce frozen frontend directories (Never allowed to be edited)
+              if [[ "$file" =~ faculty/assignments/ ]] || \
+                 [[ "$file" =~ faculty/evaluation/ ]] || \
+                 [[ "$file" =~ faculty/group-detail/ ]] || \
+                 [[ "$file" =~ faculty/groups/ ]] || \
+                 [[ "$file" =~ faculty/registers/ ]] || \
+                 [[ "$file" =~ faculty/sheets/ ]] || \
+                 [[ "$file" =~ faculty/students/ ]] || \
+                 [[ "$file" =~ faculty/tests/ ]] || \
+                 [[ "$file" =~ student/group-detail/ ]]; then
+                echo "  ❌ BLOCKED (Frozen Directory): $file"
+                DISALLOWED+=("$file (Protected / Frozen Directory)")
+                continue
+              fi
+
+              echo "  ✅ ALLOWED (Component): $file"
+              ((ALLOWED_COUNT++))
+              continue
+            fi
+
+            # Anything else is blocked for external component developers
+            echo "  ❌ BLOCKED (Outside Components): $file"
+            DISALLOWED+=("$file")
+
+          done <<< "$CHANGED_FILES"
+
+          echo "---------------------------------------------------------------"
+
+          if [ ${#DISALLOWED[@]} -gt 0 ]; then
+            echo ""
+            echo "❌ ERROR: PR touches protected non-component files!"
+            echo "Component developers are strictly restricted to modifying files in:"
+            echo "  • admin/components/**"
+            echo "  • faculty/components/**"
+            echo "  • student/components/**"
+            echo "  • components/** (shared primitives)"
+            echo "  • *.md / TODO.md (documentation)"
+            echo ""
+            echo "Violating files that must be reverted before merging:"
+            for f in "${DISALLOWED[@]}"; do
+              echo "  - $f"
+            done
+            echo ""
+            echo "To revert an unauthorized file in your local git branch, run:"
+            echo "  git checkout origin/$BASE_REF -- <filepath>"
+            echo ""
+            exit 1
+          fi
+
+          echo "🎉 All $ALLOWED_COUNT modified file(s) are strictly within authorized components/ directories."
+          echo "PR passes component isolation check."

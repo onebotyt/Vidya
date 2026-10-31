@@ -1,18 +1,72 @@
-# Vidya Repository Code Ownership Policy
-# Specifies required reviewers for backend and configuration directories.
+# ==============================================================================
+# VidyaOS Repository Code Ownership & Review Routing Policy
+# ==============================================================================
+# This file defines code review requirements for team members.
+# GitHub will automatically request review from the specified owners when a PR
+# modifies code in these paths.
+#
+# Replace @dev1_username and @dev2_username with your teammates' actual GitHub usernames.
+# ==============================================================================
 
-# Global default owner
+# Global fallback owner (Lead Architect)
 * @onebotyt
 
-# Backend, Database & Server Architecture (Restricted to Lead Architect)
-/backend/ @onebotyt
-/backend/** @onebotyt
+# ------------------------------------------------------------------------------
+# 🔒 1. PROTECTED CORE ARCHITECTURE (Restricted to Lead Architect @onebotyt)
+# ------------------------------------------------------------------------------
+/backend/               @onebotyt
+/backend/**             @onebotyt
+/deployfolder/VidyaOS_BackEnd/ @onebotyt
+/deployfolder/VidyaOS_BackEnd/** @onebotyt
+/scripts/               @onebotyt
+/.github/               @onebotyt
+/*.*                    @onebotyt
+/package.json           @onebotyt
+/server.js              @onebotyt
 
-# Repository root configs, workflows, and state logs
-/*.* @onebotyt
-/.github/ @onebotyt
-/TODO.md @onebotyt
-/AGENTS.md @onebotyt
+# ------------------------------------------------------------------------------
+# 🎨 2. COMPONENT DELEGATION & SCOPED ISOLATION
+# ------------------------------------------------------------------------------
 
-# Frontend directory open for team collaboration (still reviewed by @onebotyt)
-/frontend/ @onebotyt
+# Developer 1: Admin Components Domain
+/frontend/admin/components/               @onebotyt @dev1_username
+/frontend/admin/components/**             @onebotyt @dev1_username
+/deployfolder/VidyaOS/admin/components/   @onebotyt @dev1_username
+/deployfolder/VidyaOS/admin/components/** @onebotyt @dev1_username
+/admin/components/                        @onebotyt @dev1_username
+/admin/components/**                      @onebotyt @dev1_username
+
+# Developer 2: Faculty & Student Components Domain
+/frontend/faculty/components/               @onebotyt @dev2_username
+/frontend/faculty/components/**             @onebotyt @dev2_username
+/frontend/student/components/               @onebotyt @dev2_username
+/frontend/student/components/**             @onebotyt @dev2_username
+/deployfolder/VidyaOS/faculty/components/   @onebotyt @dev2_username
+/deployfolder/VidyaOS/faculty/components/** @onebotyt @dev2_username
+/deployfolder/VidyaOS/student/components/   @onebotyt @dev2_username
+/deployfolder/VidyaOS/student/components/** @onebotyt @dev2_username
+/faculty/components/                        @onebotyt @dev2_username
+/faculty/components/**                      @onebotyt @dev2_username
+/student/components/                        @onebotyt @dev2_username
+/student/components/**                      @onebotyt @dev2_username
+
+# Shared UI Primitives (Accessible by Both Component Developers + Lead Architect)
+/frontend/components/                       @onebotyt @dev1_username @dev2_username
+/frontend/components/**                     @onebotyt @dev1_username @dev2_username
+/deployfolder/VidyaOS/components/           @onebotyt @dev1_username @dev2_username
+/deployfolder/VidyaOS/components/**         @onebotyt @dev1_username @dev2_username
+/components/                                @onebotyt @dev1_username @dev2_username
+/components/**                              @onebotyt @dev1_username @dev2_username
+
+# ------------------------------------------------------------------------------
+# 🧊 3. PERMANENTLY FROZEN MODULES (Zero Edits Permitted)
+# ------------------------------------------------------------------------------
+/frontend/faculty/assignments/  @onebotyt
+/frontend/faculty/evaluation/   @onebotyt
+/frontend/faculty/group-detail/ @onebotyt
+/frontend/faculty/groups/       @onebotyt
+/frontend/faculty/registers/    @onebotyt
+/frontend/faculty/sheets/       @onebotyt
+/frontend/faculty/students/     @onebotyt
+/frontend/faculty/tests/        @onebotyt
+/frontend/student/group-detail/ @onebotyt
