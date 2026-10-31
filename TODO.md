@@ -26,7 +26,7 @@
   1. Backend REST API (`/api/v1/lab-classes`) with MySQL & SQLite DDL for `lab_class_files` and `lab_class_documents`.
   2. Created `labClassModel.js`, `labClassController.js`, and mounted route in `server.js`.
   3. Built `lab-classes.{html,css,js}` with 100% theme token compliance (0 hardcoded hex colors), progress gauge (`X / 7`), category filtering (`attendance`, `experimentation`, `assessment`), drag-and-drop PDF upload, HOD audit verification, and printable index sheet (`printLabDossierIndex()`).
-  4. Updated Faculty Dashboard: practical class cards feature `🧪 Laboratory Classes (7 Records)` bar; 3-dot kebab menu features options for both Theory & Laboratory classes.
+  4. Updated Faculty Dashboard: all class cards now prominently feature BOTH `📑 Theory Classes (7 Records)` and `🧪 Laboratory Classes (7 Records)` bars directly on the card for instant 1-click access to both compliance dossiers, along with 3-dot kebab menu shortcuts.
   5. Configured Vercel rewrites for `/faculty/lab-classes`.
 
 ### 🏛️ Milestone 309: Fix for Faculty Dashboard "Create Class" Modal & Non-HOD Role Routing Safeguards

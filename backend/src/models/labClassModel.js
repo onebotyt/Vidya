@@ -291,3 +291,4 @@ class LabClassModel {
 }
 
 module.exports = new LabClassModel();
+
