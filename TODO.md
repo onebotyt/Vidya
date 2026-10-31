@@ -1,5 +1,28 @@
 
 
+
+
+### 🏛️ Milestone 301: Missing GET /api/v1/students Endpoint & Department Faculty Student Roster Restoration
+- **Status**: 🟢 Completed & Pushed to GitHub
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (Commit: `e75a3d8`)
+- **User Request**:
+  - Attached screenshot: `media_1793409209299_0b369b61.jpg`
+  - In Faculty Department Student Register (`/faculty/students.html`), the table displays `"Failed to load student roster"` along with 3 toast notifications: `"API endpoint '/api/v1/students' does not exist"`.
+- **Root Cause & Structural Analysis**:
+  1. In `frontend/faculty/students/students.js` line 727, `const endpoint = isHod ? `${API}/students${qStr}` : `/students${qStr}`;`. When logged in with regular **Faculty Access** (`isHod = false`), the frontend makes requests to `GET /api/v1/students`.
+  2. In `backend/src/routes/students.js`, there was no `GET /` router handler for `/api/v1/students`. Only self-service endpoints (`/me`), provisioning (`/provision`), registration approvals (`/registrations/*`), and dossier (`/:id/academic-dossier`) existed. Requests to `/api/v1/students` fell through to the catch-all 404 handler.
+- **Implementation & Architectural Upgrades**:
+  1. **Added `GET /api/v1/students` Route (`routes/students.js`)**:
+     - Mounted `router.get('/', auth, requireRole('TEACHER', 'SYSTEM_ADMIN'), StudentController.getStudents)`.
+  2. **Controller Department Scope Resolution (`controllers/studentController.js`)**:
+     - `StudentController.getStudents(req, res)` dynamically resolves `deptId` from query (`department_id`, `branch_id`), request scope (`req.teacher_department_id`), user profile (`req.user.department_id`, `req.user.hod_department_id`), or teacher affiliation record.
+  3. **Rich Student Model Query (`models/studentModel.js` & `models/hodModel.js`)**:
+     - Implemented `StudentModel.getStudents(deptId, filters)` and upgraded `HodModel.getStudents` to return complete student schemas: `official_enrollment_no`, `ubter_reg_no`, `class_roll_no`, `year`, `semester`, `status`, `user_status`, `google_linked`, `biometric_slot`, and `device_name`.
+     - Supports flexible cohort filtering, search queries, status filtering, and pagination.
+- **Verification**:
+  - Live execution against Aiven Cloud MySQL: retrieved all 4 enrolled department students with full roll numbers, UBTER registration numbers, cohort year/semesters, and user account status with 0 errors.
+  - Pushed to `onebotyt/VidyaOS_BackEnd.git` (Commit: `e75a3d8`).
+
 ### 🏛️ Milestone 300: Admin HOD Creation & Assignment Modal Department Dropdown Population Fix
 - **Status**: 🟢 Completed & Pushed to GitHub
   - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (Commit: `968f0fc`)
