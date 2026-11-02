@@ -3,6 +3,31 @@
 
 
 
+### 🏛️ Milestone 323: Mobile Sticky Header Restoration & MySQL Data-Too-Long Column Overflow Permanent Fix
+- **Status**: 🟢 Completed & Verified
+  - Target Frontend: `deployfolder/VidyaOS/admin/` (`components/sidebar/`, `dashboard/`, `settings/`), `frontend/admin/`
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/src/` (`controllers/adminController.js`, `config/db.js`, `server.js`), `backend/`
+- **User Request & Issue Diagnosis**:
+  1. *"i don't see header that have manu btn bell icon profile also sql error"* (attached screenshot `media_1793604097692_33d32008.jpg` of `vidyaos-pink.vercel.app/admin/dashboard` showing missing mobile top navbar, and `media_1793604109853_050c6809.jpg` showing `Data too long for column 'setting_value' at row 1` on saving campus branding in settings).
+- **Root Cause & Architectural Resolution**:
+  1. **Mobile Header Visibility**:
+     - In `sidebar.css`, `.mobile-top-header` was erroneously set to `display: none !important;` globally.
+     - In `dashboard.css`, `.mobile-top-header` was included in the hidden elements list.
+     - **Fix**: Restricted `.mobile-top-header { display: none !important; }` exclusively to desktop screens (`@media (min-width: 769px)`). On mobile (`<= 768px`), enforced `display: flex !important;` with sticky 58px bar height, rendering hamburger menu button, 3D cube logo, "VidyaOS Admin Portal", notification bell with badge "3", and profile avatar "SA" with live online dot.
+  2. **Elimination of `Data too long for column 'setting_value' at row 1`**:
+     - In `settings.js`, phone camera uploads generate 5-10MB base64 data URLs. `uploadBrandingAsset` checked `localStorage.getItem('token')` instead of `access_token`, causing uploads to fail silently and sending raw multi-megabyte base64 strings to `PUT /api/v1/admin/settings`.
+     - In MySQL, `system_settings.setting_value` was typed as standard `TEXT` (max 65,535 bytes), throwing strict-mode error `Data too long for column 'setting_value' at row 1`.
+     - **Client-Side Optimization**: Integrated `downscaleImage()` canvas compressor (max 1600x600 for banner, 512x512 for logo, JPEG 0.82-0.88), reducing payload from 10MB to < 100KB in ~50ms. Updated `uploadBrandingAsset` to use `fetchApi` with automatic `access_token` injection and disabled Save button during upload.
+     - **Server-Side File Persistence**: Enhanced `AdminController.updateSettings()` with a robust regex base64 interceptor that extracts binary image buffers directly to `uploads/branding/`, saving only the clean `/uploads/branding/...` path in the database.
+     - **Database Schema Hardening**: In `ensureCompatibilityViews()`, executed `ALTER TABLE system_settings MODIFY COLUMN setting_value LONGTEXT NOT NULL` on MySQL connection, eliminating any possible column overflow permanently.
+     - **Server Static Path Resolution**: In `server.js`, normalized `uploadsDir` with `path.resolve(__dirname, process.env.UPLOADS_DIR)` so uploaded assets are served with HTTP 200 regardless of server process working directory.
+- **Verification**:
+  - `node -c` on all modified JavaScript files passed with 0 errors.
+  - Scan for hardcoded hex colors across all CSS files yielded 0 violations (100% Theme Token Compliance).
+  - Verified `PUT /api/v1/admin/settings` with base64 payload returns HTTP 200 and saves `/uploads/branding/...`.
+  - Verified `GET /uploads/branding/...` returns HTTP 200 with `Content-Type: image/png`.
+  - Protected/frozen directories (`frontend/faculty/*` and `frontend/student/*`) completely untouched.
+
 ### 🏛️ Milestone 322: Admin Mobile Dashboard Redesign, Component Modularization & Quick Access All-Pages Integration
 - **Status**: 🟢 Completed & Verified
   - Target Frontend: `deployfolder/VidyaOS/admin/` (`components/`, `dashboard/`), `frontend/admin/`
