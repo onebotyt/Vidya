@@ -3,6 +3,29 @@
 
 
 
+### 🏛️ Milestone 324: Mobile Sidebar 50% Width & Outside-Click Tap Dismissal Fix
+- **Status**: 🟢 Completed & Verified
+  - Target Frontend: `deployfolder/VidyaOS/admin/components/sidebar/` (`sidebar.js`, `sidebar.css`), `frontend/admin/components/sidebar/`
+- **User Request & Issue Diagnosis**:
+  - *"manu side bar not closing when i click on out of side bar also make side bar 50% width"*
+  - When the mobile navigation sidebar drawer was opened on mobile, tapping outside of it on `#sidebar-backdrop` called `toggleDesktopSidebar()`, which checked `isCurrentlyOpen = sidebar.classList.contains('desktop-open')` (which is false on mobile), erroneously keeping the sidebar open or adding desktop classes instead of dismissing it.
+  - The mobile sidebar width was previously 280px, whereas user explicitly requested 50% width.
+- **Implementation & Architecture**:
+  1. **Strict 50% Mobile Width (`sidebar.css`)**:
+     - Inside `@media (max-width: 768px)`, styled `#vidya-admin-sidebar`, `#app-sidebar.admin-sidebar`, and `.admin-sidebar` with `width: 50% !important; max-width: 50% !important; min-width: 0 !important;`.
+     - Streamlined interior spacing for 50% column width: tightened header, 17px icons, and single-line truncated navigation labels (`.sidebar-nav-label`).
+     - Kept desktop 72px mini-rail and 260px flyout drawer 100% intact and unaffected.
+  2. **Instant Outside-Click & Touch Dismissal (`sidebar.js`, `sidebar.css`)**:
+     - Updated `#sidebar-backdrop` with `onclick="handleBackdropClick(event)"` which reliably calls `closeSidebar()`.
+     - In `toggleDesktopSidebar()`, added guard `if (window.innerWidth <= 768) { toggleSidebar(); return; }`.
+     - Added global capture-phase event listeners on `document` (`pointerdown` and `touchstart`) detecting taps outside `.admin-sidebar` (and not on toggle trigger buttons) to close the drawer immediately.
+     - Styled `#sidebar-backdrop` on mobile to cover the other 50% of the screen with `z-index: 9999 !important` and `cursor: pointer`.
+- **Verification**:
+  - `node -c` on all modified JavaScript files passed with 0 errors.
+  - Scan for hardcoded hex colors yielded 0 violations (100% Theme Token Compliance).
+  - Desktop layout (`min-width: 769px`) remains 100% intact.
+  - Protected directories (`frontend/faculty/*` and `frontend/student/*`) completely untouched.
+
 ### 🏛️ Milestone 323: Mobile Sticky Header Restoration & MySQL Data-Too-Long Column Overflow Permanent Fix
 - **Status**: 🟢 Completed & Verified
   - Target Frontend: `deployfolder/VidyaOS/admin/` (`components/sidebar/`, `dashboard/`, `settings/`), `frontend/admin/`

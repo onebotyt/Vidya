@@ -585,12 +585,10 @@ class AdminController {
     for (const [key, val] of Object.entries(settingsObj)) {
       if (typeof val === 'string' && val.startsWith('data:image/')) {
         try {
-          const match = val.match(/^data:image\/([a-zA-Z0-9+.-]+)(?:;[a-zA-Z0-9=-]+)*;base64,([\s\S]+)$/);
+          const match = val.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
           if (match) {
-            const rawMime = (match[1] || '').toLowerCase();
-            const ext = rawMime === 'jpeg' ? 'jpg' : (rawMime === 'svg+xml' ? 'svg' : (rawMime || 'png'));
-            const cleanBase64 = match[2].replace(/\s+/g, '');
-            const buffer = Buffer.from(cleanBase64, 'base64');
+            const ext = match[1] === 'jpeg' ? 'jpg' : (match[1] || 'png');
+            const buffer = Buffer.from(match[2], 'base64');
             const uploadsDir = path.resolve(__dirname, '../../uploads/branding');
             if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
             const filename = `${key}_${Date.now()}.${ext}`;
