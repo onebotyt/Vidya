@@ -3,7 +3,66 @@
 
 
 
-### 🏛️ Milestone 320: Fix for HOD Account Creation "employeeId is not defined" ReferenceError
+### 🏛️ Milestone 322: Admin Mobile Dashboard Redesign, Component Modularization & Quick Access All-Pages Integration
+- **Status**: 🟢 Completed & Verified
+  - Target Frontend: `deployfolder/VidyaOS/admin/` (`components/`, `dashboard/`), `frontend/admin/`
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/src/models/adminModel.js`, `backend/src/models/adminModel.js`
+- **User Request & Issue Diagnosis**:
+  1. *"redsgin admin mobile dashboard page also identifiy elements that can be made as compontes to used in other pages"* (with attached mobile reference image matching light theme, sticky top header, hero showcase, 2x2 metric cards, attendance donut gauge, department bar chart, quick access grid, and 5-tab bottom dock).
+  2. *"make componts for admin inside admin folder"*.
+  3. *"and remove recent activtiy card in bottom and add all pages of admin link in quike acess"*.
+- **Implementation & Architecture**:
+  1. **Extraction of 6 Reusable Admin Components (`admin/components/`)**:
+     - `hero/` (`hero.css`, `hero.js`): Institutional welcome hero banner featuring "ADMIN PORTAL" glowing pill, session user personalization, subtitle, live ticking date chip (`Sat, 31 Oct 2026`) and time chip (`10:37 PM`), plus campus photo overlay with smooth gradient blending. Mountable on any admin page via `AdminHero.mount()`.
+     - `metrics/` (`metrics.css`, `metrics.js`): Exact 2x2 grid on mobile / 4-column grid on desktop featuring squircle colored icons (`icon-blue`, `icon-green`, `icon-purple`, `icon-amber`), bold numeric values, and upward trends (`↑ 0% vs last month`). Mountable via `AdminMetrics.mount()`.
+     - `attendance-overview/` (`attendance-overview.css`, `attendance-overview.js`): Circular SVG donut gauge (`0% Present`), dynamic dash-offset calculation, department filter pill dropdown (`All Dept. ▾`), and 3 detailed breakdown rows (Present, Absent, Total Students). Mountable via `AdminAttendanceOverview.mount()`.
+     - `dept-breakdown/` (`dept-breakdown.css`, `dept-breakdown.js`): Vertical column bar chart with percentage labels, rounded track fill, and department codes (`IT, ECE, EE, ME, CE, PHARM`), plus `Avg: 0%` pill badge. Mountable via `AdminDeptBreakdown.mount()`.
+     - `quick-actions/` (`quick-actions.css`, `quick-actions.js`): Direct access portal grid linking all 6 core admin management pages with tactile squircles. Mountable via `AdminQuickActions.mount()`.
+     - `recent-activity/` (`recent-activity.css`, `recent-activity.js`): Modular audit trail feed created for reusability on other pages (e.g. Audit Logs, Faculty management) and completely removed from the dashboard per user request.
+  2. **Mobile Sticky Top Header & 5-Tab Navigation Dock (`sidebar.css`, `sidebar.js`)**:
+     - Light theme tokenized sticky top header (`var(--bg-card)`): hamburger drawer trigger, 3D isometric cube logo, `"VidyaOS / Admin Portal"`, search button, notification bell with badge `"3"`, and avatar `"SA"` with live online dot.
+     - Bottom dock featuring the canonical 5 tabs: `Home` (`dashboard.html`), `Structure` (`academic-structure.html`), `HOD` (`faculty.html`), `Reports` (`reports.html`), `Settings` (`settings.html`).
+  3. **Backend Active Classes Metric (`adminModel.js`)**:
+     - Added query for active classes: `SELECT COUNT(*) as total FROM teaching_groups WHERE status = 'ACTIVE' AND deleted_at IS NULL`.
+     - Returned `total_classes` and `active_classes` in `/api/v1/admin/stats`.
+  4. **Removal of Recent Activity & Complete 6-Page Quick Access**:
+     - Recent Activity card excluded from `index.html` and `dashboard.html`.
+     - Quick Access grid populated with 6 all-page portals:
+       1. Academic Structure (`/admin/academic-structure.html`)
+       2. HOD Management (`/admin/faculty.html`)
+       3. Reports & Analytics (`/admin/reports.html`)
+       4. Audit Logs (`/admin/audit-logs.html`)
+       5. System Settings (`/admin/settings.html`)
+       6. Admin Profile (`/admin/profile.html`)
+- **Verification**:
+  - `node -c` on all modified JavaScript files passed with 0 errors.
+  - Regex scan for hardcoded hex colors across all CSS files yielded 0 violations (100% Theme Token Compliance).
+  - Frozen folders (`frontend/faculty/*` and `frontend/student/*`) completely untouched.
+
+### 🏛️ Milestone 321: Department Faculty Password Reset RBAC & Complete Action Removal for Faculty Members (HOD Only Actions)
+- **Status**: 🟢 Completed & Verified (9/9 Tests Passed)
+  - Target Frontend: `deployfolder/VidyaOS/faculty/students/` (`students.js`, `students.html`, `index.html`)
+  - Target Backend: `deployfolder/VidyaOS_BackEnd/src/` (`requireScope.js`, `hodController.js`), `backend/src/`
+- **User Request & Diagnosis**:
+  - *"there is a problem any faculty or teacher reset the password of every other faculty or teacher ? i need faculty or teacher can reset there own password not other faculty or teacher i need only HOT can reset the password of there faculty or teacher only HOD can see the option to reset password not faculty or teacher show the option"*
+  - Follow-up: *"remove Action from the Teachers not for HOD"*
+  - In `renderFacultyTable()` on `/faculty/students`, regular teachers should not see an "ACTIONS" column or action buttons at all. The table for teachers is strictly a clean 7-column roster (`#`, `Faculty Member`, `Employee ID`, `Login Email`, `Designation`, `Assigned Subjects`, `Status`), and the `+ Add Faculty` button is hidden.
+- **Implementation & Architecture**:
+  1. **Complete Action Removal for Non-HOD Teachers (`students.js`, `students.html`, `index.html`)**:
+     - Dynamically toggles `<th class="th-faculty-actions">` header: visible strictly when `isHod = true`, completely hidden (`display: none`) for teachers.
+     - In `renderFacultyTable()`, `actionsTd` is only appended when `isHod = true`. For teachers (`!isHod`), zero action cells are rendered.
+     - Hides `+ Add Faculty` (`#btn-add-teacher`) for non-HOD teachers, displaying it only for verified HODs.
+     - In card view (`renderTeachers()`), action controls are strictly confined to HODs.
+  2. **Dedicated Self Change Password Modal (`students.html`, `index.html`, `students.js`)**:
+     - Built `#self-password-modal` with Current Password, New Password, and Confirm New Password inputs.
+     - 100% Theme Token Compliance (0 hardcoded hex/rgb colors).
+     - Submits safely to `POST /api/v1/auth/change-password` allowing teachers and HODs to change their own password with immediate feedback.
+  3. **Backend Scope & Role Hardening (`requireScope.js`, `hodController.js`)**:
+     - Enhanced `requireHOD()` to recognize both `teacher_assignments (assignment_type = 'HOD')` and `departments (hod_user_id = user.id)`.
+     - `HodController.resetTeacherPassword()` strictly isolates resets to HOD's own department, blocks self-resets with HTTP 403, and allows SYSTEM_ADMIN global oversight.
+- **Verification**:
+  - `node scripts/verify-faculty-password-rbac.js` passed **9/9 tests** (non-HOD 403 rejection, HOD dept scope, self-reset block, self-change success, 0 hardcoded colors).
+
 - **Status**: 🟢 Completed & Pushed
   - Target Backend: `deployfolder/VidyaOS_BackEnd/src/controllers/adminController.js`, `backend/src/controllers/adminController.js`
 - **User Request & Issue Diagnosis**:

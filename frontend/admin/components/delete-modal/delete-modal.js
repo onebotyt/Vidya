@@ -382,4 +382,3 @@
   root.confirmDelete = openDeleteModal;
 
 })(typeof window !== 'undefined' ? window : this);
-
