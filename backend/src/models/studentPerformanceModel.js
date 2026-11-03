@@ -266,3 +266,4 @@ class StudentPerformanceModel {
 }
 
 module.exports = new StudentPerformanceModel();
+

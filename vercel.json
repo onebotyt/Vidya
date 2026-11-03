@@ -91,6 +91,18 @@
       "destination": "/frontend/faculty/student-performance/index.html"
     },
     {
+      "source": "/faculty/assessment-process",
+      "destination": "/frontend/faculty/assessment-process/index.html"
+    },
+    {
+      "source": "/faculty/assessment-process/",
+      "destination": "/frontend/faculty/assessment-process/index.html"
+    },
+    {
+      "source": "/faculty/assessment-process.html",
+      "destination": "/frontend/faculty/assessment-process/index.html"
+    },
+    {
       "source": "/student/student-performance",
       "destination": "/frontend/student/student-performance/index.html"
     },
@@ -101,6 +113,18 @@
     {
       "source": "/student/student-performance.html",
       "destination": "/frontend/student/student-performance/index.html"
+    },
+    {
+      "source": "/student/assessment-process",
+      "destination": "/frontend/student/assessment-process/index.html"
+    },
+    {
+      "source": "/student/assessment-process/",
+      "destination": "/frontend/student/assessment-process/index.html"
+    },
+    {
+      "source": "/student/assessment-process.html",
+      "destination": "/frontend/student/assessment-process/index.html"
     },
     {
       "source": "/student",

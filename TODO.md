@@ -6226,3 +6226,56 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
   - Automated Integration Tests: 19/19 passing tests covering definitions, provisioning, document upsert, versioning, deletion, HOD audit, and completion calculations.
   - Syntax check: `node -c` passed with 0 errors across all modified and new JavaScript files.
+
+
+### 🏁 Milestone 323: Assessment Process Module (Direct & Indirect Assessment, CO Attainment, 13 Document Cards, Real PDF Storage & Subject Card Icon)
+- **Status**: ✅ Completed, Verified & Synced Across Workspace
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/faculty/dashboard` & `https://vidyaos-pink.vercel.app/faculty/assessment-process`
+- **User Request**:
+  - *"Create a fully functional Assessment Process page where teachers can upload, view, download, replace, and manage PDF documents for Direct Assessment and Indirect Assessment. Use the existing Laboratory Work page as the UI design reference."*
+  - Required 13 independent document upload cards across 2 sections:
+    - **A. Direct Assessment (8 Items)**:
+      1. Internal Examinations (question papers, marksheets, reports)
+      2. Class Tests (question papers, marksheets, evaluation records)
+      3. Assignments (assignment questions, submitted work samples, evaluation reports)
+      4. Laboratory Performance (assessment sheets, evaluation records)
+      5. Practical Examinations (examination records, marksheets, evaluation reports)
+      6. Mini Projects (project reports, evaluation sheets, assessment records)
+      7. End-Semester Examinations (marksheets, assessment reports)
+      8. Course Outcome (CO) Mapping (CO mapping, attainment calculations, supporting reports)
+    - **B. Indirect Assessment (5 Items)**:
+      9. Course Exit Survey (forms, responses, analysis reports)
+      10. Student Feedback (forms, analysis reports)
+      11. Alumni Feedback (forms, responses, analysis reports)
+      12. Employer Feedback (forms, reports)
+      13. Graduate Exit Survey (forms, analysis reports)
+  - Subject card icon button: `Assessment Process` with Lucide `clipboard-check` icon.
+  - Documentation Readiness Tracker calculating 0/13 (0%) to 13/13 (100%) with breakdown: `Direct: X/8 • Indirect: Y/5`.
+  - PDF Upload, View, Download, Replace, Delete with confirmation, filename, size, upload date/time, and status badges (Green `Uploaded` / Orange `Pending`).
+- **Key Deliverables & Architectural Implementation**:
+  1. **Subject Card Quick-Action Grid Expansion (8 Buttons Total)**:
+     - Added `Assessment Process` button with Lucide `clipboard-check` icon into both Faculty and Student dashboard Subject Cards.
+     - Subject Cards now feature 8 quick navigation options in a symmetrical 4x2 grid (`Students`, `Classwork`, `Resources`, `NBA`, `Theory Classes`, `Laboratory Classes`, `Student Performance`, `Assessment Process`).
+     - Mobile layout gracefully reflows to 3 columns via responsive CSS `@media (max-width: 420px)`.
+  2. **Dedicated Faculty Assessment Process Workspace (`/faculty/assessment-process/`)**:
+     - Academic header displaying Subject Name, Semester, Branch/Dept, AY, Assigned Teacher, and Status Badge.
+     - Documentation Readiness Progress Card tracking 0/13 (0%) to 13/13 (100%) with dynamic progress bar and `Direct: X/8 • Indirect: Y/5` counter.
+     - Quick Action Toolbar: Print Dossier Index, Take Attendance, Register, Classwork, and HOD Audit Verification trigger.
+     - Category filter tabs (`All 13 Records`, `Direct Assessment (8)`, `Indirect Assessment (5)`) and search input.
+     - 13 Numbered Artifact Cards with Section Badges, descriptions, and dynamic status tags (Green `Uploaded` / Orange `Pending`).
+     - Modals for Drag-and-drop PDF Upload (.pdf only, max 50MB, notes), PDF Preview iframe viewer with download button, Delete Confirmation Dialog, and HOD Audit verification.
+  3. **Student Read-Only Assessment Workspace (`/student/assessment-process/`)**:
+     - Google Classroom top bar integration and enrolled courses switcher for multi-subject enrollment.
+     - Read-only access to view and download published PDF assessment documents with no upload/delete buttons.
+  4. **Backend API & Persistent SQLite/MySQL Storage**:
+     - Created tables `assessment_process_files` and `assessment_process_documents` with unique constraints and performance indexes.
+     - Controller & Routes mounted at `/api/v1/assessment-process/*` (`/definitions`, `GET /`, `POST /documents`, `DELETE /documents`, `POST /audit`).
+     - Multer uploader saving files to `uploads/assessment_process/` with automatic prior-file cleanup on replacement and deletion.
+     - Clean URL rewrites configured in `vercel.json` and `deployfolder/VidyaOS/vercel.json`.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all new and updated styles.
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Automated Integration Tests: Passed 13 definitions, group dossier provisioning, document upsert, versioning, deletion, and readiness calculations.
+  - Syntax check: `node -c` passed with 0 errors across all 12 modified and new JavaScript files.

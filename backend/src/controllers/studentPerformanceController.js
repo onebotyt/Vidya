@@ -296,3 +296,4 @@ class StudentPerformanceController {
 }
 
 module.exports = new StudentPerformanceController();
+
