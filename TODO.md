@@ -6184,3 +6184,45 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across updated styles.
   - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
   - Verification: `node -c` passed with 0 errors across all modified JavaScript files.
+
+
+### 🎯 Milestone 322: Student Performance Monitoring Module (Advanced & Slow Learners, Remedial Measures, Real PDF Storage & Subject Card Icon)
+- **Status**: 🟢 Completed, Pushed & Live on Remote Repositories
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/faculty/dashboard` & `https://vidyaos-pink.vercel.app/faculty/student-performance`
+- **User Request**:
+  - *"Build a fully functional Student Performance Monitoring page where teachers can upload, view, replace, and manage PDF documents related to advanced learners, slow learners, and remedial activities. Use the existing Laboratory Work page as the UI design reference."*
+  - Required 8 independent document upload cards across 4 sections:
+    - Section 1: Advanced Learners (Identify Advanced Learners)
+    - Section 2: Slow Learners (Identify Slow Learners)
+    - Section 3: Remedial Measures (Remedial Classes, Tutorial Sessions, Extra Assignments, Mentoring and Counselling, Enrichment Programmes for Advanced Learners)
+    - Section 4: Evidence of Interventions (Document Evidence of All Interventions)
+  - Subject card icon button: `Student Performance` with Lucide `chart-no-axes-combined` icon.
+  - Progress tracker at top calculating 0/8 (0%) to 8/8 (100%).
+  - Full upload, view, replace, delete with confirmation, filename, size, upload date/time, and green/orange status badges.
+- **Key Deliverables & Architectural Implementation**:
+  1. **Subject Card Navigation Expansion**:
+     - Added `Student Performance` navigation button with Lucide `chart-no-axes-combined` icon alongside Students, Classwork, Resources, NBA, Theory Classes, and Laboratory Classes.
+     - Updated `.card-quick-links-grid` to responsive 4-column layout on desktop/tablet and 3-column layout on mobile (`@media (max-width: 420px)`).
+     - Applied to both Faculty and Student dashboard Subject Cards and mirrored across `deployfolder/VidyaOS` and `frontend/`.
+  2. **Dedicated Student Performance Monitoring Page (`/faculty/student-performance/`)**:
+     - Academic hero banner displaying Subject Name, Semester, Branch/Dept, AY, Faculty In-Charge, and Status Badge.
+     - Documentation Readiness Progress Card tracking 0/8 (0%) to 8/8 (100%) with dynamic progress bar and caption.
+     - Quick Action Toolbar: Print Dossier Index, Take Attendance, Register, Classwork, and HOD Audit Verification.
+     - Category filter pills (`All 8 Records`, `Advanced Learners`, `Slow Learners`, `Remedial Measures`, `Evidence of Interventions`) and real-time search input.
+     - 8 Numbered Artifact Cards with Section Badges, descriptions, and dynamic status tags (Green `Uploaded` / Orange `Pending`).
+     - Modals for PDF Upload (drag-and-drop, `.pdf` validation, max 50MB, notes), PDF Preview iframe viewer with download, Delete Confirmation Dialog, and HOD Audit verification.
+  3. **Student Read-Only Performance Dossier (`/student/student-performance/`)**:
+     - Google Classroom top bar integration and enrolled courses switcher.
+     - Read-only access to view and download published PDF documents with no upload/delete buttons.
+  4. **Backend API & Persistent SQLite/MySQL Storage**:
+     - Created tables `student_performance_files` and `student_performance_documents` with indexes and unique constraints.
+     - Routes mounted at `/api/v1/student-performance/*` (`/definitions`, `GET /`, `POST /:id/documents`, `DELETE /:id/documents/:item_key`, `POST /:id/audit`).
+     - Real PDF upload storage in `uploads/student_performance/` with automatic prior-file cleanup on replacement and deletion.
+     - Clean URL rewrites configured in `vercel.json` for seamless routing.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all new and updated styles.
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Automated Integration Tests: 19/19 passing tests covering definitions, provisioning, document upsert, versioning, deletion, HOD audit, and completion calculations.
+  - Syntax check: `node -c` passed with 0 errors across all modified and new JavaScript files.

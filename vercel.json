@@ -79,6 +79,30 @@
       "destination": "/frontend/faculty/registers"
     },
     {
+      "source": "/faculty/student-performance",
+      "destination": "/frontend/faculty/student-performance/index.html"
+    },
+    {
+      "source": "/faculty/student-performance/",
+      "destination": "/frontend/faculty/student-performance/index.html"
+    },
+    {
+      "source": "/faculty/student-performance.html",
+      "destination": "/frontend/faculty/student-performance/index.html"
+    },
+    {
+      "source": "/student/student-performance",
+      "destination": "/frontend/student/student-performance/index.html"
+    },
+    {
+      "source": "/student/student-performance/",
+      "destination": "/frontend/student/student-performance/index.html"
+    },
+    {
+      "source": "/student/student-performance.html",
+      "destination": "/frontend/student/student-performance/index.html"
+    },
+    {
       "source": "/student",
       "destination": "/frontend/student/dashboard"
     },
