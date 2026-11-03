@@ -57,6 +57,12 @@ if (-not $token) {
 }
 
 # 2. Push deployfolder/VidyaOS (Frontend)
+Write-Host "Staging and committing deployfolder/VidyaOS..." -ForegroundColor Cyan
+& $gitExe -C deployfolder/VidyaOS add -A
+$frontStatus = (& $gitExe -C deployfolder/VidyaOS status --porcelain).Trim()
+if ($frontStatus) {
+    & $gitExe -C deployfolder/VidyaOS commit -m $Message
+}
 Write-Host "Pushing deployfolder/VidyaOS to GitHub (onebotyt/VidyaOS)..." -ForegroundColor Cyan
 $frontUrl = "https://${token}@github.com/onebotyt/VidyaOS.git"
 & $gitExe -C deployfolder/VidyaOS push $frontUrl main:main
@@ -69,6 +75,12 @@ if ($frontExit -eq 0) {
 }
 
 # 3. Push deployfolder/VidyaOS_BackEnd (Backend)
+Write-Host "Staging and committing deployfolder/VidyaOS_BackEnd..." -ForegroundColor Cyan
+& $gitExe -C deployfolder/VidyaOS_BackEnd add -A
+$backStatus = (& $gitExe -C deployfolder/VidyaOS_BackEnd status --porcelain).Trim()
+if ($backStatus) {
+    & $gitExe -C deployfolder/VidyaOS_BackEnd commit -m $Message
+}
 Write-Host "Pushing deployfolder/VidyaOS_BackEnd to GitHub (onebotyt/VidyaOS_BackEnd)..." -ForegroundColor Cyan
 $backUrl = "https://${token}@github.com/onebotyt/VidyaOS_BackEnd.git"
 & $gitExe -C deployfolder/VidyaOS_BackEnd push $backUrl main:main
