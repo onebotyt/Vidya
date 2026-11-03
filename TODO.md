@@ -6103,3 +6103,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 7 (Frozen Folders): 0 modifications to `frontend/student/group-detail/` (strictly preserved and read-only).
   - Clean URL Rewrites: Configured in `vercel.json` for seamless routing on `/student/theory-classes`, `/student/lab-classes`, and `/student/nba`.
   - Syntax check: `node -c` passed with 0 errors across all modified and new JavaScript files.
+
+
+### 🌟 Milestone 319: Faculty Dashboard Subject Card 6-Option Navigation Expansion (Students, Classwork, Resources, NBA, Theory Classes, Laboratory Classes)
+- **Status**: ✅ Completed, Pushed & Live on Remote Repositories
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/faculty/dashboard`
+- **User Request**:
+  - *"this is not chnaged??"* with screenshot `media_1793667529351_bed71b14.jpg` and desktop screen showing the Faculty Dashboard subject card (`Software Engineering [101]`) displaying only 3 buttons (`Students`, `Classwork`, `Resources`).
+  - Required updating the Faculty Dashboard Subject Card to provide all 6 quick navigation buttons matching the exact same UI styling, icons, typography, borders, and hover effects:
+    1. `Students`
+    2. `Classwork`
+    3. `Resources`
+    4. `NBA`
+    5. `Theory Classes`
+    6. `Laboratory Classes`
+- **Faculty Subject Card 6-Option Navigation Architecture**:
+  1. `Students`: Direct navigation to class students roster (`/faculty/group-detail.html?id=${g.id}&tab=people`).
+  2. `Classwork`: Direct navigation to coursework, assignments & marks (`/faculty/group-detail.html?id=${g.id}&tab=classwork`).
+  3. `Resources`: Direct navigation to learning resources & documents (`/faculty/group-detail.html?id=${g.id}&tab=resources`).
+  4. `NBA`: Direct navigation to NBA accreditation course files & outcomes (`/faculty/course-file.html?group_id=${g.id}`).
+  5. `Theory Classes`: Direct navigation to theory classes compliance dossier (`/faculty/theory-classes.html?group_id=${g.id}`).
+  6. `Laboratory Classes`: Direct navigation to laboratory classes dossier & manuals (`/faculty/lab-classes.html?group_id=${g.id}`).
+  - Built `.card-quick-links-grid`: Balanced 3-column x 2-row responsive grid layout across mobile and desktop.
+  - Mirrored to both `deployfolder/VidyaOS/faculty/dashboard/` and `frontend/faculty/dashboard/`.
+  - Added clean routing rewrites for `/faculty/nba`, `/faculty/nba/`, `/faculty/nba.html` pointing to `/faculty/course-file/index.html` in `vercel.json`.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across updated faculty dashboard stylesheets.
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Syntax check: `node -c` passed with 0 errors on both JS files.
