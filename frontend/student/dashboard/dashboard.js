@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- * STUDENT CLASSROOM DASHBOARD CONTROLLER (EXECUTIVE SUITE)
+ * GOOGLE CLASSROOM STUDENT DASHBOARD CONTROLLER
  * frontend/student/dashboard/dashboard.js
  * 100% Theme Token Compliant — Zero Hardcoded Colors
  * ══════════════════════════════════════════════════════════════
@@ -41,19 +41,16 @@ async function loadStudentDashboard() {
       const s = profRes.data;
       studentDashboardState.profile = s;
 
-      // Update DOM with strict contract compliance (no '#' prefix before roll number)
+      // Update DOM with strict contract compliance (no '#' prefix before roll number!)
       const nameEl = document.getElementById('student-name');
-      if (nameEl) nameEl.innerText = s.full_name || 'Student';
+      if (nameEl) nameEl.innerText = `Welcome, ${s.full_name}`;
 
       const headerNameEl = document.getElementById('header-student-name');
-      if (headerNameEl) headerNameEl.innerText = s.full_name || 'Student Portal';
-
-      const headerDisplayEl = document.getElementById('header-student-display-name');
-      if (headerDisplayEl) headerDisplayEl.innerText = s.full_name || 'Student';
+      if (headerNameEl) headerNameEl.innerText = s.full_name;
 
       const cohortEl = document.getElementById('student-cohort-info');
       if (cohortEl) {
-        cohortEl.innerText = `${s.department_name || s.branch_name || 'Information Technology'} (${s.branch_code || s.department_code || 'IT'}) • Year ${s.year || 3}, Sem ${s.semester || 5}`;
+        cohortEl.innerText = `${s.department_name || s.branch_name || 'Information Technology'} (${s.branch_code || s.department_code || 'IT'}) • Year ${s.year || 3}, Sem ${s.semester || 5} (${s.academic_year_label || 'Current Session'})`;
       }
 
       const rollTxt = s.class_roll_no !== undefined && s.class_roll_no !== null ? `${s.class_roll_no}` : '—';
@@ -81,25 +78,26 @@ async function loadStudentDashboard() {
       if (popRegBadge) {
         popRegBadge.innerHTML = `<span class="badge badge-present" style="font-size:0.75rem;">Roll: <strong>${rollTxt}</strong> • UBTER Reg: <strong>${regTxt}</strong></span>`;
       }
+
+      // Check for first-time login / incomplete profile
+      const isProfileIncomplete = !s.profile_completed && (
+        !s.address || !s.aadhar_number || !s.father_name || !s.mother_name || !s.dob || !s.gender || !s.category
+      );
+      if (isProfileIncomplete && !sessionStorage.getItem('profile_modal_dismissed')) {
+        setTimeout(() => {
+          openCompleteProfileModal(s);
+        }, 600);
+      }
     }
 
     // 2. Load Attendance Stats & Predictor
     const statsRes = await fetchApi('/students/me/attendance/stats');
     if (statsRes && statsRes.success && statsRes.data) {
       const stats = statsRes.data;
-      const pct = stats.current_percentage !== undefined ? stats.current_percentage : 0;
-      const isSafe = pct >= 75;
-
       const pctEl = document.getElementById('metric-percentage');
       if (pctEl) {
-        pctEl.innerText = `${pct}%`;
-        pctEl.style.color = isSafe ? 'var(--status-present)' : 'var(--status-absent)';
-      }
-
-      const pctPill = document.getElementById('metric-percentage-pill');
-      if (pctPill) {
-        pctPill.className = `status-pill ${isSafe ? 'status-ontrack' : 'status-below'}`;
-        pctPill.innerText = isSafe ? '● On Track' : '▲ Below Target';
+        pctEl.innerText = `${stats.current_percentage}%`;
+        pctEl.style.color = stats.current_percentage >= 75 ? 'var(--status-present)' : 'var(--status-absent)';
       }
 
       const attEl = document.getElementById('metric-attended');
@@ -123,35 +121,19 @@ async function loadStudentDashboard() {
 
       if (pCard && stats.prediction) {
         if (stats.prediction.status === 'SAFE') {
-          pCard.className = 'eligibility-box';
-          pCard.style.background = 'var(--status-present-bg)';
-          pCard.style.borderColor = 'var(--status-present)';
-          if (pIcon) {
-            pIcon.style.background = 'var(--status-present)';
-            pIcon.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-          }
-          if (pHead) {
-            pHead.innerText = 'Good Standing (Eligible)';
-            pHead.style.color = 'var(--status-present)';
-          }
+          pCard.className = 'predictor-box predictor-safe';
+          if (pIcon) pIcon.innerHTML = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
+          if (pHead) pHead.innerText = 'Good Standing (Eligible)';
           if (pBadge) {
-            pBadge.className = 'status-pill status-ontrack';
+            pBadge.className = 'badge badge-present';
             pBadge.innerText = 'Eligible for Exams';
           }
         } else {
-          pCard.className = 'eligibility-box';
-          pCard.style.background = 'var(--status-absent-bg)';
-          pCard.style.borderColor = 'var(--status-absent)';
-          if (pIcon) {
-            pIcon.style.background = 'var(--status-absent)';
-            pIcon.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
-          }
-          if (pHead) {
-            pHead.innerText = 'Attendance Deficit Warning';
-            pHead.style.color = 'var(--status-absent)';
-          }
+          pCard.className = 'predictor-box predictor-deficit';
+          if (pIcon) pIcon.innerHTML = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+          if (pHead) pHead.innerText = 'Attendance Deficit Warning';
           if (pBadge) {
-            pBadge.className = 'status-pill status-below';
+            pBadge.className = 'badge badge-absent';
             pBadge.innerText = 'Action Required';
           }
         }
@@ -177,25 +159,19 @@ async function loadStudentDashboard() {
         if (subjRes.data.length === 0) {
           container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">No enrolled subjects found.</p>';
         } else {
-          container.innerHTML = subjRes.data.map(sub => {
-            const subSafe = sub.percentage >= 75;
-            return `
-              <div class="subject-progress-row">
-                <div class="subject-info-head">
-                  <span class="subject-name-bold">${escapeHtml(sub.subject_code)} - ${escapeHtml(sub.subject_name)}</span>
-                  <div class="subject-pct-tag-wrap">
-                    <span class="subject-pct-num" style="color: ${subSafe ? 'var(--status-present)' : 'var(--status-absent)'};">
-                      ${sub.percentage}%
-                    </span>
-                    <span style="font-size:0.75rem;color:var(--text-muted);">(${sub.attended}/${sub.conducted})</span>
-                  </div>
-                </div>
-                <div class="subject-meter-track">
-                  <div class="subject-meter-fill" style="width: ${sub.percentage}%; background-color: ${subSafe ? 'var(--status-present)' : 'var(--status-absent)'};"></div>
-                </div>
+          container.innerHTML = subjRes.data.map(sub => `
+            <div style="margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.2rem;">
+                <strong>${escapeHtml(sub.subject_code)} - ${escapeHtml(sub.subject_name)}</strong>
+                <span style="font-weight: 700; color: ${sub.percentage >= 75 ? 'var(--status-present)' : 'var(--status-absent)'};">
+                  ${sub.percentage}% (${sub.attended}/${sub.conducted})
+                </span>
               </div>
-            `;
-          }).join('');
+              <div class="progress" style="height: 6px; background: var(--border-color); border-radius: 999px; overflow: hidden;">
+                <div class="progress-bar" style="width: ${sub.percentage}%; height: 100%; border-radius: 999px; background-color: ${sub.percentage >= 75 ? 'var(--status-present)' : 'var(--status-absent)'};"></div>
+              </div>
+            </div>
+          `).join('');
         }
       }
     }
@@ -209,20 +185,16 @@ async function loadStudentDashboard() {
       const tbody = document.getElementById('history-tbody');
       if (tbody) {
         if (histRes.data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No finalized attendance records yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No finalized attendance records yet.</td></tr>';
         } else {
-          tbody.innerHTML = histRes.data.map(h => {
-            const statusLower = (h.attendance_status || 'absent').toLowerCase();
-            const badgeClass = statusLower === 'present' ? 'badge-present' : (statusLower === 'late' ? 'badge-late' : 'badge-absent');
-            return `
-              <tr>
-                <td>${typeof formatDate === 'function' ? formatDate(h.start_time) : (h.start_time || '').slice(0, 10)}</td>
-                <td><strong>${escapeHtml(h.subject_code || h.subject_name || 'Course')}</strong></td>
-                <td><span class="badge ${badgeClass}">${h.attendance_status || 'ABSENT'}</span></td>
-                <td style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(h.source || 'MANUAL')}</td>
-              </tr>
-            `;
-          }).join('');
+          tbody.innerHTML = histRes.data.map(h => `
+            <tr>
+              <td>${typeof formatDate === 'function' ? formatDate(h.start_time) : (h.start_time || '').slice(0, 10)}</td>
+              <td><strong>${escapeHtml(h.subject_code || h.subject_name || 'Course')}</strong></td>
+              <td><span class="badge badge-${(h.attendance_status || 'absent').toLowerCase()}">${h.attendance_status || 'ABSENT'}</span></td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(h.source || 'MANUAL')}</td>
+            </tr>
+          `).join('');
         }
       }
     }
@@ -251,7 +223,7 @@ async function loadStudentDashboard() {
 }
 
 /**
- * Fetches and renders Enrolled Teaching Groups as modern course cards
+ * Fetches and renders Enrolled Teaching Groups as Google Classroom Class Cards
  */
 async function loadEnrolledClasses() {
   try {
@@ -268,7 +240,7 @@ async function loadEnrolledClasses() {
     if (grid) {
       grid.innerHTML = `
         <div class="gc-empty-card">
-          <div class="gc-empty-icon" style="color:var(--status-absent);">✕</div>
+          <div class="gc-empty-icon" style="color:var(--status-absent);">${window.getSvgIcon('alert', 48)}</div>
           <h3 class="gc-empty-title">Error Loading Classes</h3>
           <p class="gc-empty-text">${escapeHtml(err.message || 'Unable to connect to server')}</p>
         </div>
@@ -317,24 +289,15 @@ function setClassesFilter(filter) {
 }
 
 /**
- * Real-time search handlers
+ * Real-time search handler
  */
 function handleClassesSearch(query) {
   studentDashboardState.searchQuery = (query || '').toLowerCase().trim();
-  const topInput = document.getElementById('admin-module-search');
-  if (topInput && topInput.value !== query) topInput.value = query;
-  renderGoogleClassCards();
-}
-
-function handleGlobalSearch(query) {
-  studentDashboardState.searchQuery = (query || '').toLowerCase().trim();
-  const localInput = document.getElementById('search-classes');
-  if (localInput && localInput.value !== query) localInput.value = query;
   renderGoogleClassCards();
 }
 
 /**
- * Renders the modern high-fidelity course cards grid matching mockup
+ * Renders the authentic Google Classroom Class Cards grid
  */
 function renderGoogleClassCards() {
   const grid = document.getElementById('classes-grid');
@@ -371,7 +334,7 @@ function renderGoogleClassCards() {
           <p class="gc-empty-text">
             You are not enrolled in any subject classes. Ask your course instructors for the 6-character invite code to join.
           </p>
-          <button class="btn btn-primary" onclick="openStudentJoinModal()" style="display:inline-flex;align-items:center;gap:0.4rem;border-radius:var(--radius-full, 9999px);">
+          <button class="btn btn-primary" onclick="openStudentJoinModal()" style="display:inline-flex;align-items:center;gap:0.4rem;">
             <span>+</span> <span>Join Class with Invite Code</span>
           </button>
         </div>
@@ -394,123 +357,195 @@ function renderGoogleClassCards() {
     return;
   }
 
-  const banners = ['banner-blue', 'banner-green', 'banner-purple'];
-
   grid.innerHTML = filtered.map((c, index) => {
-    const bannerClass = banners[index % banners.length];
+    const paletteClass = `palette-${index % 6}`;
     const isTheory = (c.component || '').toUpperCase() === 'THEORY';
     const compLabel = isTheory ? 'Theory' : 'Practical';
     const code = c.subject_code || (c.subject_name || '').slice(0, 6).toUpperCase();
-    const teacherInitials = getInitials(c.teacher_name || c.subject_name || 'Class');
+    const teacherInitials = getInitials(c.teacher_name || 'Faculty');
 
     // Find matching attendance record
     const subMatch = studentDashboardState.subjectAttendance[(code || '').toUpperCase()] || 
                      studentDashboardState.subjectAttendance[(c.subject_name || '').toUpperCase()];
     const pct = subMatch ? subMatch.percentage : 100;
+    const attended = subMatch ? subMatch.attended : 0;
+    const conducted = subMatch ? subMatch.conducted : 0;
     const isSafe = pct >= 75;
 
     return `
-      <article class="student-course-card" id="class-card-${c.id}">
+      <article class="gc-class-card" id="class-card-${c.id}">
         <!-- Gradient Banner Header -->
-        <header class="card-banner ${bannerClass}">
-          <div class="banner-top-row">
-            <div class="banner-title-wrap">
-              <div class="banner-initial-avatar">${teacherInitials}</div>
-              <div style="min-width:0;">
-                <h3 class="banner-subject-title" title="${escapeHtml(c.subject_name || c.name)}">
-                  <a href="/student/group-detail.html?id=${c.id}" style="color:inherit;text-decoration:none;">
-                    ${escapeHtml(c.subject_name || c.name || 'Subject Class')}
-                  </a>
-                </h3>
-                <div style="font-size:0.78rem;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                  ${escapeHtml(c.teacher_name || 'Course Instructor')} • Sem ${c.semester || 1}
-                </div>
-              </div>
-            </div>
-            <span class="banner-code-pill">${escapeHtml(code)}</span>
+        <header class="gc-card-header ${paletteClass}">
+          <div class="gc-card-header-top">
+            <span class="gc-card-code-tag">${escapeHtml(code)}</span>
+            <span class="gc-component-tag">${compLabel}</span>
           </div>
 
-          <div class="banner-bottom-row">
-            <span class="banner-tag-pill">${compLabel}</span>
-            <span>Batch ${escapeHtml(c.cohort_name || 'Regular')}</span>
+          <div>
+            <a href="/student/group-detail.html?id=${c.id}" class="gc-card-title" title="${escapeHtml(c.subject_name || c.name)}">
+              ${escapeHtml(c.name || c.subject_name || 'Subject Class')}
+            </a>
+            <div class="gc-card-teacher" title="Instructor: ${escapeHtml(c.teacher_name || 'Faculty')}">
+              ${escapeHtml(c.teacher_name || 'Course Instructor')} • Sem ${c.semester || 1}
+            </div>
+          </div>
+
+          <!-- Teacher Avatar Circle -->
+          <div class="gc-card-avatar" title="${escapeHtml(c.teacher_name || 'Instructor')}">
+            ${teacherInitials}
           </div>
         </header>
 
-        <!-- Card Content Body -->
-        <div class="card-content-body">
-          <div class="card-stats-row">
-            <div class="stats-students-chip" title="Enrolled Students">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>${c.student_count || 48} Students</span>
+        <!-- Card Body with Live Attendance Telemetry -->
+        <div class="gc-card-body" onclick="window.location.href='/student/group-detail.html?id=${c.id}'" style="cursor:pointer;">
+          <div class="gc-card-att-box">
+            <div class="gc-card-att-top">
+              <span class="gc-card-att-pct" style="color: ${isSafe ? 'var(--status-present)' : 'var(--status-absent)'};">
+                ${pct}% Attendance
+              </span>
+              <span class="gc-card-att-status ${isSafe ? 'gc-status-safe' : 'gc-status-warn'}">
+                ${isSafe ? 'Safe Zone' : 'Deficit Warning'}
+              </span>
             </div>
 
-            <!-- Attendance Circular Donut SVG -->
-            <div class="stats-donut-wrap" title="Attendance Progress">
-              <svg class="donut-chart-svg" viewBox="0 0 36 36">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--border-color)" stroke-width="3.5" />
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${isSafe ? 'var(--status-present)' : 'var(--status-absent)'}" stroke-width="3.5" stroke-dasharray="${pct}, 100" />
-              </svg>
-              <div>
-                <span class="donut-pct-text" style="color:${isSafe ? 'var(--status-present)' : 'var(--status-absent)'}">${pct}%</span>
-                <span class="donut-pct-label">Attendance</span>
-              </div>
+            <div class="gc-card-progress">
+              <div class="gc-card-progress-bar" style="width: ${pct}%; background-color: ${isSafe ? 'var(--status-present)' : 'var(--status-absent)'};"></div>
             </div>
 
-            <span class="status-pill ${isSafe ? 'status-ontrack' : 'status-below'}">
-              ${isSafe ? '● On Track' : '▲ Below Target'}
-            </span>
+            <div class="gc-card-att-sub">
+              <span>Attended: <strong>${attended}</strong> / ${conducted} classes</span>
+              <span>Req: 75%</span>
+            </div>
           </div>
 
-          <!-- Thin Meter Bar -->
-          <div class="card-meter-bar">
-            <div class="card-meter-fill" style="width: ${pct}%; background-color: ${isSafe ? 'var(--status-present)' : 'var(--status-absent)'};"></div>
-          </div>
-
-          <!-- 2x2 Action Buttons Grid -->
-          <div class="card-actions-2x2">
-            <a href="/student/group-detail.html?id=${c.id}&tab=attendance" class="btn-card-secondary" title="View Detailed Attendance Register">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Attendance</span>
-            </a>
-
-            <a href="/student/group-detail.html?id=${c.id}&tab=classwork" class="btn-card-secondary" title="View Coursework & Assignments">
+          <div class="gc-card-coursework-row" onclick="event.stopPropagation()">
+            <a href="/student/group-detail.html?id=${c.id}&tab=classwork" class="gc-coursework-pill ${(c.pending_work_count > 0) ? 'gc-coursework-pending' : ''}" title="View Coursework Assignments">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                 <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
               </svg>
-              <span>Coursework</span>
+              <span>${(c.pending_work_count > 0) ? (c.pending_work_count + ' Pending') : ((c.assignment_count || 0) + ' Assignments')}</span>
+              ${(c.pending_work_count > 0) ? '<span class="gc-pill-dot"></span>' : ''}
             </a>
 
-            <a href="/student/group-detail.html?id=${c.id}&tab=people" class="btn-card-secondary" title="View Classmates & Faculty">
+            <a href="/student/group-detail.html?id=${c.id}&tab=classwork" class="gc-coursework-pill" title="View Class Tests & Exam Marks">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span>People</span>
-            </a>
-
-            <a href="/student/group-detail.html?id=${c.id}" class="btn-card-primary" title="View Classroom Details & Stream">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              <span>Details</span>
+              <span>${c.exam_count || 0} Tests</span>
             </a>
           </div>
         </div>
+
+        <!-- 6 Navigation Quick Links Grid (Students, Classwork, Resources, NBA, Theory Classes, Laboratory Classes) -->
+        <div class="card-quick-links-grid" onclick="event.stopPropagation()">
+          <a href="/student/group-detail.html?id=${c.id}&tab=people" class="card-quick-link" title="Classmates & Teachers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Students</span>
+          </a>
+
+          <a href="/student/group-detail.html?id=${c.id}&tab=classwork" class="card-quick-link ${(c.pending_work_count > 0) ? 'has-pending' : ''}" title="Classwork & Assignments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Classwork</span>
+          </a>
+
+          <a href="/student/group-detail.html?id=${c.id}&tab=resources" class="card-quick-link" title="Class Resources & Documents">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Resources</span>
+          </a>
+
+          <a href="/student/nba/index.html?groupId=${c.id}" class="card-quick-link" title="NBA Academic Accreditation Dossier & Course Outcomes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>NBA</span>
+          </a>
+
+          <a href="/student/theory-classes/index.html?groupId=${c.id}" class="card-quick-link" title="Theory Classes Dossier, Notes & Lesson Plans">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Theory Classes</span>
+          </a>
+
+          <a href="/student/lab-classes/index.html?groupId=${c.id}" class="card-quick-link" title="Laboratory Classes, Manuals & Experiments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 2v7.31L4.62 18.2A2 2 0 0 0 6.36 21h11.28a2 2 0 0 0 1.74-2.8L14 9.31V2"></path>
+              <path d="M8.5 2h7"></path>
+              <path d="M14 9.3h-4"></path>
+            </svg>
+            <span>Laboratory Classes</span>
+          </a>
+        </div>
+
+        <!-- Academic Dossier Entry Bars (Theory Classes, Laboratory Classes, Course File NBA) -->
+        <a href="/student/theory-classes/index.html?groupId=${c.id}" class="card-theory-classes-bar" title="Open Theory Classes Academic Dossier (7 Records)" onclick="event.stopPropagation()">
+          <div class="card-cf-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Theory Classes</span>
+          </div>
+          <div class="card-cf-right">
+            <span class="card-cf-count" style="background:var(--color-primary-light);color:var(--color-primary);font-weight:700;">7 Records</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/student/lab-classes/index.html?groupId=${c.id}" class="card-lab-classes-bar" title="Open Laboratory Classes Academic Dossier (7 Records)" onclick="event.stopPropagation()">
+          <div class="card-cf-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 2v7.31L4.62 18.2A2 2 0 0 0 6.36 21h11.28a2 2 0 0 0 1.74-2.8L14 9.31V2"></path>
+              <path d="M8.5 2h7"></path>
+              <path d="M14 9.3h-4"></path>
+            </svg>
+            <span>Laboratory Classes</span>
+          </div>
+          <div class="card-cf-right">
+            <span class="card-cf-count" style="background:var(--status-present-bg);color:var(--status-present);font-weight:700;">7 Records</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </a>
+
+        <a href="/student/nba/index.html?groupId=${c.id}" class="card-cf-footer-bar" title="Open NBA Academic Accreditation Dossier (18 Docs)" onclick="event.stopPropagation()">
+          <div class="card-cf-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Course File (NBA/NAAC)</span>
+          </div>
+          <div class="card-cf-right">
+            <span class="card-cf-count">18 Docs</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </a>
       </article>
     `;
   }).join('');
@@ -524,13 +559,11 @@ function clearClassesFilter() {
   studentDashboardState.searchQuery = '';
   const searchInput = document.getElementById('search-classes');
   if (searchInput) searchInput.value = '';
-  const topInput = document.getElementById('admin-module-search');
-  if (topInput) topInput.value = '';
   setClassesFilter('ALL');
 }
 
 /**
- * Renders enrolled classes with colored dots in the Slide-out Left Drawer (if present)
+ * Renders enrolled classes with colored dots in the Slide-out Left Drawer
  */
 function renderDrawerClasses() {
   const container = document.getElementById('drawer-classes-list');
@@ -542,17 +575,18 @@ function renderDrawerClasses() {
   }
 
   const dotColors = [
-    'var(--color-primary)',
-    'var(--status-present)',
-    'var(--status-excused)',
-    'var(--status-late)',
-    'var(--color-primary-hover)'
+    'hsl(217 82% 46%)',
+    'hsl(152 72% 34%)',
+    'hsl(262 70% 48%)',
+    'hsl(32 94% 42%)',
+    'hsl(186 86% 32%)',
+    'hsl(340 76% 44%)'
   ];
 
   container.innerHTML = studentDashboardState.classes.map((c, i) => {
     const color = dotColors[i % dotColors.length];
     return `
-      <a href="/student/group-detail.html?id=${c.id}" class="gc-drawer-link" style="font-size:0.84rem;padding:0.5rem 1.5rem;display:flex;align-items:center;gap:0.5rem;text-decoration:none;color:var(--text-main);">
+      <a href="/student/group-detail.html?id=${c.id}" class="gc-drawer-link" style="font-size:0.84rem;padding:0.5rem 1.5rem;">
         <span class="gc-class-dot" style="background: ${color}; width:10px; height:10px; border-radius:50%; flex-shrink:0;"></span>
         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.name || c.subject_name)}</span>
       </a>
@@ -561,28 +595,37 @@ function renderDrawerClasses() {
 }
 
 /**
- * Left Drawer Toggle Controller (delegates to universal sidebar)
+ * Left Drawer Toggle Controller
  */
 function toggleDrawer(forceState) {
-  const sidebar = document.getElementById('app-sidebar');
-  const backdrop = document.getElementById('sidebar-backdrop');
-  if (sidebar) {
-    const isOpen = forceState !== undefined ? forceState : (!sidebar.classList.contains('open') && !sidebar.classList.contains('sidebar-open'));
-    sidebar.classList.toggle('open', isOpen);
-    sidebar.classList.toggle('sidebar-open', isOpen);
-    document.body.classList.toggle('sidebar-open', isOpen);
-    if (backdrop) {
-      backdrop.classList.toggle('open', isOpen);
-      backdrop.classList.toggle('active', isOpen);
-    }
-    const btn = document.getElementById('btn-menu-toggle');
-    if (btn) btn.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
-    return;
+  const drawer = document.getElementById('gc-drawer');
+  const backdrop = document.getElementById('gc-drawer-backdrop');
+  if (!drawer || !backdrop) return;
+
+  const isOpen = forceState !== undefined ? forceState : !drawer.classList.contains('open');
+  if (isOpen) {
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  } else {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
   }
-  if (typeof window.toggleSidebar === 'function') {
-    window.toggleSidebar(forceState);
-    return;
-  }
+}
+
+/**
+ * Google Apps 9-Dot Launcher Toggle Controller
+ */
+function toggleAppsLauncher(forceState) {
+  const menu = document.getElementById('apps-launcher-dropdown');
+  if (!menu) return;
+
+  // Close profile popover if open
+  toggleUserProfile(false);
+
+  const isOpen = forceState !== undefined ? forceState : (menu.style.display === 'none' || !menu.style.display);
+  menu.style.display = isOpen ? 'grid' : 'none';
 }
 
 /**
@@ -591,6 +634,12 @@ function toggleDrawer(forceState) {
 function toggleUserProfile(forceState) {
   const pop = document.getElementById('user-profile-popover');
   if (!pop) return;
+
+  // Close apps launcher if open
+  if (forceState !== false) {
+    const appsMenu = document.getElementById('apps-launcher-dropdown');
+    if (appsMenu) appsMenu.style.display = 'none';
+  }
 
   const isOpen = forceState !== undefined ? forceState : (pop.style.display === 'none' || !pop.style.display);
   pop.style.display = isOpen ? 'flex' : 'none';
@@ -613,9 +662,16 @@ function toggleTheme() {
  */
 function initDropdownCloseListeners() {
   document.addEventListener('click', (e) => {
+    // Apps Launcher
+    const appsDropdown = document.getElementById('apps-launcher-dropdown');
+    const appsTrigger = e.target.closest('[onclick*="toggleAppsLauncher"]');
+    if (appsDropdown && appsDropdown.style.display !== 'none' && !appsDropdown.contains(e.target) && !appsTrigger) {
+      appsDropdown.style.display = 'none';
+    }
+
     // Profile Popover
     const profilePopover = document.getElementById('user-profile-popover');
-    const profileTrigger = e.target.closest('.gc-student-profile-pill') || e.target.closest('#gc-user-avatar');
+    const profileTrigger = e.target.closest('#gc-user-avatar');
     if (profilePopover && profilePopover.style.display !== 'none' && !profilePopover.contains(e.target) && !profileTrigger) {
       profilePopover.style.display = 'none';
     }
@@ -625,6 +681,7 @@ function initDropdownCloseListeners() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       toggleDrawer(false);
+      toggleAppsLauncher(false);
       toggleUserProfile(false);
       closeJoinModal();
       closeSelfAttendanceModal();
@@ -804,7 +861,7 @@ async function openStudentStreamModal(groupId, groupName, teacherName) {
         if (container) {
           container.innerHTML = `
             <div style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
-              <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📢</div>
+              <div style="margin-bottom: 0.5rem; color: var(--text-muted);">${window.getSvgIcon('megaphone', 36)}</div>
               <h4 style="margin: 0 0 0.25rem 0; color: var(--text-main); font-weight: 700;">No Announcements Yet</h4>
               <p style="margin: 0; font-size: 0.85rem;">Your professor has not posted announcements for this class yet.</p>
             </div>
@@ -825,7 +882,7 @@ async function openStudentStreamModal(groupId, groupName, teacherName) {
               ${post.attachment_path ? `
                 <div style="margin-top: 0.65rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color);">
                   <a href="${post.attachment_path}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem;">
-                    <span>📎</span> <span>${escapeHtml(post.attachment_name || 'Attachment')}</span>
+                    <span>${window.getSvgIcon('paperclip', 14)}</span> <span>${escapeHtml(post.attachment_name || 'Attachment')}</span>
                   </a>
                 </div>
               ` : ''}
@@ -859,20 +916,99 @@ function getInitials(name) {
   return clean.slice(0, 2).toUpperCase() || 'ST';
 }
 
+// Profile Completion Modal Controls
+function openCompleteProfileModal(student) {
+  const modal = document.getElementById('complete-profile-modal');
+  if (!modal) return;
+  const s = student || studentDashboardState.profile || {};
+  if (document.getElementById('pop-father-name')) document.getElementById('pop-father-name').value = s.father_name || '';
+  if (document.getElementById('pop-mother-name')) document.getElementById('pop-mother-name').value = s.mother_name || '';
+  if (document.getElementById('pop-dob')) document.getElementById('pop-dob').value = s.dob || '';
+  if (document.getElementById('pop-gender')) document.getElementById('pop-gender').value = s.gender || '';
+  if (document.getElementById('pop-category')) document.getElementById('pop-category').value = s.category || '';
+  if (document.getElementById('pop-aadhar')) document.getElementById('pop-aadhar').value = s.aadhar_number || '';
+  if (document.getElementById('pop-address')) document.getElementById('pop-address').value = s.address || '';
+  modal.style.display = 'flex';
+}
+
+function closeCompleteProfileModal() {
+  const modal = document.getElementById('complete-profile-modal');
+  if (modal) modal.style.display = 'none';
+  sessionStorage.setItem('profile_modal_dismissed', '1');
+}
+
+async function handlePopupProfileSubmit(e) {
+  e.preventDefault();
+  const errBox = document.getElementById('pop-profile-error');
+  if (errBox) errBox.style.display = 'none';
+
+  const father_name = document.getElementById('pop-father-name')?.value.trim();
+  const mother_name = document.getElementById('pop-mother-name')?.value.trim();
+  const dob = document.getElementById('pop-dob')?.value;
+  const gender = document.getElementById('pop-gender')?.value;
+  const category = document.getElementById('pop-category')?.value;
+  const aadhar_number = document.getElementById('pop-aadhar')?.value.trim();
+  const address = document.getElementById('pop-address')?.value.trim();
+  const submitBtn = document.getElementById('pop-submit-btn');
+
+  if (!father_name || !mother_name || !dob || !gender || !category || !aadhar_number || !address) {
+    if (errBox) {
+      errBox.innerText = 'Please complete all required demographic fields.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Saving...';
+    }
+
+    const res = await fetchApi('/students/me', {
+      method: 'PUT',
+      body: JSON.stringify({
+        father_name,
+        mother_name,
+        dob,
+        gender,
+        category,
+        aadhar_number,
+        address
+      })
+    });
+
+    if (res && res.success) {
+      if (typeof showToast === 'function') {
+        showToast('Student profile completed successfully!', 'success');
+      }
+      closeCompleteProfileModal();
+      loadStudentDashboard();
+    } else {
+      if (errBox) {
+        errBox.innerText = res?.error?.message || 'Failed to update profile.';
+        errBox.style.display = 'block';
+      }
+    }
+  } catch (err) {
+    if (errBox) {
+      errBox.innerText = err.message || 'Error saving profile.';
+      errBox.style.display = 'block';
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Save & Complete Profile';
+    }
+  }
+}
+
 // Window interoperability exports
 window.openJoinModal = openStudentJoinModal;
-window.openStudentJoinModal = openStudentJoinModal;
 window.closeJoinModal = closeJoinModal;
-window.closeStudentJoinModal = closeJoinModal;
 window.handleJoinSubmit = handleStudentJoinSubmit;
 window.openStudentStream = openStudentStreamModal;
 window.loadEnrolledClasses = loadEnrolledClasses;
-window.handleClassesSearch = handleClassesSearch;
-window.handleGlobalSearch = handleGlobalSearch;
-window.setClassesFilter = setClassesFilter;
-window.clearClassesFilter = clearClassesFilter;
-window.toggleSidebar = toggleDrawer;
-window.toggleDrawer = toggleDrawer;
-window.toggleAppSidebar = toggleDrawer;
-window.toggleUserProfile = toggleUserProfile;
-window.toggleTheme = toggleTheme;
+window.openCompleteProfileModal = openCompleteProfileModal;
+window.closeCompleteProfileModal = closeCompleteProfileModal;
+window.handlePopupProfileSubmit = handlePopupProfileSubmit;

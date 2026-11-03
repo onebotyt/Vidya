@@ -6057,3 +6057,49 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Syntax check: `node -c` passed with 0 errors across all modified JavaScript files.
   - Dev server HTTP health: All 6 admin endpoints return HTTP 200 OK.
 
+
+### 🎯 Milestone 318: Student Dashboard Subject Card 6-Option Navigation Expansion & Dedicated Academic Dossier Pages (NBA, Theory Classes, Laboratory Classes)
+- **Status**: ✅ Completed, Pushed & Live on Remote Repositories
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`, Commit: `ec99e8b`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/student/dashboard`
+  - Theory Classes: `https://vidyaos-pink.vercel.app/student/theory-classes`
+  - Laboratory Classes: `https://vidyaos-pink.vercel.app/student/lab-classes`
+  - NBA Academic Dossier: `https://vidyaos-pink.vercel.app/student/nba`
+- **User Request**:
+  - *"Update the Student Dashboard in VidyaOS according to the provided reference screenshot. Currently, the Subject Card contains three navigation buttons: Students, Classwork, Resources. I want to add three more navigation buttons/sections in the same style and design: 1. NBA, 2. Theory Classes, 3. Laboratory Classes. Each option must be clickable and navigate to its own dedicated page. NBA Page: Display NBA-related academic documents, accreditation files, course outcomes, attainment reports. Theory Classes Page: Display all theory class details, schedules, notes, study materials, assignments, and uploaded files. Laboratory Classes Page: Display practical/lab schedules, experiments, lab manuals, practical assignments, records, and uploaded files. Do not redesign the existing dashboard or change layout/functionality. Maintain responsive mobile-first design and consistent UI across desktop, tablet, and mobile screens."*
+- **6-Option Navigation Architecture on Student Subject Cards**:
+  1. `Students`: Direct navigation to classmates & faculty roster (`/student/group-detail.html?id=${c.id}&tab=people`).
+  2. `Classwork`: Direct navigation to assignments, homework, and coursework submissions (`/student/group-detail.html?id=${c.id}&tab=classwork`).
+  3. `Resources`: Direct navigation to course learning resources and syllabus materials (`/student/group-detail.html?id=${c.id}&tab=resources`).
+  4. `NBA`: Direct navigation to NBA accreditation course files, Course Outcomes (COs), and attainment reports (`/student/nba/index.html?groupId=${c.id}`).
+  5. `Theory Classes`: Direct navigation to the 7-record theory class compliance dossier (`/student/theory-classes/index.html?groupId=${c.id}`).
+  6. `Laboratory Classes`: Direct navigation to practical experiments, manuals, and lab assessments (`/student/lab-classes/index.html?groupId=${c.id}`).
+  - Built `.card-quick-links-grid`: Balanced 3-column x 2-row responsive grid layout matching exact typography, padding, icons, colors, and hover states of the original 3 buttons.
+  - Added pixel-accurate entry bars directly underneath matching the reference screenshot:
+    - `Theory Classes` (`7 Records >`) with blue doc icon and primary badge.
+    - `Laboratory Classes` (`7 Records >`) with green flask icon and status present badge.
+    - `Course File (NBA/NAAC)` (`18 Docs >`) with folder icon and document count badge.
+- **Dedicated Student Web Pages**:
+  - **Theory Classes Page (`/student/theory-classes/`)**:
+    - Header banner with course title, semester, AY, component, code, and live student attendance meter.
+    - Enrolled courses dropdown switcher for multi-course students.
+    - 7 tactile theory records: `#1 Attendance Register`, `#2 Teacher's Diary`, `#3 Lesson Plan Completion Record`, `#4 Course Coverage Report`, `#5 Teaching-Learning Material (Notes & PPTs)`, `#6 ICT-Enabled Teaching Records`, `#7 Assignment Records & Submissions`.
+    - Category filter pills (`All 7 Records`, `Attendance & Log`, `Curriculum & Coverage`, `Notes & Pedagogy`) and real-time search bar.
+    - Document modal for previewing study materials and direct PDF downloads.
+  - **Laboratory Classes Page (`/student/lab-classes/`)**:
+    - Header banner with lab course title, practical component badge, semester, code, lab in-charge instructor, and practical turnout meter.
+    - Enrolled lab courses dropdown switcher.
+    - 7 tactile laboratory records: `#1 Laboratory Attendance Register`, `#2 Laboratory Manuals & Guidelines`, `#3 Job Cards & Experiment Sheets`, `#4 Practical Notebooks & Records`, `#5 Continuous Laboratory Assessment`, `#6 Equipment Utilization Records`, `#7 Laboratory Maintenance & Safety Records`.
+    - Category filter pills (`All 7 Records`, `Attendance & Manuals`, `Experimentation & Records`, `Assessment & Maintenance`) and real-time search bar.
+    - Interactive modal for viewing and downloading official lab manuals and experiment sheets.
+  - **NBA Academic Dossier Page (`/student/nba/`)**:
+    - Header banner with course title, accreditation tier badge, department, and dossier readiness meter.
+    - Interactive Course Outcomes (COs) section displaying CO1 to CO6 statements, Bloom's Taxonomy cognitive levels, and attainment benchmarks.
+    - 18 NBA/NAAC Document Cards spanning Curriculum, Evaluation, Attainment, and Pedagogy.
+    - Real-time search filter and category pills.
+    - Document preview and download modal.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all 3 new stylesheets and student dashboard CSS updates.
+  - Rule 7 (Frozen Folders): 0 modifications to `frontend/student/group-detail/` (strictly preserved and read-only).
+  - Clean URL Rewrites: Configured in `vercel.json` for seamless routing on `/student/theory-classes`, `/student/lab-classes`, and `/student/nba`.
+  - Syntax check: `node -c` passed with 0 errors across all modified and new JavaScript files.
