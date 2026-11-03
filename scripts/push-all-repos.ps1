@@ -59,7 +59,7 @@ if (-not $token) {
 # 2. Push deployfolder/VidyaOS (Frontend)
 Write-Host "Staging and committing deployfolder/VidyaOS..." -ForegroundColor Cyan
 & $gitExe -C deployfolder/VidyaOS add -A
-$frontStatus = (& $gitExe -C deployfolder/VidyaOS status --porcelain).Trim()
+$frontStatus = "$(& $gitExe -C deployfolder/VidyaOS status --porcelain)".Trim()
 if ($frontStatus) {
     & $gitExe -C deployfolder/VidyaOS commit -m $Message
 }
@@ -77,7 +77,7 @@ if ($frontExit -eq 0) {
 # 3. Push deployfolder/VidyaOS_BackEnd (Backend)
 Write-Host "Staging and committing deployfolder/VidyaOS_BackEnd..." -ForegroundColor Cyan
 & $gitExe -C deployfolder/VidyaOS_BackEnd add -A
-$backStatus = (& $gitExe -C deployfolder/VidyaOS_BackEnd status --porcelain).Trim()
+$backStatus = "$(& $gitExe -C deployfolder/VidyaOS_BackEnd status --porcelain)".Trim()
 if ($backStatus) {
     & $gitExe -C deployfolder/VidyaOS_BackEnd commit -m $Message
 }
