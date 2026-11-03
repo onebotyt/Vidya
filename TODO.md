@@ -6132,3 +6132,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across updated faculty dashboard stylesheets.
   - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
   - Syntax check: `node -c` passed with 0 errors on both JS files.
+
+
+### 🌟 Milestone 320: Subject Card Three-Dot (⋮) Menu with Delete Subject Card & Removal of Bottom Expandable Rows
+- **Status**: ✅ Completed, Pushed & Live on Remote Repositories
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/student/dashboard` & `https://vidyaos-pink.vercel.app/faculty/dashboard`
+- **User Request**:
+  - *"Update the three-dot (⋮) menu of every Subject Card in the VidyaOS Student Dashboard. When the user clicks the three-dot menu in the top-right corner of a Subject Card, display a dropdown menu containing: View Subject Details, Edit Subject (if permitted), Delete Subject Card. Delete Subject Card functionality: Show a confirmation dialog before deletion. Display the subject name in the confirmation message. Provide Cancel and Delete buttons. After confirmation, remove the selected Subject Card from the dashboard. Do not delete the subject permanently without proper authorization. Keep the action restricted according to the user's role and permissions. Remove existing bottom sections: 1. Theory Classes, 2. Laboratory Classes, 3. Course File (NBA/NAAC) with rows, record counts, document counts, dropdown arrows, and associated expandable functionality. Keep navigation through icons: Students, Classwork, Resources, NBA, Theory Classes, Laboratory Classes. Maintain existing purple/blue gradient Subject Card design."*
+- **Key Deliverables & Architectural Implementation**:
+  1. **Three-Dot (⋮) Dropdown Menu**:
+     - Built top-right dots button with subtle hover effect and pinned `position: relative;` container so dropdown never clips or floats.
+     - 3 clean menu options with icons:
+       - `View Subject Details`: Navigates to `/student/group-detail.html?id={id}` (or faculty counterpart).
+       - `Edit Subject (if permitted)`: Role-guarded. Informs students of authority requirement or opens edit modal for permitted faculty.
+       - `Delete Subject Card`: Opens confirmation modal with `.danger` style.
+  2. **Delete Subject Card Confirmation Dialog Modal**:
+     - Modern modal with frosted backdrop and red danger icon badge.
+     - Displays subject name prominently in confirmation prompt: `Are you sure you want to remove the subject card for <Subject Name> from your dashboard?`
+     - Informational note clarifying that permanent records remain safely archived in the institutional database.
+     - Cancel and Delete Card buttons.
+     - Smooth scale & fade exit animation when removing card, updating `localStorage` (`vidya_hidden_subject_cards`), and providing restorative empty-state controls.
+  3. **Bottom Sections Removed**:
+     - Eliminated expandable Theory Classes, Laboratory Classes, and Course File (NBA/NAAC) footer bars, document count badges, and 18-doc accordion grid from the card bottom.
+  4. **Icon Navigation Preserved**:
+     - Maintained all 6 quick navigation buttons (`Students`, `Classwork`, `Resources`, `NBA`, `Theory Classes`, `Laboratory Classes`) in responsive `.card-quick-links-grid`.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all updated styles.
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Verification: `node -c` passed with 0 errors across all modified JavaScript files.
