@@ -6161,3 +6161,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all updated styles.
   - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
   - Verification: `node -c` passed with 0 errors across all modified JavaScript files.
+
+
+### 🎯 Milestone 321: Subject Card Three-Dot (⋮) Menu Streamlining (Delete Option Only & Overflow Clipping Fix)
+- **Status**: 🟢 Completed, Pushed & Live on Remote Repositories
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/student/dashboard` & `https://vidyaos-pink.vercel.app/faculty/dashboard`
+- **User Request**:
+  - *"i need delete option olny  in 3 dot"* with screenshot `media_1793669421931_0e9e25c6.png` highlighting the three-dot dropdown menu.
+- **Key Deliverables & Architectural Implementation**:
+  1. **Three-Dot (⋮) Menu Streamlined**:
+     - Removed redundant "View Subject Details" and "Edit Subject" options from the three-dot dropdown.
+     - Kept strictly **ONLY** the `Delete Subject Card` option with its red danger trash icon (`<svg>` trash) and confirmation modal trigger.
+     - Ultra-clean, focused dropdown footprint across both Student and Faculty dashboard Subject Cards.
+  2. **Overflow Clipping Resolution**:
+     - Fixed clipping at card header boundaries by setting `overflow: visible;` on `.gc-card-header` and `.gc-class-card` in both `faculty/dashboard/dashboard.css` and `student/dashboard/dashboard.css`.
+     - Elevated `.gc-menu-dropdown` to `z-index: 1000;` ensuring dropdown cleanly floats above all card elements and adjacent grid items without truncation.
+  3. **Preserved Safe Deletion Flow & 6-Icon Grid**:
+     - Maintained full confirmation modal workflow ("Delete Subject Card" with subject title, Cancel & Delete buttons, smooth DOM exit animation, and persistent state in `localStorage`).
+     - Kept all 6 quick navigation buttons intact (`Students`, `Classwork`, `Resources`, `NBA`, `Theory Classes`, `Laboratory Classes`).
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across updated styles.
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Verification: `node -c` passed with 0 errors across all modified JavaScript files.
