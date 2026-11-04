@@ -6279,3 +6279,62 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
   - Automated Integration Tests: Passed 13 definitions, group dossier provisioning, document upsert, versioning, deletion, and readiness calculations.
   - Syntax check: `node -c` passed with 0 errors across all 12 modified and new JavaScript files.
+
+
+---
+
+### 🚀 Milestone 324: Complete Separation of Direct and Indirect Assessment Modules (8 Direct & 5 Indirect Cards, Independent Pages, Dual Subject Card Buttons & Symmetrical 3x3 Grid)
+- **Status**: ✅ Completed, Verified & Synced Across Workspace
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/faculty/dashboard` & `https://vidyaos-pink.vercel.app/faculty/direct-assessment`
+- **User Request**:
+  - *"The previous implementation incorrectly combined Direct Assessment and Indirect Assessment into a single page and a single navigation button. I want to separate them completely."*
+  - **1. Subject Card Navigation**: Add TWO separate navigation buttons:
+    - Button 1: **Direct Assessment** (`clipboard-check` icon, opens dedicated Direct Assessment page).
+    - Button 2: **Indirect Assessment** (`clipboard-list` icon, opens dedicated Indirect Assessment page).
+    - Total 9 buttons in Subject Card arranged in a clean, symmetrical 3x3 grid (`repeat(3, 1fr)`).
+  - **2. Direct Assessment Page**: Dedicated page containing ONLY 8 PDF upload sections:
+    1. Internal Examinations
+    2. Class Tests
+    3. Assignments
+    4. Laboratory Performance
+    5. Practical Examinations
+    6. Mini Projects
+    7. End-Semester Examinations
+    8. Course Outcome (CO) Mapping
+    - Independent Progress Tracker: 0/8 (0%) to 8/8 (100%).
+  - **3. Indirect Assessment Page**: Dedicated page containing ONLY 5 PDF upload sections:
+    1. Course Exit Survey
+    2. Student Feedback
+    3. Alumni Feedback
+    4. Employer Feedback
+    5. Graduate Exit Survey
+    - Independent Progress Tracker: 0/5 (0%) to 5/5 (100%).
+  - **4. Separate Documentation Tracking**: Completely independent readiness tracking without mixing metrics.
+- **Key Deliverables & Architectural Implementation**:
+  1. **Subject Card 3x3 Symmetrical Grid (9 Buttons)**:
+     - Replaced single combined button with dual independent buttons in Faculty and Student dashboards:
+       - `Direct Assessment` (`clipboard-check` icon, routes `/faculty/direct-assessment.html` & `/student/direct-assessment/index.html`).
+       - `Indirect Assessment` (`clipboard-list` icon, routes `/faculty/indirect-assessment.html` & `/student/indirect-assessment/index.html`).
+     - Updated `.card-quick-links-grid` in both Faculty and Student dashboard CSS to `grid-template-columns: repeat(3, 1fr);` forming a 3x3 layout.
+  2. **Dedicated Faculty Workspaces**:
+     - `/faculty/direct-assessment/`: 8 artifact cards, independent 0/8 readiness meter, category filter, instant search, drag-and-drop PDF upload, preview modal, HOD audit verification.
+     - `/faculty/indirect-assessment/`: 5 artifact cards, independent 0/5 readiness meter, category filter, instant search, drag-and-drop PDF upload, preview modal, HOD audit verification.
+  3. **Dedicated Student Read-Only Workspaces**:
+     - `/student/direct-assessment/`: Read-only view of 8 Direct Assessment documents, multi-course switcher, PDF preview modal, and PDF download.
+     - `/student/indirect-assessment/`: Read-only view of 5 Indirect Assessment documents, multi-course switcher, PDF preview modal, and PDF download.
+  4. **Backend Architecture & Routes**:
+     - `assessmentProcessModel.js`: Added `DIRECT_ASSESSMENT_ITEMS` (8 items) and `INDIRECT_ASSESSMENT_ITEMS` (5 items) with separate getters.
+     - `assessmentProcessController.js`: Added `getDirectDefinitions`, `getIndirectDefinitions`, `getDirectAssessmentDossier` (0-8 score, 0-100%), and `getIndirectAssessmentDossier` (0-5 score, 0-100%).
+     - Dedicated Routes:
+       - `/api/v1/direct-assessment/*` (`directAssessment.js`)
+       - `/api/v1/indirect-assessment/*` (`indirectAssessment.js`)
+       - Retained `/api/v1/assessment-process/*` for backward compatibility.
+  5. **Vercel Rewrites**:
+     - Configured clean URLs in `deployfolder/VidyaOS/vercel.json` and root `vercel.json` for `/faculty/direct-assessment`, `/faculty/indirect-assessment`, `/student/direct-assessment`, and `/student/indirect-assessment`.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all 8 CSS files (100% theme token compliant).
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Verification: `node -c` passed with 0 errors across all 24 modified and new JavaScript files.
+  - Synchronized across main root, `deployfolder/VidyaOS`, and `deployfolder/VidyaOS_BackEnd`.

@@ -103,6 +103,30 @@
       "destination": "/frontend/faculty/assessment-process/index.html"
     },
     {
+      "source": "/faculty/direct-assessment",
+      "destination": "/frontend/faculty/direct-assessment/index.html"
+    },
+    {
+      "source": "/faculty/direct-assessment/",
+      "destination": "/frontend/faculty/direct-assessment/index.html"
+    },
+    {
+      "source": "/faculty/direct-assessment.html",
+      "destination": "/frontend/faculty/direct-assessment/index.html"
+    },
+    {
+      "source": "/faculty/indirect-assessment",
+      "destination": "/frontend/faculty/indirect-assessment/index.html"
+    },
+    {
+      "source": "/faculty/indirect-assessment/",
+      "destination": "/frontend/faculty/indirect-assessment/index.html"
+    },
+    {
+      "source": "/faculty/indirect-assessment.html",
+      "destination": "/frontend/faculty/indirect-assessment/index.html"
+    },
+    {
       "source": "/student/student-performance",
       "destination": "/frontend/student/student-performance/index.html"
     },
@@ -125,6 +149,30 @@
     {
       "source": "/student/assessment-process.html",
       "destination": "/frontend/student/assessment-process/index.html"
+    },
+    {
+      "source": "/student/direct-assessment",
+      "destination": "/frontend/student/direct-assessment/index.html"
+    },
+    {
+      "source": "/student/direct-assessment/",
+      "destination": "/frontend/student/direct-assessment/index.html"
+    },
+    {
+      "source": "/student/direct-assessment.html",
+      "destination": "/frontend/student/direct-assessment/index.html"
+    },
+    {
+      "source": "/student/indirect-assessment",
+      "destination": "/frontend/student/indirect-assessment/index.html"
+    },
+    {
+      "source": "/student/indirect-assessment/",
+      "destination": "/frontend/student/indirect-assessment/index.html"
+    },
+    {
+      "source": "/student/indirect-assessment.html",
+      "destination": "/frontend/student/indirect-assessment/index.html"
     },
     {
       "source": "/student",
