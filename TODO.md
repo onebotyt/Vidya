@@ -6338,3 +6338,67 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
   - Verification: `node -c` passed with 0 errors across all 24 modified and new JavaScript files.
   - Synchronized across main root, `deployfolder/VidyaOS`, and `deployfolder/VidyaOS_BackEnd`.
+
+
+---
+
+### 🚀 Milestone 325: Role-Based Access Control & Visibility Lockdown for All 9 Navigation Options (Students: 0 Options, Teachers/HODs: 9 Options)
+- **Status**: ✅ Completed, Verified & Synced Across Workspace
+  - Frontend Repo: `https://github.com/onebotyt/VidyaOS.git` (`main`)
+  - Backend Repo: `https://github.com/onebotyt/VidyaOS_BackEnd.git` (`main`)
+  - Live Frontend: `https://vidyaos-pink.vercel.app/student/dashboard` & `https://vidyaos-pink.vercel.app/faculty/dashboard`
+- **User Request**:
+  - *"Currently, all 9 navigation buttons are appearing on the Student Dashboard. This is incorrect. I want ALL NINE navigation options to be accessible ONLY to authorized Teachers and HODs."*
+  - **1. Restricted Navigation Options (9 Items)**:
+    1. Students
+    2. Classwork
+    3. Resources
+    4. NBA
+    5. Theory Classes
+    6. Laboratory Classes
+    7. Student Performance
+    8. Direct Assessment
+    9. Indirect Assessment
+  - **2. Role-Based Visibility**:
+    - **Student Login**: Hide all 9 navigation options from every Subject Card (0 visible buttons/icons). Preserve attendance, coursework pills (assignments, tests count), and enrolled classes view.
+    - **Subject Teacher Login**: Display all 9 navigation options with full permissions.
+    - **HOD Login**: Display all 9 navigation options with department leadership permissions.
+    - **Admin Login**: Full access following existing system admin permissions.
+  - **3. Security Requirements**:
+    - Frontend conditional rendering on Subject Cards.
+    - Direct URL access prevention: redirect unauthorized students with access-denied notifications.
+    - Backend RBAC middleware protection returning HTTP 403 Forbidden on direct API queries.
+    - Seamless support for multi-role accounts (`roles.some(...)`).
+- **Key Deliverables & Architectural Implementation**:
+  1. **Student Dashboard Frontend Conditional Rendering (`student/dashboard/dashboard.js`)**:
+     - Introduced `canAccessStaffNavigation(user)` helper checking for `['TEACHER', 'FACULTY', 'HOD', 'DEPT_HEAD', 'SYSTEM_ADMIN', 'ADMIN']` and `user.is_hod || user.is_admin || user.teacher_id`.
+     - Wrapped `.card-quick-links-grid` in conditional check `${isStaff ? ... : ''}`.
+     - For standard student login, exactly **0 of the 9 navigation buttons** are rendered on all Subject Cards.
+     - Added `.gc-card-body:last-child { padding-bottom: 1.25rem; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }` in `student/dashboard/dashboard.css` to ensure smooth, rounded bottom cards.
+  2. **Direct URL Protection Across All 7 Academic Modules**:
+     - Updated route guards in:
+       - `student/direct-assessment/direct-assessment.js`
+       - `student/indirect-assessment/indirect-assessment.js`
+       - `student/assessment-process/assessment-process.js`
+       - `student/student-performance/student-performance.js`
+       - `student/theory-classes/theory-classes.js`
+       - `student/lab-classes/lab-classes.js`
+       - `student/nba/nba.js`
+     - Enforced `guardRoute({ roles: ['TEACHER', 'FACULTY', 'HOD', 'DEPT_HEAD', 'SYSTEM_ADMIN'] })`. Students accessing via URL are immediately blocked, toasted with "Access Denied: You do not have permission to view this portal", and redirected to `/student/dashboard`.
+  3. **Backend Middleware & Endpoint Lockdown**:
+     - Enhanced `requireRole.js` to recognize HOD leadership assignments and admin roles for multi-role accounts.
+     - Enforced `router.use(requireRole('TEACHER', 'FACULTY', 'HOD', 'DEPT_HEAD', 'SYSTEM_ADMIN'))` on all 7 academic routes:
+       - `/api/v1/direct-assessment` (`directAssessment.js`)
+       - `/api/v1/indirect-assessment` (`indirectAssessment.js`)
+       - `/api/v1/assessment-process` (`assessmentProcess.js`)
+       - `/api/v1/student-performance` (`studentPerformance.js`)
+       - `/api/v1/theory-classes` (`theoryClass.js`)
+       - `/api/v1/lab-classes` (`labClass.js`)
+       - `/api/v1/course-files` (`courseFile.js`)
+     - Tested: Students receive HTTP 403 Forbidden; Teachers, HODs, multi-role users, and Admins proceed normally.
+- **Architectural Rules & Verification**:
+  - Rule 1 (Theme Tokens): 0 hardcoded `#hex` or `rgb()` color values across all updated styles.
+  - Rule 7 (Frozen Folders): Zero modifications to the 9 frozen directories.
+  - Automated Integration Tests: 5/5 role verification tests passing (Student 403, Teacher 200, HOD 200, Multi-Role 200, Admin 200).
+  - Syntax check: `node -c` passed with 0 errors across all 19 modified JavaScript files.
+  - Synchronized across main root, `deployfolder/VidyaOS`, and `deployfolder/VidyaOS_BackEnd`.

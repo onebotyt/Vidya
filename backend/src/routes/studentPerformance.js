@@ -14,6 +14,7 @@ const studentPerformanceController = require('../controllers/studentPerformanceC
 const uploadStudentPerformance = makeUploader('student_performance');
 
 router.use(auth);
+router.use(requireRole('TEACHER', 'FACULTY', 'HOD', 'DEPT_HEAD', 'SYSTEM_ADMIN'));
 
 // @route   GET /api/v1/student-performance/definitions
 // @desc    Return standard 8 items schema definitions
