@@ -59,7 +59,7 @@
             </div>
           </article>
 
-          <article class="fac-kpi-card" onclick="focusPendingQueue()" style="cursor: pointer;" title="Click to view pending onboarding queue">
+          <article class="fac-kpi-card" onclick="switchToPendingTab()" style="cursor: pointer;" title="Click to view pending faculty applications">
             <div class="fac-kpi-icon icon-amber">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -95,26 +95,6 @@
           </div>
         </section>
 
-        <!-- Actionable Pending Onboarding Queue (Inline Notification Banner — NOT a separate tab) -->
-        <div class="fac-pending-banner" id="fac-pending-banner" style="display: none;">
-          <div class="fac-pending-banner-header" onclick="togglePendingQueue()">
-            <div class="fac-pending-title-group">
-              <div class="fac-pending-icon-dot"></div>
-              <div>
-                <strong>Pending Faculty Onboarding (<span id="pending-banner-count">0</span>)</strong>
-                <p>New instructor registration requests awaiting HOD verification</p>
-              </div>
-            </div>
-            <button type="button" class="btn-toggle-pending" id="btn-toggle-pending">
-              <span id="pending-toggle-text">Review Queue</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
-          </div>
-          <div class="fac-pending-list" id="fac-pending-list" style="display: none;">
-            <!-- Pending applicant cards dynamically injected -->
-          </div>
-        </div>
-
         <!-- Toolbar: Pills, Live Search & Add Action -->
         <div class="fac-toolbar">
           <nav class="fac-pills" aria-label="Faculty Role Filters">
@@ -127,6 +107,10 @@
             </button>
             <button type="button" class="fac-pill" data-filter="LECTURER">
               <span>Lecturers</span>
+            </button>
+            <button type="button" class="fac-pill" data-filter="PENDING" id="pill-pending">
+              <span>Pending</span>
+              <span class="fac-pill-badge" id="badge-count-pending">0</span>
             </button>
           </nav>
 
