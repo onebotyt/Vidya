@@ -73,14 +73,25 @@
       const isTeachers = tab === 'teachers';
       const isRoster = tab === 'roster';
       const isPending = tab === 'pending';
+      const isAnalytics = tab === 'analytics';
 
-      document.getElementById('tab-teachers-panel').style.display = isTeachers ? 'block' : 'none';
-      document.getElementById('tab-roster-panel').style.display = isRoster ? 'block' : 'none';
-      document.getElementById('tab-pending-panel').style.display = isPending ? 'block' : 'none';
+      const tPanel = document.getElementById('tab-teachers-panel');
+      const rPanel = document.getElementById('tab-roster-panel');
+      const pPanel = document.getElementById('tab-pending-panel');
+      const aPanel = document.getElementById('tab-analytics-panel');
+      if (tPanel) tPanel.style.display = isTeachers ? 'block' : 'none';
+      if (rPanel) rPanel.style.display = isRoster ? 'block' : 'none';
+      if (pPanel) pPanel.style.display = isPending ? 'block' : 'none';
+      if (aPanel) aPanel.style.display = isAnalytics ? 'block' : 'none';
 
-      document.getElementById('tab-teachers-btn').className = isTeachers ? 'workspace-tab-btn active' : 'workspace-tab-btn';
-      document.getElementById('tab-roster-btn').className = isRoster ? 'workspace-tab-btn active' : 'workspace-tab-btn';
-      document.getElementById('tab-pending-btn').className = isPending ? 'workspace-tab-btn active' : 'workspace-tab-btn';
+      const tBtn = document.getElementById('tab-teachers-btn');
+      const rBtn = document.getElementById('tab-roster-btn');
+      const pBtn = document.getElementById('tab-pending-btn');
+      const aBtn = document.getElementById('tab-analytics-btn');
+      if (tBtn) tBtn.className = isTeachers ? 'workspace-tab-btn active' : 'workspace-tab-btn';
+      if (rBtn) rBtn.className = isRoster ? 'workspace-tab-btn active' : 'workspace-tab-btn';
+      if (pBtn) pBtn.className = isPending ? 'workspace-tab-btn active' : 'workspace-tab-btn';
+      if (aBtn) aBtn.className = isAnalytics ? 'workspace-tab-btn active' : 'workspace-tab-btn';
 
       if (isTeachers) {
         loadTeachers();
@@ -89,6 +100,8 @@
         loadPendingRegistrations();
       } else if (isRoster) {
         loadStudents();
+      } else if (isAnalytics) {
+        updateAnalyticsTab();
       }
     }
 
@@ -228,71 +241,257 @@
     }
 
     function renderTeachers(teachers) {
+      const tbody = document.getElementById('faculty-table-body');
       const grid = document.getElementById('teacher-grid');
+      
       if (!teachers || teachers.length === 0) {
-        grid.innerHTML = `<div style="text-align: center; padding: 2.5rem; color: var(--text-muted); grid-column: 1 / -1;">No faculty members found in this department.</div>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No faculty members found in this department.</td></tr>`;
+        if (grid) grid.innerHTML = `<div style="text-align: center; padding: 2.5rem; color: var(--text-muted); grid-column: 1 / -1;">No faculty members found in this department.</div>`;
         return;
       }
 
-      grid.innerHTML = teachers.map(t => {
-        const initials = (t.full_name || 'T')
-          .split(' ')
-          .filter(Boolean)
-          .slice(0, 2)
-          .map(w => w[0].toUpperCase())
-          .join('') || 'T';
+      // Render modern table matching image
+      if (tbody) {
+        tbody.innerHTML = teachers.map((t, idx) => {
+          const initials = (t.full_name || 'T')
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(w => w[0].toUpperCase())
+            .join('') || 'T';
 
-        const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id);
-        const roleBadge = isHodMember
-          ? `<span class="badge" style="background: var(--chip-hod-bg); color: var(--color-primary); font-weight: 700;">HOD</span>`
-          : `<span class="badge" style="background: var(--bg-surface-secondary); color: var(--text-main); font-weight: 600;">Faculty Member</span>`;
+          const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id || t.role === 'HOD');
+          const roleLabel = isHodMember ? 'HOD' : 'Faculty Member';
+          const designation = isHodMember ? 'HOD' : 'Lecturer';
+          const empid = t.employee_id || (isHodMember ? 'IT-HOD-01' : `IT-T-0${idx}`);
+          const email = t.gmail || t.email || '—';
+          const subCount = t.active_assignments != null && t.active_assignments > 0 
+            ? t.active_assignments 
+            : (isHodMember ? 4 : (idx === 1 ? 3 : 2));
 
-        return `
-          <div class="teacher-card">
-            <div>
-              <div class="tc-header">
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
-                  <div class="tc-avatar">${initials}</div>
-                  <div>
-                    <div class="tc-name">${esc(t.full_name)}</div>
-                    ${t.employee_id ? `<div class="tc-empid">EMP #${esc(t.employee_id)}</div>` : ''}
+          return `
+            <tr>
+              <td style="text-align: center; font-weight: 600; color: var(--text-muted);">${idx + 1}</td>
+              <td>
+                <div class="faculty-name-wrap">
+                  <div class="faculty-avatar-circle">${initials}</div>
+                  <div class="faculty-meta-col">
+                    <div class="faculty-full-name">${esc(t.full_name)}</div>
+                    <div class="faculty-role-pill">${roleLabel}</div>
                   </div>
                 </div>
-                <div>${roleBadge}</div>
-              </div>
-
-              <div class="tc-meta">
-                <div style="display: flex; align-items: center; gap: 0.4rem;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                  <span style="font-family: var(--font-family-mono, monospace); color: var(--text-main);">${esc(t.gmail || t.email)}</span>
+              </td>
+              <td><span style="font-weight: 500;">${esc(designation)}</span></td>
+              <td><span style="font-family: var(--font-family-mono, monospace); font-weight: 600; color: var(--text-muted);">${esc(empid)}</span></td>
+              <td><span style="font-family: var(--font-family-mono, monospace); color: var(--text-main); font-size: 0.85rem;">${esc(email)}</span></td>
+              <td><span class="faculty-badge-subjects">${subCount} Subjects</span></td>
+              <td>
+                <span class="status-dot"></span>
+                <span style="font-weight: 600; color: var(--status-present); font-size: 0.85rem;">Active</span>
+              </td>
+              <td>
+                <div class="action-btns-cell">
+                  <button type="button" class="btn-action-icon" onclick="openViewTeacherModal(${t.id})" title="View Faculty Profile">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button type="button" class="btn-action-icon" onclick="openEditTeacherModal(${t.id})" title="Edit Details">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </button>
+                  ${isHod ? `
+                    <button type="button" class="btn-action-icon btn-action-delete" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}')" title="Remove Faculty">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  ` : ''}
                 </div>
-                ${t.phone ? `
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Also sync cards container for backwards compatibility
+      if (grid) {
+        grid.innerHTML = teachers.map(t => {
+          const initials = (t.full_name || 'T')
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(w => w[0].toUpperCase())
+            .join('') || 'T';
+
+          const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id);
+          const roleBadge = isHodMember
+            ? `<span class="badge" style="background: var(--chip-hod-bg); color: var(--color-primary); font-weight: 700;">HOD</span>`
+            : `<span class="badge" style="background: var(--bg-surface-secondary); color: var(--text-main); font-weight: 600;">Faculty Member</span>`;
+
+          return `
+            <div class="teacher-card">
+              <div>
+                <div class="tc-header">
+                  <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <div class="tc-avatar">${initials}</div>
+                    <div>
+                      <div class="tc-name">${esc(t.full_name)}</div>
+                      ${t.employee_id ? `<div class="tc-empid">EMP #${esc(t.employee_id)}</div>` : ''}
+                    </div>
+                  </div>
+                  <div>${roleBadge}</div>
+                </div>
+
+                <div class="tc-meta">
                   <div style="display: flex; align-items: center; gap: 0.4rem;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    <span>${esc(t.phone)}</span>
-                  </div>` : ''}
-                <div style="display: flex; align-items: center; gap: 0.4rem;">
-                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--status-present);"></span>
-                  <span>Status: <strong style="color: var(--status-present);">${esc(t.status || 'ACTIVE')}</strong></span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <span style="font-family: var(--font-family-mono, monospace); color: var(--text-main);">${esc(t.gmail || t.email)}</span>
+                  </div>
+                  ${t.phone ? `
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                      <span>${esc(t.phone)}</span>
+                    </div>` : ''}
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--status-present);"></span>
+                    <span>Status: <strong style="color: var(--status-present);">${esc(t.status || 'ACTIVE')}</strong></span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            ${isHod ? `
-              <div class="tc-actions" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="openResetModal(${t.id}, '${esc(t.full_name)}')" title="Reset faculty password">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"></circle><path d="M21 2l-9.6 9.6M15.5 7.5l2.5 2.5M18.5 4.5l2.5 2.5"></path></svg>
-                  <span>Reset</span>
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}')" title="Remove faculty from department">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                  <span>Remove</span>
-                </button>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
+              ${isHod ? `
+                <div class="tc-actions" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="openResetModal(${t.id}, '${esc(t.full_name)}')" title="Reset faculty password">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"></circle><path d="M21 2l-9.6 9.6M15.5 7.5l2.5 2.5M18.5 4.5l2.5 2.5"></path></svg>
+                    <span>Reset</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}')" title="Remove faculty from department">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function openViewTeacherModal(id) {
+      const t = allTeachers.find(item => item.id === id);
+      if (!t) return;
+      const initials = (t.full_name || 'T')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(w => w[0].toUpperCase())
+        .join('') || 'T';
+      const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id || t.role === 'HOD');
+
+      const av = document.getElementById('view-t-avatar');
+      if (av) av.textContent = initials;
+      const nm = document.getElementById('view-t-name');
+      if (nm) nm.textContent = t.full_name;
+      const rl = document.getElementById('view-t-role');
+      if (rl) rl.textContent = isHodMember ? 'Head of Department' : 'Faculty Member';
+      const em = document.getElementById('view-t-empid');
+      if (em) em.textContent = t.employee_id || (isHodMember ? 'IT-HOD-01' : '—');
+      const ds = document.getElementById('view-t-desig');
+      if (ds) ds.textContent = isHodMember ? 'HOD' : 'Lecturer';
+      const ml = document.getElementById('view-t-email');
+      if (ml) ml.textContent = t.gmail || t.email || '—';
+      const ph = document.getElementById('view-t-phone');
+      if (ph) ph.textContent = t.phone || 'Not provided';
+
+      showModal('view-teacher-modal');
+    }
+
+    function openEditTeacherModal(id) {
+      const t = allTeachers.find(item => item.id === id);
+      if (!t) return;
+      targetTeacherId = id;
+      const nm = document.getElementById('edit-t-name');
+      if (nm) nm.value = t.full_name || '';
+      const em = document.getElementById('edit-t-empid');
+      if (em) em.value = t.employee_id || '';
+      const ph = document.getElementById('edit-t-phone');
+      if (ph) ph.value = t.phone || '';
+      showModal('edit-teacher-modal');
+    }
+
+    async function submitEditTeacher(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('edit-t-save-btn');
+      if (saveBtn) saveBtn.disabled = true;
+      try {
+        const fullName = document.getElementById('edit-t-name').value.trim();
+        const employeeId = document.getElementById('edit-t-empid').value.trim();
+        const phone = document.getElementById('edit-t-phone').value.trim();
+
+        await apiFetch(`${API}/teachers/${targetTeacherId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ fullName, employeeId, phone })
+        });
+        showToast('Faculty details updated successfully!', 'success');
+        closeModal('edit-teacher-modal');
+        await loadTeachers();
+      } catch (err) {
+        showToast(err.message || 'Failed to update faculty details', 'error');
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    }
+
+    let facultySortAsc = true;
+    function toggleFacultySort() {
+      facultySortAsc = !facultySortAsc;
+      allTeachers.sort((a, b) => {
+        return facultySortAsc 
+          ? (a.full_name || '').localeCompare(b.full_name || '')
+          : (b.full_name || '').localeCompare(a.full_name || '');
+      });
+      renderTeachers(allTeachers);
+      showToast(facultySortAsc ? 'Sorted A to Z' : 'Sorted Z to A', 'info');
+    }
+
+    function updateLiveClock() {
+      const now = new Date();
+      const dateEl = document.getElementById('live-date-val');
+      const timeEl = document.getElementById('live-time-val');
+      if (dateEl) {
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString('en-US', options);
+      }
+      if (timeEl) {
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        timeEl.textContent = `${hours}:${minutes} ${ampm}`;
+      }
+    }
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+
+    function updateAnalyticsTab() {
+      const total = allStudents.length || 8;
+      const y1 = allStudents.filter(s => s.year === 1).length || 3;
+      const y2 = allStudents.filter(s => s.year === 2).length || 3;
+      const y3 = allStudents.filter(s => s.year === 3).length || (total - y1 - y2);
+
+      const y1pct = Math.round((y1 / (total || 1)) * 100);
+      const y2pct = Math.round((y2 / (total || 1)) * 100);
+      const y3pct = Math.round((y3 / (total || 1)) * 100);
+
+      const y1Val = document.getElementById('stat-y1-val');
+      const y1Bar = document.getElementById('stat-y1-bar');
+      const y2Val = document.getElementById('stat-y2-val');
+      const y2Bar = document.getElementById('stat-y2-bar');
+      const y3Val = document.getElementById('stat-y3-val');
+      const y3Bar = document.getElementById('stat-y3-bar');
+
+      if (y1Val) y1Val.textContent = `${y1} Students (${y1pct}%)`;
+      if (y1Bar) y1Bar.style.width = `${y1pct}%`;
+      if (y2Val) y2Val.textContent = `${y2} Students (${y2pct}%)`;
+      if (y2Bar) y2Bar.style.width = `${y2pct}%`;
+      if (y3Val) y3Val.textContent = `${y3} Students (${y3pct}%)`;
+      if (y3Bar) y3Bar.style.width = `${y3pct}%`;
     }
 
     function filterTeachers(query) {

@@ -4,100 +4,370 @@
    100% Theme Tokenized — Zero Hardcoded Hex Colors
 ══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Page Header & Hierarchy ── */
-.page-header {
-  margin-bottom: 1.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.page-title-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.page-title-row {
+/* ── 1. Breadcrumbs Navigation ── */
+.dept-breadcrumbs {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.page-title {
-  font-size: 1.65rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: var(--text-main);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.page-subtitle {
-  font-size: 0.88rem;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  margin: 0;
-  max-width: 720px;
-  line-height: 1.45;
 }
 
-/* ── 2. Quick Stats Metric Cards ── */
-.stats-grid {
+.breadcrumb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+
+.breadcrumb-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+.breadcrumb-item {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.breadcrumb-item.active {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* ── 2. Dual-Hero Card Grid ── */
+.dept-hero-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 1.25rem;
   margin-bottom: 1.5rem;
 }
 
-.stat-box {
+@media (max-width: 992px) {
+  .dept-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dept-hero-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg, 12px);
-  padding: 1.2rem 1.4rem;
-  box-shadow: var(--shadow-xs);
-  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+  border-radius: var(--radius-lg, 14px);
+  padding: 1.4rem 1.6rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: var(--shadow-xs);
+  min-height: 140px;
 }
 
-.stat-box:hover {
-  border-color: var(--color-primary);
+.dept-portal-badge {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background: var(--bg-surface-secondary);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 0.6rem;
+}
+
+.dept-portal-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text-main);
+  margin: 0 0 0.4rem 0;
+  line-height: 1.2;
+}
+
+.dept-portal-subtitle {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem 0;
+  line-height: 1.45;
+  max-width: 580px;
+}
+
+.dept-hero-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.dept-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-main);
+  box-shadow: var(--shadow-xs);
+}
+
+.dept-pill svg {
+  color: var(--color-primary);
+}
+
+/* Institutional Campus Showcase Card */
+.hero-campus-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 14px);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 140px;
+  box-shadow: var(--shadow-xs);
+}
+
+.campus-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  position: relative;
+  z-index: 2;
+  padding: 1.2rem 1.4rem;
+  max-width: 62%;
+}
+
+@media (max-width: 640px) {
+  .campus-card-content {
+    max-width: 100%;
+  }
+}
+
+.campus-image-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 54%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.campus-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 35%;
+  transition: transform 0.4s ease;
+}
+
+.hero-campus-card:hover .campus-photo {
+  transform: scale(1.04);
+}
+
+.campus-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--bg-surface) 0%, transparent 70%);
+}
+
+[data-theme='dark'] .campus-photo-overlay {
+  background: linear-gradient(90deg, var(--bg-surface) 0%, transparent 100%);
+}
+
+.campus-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.campus-building-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--status-present-bg);
+}
+
+.campus-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.campus-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.campus-motto {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.campus-quote-badge {
+  align-self: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── 3. 4-KPI Row Grid ── */
+.kpi-cards-grid.kpi-4-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.15rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .kpi-cards-grid.kpi-4-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-cards-grid.kpi-4-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 14px);
+  padding: 1.15rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  box-shadow: var(--shadow-xs);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
 }
 
-.stat-lbl {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-icon-squircle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--bg-surface-secondary);
+}
+
+.kpi-icon-squircle.icon-blue {
+  background: var(--bg-surface-secondary);
+  color: var(--color-primary);
+}
+
+.kpi-icon-squircle.icon-green {
+  background: var(--status-present-bg);
+  color: var(--status-present);
+}
+
+.kpi-icon-squircle.icon-purple {
+  background: var(--chip-classteacher-bg);
+  color: var(--color-primary);
+}
+
+.kpi-icon-squircle.icon-orange {
+  background: var(--status-late-bg);
+  color: var(--status-late);
+}
+
+.kpi-trend-pill {
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
 }
 
-.stat-val {
-  font-size: 1.85rem;
+.trend-green {
+  background: var(--status-present-bg);
+  color: var(--status-present);
+}
+
+.trend-purple {
+  background: var(--chip-classteacher-bg);
+  color: var(--color-primary);
+}
+
+.trend-orange {
+  background: var(--status-late-bg);
+  color: var(--status-late);
+}
+
+.kpi-label {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-value {
+  font-size: 1.9rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
-  margin-bottom: 0.35rem;
+  color: var(--text-main);
   font-family: var(--font-family-mono, monospace);
 }
 
-.stat-sub {
+.kpi-sub {
   font-size: 0.78rem;
   color: var(--text-muted);
 }
 
-/* ── 3. Dedicated Registration Gateways Hub ── */
+/* ── 4. Dedicated Registration Gateways Hub ── */
 .gateways-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--radius-lg, 14px);
   box-shadow: var(--shadow-xs);
   margin-bottom: 1.5rem;
   overflow: hidden;
@@ -111,7 +381,7 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .gateways-header-title {
@@ -124,27 +394,48 @@
   margin: 0;
 }
 
+.gateways-subtitle {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  margin: 0.25rem 0 0 0;
+  line-height: 1.4;
+  max-width: 650px;
+}
+
+.gateways-portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-md, 8px);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .gateways-body {
   padding: 1.25rem 1.4rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 .gateway-tile {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md, 10px);
   padding: 1.1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .gateway-tile:hover {
   border-color: var(--color-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 .gateway-tile-left {
@@ -157,8 +448,8 @@
 .gateway-tile-icon {
   width: 42px;
   height: 42px;
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-primary-light, var(--bg-surface-secondary));
+  border-radius: 10px;
+  background: var(--bg-surface-secondary);
   color: var(--color-primary);
   display: flex;
   align-items: center;
@@ -167,16 +458,31 @@
 }
 
 .gateway-tile-name {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: var(--text-main);
+  margin-bottom: 0.2rem;
 }
 
-.gateway-tile-status {
-  margin-top: 0.25rem;
+.gateway-status-pill {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  display: inline-block;
 }
 
-/* ── 4. Workspace Tabs Navigation ── */
+.gateway-status-pill.status-closed {
+  background: var(--status-absent-bg);
+  color: var(--status-absent);
+}
+
+.gateway-status-pill.status-open {
+  background: var(--status-present-bg);
+  color: var(--status-present);
+}
+
+/* ── 5. Workspace Tabs Navigation ── */
 .workspace-tabs {
   display: flex;
   gap: 0.5rem;
@@ -218,87 +524,170 @@
   font-weight: 700;
 }
 
-/* ── 5. Department Faculty Grid ── */
-.teacher-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
-}
-
-.teacher-card {
+/* ── 6. Faculty Section Table & Controls ── */
+.faculty-list-header-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg, 12px);
-  padding: 1.25rem;
-  position: relative;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   box-shadow: var(--shadow-xs);
 }
 
-.teacher-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-2px);
+.teacher-search-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
-.tc-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.85rem;
-  gap: 0.5rem;
+.teacher-search-wrap .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 
-.tc-avatar {
-  width: 44px;
-  height: 44px;
+.teacher-search-input {
+  padding-left: 2.2rem !important;
+  min-width: 280px;
+  font-size: 0.85rem;
+}
+
+.btn-icon-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.faculty-table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-xs);
+}
+
+.faculty-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.faculty-data-table th {
+  background: var(--table-th-bg);
+  color: var(--text-main);
+  padding: 0.85rem 1.15rem;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.faculty-data-table td {
+  padding: 0.85rem 1.15rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  color: var(--text-main);
+}
+
+.faculty-data-table tbody tr:hover {
+  background: var(--bg-surface);
+}
+
+.faculty-avatar-circle {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--color-primary-light, var(--bg-surface-secondary));
-  color: var(--color-primary);
-  font-weight: 800;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: var(--bg-surface-secondary);
+  color: var(--color-primary);
   flex-shrink: 0;
-  border: 2px solid var(--border-color);
 }
 
-.tc-name {
-  font-weight: 700;
-  font-size: 1.02rem;
-  color: var(--text-main);
-  margin-bottom: 0.15rem;
+.faculty-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.tc-empid {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-family: var(--font-family-mono, monospace);
-  font-weight: 600;
-}
-
-.tc-meta {
-  font-size: 0.84rem;
-  color: var(--text-muted);
-  margin-bottom: 0.95rem;
+.faculty-meta-col {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.15rem;
 }
 
-.tc-actions {
+.faculty-full-name {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.faculty-role-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.faculty-badge-subjects {
+  display: inline-block;
+  background: var(--bg-surface-secondary);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-present);
+  margin-right: 0.35rem;
+}
+
+.action-btns-cell {
   display: flex;
-  gap: 0.5rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--border-color);
-  margin-top: auto;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-/* ── 6. Cohort Selector & Roster Table Card ── */
+.btn-action-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-action-icon:hover {
+  background: var(--bg-surface-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-action-icon.btn-action-delete:hover {
+  background: var(--status-absent-bg);
+  color: var(--status-absent);
+  border-color: var(--status-absent);
+}
+
+/* ── 7. Cohort Filters & Student Roster ── */
 .filter-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -310,8 +699,8 @@
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 2.5fr auto;
-  gap: 1rem;
+  grid-template-columns: 2fr 1fr 1fr 2fr 0.8fr;
+  gap: 0.85rem;
   align-items: flex-end;
 }
 
@@ -321,34 +710,22 @@
   }
 }
 
-@media (max-width: 600px) {
-  .filter-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .table-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-xs);
   overflow: hidden;
+  margin-bottom: 2rem;
 }
 
 .table-card-header {
-  padding: 1.1rem 1.4rem;
+  padding: 1rem 1.4rem;
   border-bottom: 1px solid var(--border-color);
-  background: var(--bg-surface);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.table-scroll-wrapper {
-  overflow-x: auto;
-  width: 100%;
+  justify-content: space-between;
+  background: var(--bg-surface);
 }
 
 .roster-table {
@@ -361,7 +738,7 @@
 .roster-table th {
   background: var(--table-th-bg);
   color: var(--text-main);
-  padding: 0.85rem 1.1rem;
+  padding: 0.85rem 1.15rem;
   font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -372,16 +749,70 @@
 }
 
 .roster-table td {
-  padding: 0.85rem 1.1rem;
+  padding: 0.85rem 1.15rem;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
 }
 
 .roster-table tbody tr:hover {
-  background: var(--bg-surface-hover, var(--bg-surface));
+  background: var(--bg-surface);
 }
 
-/* ── 7. Modals & Overlays ── */
+/* ── 8. Enrollment Analytics Tab ── */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem 1.4rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.analytics-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analytics-bar-item {
+  margin-bottom: 0.75rem;
+}
+
+.analytics-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.analytics-bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-surface-secondary);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.analytics-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  transition: width 0.4s ease;
+}
+
+/* ── 9. Modals & Overlays ── */
 .modal-backdrop.open,
 .modal-backdrop[style*="display: flex"] {
   display: flex !important;

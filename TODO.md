@@ -37,7 +37,77 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ? Milestone 423: Vercel Clean URL & Modular Page Routing 404 Resolution
+### ✅ Milestone 425: Full-Stack VidyaOS MySQL 8.x Live Migration, Schema Alignment & Complete Regression Suite Passage (177+ Tests)
+
+- **Issues Addressed & Architecturally Resolved**:
+  1. **Archive Extraction & Architecture Setup**:
+     - Deployed decoupled VidyaOS architecture: Frontend (`VidyaOS-Frontend-patched`), Backend (`VidyaOS_BackEnd-patched`), and ESP32 Biometric Firmware (`VidyaOS_ESP32_Biometric_Firmware`).
+     - Installed Node.js wrappers in Antigravity session path (`C:\Users\Lenovo\.gemini\antigravity\bin`) and linked `node_modules` via junction.
+     - Connected backend to local XAMPP MySQL 8.x (`127.0.0.1:3306`, user `root`, database `vdiyaos`), mirroring changes to `vidyaos` and `college_attendance`.
+     - Migrated complete baseline dataset from SQLite (31 users, 9 teachers, 18 students, 17 enrollments, 5 registers, 286 sessions, 2,860 session student records, 359 register attendances, 13 assessments, 53 submissions, 19 leaves, 132 notifications, 364 audit logs).
+  2. **Academic Session & Auto-Promotion Engine (`sessionService.js`)**:
+     - Fixed `conn.query` array destructuring in `syncAcademicSession()`. In `mysql2`, `conn.query` returns `[rows, fields]`; previous code treated the outer array as rows, resulting in `activeRecord.id` resolving to `undefined`. This had caused `UPDATE academic_years SET is_current = 0` to mark all sessions inactive, triggering premature archival of teaching groups and registers.
+     - Restored active status for current academic year (ID 1), teaching groups, and attendance registers.
+  3. **Attendance Session Roster Snapshot (`attendance_session_students`)**:
+     - Added missing `enrollment_id` and `class_roll_no` columns to `attendance_session_students` across MySQL databases and `cpanel_production_mysql.sql`.
+     - Added migration `008_add_enrollment_id_to_session_students.sql`.
+     - Updated insertion error handling in `attendanceService.createSession()` to log warnings instead of silently swallowing errors.
+  4. **Dynamic PIN & QR Code Verification Columns (`attendance_sessions`)**:
+     - Converted virtual generated columns (`verification_pin`, `verification_qr_hash`, `verification_expires_at`) to physical storage columns in MySQL. Virtual columns reject direct `UPDATE` queries with warnings.
+     - Aligned `attendanceService.generatePin()`, `generateQr()`, and `submitSelfAttendance()` to update both legacy and unified columns (`pin_code` + `verification_pin`, `token_expires_at` + `verification_expires_at`).
+  5. **MySQL Syntax Invariant (`attendanceService.js`)**:
+     - Replaced SQLite/Postgres `excluded.marked_by` and `excluded.teacher_notes` syntax with standard MySQL `VALUES(marked_by)` and `VALUES(teacher_notes)` across all `ON DUPLICATE KEY UPDATE` clauses.
+  6. **MySQL Compatibility Views (`src/config/db.js`)**:
+     - Implemented and exported `ensureCompatibilityViews()` in `db.js`, auto-executed on server startup.
+     - Created MySQL views: `assignments`, `assignment_submissions`, `exams`, `exam_scores`, `attendance_session_pins`, `attendance_session_qr` over unified tables.
+  7. **Device & Telemetry Columns (`devices`, `esp32_presence`)**:
+     - Added virtual generated column `last_heartbeat_at` and fields `year`, `semester`, `secret_hash` to `devices`.
+     - Added `scan_time`, `payload_json`, and `event_id` to `esp32_presence` and backfilled `scan_time = scan_timestamp`.
+  8. **Static Asset Resolution & Decoupled Frontend**:
+     - Enhanced `server.js` with multi-path fallback resolver for frontend static assets (`Attendance-System-Simplified/frontend` and `VidyaOS-Frontend-patched/VidyaOS-main`).
+     - Launched Frontend Development Server on port 5000 proxying API to backend port 3000.
+- **Verification Suites & Regression Results**:
+  - `test-api-flows.js`: **25/25 PASSED (100%)**
+  - `test-rbac-and-structure.js`: **38/38 PASSED (100%)**
+  - `test-student-self-registration.js`: **30/30 PASSED (100%)**
+  - `test-register-consolidation.js`: **46/46 PASSED (100%)**
+  - `test-roll-call-upgrade.js`: **PASSED (100%)**
+  - `test-live-log-checkin.js`: **PASSED (100%)**
+  - Total: **177+ tests passing with 0 failures**.
+
+### ✅ Milestone 424: Student & Faculty Cascade Deletion, Students Page Complete UI/UX Redesign & Public Register Resolution
+
+- **User Directives**:
+  - "i can not delete student and faculty foging key problem and ui ux problem so so remake and rescue dupicate elements from components as we plan and image has redesign and register page not showing"
+- **Root Cause & Technical Resolution**:
+  1. **SQLite Foreign Key Deletion Cascade**:
+     - Resolved `SQLITE_CONSTRAINT: FOREIGN KEY constraint failed` in `HodModel.deleteTeacher` and `HodModel.deleteStudent` (`backend/src/models/hodModel.js`).
+     - Added comprehensive cascade transaction handlers: nullifies reviewer/creator foreign key references (`departments.hod_user_id`, `register_attendance.marked_by`, `student_self_attendance.reviewed_by`, `leave_applications.reviewed_by`, `assessment_submissions.graded_by`, `timetable_slots.created_by`, `course_files.audited_by`, `course_file_documents`, etc.).
+     - Cascade deletes all teacher-owned teaching groups, group members, assessments, submissions, attendance sessions, session students, registers, teacher assignments, timetable slots, media assets, classroom posts/comments, user roles, user sessions, notifications, audit logs, and users records.
+     - Cascade deletes all student-owned attendance records, session students, fingerprint slots, ESP32 presence events, IoT events, leave applications, assessment submissions, teaching group members, enrollments, student records, user accounts, and safely triggers cohort roll number re-indexing.
+  2. **Students Page UI/UX Redesign & Duplicate Element Rescue (`students.html`, `students.css`, `students.js`)**:
+     - Rescued duplicate hardcoded headers: unified top header mount via `/faculty/components/header/header.js` and sidebar rail via `/faculty/components/sidebar/sidebar.js`.
+     - Built exact layout matching institutional specification (`media_1793254683524_1a6e3ef1.png`):
+       - Breadcrumbs: `Home > Department > Students`.
+       - Dual-Hero Banner: Left `DEPARTMENT PORTAL` badge, `#dept-title-name`, subtitle, live date pill and ticking live clock pill; Right Government Polytechnic Nainital campus card with quote and Nainital campus photo.
+       - 4 Top KPI Metric Cards: `Total Faculty` (+0% ↑), `Total Students` (+12% ↑), `Total Subjects` (+0% ↑), `Pending Registrations` (0% ↑).
+       - Self-Registration Gateways Card: Icon + title + subtitle + `[View Public Portal ↗]` button linking to `/register`, Faculty Gateway tile (status pill + toggle), and Student Gateway tile (status pill + toggle).
+       - 4 Workspace Tabs: `Department Faculty`, `Student Roster & Lifecycle`, `Pending Registrations` (with live badge), and `Enrollment Analytics`.
+       - Department Faculty Table: Modern responsive table with index `#`, Name with avatar initials and role badge, Designation, Employee ID, Email, Subjects Assigned badge, Active status indicator, and interactive action buttons (View, Edit, Delete).
+       - Integrated View and Edit Faculty modals with instant reactive updates.
+       - Built Enrollment Analytics tab with cohort progression and distribution bars.
+  3. **Public Register Resolution (`/register`)**:
+     - Deployed canonical `index.html` and `register.html` under `frontend/register/` and `frontend/login/register/` and root `frontend/register.html`.
+     - Verified clean URL routes and rewrite rules in `frontend/vercel.json` and monorepo `vercel.json` targeting verified files.
+  4. **Verification**:
+     - `test-theme-support.js`: **88 / 88 PASS** (Zero hardcoded colors).
+     - `test-rbac-and-structure.js`: **38 / 38 PASS**.
+     - `verify-faculty-isolation.js`: **72 / 72 PASS**.
+     - `test-student-self-registration.js`: **30 / 30 PASS**.
+     - `test-register-consolidation.js`: **46 / 46 PASS**.
+     - `test-api-flows.js`: **25 / 25 PASS**.
+
+### ✅ Milestone 423: Vercel Clean URL & Modular Page Routing 404 Resolution
 
 - **User Directives**:
   - Image uploaded showing vidyaos-pink.vercel.app/faculty/dashboard and vidyaos-pink.vercel.app/admin/dashboard returning 404: NOT_FOUND (This page doesn't exist).

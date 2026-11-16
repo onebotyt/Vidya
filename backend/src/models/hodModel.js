@@ -261,12 +261,61 @@ class HodModel {
    */
   static async deleteTeacher(id, deptId, userId) {
     await withTransaction(async (conn) => {
+      // 1. Clean up references where teacher was creator/reviewer/auditor (SET NULL)
+      if (userId) {
+        await conn.execute(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [userId]);
+        await conn.execute(`UPDATE register_attendance SET marked_by = NULL WHERE marked_by = ?`, [userId]);
+        await conn.execute(`UPDATE student_self_attendance SET reviewed_by = NULL WHERE reviewed_by = ?`, [userId]);
+        await conn.execute(`UPDATE leave_applications SET reviewed_by = NULL WHERE reviewed_by = ?`, [userId]);
+        await conn.execute(`UPDATE assessment_submissions SET graded_by = NULL WHERE graded_by = ?`, [userId]);
+        await conn.execute(`UPDATE teacher_assignments SET assigned_by = NULL WHERE assigned_by = ?`, [userId]);
+        await conn.execute(`UPDATE timetable_slots SET created_by = NULL WHERE created_by = ?`, [userId]);
+        await conn.execute(`UPDATE faculty_registration_requests SET reviewed_by = NULL WHERE reviewed_by = ?`, [userId]);
+        await conn.execute(`UPDATE common_faculty_manager_assignments SET assigned_by = NULL WHERE assigned_by = ?`, [userId]);
+        await conn.execute(`UPDATE attendance_corrections SET changed_by = NULL WHERE changed_by = ?`, [userId]);
+        await conn.execute(`UPDATE course_files SET audited_by = NULL WHERE audited_by = ?`, [userId]);
+        await conn.execute(`UPDATE course_file_documents SET verified_by = NULL WHERE verified_by = ?`, [userId]);
+        await conn.execute(`UPDATE course_file_documents SET uploaded_by = NULL WHERE uploaded_by = ?`, [userId]);
+      }
+
+      // 2. Clean up teacher-owned records
+      await conn.execute(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [id]);
+      await conn.execute(`DELETE FROM course_file_documents WHERE course_file_id IN (SELECT id FROM course_files WHERE teacher_id = ?)`, [id]);
+      await conn.execute(`DELETE FROM course_files WHERE teacher_id = ?`, [id]);
+      await conn.execute(`DELETE FROM faculty_media_assets WHERE faculty_id = ?`, [id]);
+      await conn.execute(`DELETE FROM timetable_slots WHERE teacher_id = ?`, [id]);
       await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [id]);
+
+      // 3. Teaching groups
+      await conn.execute(`DELETE FROM teaching_group_members WHERE group_id IN (SELECT id FROM teaching_groups WHERE teacher_id = ?)`, [id]);
+      await conn.execute(`DELETE FROM teaching_groups WHERE teacher_id = ?`, [id]);
+
+      // 4. Assessments & submissions
+      await conn.execute(`DELETE FROM assessment_submissions WHERE assessment_id IN (SELECT id FROM assessments WHERE teacher_id = ?)`, [id]);
+      await conn.execute(`DELETE FROM assessments WHERE teacher_id = ?`, [id]);
+
+      // 5. Attendance sessions and registers
+      const sessionSubquery = `SELECT id FROM attendance_sessions WHERE teacher_id = ? OR register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`;
+      await conn.execute(`DELETE FROM attendance_session_students WHERE session_id IN (${sessionSubquery})`, [id, id]);
+      await conn.execute(`DELETE FROM register_attendance WHERE session_id IN (${sessionSubquery})`, [id, id]);
+      await conn.execute(`DELETE FROM student_self_attendance WHERE session_id IN (${sessionSubquery})`, [id, id]);
+      await conn.execute(`DELETE FROM attendance_corrections WHERE session_id IN (${sessionSubquery})`, [id, id]);
+      await conn.execute(`DELETE FROM attendance_sessions WHERE teacher_id = ? OR register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id, id]);
       await conn.execute(`DELETE FROM attendance_registers WHERE teacher_id = ?`, [id]);
+
+      // 6. Delete teacher profile
       await conn.execute(`DELETE FROM teachers WHERE id = ?`, [id]);
-      await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
-      await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
-      await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+
+      // 7. Delete user account and associations
+      if (userId) {
+        await conn.execute(`DELETE FROM classroom_post_comments WHERE author_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM classroom_posts WHERE author_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM audit_logs WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+      }
     });
     return true;
   }
@@ -1251,23 +1300,49 @@ class HodModel {
   static async deleteStudent(id, deptId) {
     const sRows = await query(
       `SELECT s.id, s.user_id, e.year, e.semester, e.academic_year_id FROM students s
-       JOIN enrollments e ON e.student_id = s.id
-       WHERE s.id = ? AND e.department_id = ?`,
-      [id, deptId]
+       LEFT JOIN enrollments e ON e.student_id = s.id AND e.department_id = ?
+       WHERE s.id = ?`,
+      [deptId, id]
     );
     if (!sRows.length) return false;
     const { user_id: userId, year, semester, academic_year_id: ayId } = sRows[0];
 
     await withTransaction(async (conn) => {
+      // 1. Delete all student records in attendance and presence tables
       await conn.execute(`DELETE FROM register_attendance WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM attendance_session_students WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM student_self_attendance WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM attendance_corrections WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM fingerprint_slots WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM esp32_presence WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM iot_attendance_events WHERE student_id = ?`, [id]);
+
+      // 2. Leave, assessments, teaching groups, media
+      await conn.execute(`DELETE FROM leave_applications WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM assessment_submissions WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM teaching_group_members WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM student_department_enrollments WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM faculty_media_assets WHERE student_id = ?`, [id]);
+
+      // 3. Enrollments and student profile
       await conn.execute(`DELETE FROM enrollments WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM students WHERE id = ?`, [id]);
-      await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
-      await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+
+      // 4. User account and associations
+      if (userId) {
+        await conn.execute(`DELETE FROM classroom_post_comments WHERE author_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM classroom_posts WHERE author_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM audit_logs WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+      }
 
       if (year && semester && ayId) {
-        await HodModel.reindexCohortRollNumbers(deptId, year, semester, ayId, conn);
+        try {
+          await HodModel.reindexCohortRollNumbers(deptId, year, semester, ayId, conn);
+        } catch (_) { }
       }
     });
     return true;

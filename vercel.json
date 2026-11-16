@@ -37,15 +37,15 @@
     },
     {
       "source": "/register",
-      "destination": "/frontend/login/register/index.html"
+      "destination": "/frontend/register/index.html"
     },
     {
       "source": "/register/",
-      "destination": "/frontend/login/register/index.html"
+      "destination": "/frontend/register/index.html"
     },
     {
       "source": "/register.html",
-      "destination": "/frontend/login/register/index.html"
+      "destination": "/frontend/register/index.html"
     },
     {
       "source": "/login/register",
