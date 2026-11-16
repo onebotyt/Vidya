@@ -204,7 +204,40 @@ class HodController {
       }
 
       await HodModel.deleteTeacher(req.params.id, req.hod_department_id, userId);
-      res.json({ success: true, message: `Teacher ${teacherRows[0].full_name} and their assignments have been deleted.` });
+      res.json({ success: true, message: `Teacher ${teacherRows[0].full_name} and their assignments have been moved to Trash (30-day retention).` });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Retrieve department faculty currently in Trash (soft-deleted, 30-day retention)
+   * @route GET /api/v1/hod/trash/faculty (routes/hod.js)
+   * @access Protected (HOD, SYSTEM_ADMIN)
+   */
+  static async getTrashFaculty(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const data = await HodModel.getTrashFaculty(deptId);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Restore a soft-deleted faculty member from Trash
+   * @route POST /api/v1/hod/trash/faculty/:id/restore (routes/hod.js)
+   * @access Protected (HOD, SYSTEM_ADMIN)
+   */
+  static async restoreFaculty(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const result = await HodModel.restoreFaculty(req.params.id, deptId, req.user.id);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Faculty member not found in Trash or unauthorized' } });
+      }
+      res.json({ success: true, message: result.message });
     } catch (err) {
       res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
     }

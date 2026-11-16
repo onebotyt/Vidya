@@ -38,12 +38,40 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 435: Mobile Viewport Horizontal Fit Optimization & 30-Day Trash Recovery Engine for Faculty Management
+
+- **Zero-Overflow Mobile Viewport Optimization (`faculty.css`, `index.html`)**:
+  - Eliminated horizontal grid blowouts on mobile viewports (<= 768px, tested on 360px-412px) by converting rigid column tracks to `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);`.
+  - Added strict `min-width: 0`, `overflow: hidden`, and text truncation ellipsis to `.fac-kpi-card`, `.fac-kpi-meta`, `.fac-toggle-card`, and `.fac-member-cell`.
+  - Fixed double plus icon issue on "+ + Add Faculty" button by decoupling SVG icon from inner button text.
+  - Responsive column suppression for mobile screens: hides `Employee ID`, `Role`, and `Retention Period` columns while keeping full member details accessible via View Details modal.
+
+- **30-Day Trash Bin & Recovery Architecture**:
+  - **Backend Endpoints**:
+    - `GET /api/v1/hod/trash/faculty`: department-scoped retrieval of soft-deleted faculty with automatic 30-day purge query (`deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`).
+    - `POST /api/v1/hod/trash/faculty/:id/restore`: safely restores soft-deleted faculty (`deleted_at = NULL`, `status = 'ACTIVE'`) preserving teaching records and user credentials.
+  - **Frontend UI & Actions**:
+    - Quick Access **Trash Bin button** in the page header with live badge counter.
+    - Dedicated **Trash filter pill** (`[Trash (X)]`) with trash icon and real-time count.
+    - Dedicated Trash Roster view displaying member details, days remaining until auto-purge (e.g. `29 days left`), and prominent `↺ Restore` action button.
+    - Soft-delete confirmation via `window.openDeleteModal` requiring explicit confirmation text typing (`remove`).
+
+- **Theme & Verification**:
+  - 100% Theme Token compliant (zero raw `#hex` or `rgb()` color values in stylesheets).
+  - Verified with `node scripts/test-theme-support.js` (88/88 tests passing).
+
 ### ✅ Milestone 434: Decouple Faculty and Students Pages into Clean Compact UI/UX with 58% Code Reduction
 
 - **Decoupled Dedicated Faculty Management Page (`/faculty/faculty/index.html`)**:
   - HOD-Only Access (`requireFacultyAuth(['HOD', 'SYSTEM_ADMIN'])`).
   - Total Faculty, Pending Verification, and Faculty Self-Registration gate toggle.
-  - Role filter pills (`All Faculty`, `HOD`, `Class Teachers`, `Lecturers`, `Pending Queue`).
+  - Role filter pills (`All Faculty`, `HOD`, `Lecturers`, `Pending`) with live queue counts and instant table rendering.
+  - Clean table layout with Teaching Scope removed; member card streamlined to Name and Initials (email removed from cell for clean compact look, viewable in full modal).
+  - Actions column powered by a compact **3-Dot (Kebab) Menu** featuring smart **Drop-Up Flipping** to prevent viewport and card bottom cutting.
+  - **Ultra-Compact Mobile Layout**: 2-column compact metric cards, slim self-registration toggle, horizontal scrollable pills, inline search & add bar, dense touch-friendly table rows, and **responsive column suppression** (`Employee ID` and `Role` hidden on mobile screens, viewable in details modal).
+  - **Componentized Type-to-Confirm Removal Modal**: Integrated `/faculty/components/delete-modal/` requiring explicit confirmation text typing (`remove`) before unlocking deletion.
+  - **30-Day Trash Bin Architecture**: Soft-deletes faculty into Department Trash Bin (`deleted_at = CURRENT_TIMESTAMP`, account suspended) with automatic permanent purge query after 30-day retention period.
+  - **View Details Modal**: Comprehensive modal showing full faculty dossier (Avatar, Name, Employee ID, Role, Email, Phone, Department, Onboarded Date, and Assigned Teaching Subjects).
   - Searchable roster with credentials management, password reset, and onboard modal.
   - Fixed database column schema error: added missing `account_type` column to `faculty_registration_requests`.
   - Zero hardcoded hex colors, strict theme token compliance with `variables.css`.
