@@ -267,6 +267,16 @@ router.post('/students/bulk', requireHOD(), [
 // @handler HodController.deleteStudent() -> HodModel.deleteStudent()
 router.delete('/students/:id', requireHOD(), [param('id').isInt(), validate], HodController.deleteStudent);
 
+// @route   GET /api/v1/hod/trash/students
+// @desc    Retrieve soft-deleted students for HOD department currently in Trash
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.get('/trash/students', requireHOD(), HodController.getTrashStudents);
+
+// @route   POST /api/v1/hod/trash/students/:id/restore
+// @desc    Restore a soft-deleted student from Trash
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.post('/trash/students/:id/restore', requireHOD(), [param('id').isInt(), validate], HodController.restoreStudent);
+
 // @route   POST /api/v1/hod/students/:id/reset-password
 // @desc    Reset student account password
 // @access  Protected (HOD, SYSTEM_ADMIN)

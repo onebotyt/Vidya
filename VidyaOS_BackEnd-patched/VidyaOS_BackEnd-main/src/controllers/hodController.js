@@ -835,18 +835,51 @@ class HodController {
   }
 
   /**
-   * Delete student record, user account, attendance records, and reindex roll numbers
+   * Soft-delete student record with 30-day Trash Bin retention
    * @route DELETE /api/v1/hod/students/:id (routes/hod.js)
    * @access Protected (HOD, SYSTEM_ADMIN)
    * @usesModel HodModel.deleteStudent() (models/hodModel.js)
    */
   static async deleteStudent(req, res) {
     try {
-      const ok = await HodModel.deleteStudent(req.params.id, req.hod_department_id);
+      const ok = await HodModel.deleteStudent(req.params.id, req.hod_department_id, req.user?.id);
       if (!ok) {
         return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found in your department' } });
       }
-      res.json({ success: true, message: 'Student record and enrollments deleted successfully' });
+      res.json({ success: true, message: 'Student moved to Trash Bin (30-day retention)' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Retrieve department students currently in Trash (soft-deleted, 30-day retention)
+   * @route GET /api/v1/hod/trash/students (routes/hod.js)
+   * @access Protected (HOD, SYSTEM_ADMIN)
+   */
+  static async getTrashStudents(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const data = await HodModel.getTrashStudents(deptId);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Restore a soft-deleted student from Trash
+   * @route POST /api/v1/hod/trash/students/:id/restore (routes/hod.js)
+   * @access Protected (HOD, SYSTEM_ADMIN)
+   */
+  static async restoreStudent(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const result = await HodModel.restoreStudent(req.params.id, deptId, req.user?.id);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found in Trash or unauthorized' } });
+      }
+      res.json({ success: true, message: result.message });
     } catch (err) {
       res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
     }
