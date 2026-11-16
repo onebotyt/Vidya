@@ -264,8 +264,29 @@ async function ensureCompatibilityViews() {
         INDEX idx_tcd_item (item_key)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
+
+    // 4. Ensure timetable_files table exists for simple year-based PDF timetable uploads
+    await query(`
+      CREATE TABLE IF NOT EXISTS timetable_files (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        department_id INT NULL,
+        year INT NOT NULL,
+        semester INT NULL,
+        academic_year_id INT NULL,
+        title VARCHAR(255) NOT NULL,
+        file_path VARCHAR(500) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_size BIGINT DEFAULT 0,
+        uploaded_by INT NULL,
+        uploader_name VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_tt_year (year),
+        INDEX idx_tt_dept (department_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
   } catch (err) {
-    logger.warn(`Note on theory_class tables check: ${err.message}`);
+    logger.warn(`Note on tables auto-provision check: ${err.message}`);
   }
 
   logger.info('✓ MySQL 8.x compatibility views & schema auto-healing verified (exams, theory_classes, etc.)');

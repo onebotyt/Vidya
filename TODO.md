@@ -38,6 +38,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 433: Simple Year-Based PDF Timetable Architecture & Attendance Matrix Period Sequencing
+
+- **Simple Year-Based PDF Timetable Engine**:
+  - Replaced complex matrix/slot scheduler with an institutional **Year-Based PDF Timetable System** for students and teachers.
+  - Faculty Portal (`/faculty/timetable/index.html`):
+    - Clean Year switcher pills (`All Years`, `1st Year`, `2nd Year`, `3rd Year`, `4th Year`).
+    - Upload modal: faculty select academic year (`1st Year` through `4th Year`), document title, and upload official PDF schedule.
+    - PDF Preview Modal and direct download links.
+  - Student Portal (`/student/timetable/index.html`):
+    - Automatically discovers student's enrolled year from `/students/me`.
+    - Features student's active year timetable with embedded responsive PDF viewer (`<iframe>`), Fullscreen modal, and Download PDF button.
+    - Year selector pills allow viewing all departmental timetables if needed.
+  - Backend Engine:
+    - `timetable_files` table auto-provisioned in MySQL with columns `(id, department_id, year, semester, academic_year_id, title, file_path, file_name, file_size, uploaded_by, uploader_name, created_at, updated_at)`.
+    - REST Endpoints: `GET /api/v1/timetable/pdf`, `POST /api/v1/timetable/pdf` (`uploadTimetable.single('file')`), and `DELETE /api/v1/timetable/pdf/:id`.
+- **Attendance Register Matrix Multi-Period Sequencing & Schema Resilience**:
+  - Resolved duplicate `16 [P1] Mon` columns in `/faculty/registers.html` by filtering only `FINALIZED` and `CLOSED` sessions and dynamically sequencing periods (`[P1]`, `[P2]`, `[P3]`, etc.) when multiple sessions exist on the same date.
+  - Cell rendering mapped directly by `col.session_id` and `session_marks[col.session_id]`.
+  - Auto-provisioned `theory_class_files` and missing `teaching_groups.subject_code` in MySQL database, resolving all dossier and teaching group queries.
+
+### ✅ Milestone 432: Dynamic Hamburger/Cross Icon Toggle & Dashboard Simplification
+
+- **Dynamic Navigation Toggle Transformation**:
+  - Top header hamburger button (`≡`) transforms into a close cross (`✕`) when the sidebar flyout opens, and restores to 3 lines when closed.
+  - Synchronized across desktop flyout and mobile drawer via unified `updateNavToggleIcon(isOpen)`.
+- **Dashboard Quick Access Simplification**:
+  - Removed duplicate `Subject Classes` card from the Quick Access grid in `/faculty/dashboard/index.html`.
+  - Removed duplicate embedded `#teaching-classes-view` and tab toggles from the dashboard.
+  - Dashboard focuses strictly on Department Command Center KPIs; "My Teaching Classes" pill navigates directly to the dedicated `/faculty/classes/index.html` workspace.
+
 ### ✅ Milestone 431: Code Optimization & Refactoring of Header, Sidebar, and Mobile Navigation
 
 - **Code Reduction & Streamlining**:
