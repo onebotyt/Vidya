@@ -18,10 +18,10 @@
     settings: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
     timetable: '<rect x="3" y="4" width="18" height="18" rx="2" fill="currentColor" fill-opacity="0.2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
     drive: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" fill="currentColor" fill-opacity="0.22"/>',
-    reports: '<rect x="4" y="14" width="3.5" height="7" rx="1" fill="currentColor" fill-opacity="0.25"/><rect x="10.25" y="9.5" width="3.5" height="11.5" rx="1" fill="currentColor" fill-opacity="0.35"/><rect x="16.5" y="5" width="3.5" height="16" rx="1" fill="currentColor" fill-opacity="0.45"/><polyline points="4 9 10 4 19.5 4" stroke="currentColor" stroke-width="1.8"/><polyline points="16 2 20 4 16 6" stroke="currentColor" stroke-width="1.8"/>'
+    faculty: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" fill="currentColor" fill-opacity="0.2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity="0.3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><rect x="18" y="8" width="5" height="4" rx="1"/>'
   };
 
-  function renderSvg(name, size = 20) {
+  function renderSvg(name, size = 18) {
     const body = ICONS[name] || ICONS.home;
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
   }
@@ -32,20 +32,41 @@
     { key: 'attendance', label: 'Attendance Register', shortLabel: 'Register', href: '/faculty/registers/index.html', icon: 'registers' },
     { key: 'sheets', label: 'Sheet Studio', shortLabel: 'Sheets', href: '/faculty/sheets/index.html', icon: 'sheets' },
     { key: 'leaves', label: 'Leave Request', shortLabel: 'Leave', href: '/faculty/leave-approvals/index.html', icon: 'leaves' },
-    { key: 'students', label: 'Faculty & Students Management', shortLabel: 'Students', href: '/faculty/students/index.html', icon: 'students' },
+    { key: 'students', label: 'Students Management', shortLabel: 'Students', href: '/faculty/students/index.html', icon: 'students' },
+    { key: 'faculty', label: 'Faculty Management', shortLabel: 'Faculty', href: '/faculty/faculty/index.html', icon: 'faculty', hodOnly: true },
     { key: 'esp32', label: 'ESP32 Biometric Terminals', shortLabel: 'ESP32', href: '/faculty/esp32-devices/index.html', icon: 'settings' },
     { key: 'timetable', label: 'Timetable', shortLabel: 'Timetable', href: '/faculty/timetable/index.html', icon: 'timetable' },
-    { key: 'drive', label: 'Faculty Drive', shortLabel: 'Drive', href: '/faculty/media/index.html', icon: 'drive' },
-    { key: 'reports', label: 'Report & Analysis', shortLabel: 'Reports', href: '/faculty/reports/index.html', icon: 'reports' }
+    { key: 'drive', label: 'Faculty Drive', shortLabel: 'Drive', href: '/faculty/media/index.html', icon: 'drive' }
   ];
 
   const FACULTY_MOBILE_TABS = [
     { key: 'home', label: 'Home', href: '/faculty/dashboard/index.html', icon: 'home' },
     { key: 'classes', label: 'Classes', href: '/faculty/classes/index.html', icon: 'classes' },
+    { key: 'attendance', label: 'Register', href: '/faculty/registers/index.html', icon: 'registers' },
     { key: 'students', label: 'Students', href: '/faculty/students/index.html', icon: 'students' },
-    { key: 'reports', label: 'Reports', href: '/faculty/reports/index.html', icon: 'reports' },
     { key: 'settings', label: 'Settings', href: '/faculty/profile/index.html', icon: 'settings' }
   ];
+
+  const HAMBURGER_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+  const CLOSE_CROSS_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
+  function updateNavToggleIcon(isOpen) {
+    const btns = document.querySelectorAll('#faculty-nav-toggle, .header-nav-toggle-btn');
+    btns.forEach(btn => {
+      btn.innerHTML = isOpen ? CLOSE_CROSS_SVG : HAMBURGER_SVG;
+      btn.title = isOpen ? 'Close Navigation Menu' : 'Toggle Navigation Menu';
+      btn.setAttribute('aria-label', isOpen ? 'Close Navigation Menu' : 'Toggle Navigation Menu');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (isOpen) {
+        btn.classList.add('is-open');
+      } else {
+        btn.classList.remove('is-open');
+      }
+    });
+  }
+  if (typeof window.updateNavToggleIcon !== 'function') {
+    window.updateNavToggleIcon = updateNavToggleIcon;
+  }
 
   function getSidebar() {
     return document.getElementById('faculty-sidebar') || document.querySelector('.faculty-sidebar');
@@ -81,11 +102,13 @@
       if (bd) bd.classList.remove('active', 'open');
       document.documentElement.classList.add('sidebar-collapsed');
       document.body.classList.add('sidebar-collapsed');
+      if (typeof window.updateNavToggleIcon === 'function') window.updateNavToggleIcon(false);
     } else {
       sb.classList.add('desktop-open', 'open');
       if (bd) bd.classList.add('active', 'open');
       document.documentElement.classList.remove('sidebar-collapsed');
       document.body.classList.remove('sidebar-collapsed');
+      if (typeof window.updateNavToggleIcon === 'function') window.updateNavToggleIcon(true);
     }
   }
 
@@ -106,6 +129,7 @@
       sb.classList.add('open', 'sidebar-open', 'desktop-open');
       if (bd) bd.classList.add('active', 'open');
       document.body.style.overflow = 'hidden';
+      if (typeof window.updateNavToggleIcon === 'function') window.updateNavToggleIcon(true);
     }
   }
 
@@ -121,6 +145,7 @@
     document.body.style.overflow = '';
     document.documentElement.classList.add('sidebar-collapsed');
     document.body.classList.add('sidebar-collapsed');
+    if (typeof window.updateNavToggleIcon === 'function') window.updateNavToggleIcon(false);
   }
 
   function handleBackdropClick(e) {
@@ -147,19 +172,24 @@
     ));
 
     // 1. Build Navigation HTML
-    const navItemsHtml = FACULTY_NAV_ITEMS.map(item => {
-      let label = item.label;
+    const visibleItems = FACULTY_NAV_ITEMS.filter(item => !item.hodOnly || isHod);
+    const navItemsHtml = visibleItems.map(item => {
+      const label = item.label;
+
+      let isActive = false;
       if (item.key === 'students') {
-        label = isHod ? 'Faculty & Students Management' : 'Students Management';
+        isActive = currentPath.includes('/faculty/students');
+      } else if (item.key === 'faculty') {
+        isActive = currentPath.includes('/faculty/faculty');
+      } else {
+        isActive = currentPath.endsWith(item.href) ||
+          currentPath.endsWith(item.href.replace('.html', '')) ||
+          currentPath.includes(item.key) ||
+          (item.key === 'dashboard' && (currentPath === '/faculty/' || currentPath.endsWith('/faculty') || currentPath.endsWith('/faculty/dashboard.html')));
       }
 
-      const isActive = currentPath.endsWith(item.href) ||
-        currentPath.endsWith(item.href.replace('.html', '')) ||
-        currentPath.includes(item.key) ||
-        (item.key === 'dashboard' && (currentPath === '/faculty/' || currentPath.endsWith('/faculty') || currentPath.endsWith('/faculty/dashboard.html')));
-
       const activeCls = isActive ? ' active' : '';
-      const svg = renderSvg(item.icon, 20);
+      const svg = renderSvg(item.icon, 18);
 
       return `
         <a href="${item.href}" class="sidebar-nav-item${activeCls}" data-nav="${item.key}" data-tooltip="${label}" aria-label="${label}" onclick="if(window.innerWidth<=768)closeSidebar()">
@@ -204,7 +234,7 @@
         { key: 'classes', label: 'Classes', href: '/faculty/classes/index.html', icon: 'classes' },
         { key: 'attendance', label: 'Attendance', href: '/faculty/registers/index.html', icon: 'registers' },
         { key: 'students', label: 'Students', href: '/faculty/students/index.html', icon: 'students' },
-        { key: 'reports', label: 'Reports', href: '/faculty/reports/index.html', icon: 'reports' },
+        { key: 'faculty', label: 'Faculty', href: '/faculty/faculty/index.html', icon: 'faculty' },
         { key: 'settings', label: 'Settings', href: '/faculty/profile/index.html', icon: 'settings' }
       ] : FACULTY_MOBILE_TABS;
 
@@ -213,12 +243,12 @@
         if (tab.key === 'classes') isActive = currentPath.includes('/faculty/classes') || currentPath.includes('/faculty/groups');
         else if (tab.key === 'attendance') isActive = currentPath.includes('/faculty/registers');
         else if (tab.key === 'students') isActive = currentPath.includes('/faculty/students');
-        else if (tab.key === 'reports') isActive = currentPath.includes('/faculty/reports');
+        else if (tab.key === 'faculty') isActive = currentPath.includes('/faculty/faculty');
         else if (tab.key === 'settings') isActive = currentPath.includes('/faculty/profile');
         else if (tab.key === 'home') isActive = currentPath === '/faculty' || currentPath.includes('/faculty/dashboard');
 
         const activeCls = isActive ? ' active' : '';
-        const svg = renderSvg(tab.icon, 20);
+        const svg = renderSvg(tab.icon, 18);
 
         return `
           <a href="${tab.href}" class="mobile-nav-item${activeCls}" data-tab="${tab.key}" aria-label="${tab.label}">

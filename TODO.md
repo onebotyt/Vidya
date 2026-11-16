@@ -38,22 +38,59 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 432: Zero-Lag Hardware-Accelerated Sidebar & Database Auto-Healing Migration System
+### ✅ Milestone 434: Decouple Faculty and Students Pages into Clean Compact UI/UX with 58% Code Reduction
 
-- **Zero-Lag Hardware Acceleration**:
-  - Promoted `#faculty-sidebar` to a dedicated GPU compositing layer using `transform: translateZ(0)`, `will-change: width, transform`, and `contain: layout paint`.
-  - Replaced heavy `backdrop-filter: blur(4px)` with high-performance `background: hsl(0 0% 0% / 0.38)` to eliminate GPU rasterization bottlenecks on Windows Chrome and achieve smooth 60fps animations.
-  - Snappy `0.18s cubic-bezier(0.16, 1, 0.3, 1)` easing curve for instantaneous flyout drawer expansion and collapse.
-- **Responsive Layout & Flyout UI Fixes**:
-  - Fixed expanded sidebar navigation items to strictly render as modern horizontal rows (`flex-direction: row; gap: 12px; align-items: center`) with icon on left and full label on right, resolving the vertical centering and wrapping glitch in open mode.
-  - Enforced `@media (min-width: 769px) { .mobile-bottom-nav { display: none !important; } }` so the mobile bottom navigation bar is hidden on desktop screens.
-  - Busted browser asset caches to `v=20261116` across all faculty HTML views.
-- **MySQL Database Auto-Healing**:
-  - Added self-healing schema checks in `ensureCompatibilityViews()` (`db.js`) to automatically provision missing `teaching_groups.subject_code` columns and create `theory_class_files` and `theory_class_documents` tables if absent, permanently resolving `Unknown column 'tg.subject_code'` and `Table 'theory_class_files' doesn't exist` errors.
-- **Verification**:
-  - `test-theme-support.js`: 88/88 passed (0 hardcoded hex colors).
-  - `test-rbac-and-structure.js`: 38/38 passed.
-  - `test-register-consolidation.js`: 46/46 passed.
+- **Decoupled Dedicated Faculty Management Page (`/faculty/faculty/index.html`)**:
+  - HOD-Only Access (`requireFacultyAuth(['HOD', 'SYSTEM_ADMIN'])`).
+  - Total Faculty, Pending Verification, and Faculty Self-Registration gate toggle.
+  - Role filter pills (`All Faculty`, `HOD`, `Class Teachers`, `Lecturers`, `Pending Queue`).
+  - Searchable roster with credentials management, password reset, and onboard modal.
+  - Fixed database column schema error: added missing `account_type` column to `faculty_registration_requests`.
+  - Zero hardcoded hex colors, strict theme token compliance with `variables.css`.
+
+- **Decoupled Dedicated Students Management Page (`/faculty/students/index.html`)**:
+  - Accessible to all department instructors and class teachers.
+  - Cohort management, roll number sequencing, attendance summary percentage badges.
+  - 3-Year academic filter pills (`All Years`, `1st Year`, `2nd Year`, `3rd Year`, `Pending Queue`) — 4th year removed per curriculum requirements.
+  - Add individual student modal and Bulk CSV import modal.
+  - Responsive compact mobile layout (<= 640px).
+
+- **Code Cleanliness & Bloat Elimination**:
+  - Original monolithic students files: **5,614 lines**.
+  - New decoupled faculty files: **1,133 lines**.
+  - New decoupled students files: **1,234 lines**.
+  - Total combined lines across both pages: **2,367 lines**.
+  - **Net Code Reduction**: **3,247 lines of redundant bloat removed (58% reduction)**!
+
+### ✅ Milestone 433: Simple Year-Based PDF Timetable Architecture & Attendance Matrix Period Sequencing
+
+- **Simple Year-Based PDF Timetable Engine**:
+  - Replaced complex matrix/slot scheduler with an institutional **Year-Based PDF Timetable System** for students and teachers.
+  - Faculty Portal (`/faculty/timetable/index.html`):
+    - Clean Year switcher pills (`All Years`, `1st Year`, `2nd Year`, `3rd Year`, `4th Year`).
+    - Upload modal: faculty select academic year (`1st Year` through `4th Year`), document title, and upload official PDF schedule.
+    - PDF Preview Modal and direct download links.
+  - Student Portal (`/student/timetable/index.html`):
+    - Automatically discovers student's enrolled year from `/students/me`.
+    - Features student's active year timetable with embedded responsive PDF viewer (`<iframe>`), Fullscreen modal, and Download PDF button.
+    - Year selector pills allow viewing all departmental timetables if needed.
+  - Backend Engine:
+    - `timetable_files` table auto-provisioned in MySQL with columns `(id, department_id, year, semester, academic_year_id, title, file_path, file_name, file_size, uploaded_by, uploader_name, created_at, updated_at)`.
+    - REST Endpoints: `GET /api/v1/timetable/pdf`, `POST /api/v1/timetable/pdf` (`uploadTimetable.single('file')`), and `DELETE /api/v1/timetable/pdf/:id`.
+- **Attendance Register Matrix Multi-Period Sequencing & Schema Resilience**:
+  - Resolved duplicate `16 [P1] Mon` columns in `/faculty/registers.html` by filtering only `FINALIZED` and `CLOSED` sessions and dynamically sequencing periods (`[P1]`, `[P2]`, `[P3]`, etc.) when multiple sessions exist on the same date.
+  - Cell rendering mapped directly by `col.session_id` and `session_marks[col.session_id]`.
+  - Auto-provisioned `theory_class_files` and missing `teaching_groups.subject_code` in MySQL database, resolving all dossier and teaching group queries.
+
+### ✅ Milestone 432: Dynamic Hamburger/Cross Icon Toggle & Dashboard Simplification
+
+- **Dynamic Navigation Toggle Transformation**:
+  - Top header hamburger button (`≡`) transforms into a close cross (`✕`) when the sidebar flyout opens, and restores to 3 lines when closed.
+  - Synchronized across desktop flyout and mobile drawer via unified `updateNavToggleIcon(isOpen)`.
+- **Dashboard Quick Access Simplification**:
+  - Removed duplicate `Subject Classes` card from the Quick Access grid in `/faculty/dashboard/index.html`.
+  - Removed duplicate embedded `#teaching-classes-view` and tab toggles from the dashboard.
+  - Dashboard focuses strictly on Department Command Center KPIs; "My Teaching Classes" pill navigates directly to the dedicated `/faculty/classes/index.html` workspace.
 
 ### ✅ Milestone 431: Code Optimization & Refactoring of Header, Sidebar, and Mobile Navigation
 

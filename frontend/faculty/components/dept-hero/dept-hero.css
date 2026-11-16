@@ -38,19 +38,19 @@
 }
 
 .dash-hero-logo-badge {
-  width: 54px;
-  height: 54px;
-  min-width: 54px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--bg-card, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--border-color, #e2e8f0);
   flex-shrink: 0;
   overflow: hidden;
-  padding: 4px;
+  padding: 2px;
   box-sizing: border-box;
 }
 
@@ -59,6 +59,7 @@
   height: 100%;
   object-fit: contain;
   border-radius: 50%;
+  display: block;
 }
 
 .dash-hero-vdivider {
