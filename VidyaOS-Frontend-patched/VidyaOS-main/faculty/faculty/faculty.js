@@ -17,6 +17,7 @@
 
   let allFaculty = [];
   let pendingFaculty = [];
+  let trashFaculty = [];
   let currentFilter = 'ALL';
   let regOpen = false;
   let currentDetailFacultyId = null;
@@ -55,6 +56,7 @@
     await Promise.all([
       loadFacultyRoster(),
       loadPendingFaculty(),
+      loadTrashFaculty(),
       loadRegistrationStatus()
     ]);
   }
@@ -66,7 +68,7 @@
       if (res && res.success && Array.isArray(res.data)) {
         allFaculty = res.data;
         updateCounts();
-        if (currentFilter !== 'PENDING') renderTable();
+        if (currentFilter !== 'PENDING' && currentFilter !== 'TRASH') renderTable();
       }
     } catch (err) {
       console.error('[Faculty] Failed to load faculty roster:', err);
@@ -83,6 +85,19 @@
       }
     } catch (err) {
       console.warn('[Faculty] Pending registrations check:', err.message);
+    }
+  }
+
+  async function loadTrashFaculty() {
+    try {
+      const res = await api('/hod/trash/faculty');
+      if (res && res.success && Array.isArray(res.data)) {
+        trashFaculty = res.data;
+        updateCounts();
+        if (currentFilter === 'TRASH') renderTable();
+      }
+    } catch (err) {
+      console.warn('[Faculty] Trash fetch:', err.message);
     }
   }
 
@@ -131,21 +146,26 @@
     const elPending = document.getElementById('stat-pending-faculty');
     const badgeAll = document.getElementById('badge-count-all');
     const badgePending = document.getElementById('badge-count-pending');
+    const badgeTrash = document.getElementById('badge-count-trash');
+    const headerTrash = document.getElementById('header-trash-count');
     const subText = document.getElementById('stat-pending-sub');
 
     const total = allFaculty.length;
     const active = allFaculty.filter(f => f.status === 'ACTIVE').length;
     const pending = pendingFaculty.length;
+    const trash = trashFaculty.length;
 
     if (elTotal) elTotal.textContent = total;
     if (elActive) elActive.textContent = `${active} active`;
     if (elPending) elPending.textContent = pending;
     if (badgeAll) badgeAll.textContent = total;
     if (badgePending) badgePending.textContent = pending;
+    if (badgeTrash) badgeTrash.textContent = trash;
+    if (headerTrash) headerTrash.textContent = trash;
     if (subText) subText.textContent = pending > 0 ? `${pending} awaiting clearance` : 'All applications verified';
   }
 
-  // 3. Switch to Pending Tab
+  // 3. Switch Tabs
   function switchToPendingTab() {
     document.querySelectorAll('.fac-pill').forEach(b => b.classList.remove('active'));
     const pill = document.getElementById('pill-pending');
@@ -154,12 +174,32 @@
     renderTable();
   }
 
-  // 4. Render Table (No Teaching Scope, No Gmail below name, Drop-Up 3-dot menu, Pending Tab)
+  function switchToTrashTab() {
+    document.querySelectorAll('.fac-pill').forEach(b => b.classList.remove('active'));
+    const pill = document.getElementById('pill-trash');
+    if (pill) pill.classList.add('active');
+    currentFilter = 'TRASH';
+    renderTable();
+  }
+
+  // 4. Render Table (Active, Pending, and Trash Bin Views)
   function renderTable() {
     const tbody = document.getElementById('faculty-tbody');
     const searchVal = (document.getElementById('faculty-search')?.value || '').toLowerCase().trim();
 
     if (!tbody) return;
+
+    // Toggle table headers based on mode
+    const thRetention = document.getElementById('th-retention');
+    const thRole = document.getElementById('th-role');
+    if (thRetention) thRetention.style.display = currentFilter === 'TRASH' ? '' : 'none';
+    if (thRole) thRole.style.display = currentFilter === 'TRASH' ? 'none' : '';
+
+    // Handle Trash Tab View
+    if (currentFilter === 'TRASH') {
+      renderTrashRoster(tbody, searchVal);
+      return;
+    }
 
     // Handle Pending Tab View
     if (currentFilter === 'PENDING') {
@@ -297,6 +337,68 @@
     `).join('');
   }
 
+  // 6. Render Trash Bin Roster (30-day retention & restore action)
+  function renderTrashRoster(tbody, searchVal) {
+    let list = trashFaculty;
+    if (searchVal) {
+      list = list.filter(f =>
+        (f.full_name || '').toLowerCase().includes(searchVal) ||
+        (f.employee_id || '').toLowerCase().includes(searchVal) ||
+        (f.email || f.gmail || '').toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            No faculty members currently in the Trash Bin.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = list.map((f, idx) => {
+      const initials = getInitials(f.full_name);
+      const daysLeft = f.days_left != null ? f.days_left : 30;
+
+      return `
+        <tr>
+          <td style="color: var(--text-muted); font-size: 0.75rem; width: 36px;">${idx + 1}</td>
+          <td>
+            <div class="fac-member-cell">
+              <div class="fac-avatar" style="opacity: 0.85;">${initials}</div>
+              <div>
+                <span class="fac-member-name">${esc(f.full_name)}</span>
+                <div class="fac-trash-sub">
+                  <span>${esc(f.employee_id || 'ID N/A')}</span>
+                  &bull;
+                  <span class="badge-retention-mobile">${daysLeft}d left</span>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="col-empid"><span class="fac-emp-code">${esc(f.employee_id || '—')}</span></td>
+          <td class="col-retention">
+            <span class="badge-retention">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>${daysLeft} days left</span>
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <div class="fac-actions-cell" style="justify-content: flex-end;">
+              <button type="button" class="btn-restore-compact" onclick="restoreFacultyMember(${f.id}, '${esc(f.full_name)}')" title="Restore faculty data">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                <span>Restore</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   // 6. 3-Dot Dropdown Menu Handlers with Auto Drop-Up Flipping
   function toggleFacultyMenu(e, id) {
     if (e) {
@@ -428,7 +530,7 @@
           const res = await api(`/hod/teachers/${id}`, { method: 'DELETE' });
           if (res && res.success) {
             notify(`${name} moved to Trash Bin (auto-purges in 30 days)`, 'success');
-            loadFacultyRoster();
+            await Promise.all([loadFacultyRoster(), loadTrashFaculty()]);
           } else {
             throw new Error(res?.error?.message || 'Removal failed');
           }
@@ -443,9 +545,23 @@
       const res = await api(`/hod/teachers/${id}`, { method: 'DELETE' });
       if (res && res.success) {
         notify(`${name} moved to Trash Bin (auto-purges in 30 days)`, 'success');
-        loadFacultyRoster();
+        await Promise.all([loadFacultyRoster(), loadTrashFaculty()]);
       } else {
         throw new Error(res?.error?.message || 'Removal failed');
+      }
+    } catch (err) {
+      notify(err.message, 'error');
+    }
+  }
+
+  async function restoreFacultyMember(id, name) {
+    try {
+      const res = await api(`/hod/trash/faculty/${id}/restore`, { method: 'POST' });
+      if (res && res.success) {
+        notify(`${name} restored successfully!`, 'success');
+        await Promise.all([loadFacultyRoster(), loadTrashFaculty()]);
+      } else {
+        throw new Error(res?.error?.message || 'Restore failed');
       }
     } catch (err) {
       notify(err.message, 'error');
@@ -574,6 +690,8 @@
   window.openAddFacultyModal = openAddModal;
   window.closeAddFacultyModal = closeAddModal;
   window.switchToPendingTab = switchToPendingTab;
+  window.switchToTrashTab = switchToTrashTab;
+  window.restoreFacultyMember = restoreFacultyMember;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

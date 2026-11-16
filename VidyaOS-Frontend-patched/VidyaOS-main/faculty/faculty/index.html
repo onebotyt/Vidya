@@ -40,6 +40,16 @@
             <h1>Department Faculty Roster</h1>
             <p>Manage instructors, designations, teaching assignments, and staff onboarding.</p>
           </div>
+          <div class="fac-header-actions">
+            <button type="button" class="btn-trash-header" onclick="switchToTrashTab()" title="Open Faculty Trash Bin (30-day recovery)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Trash Bin</span>
+              <span class="fac-trash-badge" id="header-trash-count">0</span>
+            </button>
+          </div>
         </div>
 
         <!-- 3-Card KPI & Registration Gate Row -->
@@ -113,6 +123,14 @@
               <span>Pending</span>
               <span class="fac-pill-badge" id="badge-count-pending">0</span>
             </button>
+            <button type="button" class="fac-pill pill-trash" data-filter="TRASH" id="pill-trash" title="Faculty in Trash Bin (30-day recovery)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Trash</span>
+              <span class="fac-pill-badge badge-trash" id="badge-count-trash">0</span>
+            </button>
           </nav>
 
           <div class="fac-actions-right">
@@ -125,12 +143,12 @@
               </span>
               <input type="search" id="faculty-search" placeholder="Search faculty by name, ID...">
             </div>
-            <button type="button" class="btn-primary-compact" onclick="openAddFacultyModal()">
+            <button type="button" class="btn-primary-compact" onclick="openAddFacultyModal()" title="Add New Faculty Member">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
-              <span>+ Add Faculty</span>
+              <span>Add Faculty</span>
             </button>
           </div>
         </div>
@@ -139,12 +157,13 @@
         <div class="fac-table-card">
           <table class="fac-table">
             <thead>
-              <tr>
+              <tr id="faculty-thead-tr">
                 <th style="width: 32px;">#</th>
                 <th>Faculty Member</th>
-                <th class="col-empid">Employee ID</th>
-                <th class="col-role">Designation / Role</th>
-                <th style="text-align: right; width: 50px;">Actions</th>
+                <th class="col-empid" id="th-empid">Employee ID</th>
+                <th class="col-role" id="th-role">Designation / Role</th>
+                <th class="col-retention" id="th-retention" style="display: none;">Retention</th>
+                <th style="text-align: right; width: 65px;" id="th-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="faculty-tbody">

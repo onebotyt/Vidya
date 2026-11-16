@@ -327,6 +327,80 @@ class HodModel {
   }
 
   /**
+   * Retrieve soft-deleted faculty for HOD's department currently in Trash (auto-purges >30 days)
+   * @param {number} deptId Department ID
+   * @returns {Promise<Array<Object>>} List of trashed faculty with remaining retention days
+   */
+  static async getTrashFaculty(deptId) {
+    try {
+      const expired = await query(
+        `SELECT id, user_id FROM teachers WHERE deleted_at IS NOT NULL AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`
+      );
+      for (const exp of expired) {
+        await query(`DELETE FROM register_attendance WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM attendance_sessions WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM attendance_registers WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM teachers WHERE id = ?`, [exp.id]).catch(() => {});
+        if (exp.user_id) {
+          await query(`DELETE FROM user_roles WHERE user_id = ?`, [exp.user_id]).catch(() => {});
+          await query(`DELETE FROM user_sessions WHERE user_id = ?`, [exp.user_id]).catch(() => {});
+          await query(`DELETE FROM users WHERE id = ?`, [exp.user_id]).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn('Auto-purge check error:', e.message);
+    }
+
+    return await query(
+      `SELECT t.id, t.id as teacher_id, t.full_name, t.employee_id, t.phone, t.created_at, t.deleted_at,
+              t.department_id,
+              u.id as user_id, u.email, u.email as gmail, u.status,
+              GREATEST(0, 30 - DATEDIFF(NOW(), t.deleted_at)) as days_left
+       FROM teachers t
+       JOIN users u ON t.user_id = u.id
+       WHERE t.department_id = ? AND t.deleted_at IS NOT NULL
+       ORDER BY t.deleted_at DESC`,
+      [deptId]
+    );
+  }
+
+  /**
+   * Restore a soft-deleted faculty member from Trash for HOD's department
+   * @param {number} teacherId Teacher ID
+   * @param {number} deptId Department ID
+   * @param {number} userId Acting user ID
+   * @returns {Promise<{success: boolean, message: string}|null>}
+   */
+  static async restoreFaculty(teacherId, deptId, userId = 1) {
+    const tRows = await query(
+      `SELECT id, user_id, full_name FROM teachers WHERE id = ? AND department_id = ? AND deleted_at IS NOT NULL`,
+      [teacherId, deptId]
+    );
+    if (!tRows.length) return null;
+    const uid = tRows[0].user_id;
+
+    await query(`UPDATE teachers SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [teacherId]);
+    if (uid) {
+      await query(`UPDATE users SET deleted_at = NULL, status = 'ACTIVE', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [uid]);
+    }
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'FACULTY_RESTORED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+        [userId, String(teacherId), JSON.stringify({ name: tRows[0].full_name })]
+      );
+    } catch (_) {}
+
+    return {
+      success: true,
+      message: `${tRows[0].full_name} has been restored successfully!`
+    };
+  }
+
+  /**
    * Retrieve department faculty roster with active teaching workloads and assigned subjects
    * @calledBy HodController.getFacultyRoster() (controllers/hodController.js)
    * @route GET /api/v1/hod/faculty-roster (routes/hod.js)

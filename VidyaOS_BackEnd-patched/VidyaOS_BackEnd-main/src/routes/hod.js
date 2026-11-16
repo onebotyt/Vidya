@@ -75,6 +75,16 @@ router.post('/teachers/:id/reset-password', requireHOD(), [
 // @handler HodController.deleteTeacher() -> HodModel.deleteTeacher()
 router.delete('/teachers/:id', requireHOD(), [param('id').isInt(), validate], HodController.deleteTeacher);
 
+// @route   GET /api/v1/hod/trash/faculty
+// @desc    Retrieve soft-deleted faculty for HOD department currently in Trash
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.get('/trash/faculty', requireHOD(), HodController.getTrashFaculty);
+
+// @route   POST /api/v1/hod/trash/faculty/:id/restore
+// @desc    Restore a soft-deleted faculty member from Trash
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.post('/trash/faculty/:id/restore', requireHOD(), [param('id').isInt(), validate], HodController.restoreFaculty);
+
 // @route   GET /api/v1/hod/faculty-roster
 // @desc    Retrieve department faculty roster with active teaching workloads and assigned subjects
 // @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
