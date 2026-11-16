@@ -38,6 +38,29 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 428: Academic Dossier Database Schema Provisioning & Sidebar Link Fitting Fix
+
+- **Issues Addressed & Architecturally Resolved**:
+  1. **Academic Dossier & Media Schema Missing Tables (`theory_class_files` et al.)**:
+     - Resolved runtime SQL error `Table 'vdiyaos.theory_class_files' doesn't exist` when loading `/faculty/theory-classes/index.html?groupId=1`.
+     - Provisioned all 12 required academic dossier and media tables across `vdiyaos`, `vidyaos`, and `college_attendance`:
+       - `theory_class_files` & `theory_class_documents` (7 Theory artifacts: registers, diary, lesson plan, syllabus coverage, TLM, ICT, assignments).
+       - `lab_class_files` & `lab_class_documents` (Lab experiments, rubrics, manuals).
+       - `student_performance_files` & `student_performance_documents` (Result analysis, advanced/slow learners, mentoring).
+       - `assessment_process_files` & `assessment_process_documents` (Internal evaluation, question paper CO-PO mapping).
+       - `course_files` & `course_file_documents` (NBA 18 Course File artifacts).
+       - `faculty_media_assets` & `classroom_post_comments`.
+     - Created migration [009_add_dossier_media_and_comments_tables.sql](file:///e:/uiap/VidyaOS/VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main/database/migrations/009_add_dossier_media_and_comments_tables.sql) and updated [cpanel_production_mysql.sql](file:///e:/uiap/VidyaOS/VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main/database/cpanel_production_mysql.sql).
+  2. **Query Parameter Tolerance (`groupId` vs `group_id`)**:
+     - Aligned `theoryClassController.js`, `labClassController.js`, and `studentPerformanceController.js` to accept `group_id`, `groupId`, `id`, and `teaching_group_id` interchangeably.
+  3. **Sidebar Navigation Link Overflow & Text Truncation**:
+     - Converted `.sidebar-nav-body` into a dedicated vertical scroll container with `flex: 1 1 auto; overflow-y: auto !important; min-height: 0;` so that on screens of any height, all 10 links + toggle button are 100% accessible and never clipped.
+     - Optimized compact rail item height from 52px to 48px and gap to 2px, ensuring all 11 navigation items fit on standard laptop screens without requiring scrolling.
+     - Adjusted label typography (`0.58rem`, letter-spacing `-0.02em`) and canonical short labels (`Home` instead of `Dashbo...`, `Register` instead of `Attenda...`, `ESP32` instead of `ESP32 Bio`) eliminating text ellipsis truncation.
+  4. **Verification**:
+     - Tested `GET /api/v1/theory-classes?groupId=1` directly and via port 5000 proxy: **HTTP 200 OK**.
+     - All regression test suites passing (30/30 registration, 46/46 registers, 88/88 theme tokens).
+
 ### ✅ Milestone 427: Pristine VidyaOS Ecosystem Replacement for onebotyt/Vidya.git
 
 - **Execution & Scope**:

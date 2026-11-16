@@ -1,4 +1,4 @@
-﻿param(
+param(
     [Parameter(Mandatory=$false)]
     [string]$Message = "chore: sync latest updates across VidyaOS ecosystem",
     [Parameter(Mandatory=$false)]
