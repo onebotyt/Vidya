@@ -75,13 +75,17 @@
     const bd = getBackdrop();
     if (!sb) return;
 
-    const isOpen = sb.classList.contains('desktop-open');
+    const isOpen = sb.classList.contains('desktop-open') || sb.classList.contains('open');
     if (isOpen) {
-      sb.classList.remove('desktop-open');
+      sb.classList.remove('desktop-open', 'open', 'sidebar-open');
       if (bd) bd.classList.remove('active', 'open');
+      document.documentElement.classList.add('sidebar-collapsed');
+      document.body.classList.add('sidebar-collapsed');
     } else {
-      sb.classList.add('desktop-open');
+      sb.classList.add('desktop-open', 'open');
       if (bd) bd.classList.add('active', 'open');
+      document.documentElement.classList.remove('sidebar-collapsed');
+      document.body.classList.remove('sidebar-collapsed');
     }
   }
 
@@ -95,11 +99,11 @@
     const bd = getBackdrop();
     if (!sb) return;
 
-    const isOpen = sb.classList.contains('open') || sb.classList.contains('sidebar-open');
+    const isOpen = sb.classList.contains('open') || sb.classList.contains('sidebar-open') || sb.classList.contains('desktop-open');
     if (isOpen) {
       closeSidebar();
     } else {
-      sb.classList.add('open', 'sidebar-open');
+      sb.classList.add('open', 'sidebar-open', 'desktop-open');
       if (bd) bd.classList.add('active', 'open');
       document.body.style.overflow = 'hidden';
     }
@@ -115,6 +119,8 @@
       bd.classList.remove('active', 'open');
     }
     document.body.style.overflow = '';
+    document.documentElement.classList.add('sidebar-collapsed');
+    document.body.classList.add('sidebar-collapsed');
   }
 
   function handleBackdropClick(e) {
