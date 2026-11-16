@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/faculty/components/faculty-base.css?v=20261117">
   <link rel="stylesheet" href="/faculty/components/header/header.css?v=20261117">
   <link rel="stylesheet" href="/faculty/components/sidebar/sidebar.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/components/delete-modal/delete-modal.css?v=20261117">
   <link rel="stylesheet" href="/faculty/faculty/faculty.css?v=20261117">
   <script>
     (function () {
@@ -139,11 +140,11 @@
           <table class="fac-table">
             <thead>
               <tr>
-                <th style="width: 36px;">#</th>
+                <th style="width: 32px;">#</th>
                 <th>Faculty Member</th>
-                <th>Employee ID</th>
-                <th>Designation / Role</th>
-                <th style="text-align: right; width: 60px;">Actions</th>
+                <th class="col-empid">Employee ID</th>
+                <th class="col-role">Designation / Role</th>
+                <th style="text-align: right; width: 50px;">Actions</th>
               </tr>
             </thead>
             <tbody id="faculty-tbody">
@@ -273,6 +274,7 @@
   <script src="/faculty/components/icons.js?v=20261117"></script>
   <script src="/faculty/components/sidebar/sidebar.js?v=20261117"></script>
   <script src="/faculty/components/header/header.js?v=20261117"></script>
+  <script src="/faculty/components/delete-modal/delete-modal.js?v=20261117"></script>
   <script src="/faculty/faculty/faculty.js?v=20261117"></script>
 </body>
 

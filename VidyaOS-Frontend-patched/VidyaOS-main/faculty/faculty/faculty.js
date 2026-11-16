@@ -214,8 +214,8 @@
               <a href="#" class="fac-member-link" onclick="viewFacultyDetails(${f.id}); return false;">${esc(f.full_name)}</a>
             </div>
           </td>
-          <td><span class="fac-emp-code">${esc(f.employee_id || '—')}</span></td>
-          <td>${roleBadge}</td>
+          <td class="col-empid"><span class="fac-emp-code">${esc(f.employee_id || '—')}</span></td>
+          <td class="col-role">${roleBadge}</td>
           <td>
             <div class="fac-actions-cell">
               <div class="fac-menu-wrap">
@@ -281,8 +281,8 @@
             <span class="fac-member-name">${esc(req.full_name)}</span>
           </div>
         </td>
-        <td><span class="fac-emp-code">${esc(req.employee_id || 'PENDING')}</span></td>
-        <td><span class="fac-role-chip" style="background:var(--status-late-bg); color:var(--status-late);">Pending Verification</span></td>
+        <td class="col-empid"><span class="fac-emp-code">${esc(req.employee_id || 'PENDING')}</span></td>
+        <td class="col-role"><span class="fac-role-chip" style="background:var(--status-late-bg); color:var(--status-late);">Pending Verification</span></td>
         <td>
           <div class="fac-actions-cell">
             <button type="button" class="btn-primary-compact" style="padding:0.25rem 0.65rem; font-size:0.72rem;" onclick="approveRequest(${req.id})">
@@ -415,11 +415,34 @@
 
   async function deleteFacultyMember(id, name) {
     closeAllMenus();
-    if (!confirm(`Are you sure you want to remove ${name} from department faculty?`)) return;
+    if (typeof window.openDeleteModal === 'function') {
+      window.openDeleteModal({
+        title: 'Remove Faculty Member',
+        subtitle: 'Move to Department Trash Bin',
+        itemName: name,
+        message: 'This will remove the faculty member from active department teaching and move them to the Trash Bin. Records in the Trash Bin are automatically permanently deleted after 30 days.',
+        confirmKeyword: 'remove',
+        strictCase: false,
+        confirmButtonText: 'Move to Trash Bin',
+        onConfirm: async () => {
+          const res = await api(`/hod/teachers/${id}`, { method: 'DELETE' });
+          if (res && res.success) {
+            notify(`${name} moved to Trash Bin (auto-purges in 30 days)`, 'success');
+            loadFacultyRoster();
+          } else {
+            throw new Error(res?.error?.message || 'Removal failed');
+          }
+        }
+      });
+      return;
+    }
+
+    const val = prompt(`Type "remove" to move ${name} to Trash Bin:`);
+    if (val?.toLowerCase() !== 'remove') return;
     try {
       const res = await api(`/hod/teachers/${id}`, { method: 'DELETE' });
       if (res && res.success) {
-        notify(`${name} removed successfully`, 'success');
+        notify(`${name} moved to Trash Bin (auto-purges in 30 days)`, 'success');
         loadFacultyRoster();
       } else {
         throw new Error(res?.error?.message || 'Removal failed');

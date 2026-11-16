@@ -275,27 +275,54 @@ class HodModel {
    * @returns {Promise<boolean>}
    */
   static async deleteTeacher(id, deptId, userId) {
-    await withTransaction(async (conn) => {
-      // 1. Clean up registers and child attendance records
-      await conn.execute(`DELETE FROM register_attendance WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id]);
-      await conn.execute(`DELETE FROM attendance_sessions WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id]);
-      await conn.execute(`DELETE FROM attendance_registers WHERE teacher_id = ?`, [id]);
-      await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [id]);
-      try { await conn.execute(`UPDATE teaching_groups SET teacher_id = NULL WHERE teacher_id = ?`, [id]); } catch (_) {}
-      try { await conn.execute(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [userId]); } catch (_) {}
+    const tRows = await query(`SELECT id, user_id, full_name FROM teachers WHERE id = ? AND deleted_at IS NULL`, [id]);
+    if (!tRows.length) return false;
+    const uid = userId || tRows[0].user_id;
 
-      // 2. Delete teacher row
-      await conn.execute(`DELETE FROM teachers WHERE id = ?`, [id]);
+    // 1. Deactivate active assignments
+    await query(`UPDATE teacher_assignments SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE teacher_id = ?`, [id]);
+    await query(`UPDATE common_faculty_manager_assignments SET is_active = 0, revoked_at = CURRENT_TIMESTAMP WHERE teacher_id = ?`, [id]);
+    try { await query(`UPDATE teaching_groups SET teacher_id = NULL WHERE teacher_id = ?`, [id]); } catch (_) {}
+    try { await query(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [uid]); } catch (_) {}
 
-      // 3. Clean up user credentials, sessions and roles
-      if (userId) {
-        await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
-        try { await conn.execute(`UPDATE audit_logs SET user_id = NULL WHERE user_id = ?`, [userId]); } catch (_) {}
-        await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+    // 2. Mark soft-deleted with timestamp into Trash Bin (30-day auto retention)
+    await query(`UPDATE teachers SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [id]);
+    if (uid) {
+      await query(`UPDATE users SET deleted_at = CURRENT_TIMESTAMP, status = 'SUSPENDED', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [uid]);
+      await query(`DELETE FROM user_sessions WHERE user_id = ?`, [uid]).catch(() => {});
+    }
+
+    // 3. Auto-purge records in trash older than 30 days
+    try {
+      const expired = await query(
+        `SELECT id, user_id FROM teachers WHERE deleted_at IS NOT NULL AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`
+      );
+      for (const exp of expired) {
+        await query(`DELETE FROM register_attendance WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM attendance_sessions WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM attendance_registers WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM teachers WHERE id = ?`, [exp.id]).catch(() => {});
+        if (exp.user_id) {
+          await query(`DELETE FROM user_roles WHERE user_id = ?`, [exp.user_id]).catch(() => {});
+          await query(`DELETE FROM user_sessions WHERE user_id = ?`, [exp.user_id]).catch(() => {});
+          await query(`DELETE FROM notifications WHERE user_id = ?`, [exp.user_id]).catch(() => {});
+          await query(`DELETE FROM users WHERE id = ?`, [exp.user_id]).catch(() => {});
+        }
       }
-    });
+    } catch (e) {
+      console.warn('Auto-purge check error:', e.message);
+    }
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'FACULTY_MOVED_TO_TRASH', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+        [uid || 1, String(id), JSON.stringify({ name: tRows[0].full_name, purge_in_days: 30 })]
+      );
+    } catch (_) {}
+
     return true;
   }
 
@@ -314,7 +341,7 @@ class HodModel {
               (SELECT COUNT(*) FROM teaching_groups tg WHERE tg.teacher_id = t.id AND tg.status = 'ACTIVE') as active_groups_count
        FROM teachers t
        JOIN users u ON t.user_id = u.id
-       WHERE t.department_id = ?
+       WHERE t.department_id = ? AND t.deleted_at IS NULL
        ORDER BY t.full_name ASC`,
       [deptId]
     );

@@ -890,7 +890,7 @@ input:checked + .slider:before {
     white-space: nowrap;
   }
 
-  /* Compact Table */
+  /* Compact Table & Mobile Column Suppression */
   .fac-table-card {
     border-radius: 10px;
     overflow-x: auto;
@@ -905,5 +905,11 @@ input:checked + .slider:before {
     width: 26px;
     height: 26px;
     font-size: 0.7rem;
+  }
+
+  /* Hide Employee ID and Role columns on mobile - fully viewable in Details Modal */
+  .col-empid,
+  .col-role {
+    display: none !important;
   }
 }
