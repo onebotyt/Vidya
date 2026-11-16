@@ -38,6 +38,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 429: Header Expand Toggle Relocation & Redundant Sidebar Footer Removal
+
+- **Issues Addressed & Architecturally Resolved**:
+  1. **Top Header Expand Button Before Logo**:
+     - Moved the sidebar expand/collapse button `#faculty-nav-toggle` to the top header (`#faculty-header .header-left`), placed directly before the VidyaOS brand logo.
+     - Fully responsive across screen sizes: triggers `toggleDesktopSidebar()` on desktop (>=769px) for the overlay drawer without layout shift, and `toggleSidebar()` on mobile (<=768px).
+     - Guarded against pre-rendered/cached headers in `syncFacultyHeader()` and `mountFacultyHeader()` so the button is guaranteed present.
+  2. **Complete Removal of Redundant Avatar & Logout from Sidebar**:
+     - Removed `.sidebar-expanded-footer` (user avatar, full name, role pill, logout button) from the sidebar.
+     - Removed `.sidebar-rail-toggle-item` (duplicate expand button) from the sidebar rail.
+     - Added strict CSS overrides (`display: none !important; height: 0 !important;`) and JS DOM cleanup to ensure zero DOM and visual clutter, leveraging the authoritative top header profile dropdown and logout flyout.
+  3. **Sidebar Rail View & Full Height Vertical Flow**:
+     - Set `.faculty-sidebar .sidebar-nav-body` to `flex: 1 1 100% !important; height: 100% !important;` with smooth contained scrolling on short viewports.
+     - Standardized short labels (`Home`, `Classes`, `Register`, `Sheets`, `Leave`, `Students`, `ESP32`, `Timetable`, `Drive`, `Reports`) with `max-width: 100%` and `text-overflow: clip`, eliminating label truncation (`Dashbo...`, `Attenda...`).
+
+---
+
 ### ✅ Milestone 428: Academic Dossier Database Schema Provisioning & Sidebar Link Fitting Fix
 
 - **Issues Addressed & Architecturally Resolved**:
