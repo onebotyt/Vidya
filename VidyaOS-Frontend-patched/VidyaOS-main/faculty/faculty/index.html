@@ -59,7 +59,7 @@
             </div>
           </article>
 
-          <article class="fac-kpi-card">
+          <article class="fac-kpi-card" onclick="focusPendingQueue()" style="cursor: pointer;" title="Click to view pending onboarding queue">
             <div class="fac-kpi-icon icon-amber">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -69,7 +69,7 @@
             <div class="fac-kpi-meta">
               <div class="fac-kpi-label">Pending Verification</div>
               <div class="fac-kpi-val" id="stat-pending-faculty">0</div>
-              <div class="fac-kpi-sub">Awaiting HOD approval</div>
+              <div class="fac-kpi-sub" id="stat-pending-sub">Awaiting HOD approval</div>
             </div>
           </article>
 
@@ -95,6 +95,26 @@
           </div>
         </section>
 
+        <!-- Actionable Pending Onboarding Queue (Inline Notification Banner — NOT a separate tab) -->
+        <div class="fac-pending-banner" id="fac-pending-banner" style="display: none;">
+          <div class="fac-pending-banner-header" onclick="togglePendingQueue()">
+            <div class="fac-pending-title-group">
+              <div class="fac-pending-icon-dot"></div>
+              <div>
+                <strong>Pending Faculty Onboarding (<span id="pending-banner-count">0</span>)</strong>
+                <p>New instructor registration requests awaiting HOD verification</p>
+              </div>
+            </div>
+            <button type="button" class="btn-toggle-pending" id="btn-toggle-pending">
+              <span id="pending-toggle-text">Review Queue</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+          </div>
+          <div class="fac-pending-list" id="fac-pending-list" style="display: none;">
+            <!-- Pending applicant cards dynamically injected -->
+          </div>
+        </div>
+
         <!-- Toolbar: Pills, Live Search & Add Action -->
         <div class="fac-toolbar">
           <nav class="fac-pills" aria-label="Faculty Role Filters">
@@ -105,15 +125,8 @@
             <button type="button" class="fac-pill" data-filter="HOD">
               <span>HOD</span>
             </button>
-            <button type="button" class="fac-pill" data-filter="CLASS_TEACHER">
-              <span>Class Teachers</span>
-            </button>
             <button type="button" class="fac-pill" data-filter="LECTURER">
               <span>Lecturers</span>
-            </button>
-            <button type="button" class="fac-pill" data-filter="PENDING">
-              <span>Pending Queue</span>
-              <span class="fac-pill-badge" id="badge-count-pending">0</span>
             </button>
           </nav>
 
@@ -146,13 +159,12 @@
                 <th>Faculty Member</th>
                 <th>Employee ID</th>
                 <th>Designation / Role</th>
-                <th>Teaching Scope</th>
-                <th style="text-align: right;">Actions</th>
+                <th style="text-align: right; width: 60px;">Actions</th>
               </tr>
             </thead>
             <tbody id="faculty-tbody">
               <tr>
-                <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
                   Loading faculty roster...
                 </td>
               </tr>
@@ -198,6 +210,73 @@
           <button type="submit" style="padding:0.55rem 1.25rem; border-radius:8px; border:none; background:var(--color-primary); color:var(--text-white); font-size:0.82rem; font-weight:700; cursor:pointer;">Onboard Faculty</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: View Faculty Complete Details -->
+  <div id="modal-faculty-details" class="fac-modal-backdrop" style="display:none;" onclick="if(event.target===this)closeFacultyDetailsModal()">
+    <div class="fac-details-card">
+      <div class="fac-details-header">
+        <strong style="font-size:1.05rem; color:var(--text-main);">Faculty Profile Details</strong>
+        <button type="button" onclick="closeFacultyDetailsModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+      </div>
+      <div class="fac-details-body">
+        <div class="fac-details-hero">
+          <div class="fac-details-avatar" id="detail-fac-avatar">FA</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <h3 id="detail-fac-name" style="font-size:1.1rem; font-weight:800; color:var(--text-main); margin:0;">Prof. Name</h3>
+              <span id="detail-fac-badge" class="fac-role-chip lecturer">Lecturer</span>
+            </div>
+            <div id="detail-fac-status" style="font-size:0.75rem; color:var(--status-present); font-weight:700; margin-top:0.25rem;">● Active Faculty</div>
+          </div>
+        </div>
+
+        <div class="fac-details-grid">
+          <div class="fac-detail-item">
+            <label>Employee ID</label>
+            <span id="detail-fac-empid" style="font-family:var(--font-family-mono); color:var(--color-primary);">IT-T-01</span>
+          </div>
+          <div class="fac-detail-item">
+            <label>Designation</label>
+            <span id="detail-fac-role">Lecturer</span>
+          </div>
+          <div class="fac-detail-item">
+            <label>Email Address</label>
+            <span id="detail-fac-email">faculty@college.edu</span>
+          </div>
+          <div class="fac-detail-item">
+            <label>Phone Number</label>
+            <span id="detail-fac-phone">—</span>
+          </div>
+          <div class="fac-detail-item">
+            <label>Department</label>
+            <span id="detail-fac-dept">Information Technology</span>
+          </div>
+          <div class="fac-detail-item">
+            <label>Account Created</label>
+            <span id="detail-fac-created">—</span>
+          </div>
+        </div>
+
+        <div class="fac-detail-item" style="border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+          <label style="margin-bottom:0.35rem;">Assigned Teaching Subjects</label>
+          <div id="detail-fac-subjects" style="font-size:0.83rem; color:var(--text-main); line-height:1.4;">
+            No teaching assignments recorded yet.
+          </div>
+        </div>
+      </div>
+      <div class="fac-details-footer">
+        <button type="button" id="detail-btn-reset" class="btn-icon-action" style="width:auto; padding:0.45rem 0.85rem; font-size:0.78rem; font-weight:600;" onclick="detailResetPassword()">
+          Reset Password
+        </button>
+        <button type="button" id="detail-btn-delete" class="btn-icon-action danger" style="width:auto; padding:0.45rem 0.85rem; font-size:0.78rem; font-weight:600;" onclick="detailDeleteFaculty()">
+          Remove Faculty
+        </button>
+        <button type="button" onclick="closeFacultyDetailsModal()" style="padding:0.45rem 1rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.82rem; font-weight:600; cursor:pointer;">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 

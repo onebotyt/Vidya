@@ -430,15 +430,21 @@ input:checked + .slider:before {
   color: var(--chip-hod-color);
 }
 
-.fac-role-chip.class-teacher {
-  background: var(--chip-classteacher-bg);
-  color: var(--chip-classteacher-color);
-}
-
 .fac-role-chip.lecturer {
   background: var(--bg-surface);
   color: var(--text-muted);
   border: 1px solid var(--border-color);
+}
+
+.fac-member-link {
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.12s ease;
+}
+
+.fac-member-link:hover {
+  color: var(--color-primary);
 }
 
 .fac-actions-cell {
@@ -446,6 +452,7 @@ input:checked + .slider:before {
   align-items: center;
   gap: 0.4rem;
   justify-content: flex-end;
+  position: relative;
 }
 
 .btn-icon-action {
@@ -470,6 +477,287 @@ input:checked + .slider:before {
 .btn-icon-action.danger:hover {
   border-color: var(--status-absent);
   color: var(--status-absent);
+}
+
+/* 3-Dot Action Kebab Menu */
+.fac-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-kebab {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--bg-surface);
+}
+
+.btn-kebab:hover, .btn-kebab.active {
+  background: var(--bg-card);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.fac-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 5px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  min-width: 165px;
+  z-index: 1050;
+  display: none;
+  flex-direction: column;
+  padding: 0.35rem;
+}
+
+.fac-dropdown-menu.show {
+  display: flex;
+  animation: facMenuFade 0.12s ease-out;
+}
+
+@keyframes facMenuFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fac-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.fac-menu-item:hover {
+  background: var(--bg-surface);
+  color: var(--color-primary);
+}
+
+.fac-menu-item.danger {
+  color: var(--status-absent);
+}
+
+.fac-menu-item.danger:hover {
+  background: var(--status-absent-bg);
+  color: var(--status-absent);
+}
+
+/* Actionable Pending Onboarding Banner (Integrated — NOT a separate tab) */
+.fac-pending-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--status-late);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.fac-pending-banner-header {
+  padding: 0.75rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.fac-pending-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.fac-pending-icon-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--status-late);
+  box-shadow: 0 0 0 3px var(--status-late-bg);
+  flex-shrink: 0;
+}
+
+.fac-pending-title-group strong {
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+
+.fac-pending-title-group p {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.btn-toggle-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.32rem 0.65rem;
+  cursor: pointer;
+}
+
+.fac-pending-list {
+  border-top: 1px solid var(--border-color);
+  padding: 0.75rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--bg-surface);
+}
+
+.fac-pending-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fac-pending-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.fac-pending-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* Faculty Details Modal */
+.fac-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.fac-details-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: facModalPop 0.16s ease-out;
+}
+
+@keyframes facModalPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.fac-details-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fac-details-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fac-details-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.fac-details-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--text-white);
+  font-size: 1.3rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fac-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.fac-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.fac-detail-item label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.fac-detail-item span {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-main);
+  word-break: break-all;
+}
+
+.fac-details-footer {
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  background: var(--bg-surface);
 }
 
 /* Mobile Cards Mode (Screens <= 768px) */

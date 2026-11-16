@@ -19,6 +19,7 @@
   let pendingFaculty = [];
   let currentFilter = 'ALL';
   let regOpen = false;
+  let currentDetailFacultyId = null;
 
   const esc = (s) => (s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   const notify = (msg, type = 'info') => {
@@ -78,7 +79,7 @@
       if (res && res.success && Array.isArray(res.data)) {
         pendingFaculty = res.data;
         updateCounts();
-        if (currentFilter === 'PENDING') renderTable();
+        renderPendingBanner();
       }
     } catch (err) {
       console.warn('[Faculty] Pending registrations check:', err.message);
@@ -129,7 +130,6 @@
     const elActive = document.getElementById('stat-active-faculty');
     const elPending = document.getElementById('stat-pending-faculty');
     const badgeAll = document.getElementById('badge-count-all');
-    const badgePending = document.getElementById('badge-count-pending');
 
     const total = allFaculty.length;
     const active = allFaculty.filter(f => f.status === 'ACTIVE').length;
@@ -139,30 +139,83 @@
     if (elActive) elActive.textContent = `${active} active`;
     if (elPending) elPending.textContent = pending;
     if (badgeAll) badgeAll.textContent = total;
-    if (badgePending) badgePending.textContent = pending;
   }
 
-  // 3. Render Table
+  // 3. Render Actionable Pending Banner (Not a separate tab!)
+  function renderPendingBanner() {
+    const banner = document.getElementById('fac-pending-banner');
+    const countEl = document.getElementById('pending-banner-count');
+    const list = document.getElementById('fac-pending-list');
+    const subText = document.getElementById('stat-pending-sub');
+    if (!banner || !list) return;
+
+    if (pendingFaculty.length === 0) {
+      banner.style.display = 'none';
+      list.style.display = 'none';
+      if (subText) subText.textContent = 'All applications verified';
+      return;
+    }
+
+    banner.style.display = 'block';
+    if (countEl) countEl.textContent = pendingFaculty.length;
+    if (subText) subText.textContent = `${pendingFaculty.length} awaiting HOD clearance`;
+
+    list.innerHTML = pendingFaculty.map(req => `
+      <div class="fac-pending-card">
+        <div class="fac-pending-meta">
+          <div class="fac-avatar" style="width:38px; height:38px; font-size:0.85rem;">${getInitials(req.full_name)}</div>
+          <div>
+            <div style="font-weight:700; font-size:0.86rem; color:var(--text-main);">${esc(req.full_name)}</div>
+            <div style="font-size:0.74rem; color:var(--text-muted);">${esc(req.email)} &bull; ${esc(req.phone || 'No phone')}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Requested: <span class="fac-emp-code">${esc(req.employee_id || 'Auto ID')}</span> &bull; Applied ${new Date(req.created_at).toLocaleDateString()}</div>
+          </div>
+        </div>
+        <div class="fac-pending-actions">
+          <button type="button" class="btn-primary-compact" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="approveRequest(${req.id})">
+            ✓ Approve
+          </button>
+          <button type="button" class="btn-icon-action danger" title="Reject Application" onclick="rejectRequest(${req.id})">
+            &times;
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function togglePendingQueue(forceOpen = false) {
+    const list = document.getElementById('fac-pending-list');
+    const text = document.getElementById('pending-toggle-text');
+    if (!list) return;
+    const isOpen = list.style.display !== 'none';
+    const shouldOpen = forceOpen || !isOpen;
+    list.style.display = shouldOpen ? 'flex' : 'none';
+    if (text) text.textContent = shouldOpen ? 'Hide Queue' : 'Review Queue';
+  }
+
+  function focusPendingQueue() {
+    const banner = document.getElementById('fac-pending-banner');
+    if (banner && pendingFaculty.length > 0) {
+      togglePendingQueue(true);
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      notify('No pending faculty registration requests', 'info');
+    }
+  }
+
+  // 4. Render Table (No Teaching Scope column, No Class Teacher role, 3-dot action menu)
   function renderTable() {
     const tbody = document.getElementById('faculty-tbody');
     const searchVal = (document.getElementById('faculty-search')?.value || '').toLowerCase().trim();
 
     if (!tbody) return;
 
-    if (currentFilter === 'PENDING') {
-      renderPendingTable(tbody);
-      return;
-    }
-
     let list = allFaculty;
 
-    // Filter by designation / role
+    // Filter by role: HOD vs LECTURER (Class teacher removed)
     if (currentFilter === 'HOD') {
       list = list.filter(f => (f.employee_id || '').toUpperCase().includes('HOD') || (f.role || '').toUpperCase() === 'HOD');
-    } else if (currentFilter === 'CLASS_TEACHER') {
-      list = list.filter(f => f.is_class_teacher || (f.employee_id || '').toUpperCase().includes('CT'));
     } else if (currentFilter === 'LECTURER') {
-      list = list.filter(f => !(f.employee_id || '').toUpperCase().includes('HOD') && !f.is_class_teacher && !(f.employee_id || '').toUpperCase().includes('CT'));
+      list = list.filter(f => !(f.employee_id || '').toUpperCase().includes('HOD') && (f.role || '').toUpperCase() !== 'HOD');
     }
 
     // Search query filter
@@ -178,7 +231,7 @@
     if (list.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+          <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
             No faculty members match current filter criteria.
           </td>
         </tr>
@@ -188,12 +241,10 @@
 
     tbody.innerHTML = list.map((f, idx) => {
       const isHod = (f.employee_id || '').toUpperCase().includes('HOD') || (f.role || '').toUpperCase() === 'HOD';
-      const isCt = f.is_class_teacher || (f.employee_id || '').toUpperCase().includes('CT');
       const roleBadge = isHod
         ? '<span class="fac-role-chip hod">HOD</span>'
-        : (isCt ? '<span class="fac-role-chip class-teacher">Class Teacher</span>' : '<span class="fac-role-chip lecturer">Lecturer</span>');
+        : '<span class="fac-role-chip lecturer">Lecturer</span>';
 
-      const subjectsCount = (Array.isArray(f.subjects) ? f.subjects.length : f.assignment_count) || 0;
       const initials = getInitials(f.full_name);
 
       return `
@@ -201,9 +252,9 @@
           <td style="color: var(--text-muted); font-size: 0.75rem; width: 36px;">${idx + 1}</td>
           <td>
             <div class="fac-member-cell">
-              <div class="fac-avatar">${initials}</div>
+              <div class="fac-avatar" style="cursor:pointer;" onclick="viewFacultyDetails(${f.id})">${initials}</div>
               <div>
-                <div class="fac-member-name">${esc(f.full_name)}</div>
+                <a href="#" class="fac-member-link" onclick="viewFacultyDetails(${f.id}); return false;">${esc(f.full_name)}</a>
                 <div class="fac-member-email">${esc(f.email || f.gmail || 'No email')}</div>
               </div>
             </div>
@@ -211,19 +262,32 @@
           <td><span class="fac-emp-code">${esc(f.employee_id || '—')}</span></td>
           <td>${roleBadge}</td>
           <td>
-            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">${subjectsCount} Subjects</span>
-            <span style="font-size: 0.72rem; color: var(--text-muted);"> (${f.teaching_load || subjectsCount} hrs/wk)</span>
-          </td>
-          <td>
             <div class="fac-actions-cell">
-              <button type="button" class="btn-icon-action" title="Reset Password" onclick="resetFacultyPassword(${f.id}, '${esc(f.full_name)}')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              </button>
-              ${!isHod ? `
-                <button type="button" class="btn-icon-action danger" title="Remove Faculty" onclick="deleteFacultyMember(${f.id}, '${esc(f.full_name)}')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <div class="fac-menu-wrap">
+                <button type="button" class="btn-icon-action btn-kebab" title="Actions" onclick="toggleFacultyMenu(event, ${f.id})">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="5" r="2"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                    <circle cx="12" cy="19" r="2"></circle>
+                  </svg>
                 </button>
-              ` : ''}
+                <div class="fac-dropdown-menu" id="fac-menu-${f.id}">
+                  <button type="button" class="fac-menu-item" onclick="viewFacultyDetails(${f.id})">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span>View Details</span>
+                  </button>
+                  <button type="button" class="fac-menu-item" onclick="resetFacultyPassword(${f.id}, '${esc(f.full_name)}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>Reset Password</span>
+                  </button>
+                  ${!isHod ? `
+                    <button type="button" class="fac-menu-item danger" onclick="deleteFacultyMember(${f.id}, '${esc(f.full_name)}')">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <span>Remove Faculty</span>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
             </div>
           </td>
         </tr>
@@ -231,45 +295,96 @@
     }).join('');
   }
 
-  function renderPendingTable(tbody) {
-    if (pendingFaculty.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
-            No pending faculty registration requests in queue.
-          </td>
-        </tr>
-      `;
-      return;
+  // 5. 3-Dot Dropdown Menu Handlers
+  function toggleFacultyMenu(e, id) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-
-    tbody.innerHTML = pendingFaculty.map((req, idx) => `
-      <tr>
-        <td style="color: var(--text-muted); font-size: 0.75rem; width: 36px;">${idx + 1}</td>
-        <td>
-          <div class="fac-member-cell">
-            <div class="fac-avatar">${getInitials(req.full_name)}</div>
-            <div>
-              <div class="fac-member-name">${esc(req.full_name)}</div>
-              <div class="fac-member-email">${esc(req.email)} &middot; ${esc(req.phone || '')}</div>
-            </div>
-          </div>
-        </td>
-        <td><span class="fac-emp-code">${esc(req.employee_id || 'PENDING')}</span></td>
-        <td><span class="fac-role-chip lecturer">Applicant</span></td>
-        <td style="font-size: 0.75rem; color: var(--text-muted);">${new Date(req.created_at).toLocaleDateString()}</td>
-        <td>
-          <div class="fac-actions-cell">
-            <button type="button" class="btn-primary-compact" style="padding: 0.25rem 0.55rem; font-size: 0.74rem;" onclick="approveRequest(${req.id})">Approve</button>
-            <button type="button" class="btn-icon-action danger" title="Reject" onclick="rejectRequest(${req.id})">&times;</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    const menu = document.getElementById(`fac-menu-${id}`);
+    const isAlreadyOpen = menu?.classList.contains('show');
+    closeAllMenus();
+    if (menu && !isAlreadyOpen) {
+      menu.classList.add('show');
+    }
   }
 
-  // 4. Actions
+  function closeAllMenus() {
+    document.querySelectorAll('.fac-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+  }
+
+  // 6. View Faculty Complete Details Modal
+  function viewFacultyDetails(id) {
+    closeAllMenus();
+    const f = allFaculty.find(item => item.id === id);
+    if (!f) return;
+
+    currentDetailFacultyId = f.id;
+    const isHod = (f.employee_id || '').toUpperCase().includes('HOD') || (f.role || '').toUpperCase() === 'HOD';
+
+    const modal = document.getElementById('modal-faculty-details');
+    if (!modal) return;
+
+    // Avatar and titles
+    document.getElementById('detail-fac-avatar').textContent = getInitials(f.full_name);
+    document.getElementById('detail-fac-name').textContent = f.full_name || 'Faculty Member';
+    document.getElementById('detail-fac-empid').textContent = f.employee_id || '—';
+
+    const roleBadge = document.getElementById('detail-fac-badge');
+    if (roleBadge) {
+      roleBadge.className = `fac-role-chip ${isHod ? 'hod' : 'lecturer'}`;
+      roleBadge.textContent = isHod ? 'HOD' : 'Lecturer';
+    }
+
+    document.getElementById('detail-fac-role').textContent = isHod ? 'Head of Department (HOD)' : (f.designation || 'Lecturer');
+    document.getElementById('detail-fac-email').textContent = f.email || f.gmail || '—';
+    document.getElementById('detail-fac-phone').textContent = f.phone || '—';
+    document.getElementById('detail-fac-dept').textContent = f.department_name || f.department_code || 'Department Faculty';
+    document.getElementById('detail-fac-created').textContent = f.created_at ? new Date(f.created_at).toLocaleDateString() : 'Active Member';
+
+    // Subjects
+    const subjectsEl = document.getElementById('detail-fac-subjects');
+    if (subjectsEl) {
+      if (Array.isArray(f.subjects) && f.subjects.length > 0) {
+        subjectsEl.innerHTML = `<ul style="margin:0; padding-left:1.1rem; display:flex; flex-direction:column; gap:0.25rem;">` +
+          f.subjects.map(s => `<li><strong>${esc(s.name || s.subject_name || s.code)}</strong> <span style="color:var(--text-muted); font-size:0.75rem;">(${esc(s.code || '')})</span></li>`).join('') +
+          `</ul>`;
+      } else if (f.assignment_count > 0) {
+        subjectsEl.textContent = `${f.assignment_count} active teaching subject assignment(s)`;
+      } else {
+        subjectsEl.textContent = 'No current teaching subjects assigned to this faculty member.';
+      }
+    }
+
+    // Hide remove button if this is HOD
+    const delBtn = document.getElementById('detail-btn-delete');
+    if (delBtn) delBtn.style.display = isHod ? 'none' : 'inline-flex';
+
+    modal.style.display = 'flex';
+  }
+
+  function closeFacultyDetailsModal() {
+    const modal = document.getElementById('modal-faculty-details');
+    if (modal) modal.style.display = 'none';
+    currentDetailFacultyId = null;
+  }
+
+  function detailResetPassword() {
+    if (!currentDetailFacultyId) return;
+    const f = allFaculty.find(item => item.id === currentDetailFacultyId);
+    resetFacultyPassword(currentDetailFacultyId, f?.full_name || 'Faculty');
+  }
+
+  function detailDeleteFaculty() {
+    if (!currentDetailFacultyId) return;
+    const f = allFaculty.find(item => item.id === currentDetailFacultyId);
+    deleteFacultyMember(currentDetailFacultyId, f?.full_name || 'Faculty');
+    closeFacultyDetailsModal();
+  }
+
+  // 7. Actions: Reset, Delete, Approve, Reject
   async function resetFacultyPassword(id, name) {
+    closeAllMenus();
     const newPass = prompt(`Enter new password for ${name}:`, 'Welcome@123');
     if (!newPass) return;
     try {
@@ -285,6 +400,7 @@
   }
 
   async function deleteFacultyMember(id, name) {
+    closeAllMenus();
     if (!confirm(`Are you sure you want to remove ${name} from department faculty?`)) return;
     try {
       const res = await api(`/hod/teachers/${id}`, { method: 'DELETE' });
@@ -328,7 +444,7 @@
     }
   }
 
-  // 5. Add Faculty Modal
+  // 8. Add Faculty Modal
   function openAddModal() {
     const m = document.getElementById('modal-add-faculty');
     if (m) m.style.display = 'flex';
@@ -399,15 +515,29 @@
     if (addForm) {
       addForm.addEventListener('submit', submitAddFaculty);
     }
+
+    // Dismiss 3-dot menus on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.fac-menu-wrap')) {
+        closeAllMenus();
+      }
+    });
   }
 
   // Window Exports for inline calls
+  window.toggleFacultyMenu = toggleFacultyMenu;
+  window.viewFacultyDetails = viewFacultyDetails;
+  window.closeFacultyDetailsModal = closeFacultyDetailsModal;
+  window.detailResetPassword = detailResetPassword;
+  window.detailDeleteFaculty = detailDeleteFaculty;
   window.resetFacultyPassword = resetFacultyPassword;
   window.deleteFacultyMember = deleteFacultyMember;
   window.approveRequest = approveRequest;
   window.rejectRequest = rejectRequest;
   window.openAddFacultyModal = openAddModal;
   window.closeAddFacultyModal = closeAddModal;
+  window.togglePendingQueue = togglePendingQueue;
+  window.focusPendingQueue = focusPendingQueue;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
