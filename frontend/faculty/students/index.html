@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/faculty/components/faculty-base.css?v=20261117">
   <link rel="stylesheet" href="/faculty/components/header/header.css?v=20261117">
   <link rel="stylesheet" href="/faculty/components/sidebar/sidebar.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/components/delete-modal/delete-modal.css?v=20261117">
   <link rel="stylesheet" href="/faculty/students/students.css?v=20261117">
   <script>
     (function () {
@@ -39,6 +40,16 @@
             <h1>Department Students Roster</h1>
             <p>Cohort management, student roll numbers, biometric enrollments, and self-registration approvals.</p>
           </div>
+          <div class="stu-header-actions">
+            <button type="button" class="btn-trash-header" onclick="switchToTrashTab()" title="Students Trash Bin (30-day recovery)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Trash Bin</span>
+              <span class="stu-trash-badge" id="header-trash-count">0</span>
+            </button>
+          </div>
         </div>
 
         <!-- 3-Card KPI & Registration Gate Row -->
@@ -57,7 +68,7 @@
             </div>
           </article>
 
-          <article class="stu-kpi-card">
+          <article class="stu-kpi-card" onclick="switchToPendingTab()" style="cursor: pointer;" title="Click to view pending student applications">
             <div class="stu-kpi-icon icon-amber">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -67,7 +78,7 @@
             <div class="stu-kpi-meta">
               <div class="stu-kpi-label">Pending Enrollments</div>
               <div class="stu-kpi-val" id="stat-pending-students">0</div>
-              <div class="stu-kpi-sub">Awaiting verification</div>
+              <div class="stu-kpi-sub" id="stat-pending-sub">Awaiting verification</div>
             </div>
           </article>
 
@@ -112,9 +123,17 @@
               <span>3rd Year</span>
               <span class="stu-pill-badge" id="badge-count-y3">0</span>
             </button>
-            <button type="button" class="stu-pill" data-year="PENDING">
+            <button type="button" class="stu-pill" data-year="PENDING" id="pill-pending">
               <span>Pending</span>
               <span class="stu-pill-badge" id="badge-count-pending">0</span>
+            </button>
+            <button type="button" class="stu-pill pill-trash" data-year="TRASH" id="pill-trash" title="Students in Trash Bin (30-day recovery)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Trash</span>
+              <span class="stu-pill-badge badge-trash" id="badge-count-trash">0</span>
             </button>
           </nav>
 
@@ -129,20 +148,20 @@
               <input type="search" id="student-search" placeholder="Search by name, roll, enrollment...">
             </div>
 
-            <button type="button" class="btn-stu-compact" onclick="openAddStudentModal()">
+            <button type="button" class="btn-stu-compact" onclick="openAddStudentModal()" title="Enroll New Student">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
-              <span>+ Add Student</span>
+              <span>Add Student</span>
             </button>
 
-            <button type="button" class="btn-stu-outline" onclick="openBulkModal()">
+            <button type="button" class="btn-stu-outline" onclick="openBulkModal()" title="Bulk Import via CSV">
               <span>Bulk CSV</span>
             </button>
 
-            <button type="button" class="btn-stu-outline" title="Re-index Roll Numbers" onclick="reindexRoll()">
-              <span>Re-Index Roll</span>
+            <button type="button" class="btn-stu-outline btn-reindex" title="Re-index Roll Numbers" onclick="reindexRoll()">
+              <span>Re-Index</span>
             </button>
           </div>
         </div>
@@ -151,19 +170,17 @@
         <div class="stu-table-card">
           <table class="stu-table">
             <thead>
-              <tr>
-                <th style="width: 50px;">Roll #</th>
-                <th>UBTER Reg. #</th>
-                <th>Official Enrollment</th>
-                <th>Student Full Name</th>
-                <th>Cohort</th>
-                <th>Attendance</th>
-                <th style="text-align: right;">Actions</th>
+              <tr id="stu-thead-tr">
+                <th style="width: 55px;">Roll #</th>
+                <th class="col-enrollment" id="th-enrollment">Enrollment</th>
+                <th>Student Name</th>
+                <th class="col-retention" id="th-retention" style="display: none;">Retention</th>
+                <th style="text-align: right; width: 65px;" id="th-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="students-tbody">
               <tr>
-                <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
                   Loading students roster...
                 </td>
               </tr>
@@ -174,12 +191,66 @@
     </div>
   </div>
 
+  <!-- Modal: View Student Full Details -->
+  <div id="modal-student-details" class="stu-modal-backdrop" style="display: none;" onclick="if(event.target===this)closeStudentDetailsModal()">
+    <div class="stu-modal-card">
+      <div class="stu-modal-header">
+        <div class="stu-modal-title-group">
+          <div class="stu-modal-avatar" id="detail-stu-avatar">ST</div>
+          <div>
+            <h2 id="detail-stu-name" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0;">Student Details</h2>
+            <div style="display: flex; align-items: center; gap: 0.45rem; margin-top: 0.15rem;">
+              <span id="detail-stu-roll" style="font-family: var(--font-family-mono); font-size: 0.76rem; font-weight: 700; color: var(--color-primary);">Roll #—</span>
+              <span class="stu-modal-cohort-badge" id="detail-stu-cohort">Cohort</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-modal-close" onclick="closeStudentDetailsModal()">&times;</button>
+      </div>
+
+      <div class="stu-modal-body">
+        <div class="stu-details-grid">
+          <div class="stu-detail-item">
+            <label>Official Enrollment #</label>
+            <span id="detail-stu-enroll" style="font-family: var(--font-family-mono); color: var(--color-primary);">—</span>
+          </div>
+          <div class="stu-detail-item">
+            <label>UBTER Reg. #</label>
+            <span id="detail-stu-reg" style="font-family: var(--font-family-mono);">—</span>
+          </div>
+          <div class="stu-detail-item">
+            <label>Attendance Standing</label>
+            <span id="detail-stu-att">—</span>
+          </div>
+          <div class="stu-detail-item">
+            <label>Department</label>
+            <span id="detail-stu-dept">—</span>
+          </div>
+          <div class="stu-detail-item">
+            <label>Email Address</label>
+            <span id="detail-stu-email">—</span>
+          </div>
+          <div class="stu-detail-item">
+            <label>Phone Number</label>
+            <span id="detail-stu-phone">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stu-details-footer">
+        <button type="button" class="btn-stu-outline" onclick="closeStudentDetailsModal()">Close</button>
+        <button type="button" class="btn-stu-outline" onclick="detailResetPassword()">Reset Password</button>
+        <button type="button" class="btn-stu-compact danger" id="detail-btn-delete" onclick="detailDeleteStudent()">Remove Student</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Add New Student -->
-  <div id="modal-add-student" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this)closeAddStudentModal()">
-    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; width:100%; max-width:480px; box-shadow:0 16px 36px rgba(0,0,0,0.2); overflow:hidden;">
-      <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+  <div id="modal-add-student" class="stu-modal-backdrop" style="display:none;" onclick="if(event.target===this)closeAddStudentModal()">
+    <div class="stu-modal-card" style="max-width: 480px;">
+      <div class="stu-modal-header">
         <strong style="font-size:1.05rem; color:var(--text-main);">+ Enroll New Student</strong>
-        <button type="button" onclick="closeAddStudentModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+        <button type="button" class="btn-modal-close" onclick="closeAddStudentModal()">&times;</button>
       </div>
       <form id="form-add-student" style="padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
         <div>
@@ -222,19 +293,19 @@
           <input type="tel" id="add-stu-phone" placeholder="9876543210" style="width:100%; padding:0.55rem 0.75rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.86rem; box-sizing:border-box;">
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.65rem; margin-top:0.5rem;">
-          <button type="button" onclick="closeAddStudentModal()" style="padding:0.55rem 1rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.82rem; cursor:pointer;">Cancel</button>
-          <button type="submit" style="padding:0.55rem 1.25rem; border-radius:8px; border:none; background:var(--color-primary); color:var(--text-white); font-size:0.82rem; font-weight:700; cursor:pointer;">Enroll Student</button>
+          <button type="button" class="btn-stu-outline" onclick="closeAddStudentModal()">Cancel</button>
+          <button type="submit" class="btn-stu-compact">Enroll Student</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal: Bulk CSV Upload -->
-  <div id="modal-bulk-csv" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this)closeBulkModal()">
-    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; width:100%; max-width:520px; box-shadow:0 16px 36px rgba(0,0,0,0.2); overflow:hidden;">
-      <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+  <div id="modal-bulk-csv" class="stu-modal-backdrop" style="display:none;" onclick="if(event.target===this)closeBulkModal()">
+    <div class="stu-modal-card" style="max-width: 520px;">
+      <div class="stu-modal-header">
         <strong style="font-size:1.05rem; color:var(--text-main);">Bulk CSV Student Import</strong>
-        <button type="button" onclick="closeBulkModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+        <button type="button" class="btn-modal-close" onclick="closeBulkModal()">&times;</button>
       </div>
       <form id="form-bulk-csv" style="padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
         <p style="font-size:0.78rem; color:var(--text-muted);">
@@ -243,8 +314,8 @@
         </p>
         <textarea id="bulk-csv-text" rows="6" placeholder="Aarav Sharma, 2024IT001, 1, 24101054001, 5&#10;Aditi Verma, 2024IT002, 2, 24101054002, 5" style="width:100%; padding:0.65rem 0.75rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.82rem; font-family:var(--font-family-mono); box-sizing:border-box;"></textarea>
         <div style="display:flex; justify-content:flex-end; gap:0.65rem; margin-top:0.5rem;">
-          <button type="button" onclick="closeBulkModal()" style="padding:0.55rem 1rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.82rem; cursor:pointer;">Cancel</button>
-          <button type="submit" style="padding:0.55rem 1.25rem; border-radius:8px; border:none; background:var(--color-primary); color:var(--text-white); font-size:0.82rem; font-weight:700; cursor:pointer;">Import Students</button>
+          <button type="button" class="btn-stu-outline" onclick="closeBulkModal()">Cancel</button>
+          <button type="submit" class="btn-stu-compact">Import Students</button>
         </div>
       </form>
     </div>
@@ -259,6 +330,7 @@
   <script src="/faculty/components/icons.js?v=20261117"></script>
   <script src="/faculty/components/sidebar/sidebar.js?v=20261117"></script>
   <script src="/faculty/components/header/header.js?v=20261117"></script>
+  <script src="/faculty/components/delete-modal/delete-modal.js?v=20261117"></script>
   <script src="/faculty/students/students.js?v=20261117"></script>
 </body>
 

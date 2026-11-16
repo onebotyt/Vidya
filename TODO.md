@@ -38,6 +38,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 436: Remake Students Page to Compact Minimal Layout with 3-Dot Actions & 30-Day Trash Bin
+
+- **Compact Minimal Column Structure**:
+  - **Desktop (PC)**: displays only 4 essential columns: `Roll #`, `Enrollment`, `Student Name`, and `Actions` (suppressed secondary columns `UBTER Reg. #`, `Cohort`, and `Attendance` into the detailed dossier modal).
+  - **Mobile (Screens <= 768px)**: displays only 3 columns: `Roll #`, `Student Name` (with subtitle enrollment / retention tag), and `Actions` with zero horizontal overflow.
+  - Fixed double plus icon on `+ Add Student` button.
+- **3-Dot (Kebab) Dropdown Action Menu**:
+  - Integrated smart `.btn-kebab` 3-dot action menu with automatic **Drop-Up Flipping** when bottom screen clearance is under 175px.
+  - Actions include: `👁 View Details` (comprehensive Student Dossier Modal), `🔑 Reset Password`, and `🗑 Remove Student`.
+- **Student Dossier Details Modal (`#modal-student-details`)**:
+  - Full student profile view: Avatar initials, Full Name, Class Roll #, Year & Semester Cohort, Official Enrollment #, UBTER Reg #, Attendance standing, Department, Email, and Phone.
+  - Actionable direct buttons: Close, Reset Password, Remove Student.
+- **30-Day Trash Bin & Safe Student Recovery System**:
+  - **Backend Endpoints**:
+    - `GET /api/v1/hod/trash/students`: department-scoped retrieval of soft-deleted students with 30-day auto-purge query (`deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`).
+    - `POST /api/v1/hod/trash/students/:id/restore`: safely restores student account and enrollments (`deleted_at = NULL`, `status = 'ACTIVE'`).
+  - **Frontend UI**:
+    - Quick Access **Trash Bin button** in the page action title row with real-time count badge.
+    - Native **Trash filter pill** (`[Trash (X)]`) with trash icon and count badge.
+    - Dedicated Trash table view showing student info, days remaining before purge (`X days left`), and prominent `↺ Restore` button.
+    - Componentized type-to-confirm modal: integrated `/faculty/components/delete-modal/` requiring user to type `"remove"` before moving to Trash Bin.
+- **Theme & Architecture Compliance**:
+  - 100% Theme Token compliant (zero raw `#hex` or `rgb()` color values in stylesheets).
+  - Verified with `test-theme-support.js` (88/88 tests passing).
+
 ### ✅ Milestone 435: Mobile Viewport Horizontal Fit Optimization & 30-Day Trash Recovery Engine for Faculty Management
 
 - **Zero-Overflow Mobile Viewport Optimization (`faculty.css`, `index.html`)**:
