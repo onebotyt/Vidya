@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Admin Dashboard — VidyaOS Institutional Console</title>
+  <meta name="description"
+    content="Institutional Management Console — Configure academic structure, monitor real-time campus attendance, and manage faculty & students.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/admin/components/core/reset.css?v=20261114">
+  <link rel="stylesheet" href="/admin/components/core/variables.css?v=20261114">
+  <link rel="stylesheet" href="/admin/components/admin-base.css?v=20261029">
+  <link rel="stylesheet" href="/admin/components/sidebar/sidebar.css?v=20261114_smooth">
+  <link rel="stylesheet" href="/admin/components/header/header.css?v=20261029">
+  <link rel="stylesheet" href="/admin/dashboard/dashboard.css?v=20261114e">
+  <script>
+    /* Synchronously apply saved theme and collapsed rail before DOM render */
+    (function () {
+      try {
+        var t = localStorage.getItem('app_theme') || localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (_) { }
+      try {
+        if (window.innerWidth >= 769) {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (_) { }
+    })();
+  </script>
+</head>
+
+<body class="admin-dashboard-page">
+  <div class="admin-app-layout" id="admin-app-layout">
+
+    <!-- Navigation & Dual-State Sidebar rendered by /admin/components/sidebar/sidebar.js -->
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT CONTAINER (.admin-main-wrap)                      -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <div class="admin-main-wrap">
+
+      <!-- Navigation, Top Header, and Mobile Navigation are dynamically mounted by /admin/components/ -->
+      <div id="admin-header-mount"></div>
+
+      <!-- 2. MAIN DASHBOARD CONTENT AREA -->
+      <main class="dashboard-container">
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- 1. HERO SHOWCASE CARD (Image 2 Specification)             -->
+        <!-- Dynamically fetched from Admin Settings                   -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <section class="dash-hero-card" aria-label="Institutional Showcase">
+          <div class="dash-hero-brand-group">
+            <div class="dash-hero-logo-badge">
+              <img id="dash-inst-logo" src="/uploads/branding/college_logo_1794620864273_107645.png" alt="Institutional Logo" onerror="this.onerror=null;this.src='/images/college-logo.svg'">
+            </div>
+            <div class="dash-hero-vdivider"></div>
+            <div class="dash-hero-text">
+              <h1 id="dash-inst-name" class="dash-hero-title">Government Polytechnic College</h1>
+              <p id="dash-inst-tagline" class="dash-hero-subtitle">Uttarakhand | NBA Compliant</p>
+            </div>
+          </div>
+          <div class="dash-hero-banner-wrap" aria-hidden="true">
+            <img id="dash-inst-banner" src="/admin/dashboard/campus-nainital.jpg" alt="College Campus" class="dash-hero-banner-img" onerror="this.onerror=null;this.src='/admin/dashboard/campus-nainital.jpg'">
+            <div class="dash-hero-banner-glow"></div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- 2. KPI STAT CARDS (3 CARDS IN A ROW: Image 2)              -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <section class="dash-kpi-row" aria-label="Key Institutional Metrics">
+          <!-- Total Students -->
+          <article class="dash-kpi-card" id="kpi-students-card">
+            <div class="dash-kpi-top">
+              <div class="dash-kpi-icon icon-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <span class="dash-kpi-label">Total Students</span>
+            </div>
+            <div class="dash-kpi-value" id="stat-students">48</div>
+            <div class="dash-kpi-trend positive">
+              <span class="dash-trend-arrow">&uarr;</span> +12%
+            </div>
+          </article>
+
+          <!-- Departments -->
+          <article class="dash-kpi-card" id="kpi-departments-card">
+            <div class="dash-kpi-top">
+              <div class="dash-kpi-icon icon-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <span class="dash-kpi-label">Departments</span>
+            </div>
+            <div class="dash-kpi-value" id="stat-departments">6</div>
+            <div class="dash-kpi-trend positive">
+              <span class="dash-trend-arrow">&uarr;</span> +0%
+            </div>
+          </article>
+
+          <!-- Total Faculty -->
+          <article class="dash-kpi-card" id="kpi-faculty-card">
+            <div class="dash-kpi-top">
+              <div class="dash-kpi-icon icon-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+              </div>
+              <span class="dash-kpi-label">Total Faculty</span>
+            </div>
+            <div class="dash-kpi-value" id="stat-teachers">5</div>
+            <div class="dash-kpi-trend positive">
+              <span class="dash-trend-arrow">&uarr;</span> +0%
+            </div>
+          </article>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- 3. QUICK ACCESS SECTION (Image 2: 2x3 Grid / 6 Portals)    -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <section class="dash-quick-section" aria-label="Quick Access Portals">
+          <div class="dash-section-header">
+            <div class="dash-section-title-wrap">
+              <svg class="dash-bolt-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              <h2 class="dash-section-title">Quick Access</h2>
+            </div>
+          </div>
+
+          <div class="dash-quick-grid">
+            <!-- 1. Academic Structure -->
+            <a href="/admin/academic-structure.html" class="dash-quick-tile" title="Manage Departments, Classes &amp; Sections">
+              <div class="dash-tile-icon-wrap icon-blue">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+              </div>
+              <span class="dash-tile-name">Academic<br>Structure</span>
+            </a>
+
+            <!-- 2. Faculty Management -->
+            <a href="/admin/faculty-management/index.html" class="dash-quick-tile" title="Manage Faculty, HODs &amp; Department Appointments">
+              <div class="dash-tile-icon-wrap icon-purple">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <span class="dash-tile-name">Faculty<br>Management</span>
+            </a>
+
+
+            <!-- 4. Audit Logs -->
+            <a href="/admin/audit-logs.html" class="dash-quick-tile" title="System Audit Trail &amp; Activity Logs">
+              <div class="dash-tile-icon-wrap icon-amber">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <span class="dash-tile-name">Audit<br>Logs</span>
+            </a>
+
+            <!-- 5. System Settings -->
+            <a href="/admin/settings.html" class="dash-quick-tile" title="Institution Configuration &amp; Branding">
+              <div class="dash-tile-icon-wrap icon-slate">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </div>
+              <span class="dash-tile-name">System<br>Settings</span>
+            </a>
+
+            <!-- 6. Admin Profile -->
+            <a href="/admin/profile.html" class="dash-quick-tile" title="Administrator Profile &amp; Security">
+              <div class="dash-tile-icon-wrap icon-violet">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <span class="dash-tile-name">Admin<br>Profile</span>
+            </a>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div> <!-- /#admin-app-layout -->
+
+  <script src="/admin/components/core/api.js?v=20261114"></script>
+  <script src="/admin/components/core/auth.js?v=20261114"></script>
+  <script src="/admin/components/icons.js?v=20261029"></script>
+  <script src="/admin/components/sidebar/sidebar.js?v=20261102"></script>
+  <script src="/admin/components/header/header.js?v=20261029"></script>
+  <script src="/admin/components/admin-ui.js?v=20261102"></script>
+  <script src="/admin/dashboard/dashboard.js?v=20261114a"></script>
+</body>
+
+</html>

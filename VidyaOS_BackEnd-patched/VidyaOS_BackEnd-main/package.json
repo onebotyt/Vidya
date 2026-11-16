@@ -1,0 +1,44 @@
+{
+  "name": "college-attendance-backend",
+  "version": "1.0.0",
+  "description": "College Biometric Attendance System - Express REST API (v1.0)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:dev2": "node ../scripts/collab/preview-server.js",
+    "dev": "node --watch server.js",
+    "test": "node scripts/test-api-flows.js && node scripts/test-rbac-and-structure.js && node scripts/test-student-self-registration.js && node scripts/test-register-consolidation.js",
+    "test:api": "node scripts/test-api-flows.js",
+    "simulate-esp32": "node scripts/simulate-esp32.js",
+    "collab:pull": "node ../scripts/collab/pull-dev2.js",
+    "collab:diff": "node ../scripts/collab/diff-dev2.js",
+    "collab:apply": "node ../scripts/collab/apply-dev2.js",
+    "collab:preview": "node ../scripts/collab/preview-server.js",
+    "push:safe": "node ../scripts/collab/safe-push.js",
+    "push:backend": "node ../scripts/collab/safe-push.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "compression": "^1.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "express-validator": "^7.0.2",
+    "google-auth-library": "^11.1.0",
+    "helmet": "^7.1.0",
+    "jsdom": "^30.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.9.7",
+    "pdf-parse": "^2.4.5",
+    "qrcode": "^1.5.4",
+    "tesseract.js": "^7.0.0"
+  },
+  "author": "Backend Engineer",
+  "license": "ISC"
+}

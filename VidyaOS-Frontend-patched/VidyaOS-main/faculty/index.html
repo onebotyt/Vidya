@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VidyaOS Faculty Portal</title>
+  <script>
+    (function() {
+      try {
+        const isMobile = window.innerWidth <= 768;
+        let user = null;
+        try {
+          const stored = localStorage.getItem('user') || localStorage.getItem('auth_user');
+          if (stored) user = JSON.parse(stored);
+        } catch (_) {}
+        const isHod = Boolean(user && (
+          (Array.isArray(user.roles) && user.roles.includes('HOD')) ||
+          user.role === 'HOD' ||
+          user.is_hod === true ||
+          user.is_hod === 1
+        ));
+        if (isMobile && isHod) {
+          window.location.replace('/faculty/classes/index.html');
+        } else {
+          window.location.replace('/faculty/dashboard/index.html');
+        }
+      } catch (_) {
+        window.location.replace('/faculty/dashboard/index.html');
+      }
+    })();
+  </script>
+</head>
+<body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:var(--bg-app,#0f172a);color:var(--text-main,#f8fafc);">
+  <p>Loading VidyaOS...</p>
+</body>
+</html>

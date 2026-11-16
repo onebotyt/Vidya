@@ -1,0 +1,18 @@
+/* ══════════════════════════════════════════════════════════════
+   MASTER STYLESHEET: GROUP-DETAIL
+   frontend/faculty/group-detail/group-detail.css
+   Aggregates modular element and domain-specific stylesheets:
+   - css/core.css      : Sticky Navbar, Header, Banner, Tabs Bar, Modals Base, Global Buttons & Options
+   - css/stream.css    : Announcement Feed, Composer Box, Attachment Preview, Detail View, Comments Bar
+   - css/classwork.css : Category Sidebar & Pills, Work Cards, Creation Modals, Submissions Drawer & Grading Panel
+   - css/people.css    : Teachers Card, Students Roster List, People Actions, Invite Modal
+   - css/register.css  : Desktop Physical Matrix, ESP32 Toolbar, Compact Mobile Matrix, 2-Class Period Bar, Touch Pen Buttons, Remark Popover
+   - css/sheets.css    : Embedded Spreadsheet Studio, Multi-Sheet Controls, Master Evaluation Grid, Excel/PDF Export
+   ══════════════════════════════════════════════════════════════ */
+
+@import './css/core.css';
+@import './css/stream.css';
+@import './css/classwork.css';
+@import './css/people.css';
+@import './css/register.css';
+@import './css/sheets.css';
