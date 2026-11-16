@@ -5,11 +5,18 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-guardRoute({ roles: ['TEACHER'], requireSubjects: true });
+if (typeof requireFacultyAuth === 'function') {
+  requireFacultyAuth(['TEACHER', 'HOD']);
+} else if (typeof guardRoute === 'function') {
+  guardRoute({ roles: ['TEACHER'], requireSubjects: true });
+}
 
-    function getToken() {
-      return typeof getAuthToken === 'function' ? getAuthToken() : (localStorage.getItem('access_token') || '');
-    }
+function getToken() {
+  if (window.FacultyAPI && typeof FacultyAPI.getToken === 'function') {
+    return FacultyAPI.getToken();
+  }
+  return typeof getAuthToken === 'function' ? getAuthToken() : (localStorage.getItem('access_token') || localStorage.getItem('token') || '');
+}
 
     let allRegisters = [];
     let currentRegisterId = null;
@@ -128,11 +135,11 @@ guardRoute({ roles: ['TEACHER'], requireSubjects: true });
       }
 
       const navAssign = document.getElementById('nav-assign');
-      if (navAssign) navAssign.href = `/faculty/assignments.html?id=${registerId}`;
+      if (navAssign) navAssign.href = `/faculty/registers.html?id=${registerId}&tab=assignments`;
       const navMarks = document.getElementById('nav-marks');
-      if (navMarks) navMarks.href = `/faculty/tests.html?id=${registerId}`;
+      if (navMarks) navMarks.href = `/faculty/registers.html?id=${registerId}&tab=marks`;
       const navEval = document.getElementById('nav-eval');
-      if (navEval) navEval.href = `/faculty/evaluation.html?id=${registerId}`;
+      if (navEval) navEval.href = `/faculty/registers.html?id=${registerId}&tab=marks`;
 
       await loadRegisterDetail();
       updateRegisterScopeBadges();

@@ -1,6 +1,6 @@
 /**
  * Teaching Group Model
- * Encapsulates SQLite queries and transactions for classroom groups, memberships, stream posts, classwork, and tests.
+ * Encapsulates MySQL 8.x queries and transactions for classroom groups, memberships, stream posts, classwork, and tests.
  *
  * Architecture Role: Model (Data Access Layer)
  * Interacts With:
@@ -91,7 +91,7 @@ class TeachingGroupModel {
       JOIN teaching_groups tg ON a.group_id = tg.id
       WHERE tg.teacher_id = ? AND tg.status = 'ACTIVE' AND tg.deleted_at IS NULL
       ORDER BY 
-        CASE WHEN a.due_date >= date('now') THEN 0 ELSE 1 END,
+        CASE WHEN a.due_date >= CURDATE() THEN 0 ELSE 1 END,
         a.due_date ASC,
         a.created_at DESC
       LIMIT 8
@@ -148,11 +148,11 @@ class TeachingGroupModel {
               FROM attendance_sessions s
               JOIN register_attendance ra ON ra.session_id = s.id
               WHERE s.register_id = ar.id AND s.state != 'DRAFT') as avg_attendance_pct,
-             (SELECT a.title || ':::' || COALESCE(a.due_date, '') || ':::' || a.type
+             (SELECT CONCAT(a.title, ':::', COALESCE(a.due_date, ''), ':::', a.type)
               FROM assessments a
-              WHERE a.group_id = tg.id AND (a.due_date IS NULL OR a.due_date >= date('now', '-2 days'))
+              WHERE a.group_id = tg.id AND (a.due_date IS NULL OR a.due_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY))
               ORDER BY a.due_date ASC LIMIT 1) as upcoming_work,
-             MAX(0, 7 - CAST((julianday('now') - julianday(COALESCE(tg.deleted_at, 'now'))) AS INTEGER)) as days_remaining
+             GREATEST(0, CAST(7 - DATEDIFF(NOW(), COALESCE(tg.deleted_at, NOW())) AS SIGNED)) as days_remaining
       FROM teaching_groups tg
       JOIN teachers t ON tg.teacher_id = t.id
       LEFT JOIN departments d ON t.department_id = d.id
@@ -246,10 +246,15 @@ class TeachingGroupModel {
         if (subRows && subRows[0]) {
           targetSubjectId = subRows[0].id;
         } else {
+          let effDeptId = targetDeptId;
+          if (!effDeptId) {
+            const firstDept = await conn.query(`SELECT id FROM departments ORDER BY id ASC LIMIT 1`);
+            effDeptId = firstDept[0]?.id || 2;
+          }
           const newSub = await conn.query(
-            `INSERT INTO subjects (name, code, department_id, year, semester, credits, is_active, created_at)
-             VALUES (?, ?, ?, ?, ?, 3, 1, CURRENT_TIMESTAMP)`,
-            [subjectName || name, finalCode || 'SUB101', targetDeptId, year, semester]
+            `INSERT INTO subjects (name, code, department_id, year, semester, is_active, created_at)
+             VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)`,
+            [subjectName || name, finalCode || 'SUB101', effDeptId, year, semester]
           );
           targetSubjectId = newSub.insertId || newSub.lastInsertRowid;
         }
@@ -290,7 +295,7 @@ class TeachingGroupModel {
         );
         for (const st of cohortStudents) {
           await conn.query(
-            `INSERT OR IGNORE INTO teaching_group_members (group_id, student_id, joined_at, status)
+            `INSERT IGNORE INTO teaching_group_members (group_id, student_id, joined_at, status)
              VALUES (?, ?, CURRENT_TIMESTAMP, 'ENROLLED')`,
             [groupId, st.id]
           );
@@ -419,7 +424,7 @@ class TeachingGroupModel {
    */
   static async addMember(groupId, studentId) {
     await query(
-      `INSERT OR IGNORE INTO teaching_group_members (group_id, student_id, joined_at, status)
+      `INSERT IGNORE INTO teaching_group_members (group_id, student_id, joined_at, status)
        VALUES (?, ?, CURRENT_TIMESTAMP, 'ENROLLED')`,
       [groupId, studentId]
     );
@@ -722,15 +727,16 @@ class TeachingGroupModel {
    */
   static async getUnenrolledStudents(groupId, group, targetDeptId, search) {
     let sql = `
-      SELECT DISTINCT s.id as student_id, s.full_name, s.official_enrollment_no, s.official_enrollment_no as enrollment_no,
-             s.registration_no,
-             COALESCE(s.class_roll_no, e.class_roll_no) as class_roll_no,
-             e.semester, e.year,
-             d.id as department_id, d.name as department_name, d.code as department_code
-      FROM students s
-      JOIN enrollments e ON e.student_id = s.id AND e.status = 'ENROLLED'
-      LEFT JOIN departments d ON e.department_id = d.id
-      WHERE s.id NOT IN (SELECT student_id FROM teaching_group_members WHERE group_id = ?)
+      SELECT sub.* FROM (
+        SELECT DISTINCT s.id as student_id, s.full_name, s.official_enrollment_no, s.official_enrollment_no as enrollment_no,
+               s.registration_no,
+               COALESCE(s.class_roll_no, e.class_roll_no, 0) as class_roll_no,
+               e.semester, e.year,
+               d.id as department_id, d.name as department_name, d.code as department_code
+        FROM students s
+        JOIN enrollments e ON e.student_id = s.id AND e.status = 'ENROLLED'
+        LEFT JOIN departments d ON e.department_id = d.id
+        WHERE s.id NOT IN (SELECT student_id FROM teaching_group_members WHERE group_id = ?)
     `;
     const params = [groupId];
 
@@ -746,7 +752,11 @@ class TeachingGroupModel {
       params.push(search, search, search);
     }
 
-    sql += ` ORDER BY COALESCE(s.class_roll_no, e.class_roll_no, 9999) ASC, s.full_name ASC LIMIT 100`;
+    sql += `
+      ) sub
+      ORDER BY sub.class_roll_no ASC, sub.full_name ASC
+      LIMIT 100
+    `;
     return await query(sql, params);
   }
 
@@ -1141,11 +1151,11 @@ class TeachingGroupModel {
         await conn.execute(
           `INSERT INTO assessment_submissions (assessment_id, student_id, marks_obtained, feedback, graded_by, status)
            VALUES (?, ?, ?, ?, ?, ?)
-           ON CONFLICT(assessment_id, student_id) DO UPDATE SET
-             marks_obtained = excluded.marks_obtained,
-             feedback = excluded.feedback,
-             graded_by = excluded.graded_by,
-             status = excluded.status,
+           ON DUPLICATE KEY UPDATE
+             marks_obtained = VALUES(marks_obtained),
+             feedback = VALUES(feedback),
+             graded_by = VALUES(graded_by),
+             status = VALUES(status),
              updated_at = CURRENT_TIMESTAMP`,
           [testId, s.student_id, marks, feedbackPayload, userId, status]
         );
@@ -1175,11 +1185,11 @@ class TeachingGroupModel {
         await conn.execute(
           `INSERT INTO assessment_submissions (assessment_id, student_id, marks_obtained, feedback, graded_by, status)
            VALUES (?, ?, ?, ?, ?, ?)
-           ON CONFLICT(assessment_id, student_id) DO UPDATE SET
-             marks_obtained = excluded.marks_obtained,
-             feedback = excluded.feedback,
-             graded_by = excluded.graded_by,
-             status = excluded.status,
+           ON DUPLICATE KEY UPDATE
+             marks_obtained = VALUES(marks_obtained),
+             feedback = VALUES(feedback),
+             graded_by = VALUES(graded_by),
+             status = VALUES(status),
              updated_at = CURRENT_TIMESTAMP`,
           [assignmentId, s.student_id, marks, feedback, userId, status]
         );
@@ -1237,7 +1247,7 @@ class TeachingGroupModel {
        JOIN students s ON s.id = gm.student_id
        LEFT JOIN assessment_submissions sub ON sub.assessment_id = ? AND sub.student_id = s.id
        WHERE gm.group_id = ? AND gm.status = 'ENROLLED'
-       ORDER BY CAST(s.class_roll_no AS INTEGER) ASC, s.class_roll_no ASC`,
+       ORDER BY CAST(s.class_roll_no AS SIGNED) ASC, s.class_roll_no ASC`,
       [testId, groupId]
     );
   }

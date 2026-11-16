@@ -1,6 +1,6 @@
 /**
  * HOD Model
- * Encapsulates SQLite queries and transactions for department administration:
+ * Encapsulates MySQL 8.x queries and transactions for department administration:
  * teachers, subjects, course assignments, devices, student rosters, bulk imports,
  * semester promotions, department settings, faculty registrations, reports, and archives.
  * Provides bidirectional code traceability upward to HodController and routes/hod.js.
@@ -40,7 +40,7 @@ class HodModel {
     const [devicesSummary] = await query(
       `SELECT 
          COUNT(*) as total,
-         SUM(CASE WHEN is_active = 1 AND last_heartbeat_at >= datetime('now', '-10 minutes') THEN 1 ELSE 0 END) as online
+         SUM(CASE WHEN is_active = 1 AND last_heartbeat_at >= DATE_SUB(NOW(), INTERVAL 10 MINUTE) THEN 1 ELSE 0 END) as online
        FROM devices WHERE department_id = ?`, [deptId]
     );
 
@@ -73,7 +73,7 @@ class HodModel {
        FROM attendance_sessions s
        JOIN subjects sub ON s.subject_id = sub.id
        JOIN teachers t ON s.teacher_id = t.id
-       WHERE s.department_id = ? AND s.session_date = DATE('now')
+       WHERE s.department_id = ? AND s.session_date = CURDATE()
        ORDER BY s.id DESC`, [deptId]
     );
 
@@ -90,20 +90,34 @@ class HodModel {
        ORDER BY e.year, e.semester`, [deptId, deptId]
     );
 
+    const counts = {
+      teachers: teachersCount?.total || 0,
+      subjects: subjectsCount?.total || 0,
+      students: studentsCount?.total || 0,
+      active_registers: activeRegisters?.total || 0,
+      avg_attendance_pct: avgAttendance?.avg_pct || 0,
+      devices_total: devicesSummary?.total || 0,
+      devices_online: devicesSummary?.online || 0,
+      pending_students: pendingStudents?.total || 0,
+      pending_leaves: pendingLeaves?.total || 0,
+      pending_faculty: pendingFaculty?.total || 0
+    };
+
     return {
       department: deptInfo,
-      counts: {
-        teachers: teachersCount?.total || 0,
-        subjects: subjectsCount?.total || 0,
-        students: studentsCount?.total || 0,
-        active_registers: activeRegisters?.total || 0,
-        avg_attendance_pct: avgAttendance?.avg_pct || 0,
-        devices_total: devicesSummary?.total || 0,
-        devices_online: devicesSummary?.online || 0,
-        pending_students: pendingStudents?.total || 0,
-        pending_leaves: pendingLeaves?.total || 0,
-        pending_faculty: pendingFaculty?.total || 0
-      },
+      department_name: deptInfo?.name || '',
+      department_code: deptInfo?.code || '',
+      total_teachers: counts.teachers,
+      total_subjects: counts.subjects,
+      total_students: counts.students,
+      active_registers: counts.active_registers,
+      avg_attendance_pct: counts.avg_attendance_pct,
+      devices_total: counts.devices_total,
+      devices_online: counts.devices_online,
+      pending_students: counts.pending_students,
+      pending_leaves: counts.pending_leaves,
+      pending_faculty: counts.pending_faculty,
+      counts,
       today_sessions: todaySessions,
       cohorts
     };
@@ -122,12 +136,13 @@ class HodModel {
               u.email as gmail, u.username, u.status, u.must_change_password,
               CASE WHEN u.google_sub IS NOT NULL THEN 1 ELSE 0 END as google_linked,
               COUNT(DISTINCT ta.id) as active_assignments,
+              MAX(CASE WHEN ta.assignment_type = 'HOD' THEN 1 ELSE 0 END) as is_hod,
               t.created_at
        FROM teachers t
        JOIN users u ON t.user_id = u.id
        LEFT JOIN teacher_assignments ta ON ta.teacher_id = t.id AND ta.is_active = 1
        WHERE t.department_id = ?
-       GROUP BY t.id
+       GROUP BY t.id, t.user_id, t.full_name, t.employee_id, t.phone, u.email, u.username, u.status, u.must_change_password, u.google_sub, t.created_at
        ORDER BY t.full_name`, [deptId]
     );
   }
@@ -261,59 +276,23 @@ class HodModel {
    */
   static async deleteTeacher(id, deptId, userId) {
     await withTransaction(async (conn) => {
-      // 1. Clean up references where teacher was creator/reviewer/auditor (SET NULL)
-      if (userId) {
-        await conn.execute(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [userId]);
-        await conn.execute(`UPDATE register_attendance SET marked_by = NULL WHERE marked_by = ?`, [userId]);
-        await conn.execute(`UPDATE student_self_attendance SET reviewed_by = NULL WHERE reviewed_by = ?`, [userId]);
-        await conn.execute(`UPDATE leave_applications SET reviewed_by = NULL WHERE reviewed_by = ?`, [userId]);
-        await conn.execute(`UPDATE assessment_submissions SET graded_by = NULL WHERE graded_by = ?`, [userId]);
-        await conn.execute(`UPDATE teacher_assignments SET assigned_by = NULL WHERE assigned_by = ?`, [userId]);
-        await conn.execute(`UPDATE timetable_slots SET created_by = NULL WHERE created_by = ?`, [userId]);
-        await conn.execute(`UPDATE faculty_registration_requests SET reviewed_by = NULL WHERE reviewed_by = ?`, [userId]);
-        await conn.execute(`UPDATE common_faculty_manager_assignments SET assigned_by = NULL WHERE assigned_by = ?`, [userId]);
-        await conn.execute(`UPDATE attendance_corrections SET changed_by = NULL WHERE changed_by = ?`, [userId]);
-        await conn.execute(`UPDATE course_files SET audited_by = NULL WHERE audited_by = ?`, [userId]);
-        await conn.execute(`UPDATE course_file_documents SET verified_by = NULL WHERE verified_by = ?`, [userId]);
-        await conn.execute(`UPDATE course_file_documents SET uploaded_by = NULL WHERE uploaded_by = ?`, [userId]);
-      }
-
-      // 2. Clean up teacher-owned records
-      await conn.execute(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [id]);
-      await conn.execute(`DELETE FROM course_file_documents WHERE course_file_id IN (SELECT id FROM course_files WHERE teacher_id = ?)`, [id]);
-      await conn.execute(`DELETE FROM course_files WHERE teacher_id = ?`, [id]);
-      await conn.execute(`DELETE FROM faculty_media_assets WHERE faculty_id = ?`, [id]);
-      await conn.execute(`DELETE FROM timetable_slots WHERE teacher_id = ?`, [id]);
-      await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [id]);
-
-      // 3. Teaching groups
-      await conn.execute(`DELETE FROM teaching_group_members WHERE group_id IN (SELECT id FROM teaching_groups WHERE teacher_id = ?)`, [id]);
-      await conn.execute(`DELETE FROM teaching_groups WHERE teacher_id = ?`, [id]);
-
-      // 4. Assessments & submissions
-      await conn.execute(`DELETE FROM assessment_submissions WHERE assessment_id IN (SELECT id FROM assessments WHERE teacher_id = ?)`, [id]);
-      await conn.execute(`DELETE FROM assessments WHERE teacher_id = ?`, [id]);
-
-      // 5. Attendance sessions and registers
-      const sessionSubquery = `SELECT id FROM attendance_sessions WHERE teacher_id = ? OR register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`;
-      await conn.execute(`DELETE FROM attendance_session_students WHERE session_id IN (${sessionSubquery})`, [id, id]);
-      await conn.execute(`DELETE FROM register_attendance WHERE session_id IN (${sessionSubquery})`, [id, id]);
-      await conn.execute(`DELETE FROM student_self_attendance WHERE session_id IN (${sessionSubquery})`, [id, id]);
-      await conn.execute(`DELETE FROM attendance_corrections WHERE session_id IN (${sessionSubquery})`, [id, id]);
-      await conn.execute(`DELETE FROM attendance_sessions WHERE teacher_id = ? OR register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id, id]);
+      // 1. Clean up registers and child attendance records
+      await conn.execute(`DELETE FROM register_attendance WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id]);
+      await conn.execute(`DELETE FROM attendance_sessions WHERE register_id IN (SELECT id FROM attendance_registers WHERE teacher_id = ?)`, [id]);
       await conn.execute(`DELETE FROM attendance_registers WHERE teacher_id = ?`, [id]);
+      await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [id]);
+      try { await conn.execute(`UPDATE teaching_groups SET teacher_id = NULL WHERE teacher_id = ?`, [id]); } catch (_) {}
+      try { await conn.execute(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [userId]); } catch (_) {}
 
-      // 6. Delete teacher profile
+      // 2. Delete teacher row
       await conn.execute(`DELETE FROM teachers WHERE id = ?`, [id]);
 
-      // 7. Delete user account and associations
+      // 3. Clean up user credentials, sessions and roles
       if (userId) {
-        await conn.execute(`DELETE FROM classroom_post_comments WHERE author_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM classroom_posts WHERE author_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM audit_logs WHERE user_id = ?`, [userId]);
         await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
         await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+        try { await conn.execute(`UPDATE audit_logs SET user_id = NULL WHERE user_id = ?`, [userId]); } catch (_) {}
         await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
       }
     });
@@ -599,7 +578,7 @@ class HodModel {
        JOIN departments d ON s.department_id = d.id
        LEFT JOIN teacher_assignments ta ON ta.subject_id = s.id AND ta.is_active = 1
        WHERE s.department_id = ? AND s.is_active = 1
-       GROUP BY s.id
+       GROUP BY s.id, d.name, d.code
        ORDER BY s.year, s.semester, s.code`, [deptId]
     );
   }
@@ -789,9 +768,9 @@ class HodModel {
     if (date_preset === 'today') {
       whereClauses.push(`DATE(ep.scan_time) = CURRENT_DATE`);
     } else if (date_preset === '7days') {
-      whereClauses.push(`DATE(ep.scan_time) >= DATE(datetime('now', '-7 days'))`);
+      whereClauses.push(`DATE(ep.scan_time) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`);
     } else if (date_preset === '30days') {
-      whereClauses.push(`DATE(ep.scan_time) >= DATE(datetime('now', '-30 days'))`);
+      whereClauses.push(`DATE(ep.scan_time) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`);
     } else if (date_from && date_to) {
       whereClauses.push(`DATE(ep.scan_time) BETWEEN ? AND ?`);
       params.push(date_from, date_to);
@@ -857,7 +836,7 @@ class HodModel {
        LEFT JOIN students st ON ep.student_id = st.id
        LEFT JOIN enrollments e ON e.student_id = st.id
        WHERE ${whereSql}
-       GROUP BY d.id, COALESCE(e.year, dev.year), COALESCE(e.semester, dev.semester)
+       GROUP BY d.id, d.name, d.code, COALESCE(e.year, dev.year), COALESCE(e.semester, dev.semester)
        ORDER BY scan_count DESC`,
       params
     );
@@ -911,7 +890,7 @@ class HodModel {
        FROM enrollments e
        JOIN departments d ON e.department_id = d.id
        WHERE ${cohortWhere.join(' AND ')}
-       GROUP BY d.id, e.year, e.semester
+       GROUP BY d.id, d.name, d.code, e.year, e.semester
        ORDER BY e.year, e.semester`,
       cohortParams
     );
@@ -1002,8 +981,15 @@ class HodModel {
   static async getDevices(deptId) {
     return await query(
       `SELECT d.id, d.device_uid, d.name, d.is_active, d.last_heartbeat_at,
-              d.year, d.semester, d.created_at,
-              ay.label as academic_year_label
+              d.year, d.semester, d.assigned_years, d.assigned_semesters,
+              d.secret_key, d.firmware_version, d.battery_voltage, d.battery_pct,
+              d.is_charging, d.offline_queue_count, d.w25q32_used_kb, d.as608_enrolled_count,
+              d.wifi_rssi, d.ip_address, d.created_at,
+              ay.label as academic_year_label,
+              (SELECT COUNT(DISTINCT sbt.student_id)
+               FROM student_biometric_templates sbt
+               JOIN enrollments e ON e.student_id = sbt.student_id AND e.status = 'ENROLLED'
+               WHERE e.department_id = d.department_id AND sbt.is_active = 1) as cloud_templates_count
        FROM devices d
        LEFT JOIN academic_years ay ON d.academic_year_id = ay.id
        WHERE d.department_id = ?
@@ -1019,13 +1005,13 @@ class HodModel {
    * @param {Object} params Device parameters
    * @returns {Promise<number>} Inserted device ID
    */
-  static async createDevice({ deviceUid, name, departmentId, year, semester, ayId, secretHash }) {
+  static async createDevice({ deviceUid, name, departmentId, year, semester, ayId, secretHash, secretKey }) {
     const result = await query(
-      `INSERT INTO devices (device_uid, name, department_id, year, semester, academic_year_id, secret_hash)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [deviceUid, name, departmentId, year, semester, ayId, secretHash]
+      `INSERT INTO devices (device_uid, name, department_id, branch_id, year, semester, academic_year_id, secret_key, secret_hash, firmware_version)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'v3.0-AES256-GCM')`,
+      [deviceUid, name, departmentId, departmentId, year || 1, semester || 1, ayId, secretKey || secretHash, secretHash]
     );
-    return result[0]?.insertId ?? result.lastInsertRowid;
+    return result.insertId ?? result[0]?.insertId ?? result.lastID;
   }
 
   /**
@@ -1108,12 +1094,17 @@ class HodModel {
    * @param {Object} filters Query and pagination filters
    * @returns {Promise<{total: number, students: Array<Object>}>}
    */
-  static async getStudents(deptId, { year, semester, search, status, academic_year_id, branch_id, limit = 100, offset = 0 }) {
-    let whereClause = `WHERE e.department_id = ?`;
-    const params = [deptId];
+  static async getStudents(deptId, { year, semester, search, status, academic_year_id, branch_id, limit = 500, offset = 0 } = {}) {
+    let whereClause = `WHERE 1=1`;
+    const params = [];
+
+    if (deptId) {
+      whereClause += ` AND e.department_id = ?`;
+      params.push(deptId);
+    }
 
     if (academic_year_id) { whereClause += ` AND e.academic_year_id = ?`; params.push(academic_year_id); }
-    if (branch_id) { whereClause += ` AND e.department_id = ?`; params.push(branch_id); }
+    if (branch_id && branch_id !== deptId) { whereClause += ` AND e.department_id = ?`; params.push(branch_id); }
     if (year) { whereClause += ` AND e.year = ?`; params.push(parseInt(year, 10)); }
     if (semester) { whereClause += ` AND e.semester = ?`; params.push(parseInt(semester, 10)); }
     if (status) {
@@ -1138,14 +1129,25 @@ class HodModel {
     );
 
     const students = await query(
-      `SELECT st.id, st.user_id, st.official_enrollment_no, st.official_enrollment_no as enrollment_no, st.registration_no, st.full_name,
+      `SELECT st.id, st.user_id, st.official_enrollment_no, st.official_enrollment_no as enrollment_no,
+              st.registration_no, st.registration_no as ubter_reg_no, st.full_name,
               COALESCE(st.class_roll_no, e.class_roll_no) as class_roll_no,
               st.admission_year, st.is_lateral_entry,
-              e.year, e.semester, e.status as enrollment_status,
-              u.email as gmail, u.email, u.phone, u.status as user_status
+              e.year, e.semester,
+              e.status,
+              e.status as enrollment_status,
+              d.id as department_id, d.name as department_name, d.code as department_code,
+              u.email as gmail, u.email, u.phone, u.status as user_status,
+              CASE WHEN u.google_sub IS NOT NULL THEN 1 ELSE 0 END as google_linked,
+              fs.slot_id as biometric_slot,
+              fs.slot_id as biometric_slot_id,
+              dev.name as device_name
        FROM enrollments e
        JOIN students st ON e.student_id = st.id
        JOIN users u ON st.user_id = u.id
+       JOIN departments d ON e.department_id = d.id
+       LEFT JOIN fingerprint_slots fs ON fs.student_id = st.id AND fs.is_active = 1
+       LEFT JOIN devices dev ON fs.device_id = dev.id
        ${whereClause}
        ORDER BY e.year, e.semester, COALESCE(st.class_roll_no, e.class_roll_no) ASC
        LIMIT ? OFFSET ?`,
@@ -1298,51 +1300,57 @@ class HodModel {
    * @returns {Promise<boolean>}
    */
   static async deleteStudent(id, deptId) {
-    const sRows = await query(
-      `SELECT s.id, s.user_id, e.year, e.semester, e.academic_year_id FROM students s
-       LEFT JOIN enrollments e ON e.student_id = s.id AND e.department_id = ?
-       WHERE s.id = ?`,
-      [deptId, id]
+    let sRows = await query(
+      `SELECT s.id, s.user_id, e.year, e.semester, e.academic_year_id, e.department_id FROM students s
+       LEFT JOIN enrollments e ON e.student_id = s.id
+       WHERE s.id = ? ${deptId ? 'AND (e.department_id = ? OR e.department_id IS NULL)' : ''}`,
+      deptId ? [id, deptId] : [id]
     );
-    if (!sRows.length) return false;
+    if (!sRows.length) {
+      sRows = await query(`SELECT id, user_id FROM students WHERE id = ?`, [id]);
+      if (!sRows.length) return false;
+    }
     const { user_id: userId, year, semester, academic_year_id: ayId } = sRows[0];
+    const actualDeptId = sRows[0].department_id || deptId;
 
     await withTransaction(async (conn) => {
-      // 1. Delete all student records in attendance and presence tables
+      // 1. Clean up all child foreign key constraints on student_id
+      await conn.execute(`DELETE FROM assessment_submissions WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM register_attendance WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM attendance_session_students WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM student_self_attendance WHERE student_id = ?`, [id]);
-      await conn.execute(`DELETE FROM attendance_corrections WHERE student_id = ?`, [id]);
-      await conn.execute(`DELETE FROM fingerprint_slots WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM esp32_presence WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM fingerprint_slots WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM iot_attendance_events WHERE student_id = ?`, [id]);
-
-      // 2. Leave, assessments, teaching groups, media
-      await conn.execute(`DELETE FROM leave_applications WHERE student_id = ?`, [id]);
-      await conn.execute(`DELETE FROM assessment_submissions WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM attendance_corrections WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM teaching_group_members WHERE student_id = ?`, [id]);
+      await conn.execute(`DELETE FROM leave_applications WHERE student_id = ?`, [id]);
       await conn.execute(`DELETE FROM student_department_enrollments WHERE student_id = ?`, [id]);
-      await conn.execute(`DELETE FROM faculty_media_assets WHERE student_id = ?`, [id]);
-
-      // 3. Enrollments and student profile
       await conn.execute(`DELETE FROM enrollments WHERE student_id = ?`, [id]);
+
+      try {
+        await conn.execute(`UPDATE faculty_media_assets SET student_id = NULL WHERE student_id = ?`, [id]);
+      } catch (_) {}
+
+      // 2. Delete the student record
       await conn.execute(`DELETE FROM students WHERE id = ?`, [id]);
 
-      // 4. User account and associations
+      // 3. Clean up user credentials, sessions, roles and activities
       if (userId) {
-        await conn.execute(`DELETE FROM classroom_post_comments WHERE author_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM classroom_posts WHERE author_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
-        await conn.execute(`DELETE FROM audit_logs WHERE user_id = ?`, [userId]);
         await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
         await conn.execute(`DELETE FROM user_sessions WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM classroom_post_comments WHERE author_id = ?`, [userId]);
+        await conn.execute(`DELETE FROM classroom_posts WHERE author_id = ?`, [userId]);
+        try {
+          await conn.execute(`UPDATE audit_logs SET user_id = NULL WHERE user_id = ?`, [userId]);
+        } catch (_) {}
         await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
       }
 
-      if (year && semester && ayId) {
-        try {
-          await HodModel.reindexCohortRollNumbers(deptId, year, semester, ayId, conn);
-        } catch (_) { }
+      // 4. Reindex cohort roll numbers without gaps
+      if (actualDeptId && year && semester && ayId) {
+        await HodModel.reindexCohortRollNumbers(actualDeptId, year, semester, ayId, conn);
       }
     });
     return true;
@@ -1829,7 +1837,7 @@ class HodModel {
     const params = [deptId];
 
     if (batch_year) {
-      filter += ` AND (s.graduation_year = ? OR strftime('%Y', e.updated_at) = ?)`;
+      filter += ` AND (s.graduation_year = ? OR YEAR(e.updated_at) = ?)`;
       params.push(parseInt(batch_year, 10), String(batch_year));
     }
 
@@ -1840,7 +1848,7 @@ class HodModel {
 
     const students = await query(
       `SELECT s.id as student_id, s.user_id, s.official_enrollment_no, s.full_name,
-              s.admission_year, COALESCE(s.graduation_year, CAST(strftime('%Y', e.updated_at) AS INTEGER)) as graduation_year,
+              s.admission_year, COALESCE(s.graduation_year, YEAR(e.updated_at)) as graduation_year,
               s.entry_mode, s.is_lateral_entry,
               e.id as enrollment_id, e.year as final_year, e.semester as final_semester, e.class_roll_no as final_class_roll_no,
               e.status as enrollment_status, u.email, u.status as user_status,
@@ -2016,13 +2024,37 @@ class HodModel {
    * @returns {Promise<boolean>}
    */
   static async getFacultyRegistrationStatus(deptId) {
-    const settingKey = `faculty_reg_dept_${deptId}`;
-    const setting = await query(`SELECT setting_value FROM system_settings WHERE setting_key = ?`, [settingKey]);
-    return setting.length > 0 && setting[0].setting_value === '1';
+    const dRows = await query(`SELECT id, code FROM departments WHERE id = ?`, [deptId]);
+    const deptCode = dRows[0]?.code;
+
+    const settings = await query(
+      `SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('admin_reg_all_open', 'admin_reg_open_departments', ?)`,
+      [`faculty_reg_dept_${deptId}`]
+    );
+
+    const isAll = settings.some(s => s.setting_key === 'admin_reg_all_open' && (s.setting_value === '1' || s.setting_value === 'true'));
+    if (isAll) return true;
+
+    const deptSetting = settings.find(s => s.setting_key === `faculty_reg_dept_${deptId}`);
+    if (deptSetting) {
+      return deptSetting.setting_value === '1' || deptSetting.setting_value === 'true';
+    }
+
+    const deptsSetting = settings.find(s => s.setting_key === 'admin_reg_open_departments');
+    if (deptsSetting && deptsSetting.setting_value) {
+      try {
+        const arr = JSON.parse(deptsSetting.setting_value);
+        if (Array.isArray(arr) && (arr.includes(deptCode) || arr.includes(Number(deptId)) || arr.includes(String(deptId)))) {
+          return true;
+        }
+      } catch (_) {}
+    }
+
+    return false;
   }
 
   /**
-   * Toggle departmental faculty self-registration gate with audit trail
+   * Toggle departmental faculty self-registration gate with audit trail and two-way sync with Admin Console
    * @calledBy HodController.toggleFacultyRegistration() (controllers/hodController.js)
    * @route POST /api/v1/hod/faculty-registration-toggle (routes/hod.js)
    * @param {number} deptId Department ID
@@ -2035,15 +2067,49 @@ class HodModel {
     await query(
       `INSERT INTO system_settings (setting_key, setting_value, description, updated_by, updated_at)
        VALUES (?, ?, 'Department Faculty Self-Registration Open/Closed', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(setting_key)
-       DO UPDATE SET setting_value = excluded.setting_value, updated_by = excluded.updated_by, updated_at = CURRENT_TIMESTAMP`,
+       ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
       [settingKey, isOpen ? '1' : '0', userId]
+    );
+
+    // Get department details
+    const dRows = await query(`SELECT id, code, name FROM departments WHERE id = ?`, [deptId]);
+    const deptCode = dRows[0]?.code;
+
+    // Two-way synchronization with admin_reg_open_departments and admin_reg_all_open
+    const gates = await query(`SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('admin_reg_all_open', 'admin_reg_open_departments')`);
+    const allSetting = gates.find(s => s.setting_key === 'admin_reg_all_open');
+    const deptsSetting = gates.find(s => s.setting_key === 'admin_reg_open_departments');
+
+    let openDepts = [];
+    if (deptsSetting && deptsSetting.setting_value) {
+      try { openDepts = JSON.parse(deptsSetting.setting_value); } catch (_) { openDepts = []; }
+    }
+    if (!Array.isArray(openDepts)) openDepts = [];
+
+    if (isOpen) {
+      if (deptCode && !openDepts.includes(deptCode)) openDepts.push(deptCode);
+    } else {
+      openDepts = openDepts.filter(x => x !== deptCode && x !== Number(deptId) && x !== String(deptId));
+      // If all_open was enabled, close it since this department is now closed
+      await query(
+        `INSERT INTO system_settings (setting_key, setting_value, description, updated_by, updated_at)
+         VALUES ('admin_reg_all_open', '0', 'Allow Registration For All Departments', ?, CURRENT_TIMESTAMP)
+         ON DUPLICATE KEY UPDATE setting_value = '0', updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
+        [userId]
+      );
+    }
+
+    await query(
+      `INSERT INTO system_settings (setting_key, setting_value, description, updated_by, updated_at)
+       VALUES ('admin_reg_open_departments', ?, 'Departments with Open Self-Registration', ?, CURRENT_TIMESTAMP)
+       ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
+      [JSON.stringify(openDepts), userId]
     );
 
     await query(
       `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
        VALUES (?, 'FACULTY_REGISTRATION_TOGGLED', 'departments', ?, ?, CURRENT_TIMESTAMP)`,
-      [userId, String(deptId), JSON.stringify({ is_open: isOpen, department_id: deptId })]
+      [userId, String(deptId), JSON.stringify({ is_open: isOpen, department_id: deptId, code: deptCode })]
     );
   }
 }

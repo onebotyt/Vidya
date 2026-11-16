@@ -1,6 +1,6 @@
 /**
  * Faculty Model
- * Encapsulates SQLite queries and transactions for faculty dashboard, registers,
+ * Encapsulates MySQL 8.x queries and transactions for faculty dashboard, registers,
  * digital pen marking, internal evaluation sheets, cohorts, and common faculty requests.
  *
  * Architecture Role: Model (Data Access Layer)
@@ -76,7 +76,7 @@ class FacultyModel {
          JOIN teachers t ON ar.teacher_id = t.id
          LEFT JOIN attendance_sessions asess ON asess.register_id = ar.id
          WHERE ar.is_official = 1
-         GROUP BY ar.id ORDER BY ar.created_at DESC`
+         GROUP BY ar.id, s.name, s.code, d.name, ay.label, t.full_name ORDER BY ar.created_at DESC`
       );
     }
 
@@ -92,7 +92,7 @@ class FacultyModel {
        LEFT JOIN academic_years ay ON ar.academic_year_id = ay.id
        LEFT JOIN attendance_sessions asess ON asess.register_id = ar.id
        WHERE ar.teacher_id = ? AND ar.is_active = 1
-       GROUP BY ar.id ORDER BY ar.is_official DESC, ar.created_at DESC`,
+       GROUP BY ar.id, s.name, s.code, d.name, ay.label ORDER BY ar.is_official DESC, ar.created_at DESC`,
       [teacherId]
     );
   }
@@ -108,40 +108,44 @@ class FacultyModel {
     let studentRows = [];
     if (teacherId) {
       studentRows = await query(
-        `SELECT DISTINCT st.id as student_id, st.full_name, st.official_enrollment_no, st.registration_no,
-                COALESCE(st.class_roll_no, e.class_roll_no) as class_roll_no,
-                u.email, u.phone,
-                e.year, e.semester,
-                d.name as department_name,
-                tg.id as group_id, tg.name as group_name, tg.subject_name
-         FROM teaching_groups tg
-         JOIN teaching_group_members tgm ON tgm.group_id = tg.id AND tgm.status IN ('ENROLLED', 'ACTIVE')
-         JOIN students st ON tgm.student_id = st.id
-         JOIN users u ON st.user_id = u.id
-         LEFT JOIN enrollments e ON e.student_id = st.id AND e.status = 'ENROLLED'
-         LEFT JOIN departments d ON e.department_id = d.id
-         WHERE tg.teacher_id = ? AND tg.status = 'ACTIVE'
-         ORDER BY COALESCE(st.class_roll_no, e.class_roll_no) ASC, st.full_name ASC`,
+        `SELECT sub.* FROM (
+           SELECT DISTINCT st.id as student_id, st.full_name, st.official_enrollment_no, st.registration_no,
+                  COALESCE(st.class_roll_no, e.class_roll_no, 0) as class_roll_no,
+                  u.email, u.phone,
+                  e.year, e.semester,
+                  d.name as department_name,
+                  tg.id as group_id, tg.name as group_name, tg.subject_name
+           FROM teaching_groups tg
+           JOIN teaching_group_members tgm ON tgm.group_id = tg.id AND tgm.status IN ('ENROLLED', 'ACTIVE')
+           JOIN students st ON tgm.student_id = st.id
+           JOIN users u ON st.user_id = u.id
+           LEFT JOIN enrollments e ON e.student_id = st.id AND e.status = 'ENROLLED'
+           LEFT JOIN departments d ON e.department_id = d.id
+           WHERE tg.teacher_id = ? AND tg.status = 'ACTIVE'
+         ) sub
+         ORDER BY sub.class_roll_no ASC, sub.full_name ASC`,
         [teacherId]
       );
     }
 
     if (!studentRows.length && teacherId) {
       studentRows = await query(
-        `SELECT DISTINCT st.id as student_id, st.full_name, st.official_enrollment_no, st.registration_no,
-                COALESCE(st.class_roll_no, e.class_roll_no) as class_roll_no,
-                u.email, u.phone,
-                e.year, e.semester,
-                d.name as department_name,
-                ar.id as group_id, ar.name as group_name, s.name as subject_name
-         FROM attendance_registers ar
-         LEFT JOIN subjects s ON ar.subject_id = s.id
-         JOIN enrollments e ON e.department_id = ar.department_id AND e.year = ar.year AND e.semester = ar.semester AND e.status = 'ENROLLED'
-         JOIN students st ON e.student_id = st.id
-         JOIN users u ON st.user_id = u.id
-         LEFT JOIN departments d ON e.department_id = d.id
-         WHERE ar.teacher_id = ? AND ar.is_active = 1
-         ORDER BY COALESCE(st.class_roll_no, e.class_roll_no) ASC, st.full_name ASC`,
+        `SELECT sub.* FROM (
+           SELECT DISTINCT st.id as student_id, st.full_name, st.official_enrollment_no, st.registration_no,
+                  COALESCE(st.class_roll_no, e.class_roll_no, 0) as class_roll_no,
+                  u.email, u.phone,
+                  e.year, e.semester,
+                  d.name as department_name,
+                  ar.id as group_id, ar.name as group_name, s.name as subject_name
+           FROM attendance_registers ar
+           LEFT JOIN subjects s ON ar.subject_id = s.id
+           JOIN enrollments e ON e.department_id = ar.department_id AND e.year = ar.year AND e.semester = ar.semester AND e.status = 'ENROLLED'
+           JOIN students st ON e.student_id = st.id
+           JOIN users u ON st.user_id = u.id
+           LEFT JOIN departments d ON e.department_id = d.id
+           WHERE ar.teacher_id = ? AND ar.is_active = 1
+         ) sub
+         ORDER BY sub.class_roll_no ASC, sub.full_name ASC`,
         [teacherId]
       );
     }
@@ -253,9 +257,9 @@ class FacultyModel {
        (register_id, teacher_id, subject_id, department_id, year, semester, academic_year_id, session_type, label, session_date, state)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT')`,
       [register.id, register.teacher_id, register.subject_id, register.department_id,
-       register.year, register.semester, register.academic_year_id,
-       register.session_type_scope === 'PRACTICAL' ? 'PRACTICAL' : 'THEORY',
-       sessionLabel, today]
+      register.year, register.semester, register.academic_year_id,
+      register.session_type_scope === 'PRACTICAL' ? 'PRACTICAL' : 'THEORY',
+        sessionLabel, today]
     );
 
     const newSession = (await query(`SELECT id FROM attendance_sessions WHERE register_id = ? AND session_date = ?`, [register.id, today]))[0];
@@ -283,7 +287,7 @@ class FacultyModel {
       for (const student of enrolled) {
         try {
           await query(
-            `INSERT OR IGNORE INTO attendance_session_students (session_id, student_id, enrollment_id, class_roll_no) VALUES (?, ?, ?, ?)`,
+            `INSERT IGNORE INTO attendance_session_students (session_id, student_id, enrollment_id, class_roll_no) VALUES (?, ?, ?, ?)`,
             [newSession.id, student.student_id, student.enrollment_id, student.class_roll_no]
           );
         } catch { /* skip duplicates */ }
@@ -321,7 +325,7 @@ class FacultyModel {
       }
       try {
         await query(`UPDATE attendance_registers SET subject_id = ? WHERE id = ?`, [effSubjectId, registerId]);
-      } catch (_) {}
+      } catch (_) { }
     }
 
     const insertRes = await query(
@@ -361,7 +365,7 @@ class FacultyModel {
       for (const student of (enrolled || [])) {
         try {
           await query(
-            `INSERT OR IGNORE INTO attendance_session_students (session_id, student_id, enrollment_id, class_roll_no) VALUES (?, ?, ?, ?)`,
+            `INSERT IGNORE INTO attendance_session_students (session_id, student_id, enrollment_id, class_roll_no) VALUES (?, ?, ?, ?)`,
             [newSessionId, student.student_id, student.enrollment_id, student.class_roll_no]
           );
         } catch { /* skip duplicates */ }
@@ -383,10 +387,10 @@ class FacultyModel {
       throw new Error('Session not found under this register');
     }
 
-    try { await query(`DELETE FROM student_self_attendance WHERE session_id = ?`, [sessionId]); } catch (_) {}
-    try { await query(`DELETE FROM attendance_corrections WHERE session_id = ?`, [sessionId]); } catch (_) {}
-    try { await query(`DELETE FROM attendance_session_students WHERE session_id = ?`, [sessionId]); } catch (_) {}
-    try { await query(`DELETE FROM register_attendance WHERE session_id = ?`, [sessionId]); } catch (_) {}
+    try { await query(`DELETE FROM student_self_attendance WHERE session_id = ?`, [sessionId]); } catch (_) { }
+    try { await query(`DELETE FROM attendance_corrections WHERE session_id = ?`, [sessionId]); } catch (_) { }
+    try { await query(`DELETE FROM attendance_session_students WHERE session_id = ?`, [sessionId]); } catch (_) { }
+    try { await query(`DELETE FROM register_attendance WHERE session_id = ?`, [sessionId]); } catch (_) { }
     await query(`DELETE FROM attendance_sessions WHERE id = ?`, [sessionId]);
 
     return true;
@@ -440,9 +444,9 @@ class FacultyModel {
   static async getExamsForMonth(register, targetMonth) {
     if (!register.department_id) return [];
     return await query(
-      `SELECT id, name, exam_date, max_marks FROM exams 
-       WHERE (subject_id = ? OR (department_id = ? AND year = ? AND semester = ?))
-         AND exam_date LIKE ? ORDER BY exam_date ASC`,
+      `SELECT id, title as name, due_date as exam_date, max_marks FROM assessments
+       WHERE type = 'EXAM' AND (subject_id = ? OR (department_id = ? AND year = ? AND semester = ?))
+         AND due_date LIKE ? ORDER BY due_date ASC`,
       [register.subject_id, register.department_id, register.year, register.semester, `${targetMonth}%`]
     );
   }
@@ -457,8 +461,8 @@ class FacultyModel {
   static async getAssignmentsForMonth(register, targetMonth) {
     if (!register.department_id) return [];
     return await query(
-      `SELECT id, title, due_date, max_marks FROM assignments
-       WHERE (subject_id = ? OR (department_id = ? AND year = ? AND semester = ?))
+      `SELECT id, title, due_date, max_marks FROM assessments
+       WHERE type = 'ASSIGNMENT' AND (subject_id = ? OR (department_id = ? AND year = ? AND semester = ?))
          AND due_date LIKE ? ORDER BY due_date ASC`,
       [register.subject_id, register.department_id, register.year, register.semester, `${targetMonth}%`]
     );
@@ -565,7 +569,7 @@ class FacultyModel {
         }
         for (const st of enrolled) {
           await query(
-            `INSERT OR IGNORE INTO attendance_session_students (session_id, student_id, enrollment_id, class_roll_no, included) VALUES (?, ?, ?, ?, 1)`,
+            `INSERT IGNORE INTO attendance_session_students (session_id, student_id, enrollment_id, class_roll_no, included) VALUES (?, ?, ?, ?, 1)`,
             [sess.id, st.student_id, st.enrollment_id, st.class_roll_no]
           );
         }
@@ -589,11 +593,11 @@ class FacultyModel {
       await query(
         `INSERT INTO register_attendance (session_id, student_id, attendance_status, source, marked_by, teacher_notes)
          VALUES (?, ?, ?, 'MANUAL', ?, 'Direct Pen Edit')
-         ON CONFLICT(session_id, student_id) DO UPDATE SET
-           attendance_status = excluded.attendance_status,
-           source = excluded.source,
-           marked_by = excluded.marked_by,
-           teacher_notes = excluded.teacher_notes,
+         ON DUPLICATE KEY UPDATE
+           attendance_status = VALUES(attendance_status),
+           source = VALUES(source),
+           marked_by = VALUES(marked_by),
+           teacher_notes = VALUES(teacher_notes),
            updated_at = CURRENT_TIMESTAMP`,
         [sessionId, studentId, status, userId]
       );
@@ -772,7 +776,7 @@ class FacultyModel {
     await query(
       `INSERT INTO system_settings (setting_key, setting_value, updated_at)
        VALUES (?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP`,
+       ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP`,
       [key, String(val)]
     );
   }
@@ -1193,7 +1197,7 @@ class FacultyModel {
     // Institution & Session
     const instRow = (await query(`SELECT setting_value FROM system_settings WHERE setting_key = 'institution_name'`))[0];
     const institutionName = instRow?.setting_value || 'Uttarakhand Government Institute of Polytechnic, Nainital';
-    
+
     const ayRow = (await query(`SELECT label FROM academic_years WHERE is_current = 1 LIMIT 1`))[0];
     const sessionLabel = ayRow?.label || register.academic_year_label || '2026 Session';
 

@@ -1,6 +1,6 @@
 /**
  * Student Model
- * Encapsulates SQLite queries and transactions for student accounts, enrollments, registrations, and dossiers.
+ * Encapsulates MySQL 8.x queries and transactions for student accounts, enrollments, registrations, and dossiers.
  *
  * Architecture Role: Model (Data Access Layer)
  * Interacts With:
@@ -43,6 +43,77 @@ class StudentModel {
   }
 
   /**
+   * Retrieves department student roster with cohort, search, and pagination.
+   * @calledBy StudentController.getStudents() (controllers/studentController.js)
+   * @route GET /api/v1/students (routes/students.js)
+   * @param {number|null} deptId - Department ID filter (optional for admin)
+   * @param {Object} filters - Query and pagination filters
+   * @returns {Promise<{total: number, students: Array<Object>}>}
+   */
+  static async getStudents(deptId, { year, semester, search, status, academic_year_id, branch_id, limit = 500, offset = 0 } = {}) {
+    let whereClause = `WHERE 1=1`;
+    const params = [];
+
+    if (deptId) {
+      whereClause += ` AND e.department_id = ?`;
+      params.push(deptId);
+    }
+
+    if (academic_year_id) { whereClause += ` AND e.academic_year_id = ?`; params.push(academic_year_id); }
+    if (branch_id && branch_id !== deptId) { whereClause += ` AND e.department_id = ?`; params.push(branch_id); }
+    if (year) { whereClause += ` AND e.year = ?`; params.push(parseInt(year, 10)); }
+    if (semester) { whereClause += ` AND e.semester = ?`; params.push(parseInt(semester, 10)); }
+    if (status) {
+      whereClause += ` AND e.status = ?`;
+      params.push(status);
+    } else {
+      whereClause += ` AND e.status != 'WITHDRAWN'`;
+    }
+
+    if (search) {
+      whereClause += ` AND (st.full_name LIKE ? OR st.official_enrollment_no LIKE ? OR st.registration_no LIKE ?)`;
+      const term = `%${search.trim()}%`;
+      params.push(term, term, term);
+    }
+
+    const countRow = await query(
+      `SELECT COUNT(DISTINCT st.id) as total
+       FROM enrollments e
+       JOIN students st ON e.student_id = st.id
+       ${whereClause}`,
+      params
+    );
+
+    const students = await query(
+      `SELECT st.id, st.user_id, st.official_enrollment_no, st.official_enrollment_no as enrollment_no,
+              st.registration_no, st.registration_no as ubter_reg_no, st.full_name,
+              COALESCE(st.class_roll_no, e.class_roll_no) as class_roll_no,
+              st.admission_year, st.is_lateral_entry,
+              e.year, e.semester,
+              e.status,
+              e.status as enrollment_status,
+              d.id as department_id, d.name as department_name, d.code as department_code,
+              u.email as gmail, u.email, u.phone, u.status as user_status,
+              CASE WHEN u.google_sub IS NOT NULL THEN 1 ELSE 0 END as google_linked,
+              fs.slot_id as biometric_slot,
+              fs.slot_id as biometric_slot_id,
+              dev.name as device_name
+       FROM enrollments e
+       JOIN students st ON e.student_id = st.id
+       JOIN users u ON st.user_id = u.id
+       JOIN departments d ON e.department_id = d.id
+       LEFT JOIN fingerprint_slots fs ON fs.student_id = st.id AND fs.is_active = 1
+       LEFT JOIN devices dev ON fs.device_id = dev.id
+       ${whereClause}
+       ORDER BY e.year, e.semester, COALESCE(st.class_roll_no, e.class_roll_no) ASC
+       LIMIT ? OFFSET ?`,
+      [...params, parseInt(limit, 10), parseInt(offset, 10)]
+    );
+
+    return { total: countRow[0]?.total || 0, students };
+  }
+
+  /**
    * Fetches active hardware biometric slot assignment for a student.
    * @calledBy StudentController.getProfile() (controllers/studentController.js)
    * @route GET /api/v1/students/me (routes/students.js)
@@ -51,7 +122,7 @@ class StudentModel {
    */
   static async getBiometricSlot(studentId) {
     const rows = await query(
-      `SELECT fs.slot_id, fs.enrolled_at, d.device_uid, d.name as device_name
+      `SELECT fs.slot_number as slot_id, fs.enrolled_at, d.device_uuid as device_uid, d.device_name
        FROM fingerprint_slots fs
        JOIN devices d ON fs.device_id = d.id
        WHERE fs.student_id = ? AND fs.is_active = 1`,
@@ -283,7 +354,7 @@ class StudentModel {
       try {
         await conn.execute(
           `INSERT INTO student_department_enrollments (student_id, department_id, academic_year_id, year, semester, class_roll_no, start_date, status)
-           VALUES (?, ?, ?, ?, ?, ?, DATE('now'), 'ACTIVE')`,
+           VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
           [studentId, departmentId, ayId, year, semester, finalRoll]
         );
       } catch (_) {}
@@ -521,7 +592,7 @@ class StudentModel {
         try {
           await conn.execute(
             `INSERT INTO student_department_enrollments (student_id, department_id, academic_year_id, year, semester, class_roll_no, start_date, status)
-             VALUES (?, ?, ?, ?, ?, ?, DATE('now'), 'ACTIVE')`,
+             VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
             [actualStudentId, student.department_id, student.academic_year_id, student.year, student.semester, finalRollNo]
           );
         } catch (_) {}
@@ -587,7 +658,7 @@ class StudentModel {
     return await withTransaction(async (conn) => {
       await conn.execute(
         `UPDATE student_department_enrollments 
-         SET end_date = DATE('now'), status = 'TRANSFERRED', updated_at = CURRENT_TIMESTAMP 
+         SET end_date = CURDATE(), status = 'TRANSFERRED', updated_at = CURRENT_TIMESTAMP 
          WHERE student_id = ? AND status = 'ACTIVE'`,
         [studentId]
       );
@@ -595,7 +666,7 @@ class StudentModel {
       await conn.execute(
         `INSERT INTO student_department_enrollments 
          (student_id, department_id, academic_year_id, year, semester, class_roll_no, start_date, status)
-         VALUES (?, ?, ?, ?, ?, ?, DATE('now'), 'ACTIVE')`,
+         VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
         [studentId, newDepartmentId, student.academic_year_id, student.year, student.semester, student.class_roll_no]
       );
 

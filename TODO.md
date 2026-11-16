@@ -37,6 +37,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 426: Tri-Repository Release & Vidya Monorepo Unification (Frontend + Backend + Firmware)
+
+- **Execution & Scope**:
+  1. **VidyaOS_BackEnd Standalone Repo (`onebotyt/VidyaOS_BackEnd.git`)**:
+     - Pushed `8e0fd05` to `main`: MySQL 8.x pure migration, compatibility views, ESP32 presence, teaching groups `subject_code`, and auto-session stabilization.
+  2. **VidyaOS Standalone Frontend Repo (`onebotyt/VidyaOS.git`)**:
+     - Pushed `acdb36b` to `main`: Standalone directory-based routing, modular component architecture, and ESP32 device portal.
+  3. **Vidya Combined Monorepo (`onebotyt/Vidya.git`)**:
+     - Unified both standalone frontend and backend trees into the `Vidya` monorepo (`Attendance-System-Simplified`).
+     - Aligned all models, controllers, migrations (001-008), ESP32 firmware, and modular frontend components into a single consolidated source of truth.
+     - Pushed unified release to `origin/main`.
+
 ### ✅ Milestone 425: Full-Stack VidyaOS MySQL 8.x Live Migration, Schema Alignment & Complete Regression Suite Passage (177+ Tests)
 
 - **Issues Addressed & Architecturally Resolved**:

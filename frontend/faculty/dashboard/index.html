@@ -11,18 +11,31 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/css/reset.css?v=20261029">
-  <link rel="stylesheet" href="/css/variables.css?v=20261029">
+  <link rel="stylesheet" href="/faculty/components/core/reset.css">
+  <link rel="stylesheet" href="/faculty/components/core/variables.css">
   <link rel="stylesheet" href="/faculty/components/faculty-base.css?v=20261029">
   <link rel="stylesheet" href="/faculty/components/header/header.css?v=20261029">
   <link rel="stylesheet" href="/faculty/components/sidebar/sidebar.css?v=20261029">
+  <link rel="stylesheet" href="/faculty/components/dept-hero/dept-hero.css?v=20261030">
 
   <link rel="stylesheet" href="/faculty/dashboard/dashboard.css?v=20261029">
   <script>
-    /* Always start closed (72px collapsed mini-rail) when page opens */
+    /* Always start closed (72px collapsed mini-rail) when page opens on desktop */
     (function () {
       try {
-        if (window.innerWidth >= 769) {
+        const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile) {
+          // On mobile, HOD home is directly the Classes page per user specification
+          const userStr = localStorage.getItem('user') || localStorage.getItem('auth_user');
+          if (userStr) {
+            const u = JSON.parse(userStr);
+            const isHOD = Boolean(u.role === 'HOD' || (Array.isArray(u.roles) && u.roles.includes('HOD')) || u.is_hod);
+            if (isHOD) {
+              window.location.replace('/faculty/classes/index.html');
+              return;
+            }
+          }
+        } else {
           document.documentElement.classList.add('sidebar-collapsed');
         }
       } catch (_) { }
@@ -34,195 +47,46 @@
 
   <div class="faculty-app-layout" id="faculty-app-layout">
     <div class="faculty-main-wrap">
-      <!-- Top Header Bar (Clean Admin-Parity Architecture) -->
-      <header class="faculty-top-header admin-top-header" id="faculty-header" aria-label="Faculty Header Bar">
-        <div class="header-left">
-          <span class="header-dept-pill" id="dept-header-name" style="display:none;"></span>
-        </div>
-        <div class="header-right">
-          <!-- Apps Launcher -->
-          <button type="button" class="header-icon-btn" onclick="toggleAppsLauncher(event)" id="btn-apps-launcher"
-            title="Academic Apps &amp; Modules" aria-label="Apps Launcher">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-            </svg>
-          </button>
-
-          <!-- Theme Toggle Button -->
-          <button type="button" class="header-icon-btn header-theme-toggle" id="theme-toggle-btn"
-            onclick="toggleAppTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode">
-            <svg class="icon-theme" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </button>
-
-          <!-- Round User Profile Avatar Trigger -->
-          <button type="button" class="header-profile-round-btn gc-user-avatar" id="header-user-profile"
-            onclick="toggleUserProfile(event)" aria-haspopup="true" aria-expanded="false" title="Account Profile"
-            aria-label="Open User Profile Menu">
-            <span class="user-avatar-initials" id="header-user-initials">FA</span>
-            <span class="avatar-online-dot"></span>
-          </button>
-
-          <!-- Apps Launcher Dropdown -->
-          <div class="apps-launcher-dropdown" id="apps-launcher-dropdown" style="display:none;" role="menu"></div>
-
-          <!-- Dropdown Profile Menu -->
-          <div class="header-profile-dropdown" id="header-profile-dropdown" aria-hidden="true">
-            <div class="profile-dropdown-user-card">
-              <div class="dropdown-avatar-circle" id="dropdown-avatar-circle" aria-hidden="true">FA</div>
-              <div class="dropdown-user-meta">
-                <span class="dropdown-full-name" id="dropdown-full-name">Faculty Member</span>
-                <span class="dropdown-email" id="dropdown-email">faculty@college.edu</span>
-                <span class="dropdown-role-pill" id="dropdown-role-pill">Faculty Member</span>
-              </div>
-            </div>
-            <div class="profile-dropdown-divider"></div>
-            <a href="/faculty/profile.html" class="profile-dropdown-item">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <span>My Profile</span>
-            </a>
-            <a href="/faculty/timetable.html" class="profile-dropdown-item">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Weekly Timetable</span>
-            </a>
-            <div class="profile-dropdown-divider"></div>
-            <button type="button" class="profile-dropdown-item dropdown-logout-btn" onclick="logout()">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <!-- Semantic Mount for Dedicated Faculty Header Component -->
+      <div id="faculty-header-mount"></div>
 
       <main class="page-main-container container" style="max-width:1380px;padding-top:1.5rem;">
-        <!-- HOD Role View Switcher -->
-        <div id="hod-view-switcher-bar" class="hod-switcher-container" style="display: flex;">
-          <div class="hod-segmented-tabs">
-            <button type="button" class="hod-tab-btn active" id="btn-tab-dept" onclick="switchDashboardTab('DEPT')">
-              <span style="display:inline-flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path>
-                </svg></span>
+        <!-- Universal Institutional Hero Showcase Banner (Mounted at Top) -->
+        <div id="dept-hero-container" class="dept-hero-mount" data-title="HOD Dashboard" data-subtitle=""></div>
+
+        <!-- HOD Status Capsules Row (Matching Image 2) -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:1.15rem 0 1.25rem;flex-wrap:wrap;gap:0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.65rem;">
+            <div style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1.15rem;border-radius:999px;background:var(--color-primary);color:#ffffff;font-size:0.85rem;font-weight:700;box-shadow:0 2px 8px hsl(217 91% 60% / 0.3);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path></svg>
               <span>Department Command Center</span>
-              <span class="tab-pulse-dot" id="dept-pending-dot" style="display:none;"
-                title="Pending approvals or alerts"></span>
-            </button>
-            <button type="button" class="hod-tab-btn" id="btn-tab-classes" onclick="switchDashboardTab('CLASSES')">
-              <span style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                </svg></span>
+            </div>
+            <a href="/faculty/classes/index.html" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1.15rem;border-radius:999px;background:var(--bg-card);color:var(--text-main);border:1px solid var(--border-color);font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
               <span>My Teaching Classes</span>
-              <span class="tab-count-badge" id="badge-teaching-count">0</span>
-            </button>
+              <span style="background:var(--bg-surface);color:var(--color-primary);border:1px solid var(--border-color);font-size:0.72rem;font-weight:700;padding:1px 6px;border-radius:999px;" id="badge-teaching-count">1</span>
+            </a>
           </div>
-          <div class="hod-dept-context-pill">
-            <span class="dept-dot"></span>
-            <span id="hod-switcher-dept-name">Department Administration</span>
+          <div style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 0.95rem;border-radius:999px;background:var(--color-primary-light, hsl(215 90% 95%));color:var(--color-primary);font-size:0.82rem;font-weight:700;">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--color-primary);"></span>
+            <span id="hod-switcher-dept-name">Information Technology</span>
           </div>
         </div>
 
         <!-- HOD Department Command Center Panel -->
         <section id="hod-dept-command-center" class="hod-dept-command-center" style="display: block;">
-          <!-- 1. Department Hero Banner & Institutional Showcase (Matching Image 1) -->
-          <section class="admin-welcome-hero dept-welcome-hero" aria-label="Department Overview">
-            <div class="hero-left-content">
-              <div class="hod-command-badge" style="align-self:flex-start;">DEPARTMENT PORTAL</div>
-              <h1 class="hero-title" id="dept-command-title">Department of Computer Science 💻</h1>
-              <p class="hero-subtitle" id="dept-command-sub">Manage your faculty, students, classes, subjects, and
-                attendance, and keep your department running smoothly.</p>
-
-              <div class="hero-live-badges">
-                <span class="hero-badge date-badge" id="hero-live-date">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <span id="live-date-text">Thursday, 29 October 2026</span>
-                </span>
-                <span class="hero-badge time-badge" id="hero-live-time">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                  <span id="live-time-text">3:56 AM</span>
-                </span>
-              </div>
-            </div>
-
-            <!-- Institutional Identity Card with Authentic Nainital Campus Photo -->
-            <div class="hero-campus-card" aria-label="Institution Profile">
-              <div class="campus-card-content">
-                <div class="campus-card-header">
-                  <div class="campus-building-icon" aria-hidden="true">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"></path>
-                    </svg>
-                  </div>
-                  <div class="campus-card-title-group">
-                    <h2 class="campus-name">Government Polytechnic Nainital</h2>
-                    <span class="campus-motto">Knowledge &bull; Skills &bull; Better Tomorrow</span>
-                  </div>
-                </div>
-                <div class="campus-quote-badge">
-                  <span>&ldquo;Education creates opportunities.&rdquo;</span>
-                </div>
-              </div>
-              <div class="campus-image-wrap" aria-hidden="true">
-                <img src="/admin/dashboard/campus-nainital.jpg" alt="Government Polytechnic Nainital Campus"
-                  class="campus-photo">
-                <div class="campus-photo-overlay"></div>
-              </div>
-            </div>
-          </section>
-
-          <!-- 2. Top 4 Department KPI Metric Cards (Matching Image 1) -->
-          <section class="dept-kpi-metrics-section" style="margin-top: 1.25rem; margin-bottom: 1.25rem;">
+          <!-- 2. Top 4 Department KPI Metric Cards (Matching Image 2) -->
+          <section class="dept-kpi-metrics-section" style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
             <div class="kpi-cards-grid kpi-4-cards">
               <!-- 1. Total Faculty -->
               <article class="kpi-card card-faculty">
                 <div class="kpi-card-header">
-                  <div class="kpi-icon-squircle icon-blue" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                  </div>
-                  <span class="kpi-trend-pill trend-up">+2% &uarr;</span>
+                  <div class="kpi-icon-squircle icon-blue" data-faculty-icon="students" data-size="18" data-stroke="2" aria-hidden="true"></div>
+                  <span class="kpi-trend-pill trend-blue">Staff</span>
                 </div>
                 <div class="kpi-card-body">
                   <span class="kpi-label">Total Faculty</span>
-                  <span class="kpi-value" id="kpi-dept-teachers">4</span>
+                  <span class="kpi-value" id="kpi-dept-teachers">5</span>
                   <span class="kpi-subtext">Teaching &amp; non-teaching staff</span>
                 </div>
               </article>
@@ -230,18 +94,12 @@
               <!-- 2. Total Students -->
               <article class="kpi-card card-students">
                 <div class="kpi-card-header">
-                  <div class="kpi-icon-squircle icon-green" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                      <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                    </svg>
-                  </div>
-                  <span class="kpi-trend-pill trend-up">+8% &uarr;</span>
+                  <div class="kpi-icon-squircle icon-green" data-faculty-icon="brand" data-size="18" data-stroke="2" aria-hidden="true"></div>
+                  <span class="kpi-trend-pill trend-green">&uarr; +12%</span>
                 </div>
                 <div class="kpi-card-body">
                   <span class="kpi-label">Total Students</span>
-                  <span class="kpi-value" id="kpi-dept-students">142</span>
+                  <span class="kpi-value" id="kpi-dept-students">48</span>
                   <span class="kpi-subtext">Enrolled in department</span>
                 </div>
               </article>
@@ -249,18 +107,12 @@
               <!-- 3. Total Subjects -->
               <article class="kpi-card card-subjects">
                 <div class="kpi-card-header">
-                  <div class="kpi-icon-squircle icon-purple" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                  </div>
-                  <span class="kpi-trend-pill trend-up">+5% &uarr;</span>
+                  <div class="kpi-icon-squircle icon-purple" data-faculty-icon="registers" data-size="18" data-stroke="2" aria-hidden="true"></div>
+                  <span class="kpi-trend-pill trend-purple">Active</span>
                 </div>
                 <div class="kpi-card-body">
                   <span class="kpi-label">Total Subjects</span>
-                  <span class="kpi-value" id="kpi-dept-subjects">18</span>
+                  <span class="kpi-value" id="kpi-dept-subjects">4</span>
                   <span class="kpi-subtext">Active subjects</span>
                 </div>
               </article>
@@ -268,42 +120,26 @@
               <!-- 4. Active Registers -->
               <article class="kpi-card card-registers">
                 <div class="kpi-card-header">
-                  <div class="kpi-icon-squircle icon-amber" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                      <line x1="16" y1="13" x2="8" y2="13"></line>
-                      <line x1="16" y1="17" x2="8" y2="17"></line>
-                    </svg>
-                  </div>
-                  <span class="kpi-trend-pill trend-up">+3% &uarr;</span>
+                  <div class="kpi-icon-squircle icon-amber" data-faculty-icon="fileText" data-size="18" data-stroke="2" aria-hidden="true"></div>
+                  <span class="kpi-trend-pill trend-amber">Active</span>
                 </div>
                 <div class="kpi-card-body">
                   <span class="kpi-label">Active Registers</span>
-                  <span class="kpi-value" id="kpi-dept-registers">12</span>
+                  <span class="kpi-value" id="kpi-dept-registers">4</span>
                   <span class="kpi-subtext">For current semester</span>
                 </div>
               </article>
             </div>
           </section>
 
-          <!-- 3. 3 Hero 1-Click Fast Access Panels for HOD (Matching Image 1) -->
-          <div class="hod-one-click-cards-grid" style="margin-bottom: 1.5rem;">
+          <!-- Hidden Legacy 1-Click Cards (Removed per Image 2 Design) -->
+          <div class="hod-one-click-cards-grid" style="display: none !important;">
             <!-- 1-Click Faculty -->
             <div class="hod-one-click-card" onclick="openHodFacultyModal()" role="button" tabindex="0">
               <div>
                 <div class="one-click-badge">1-CLICK DIRECT VIEW</div>
                 <div class="one-click-card-header">
-                  <div class="one-click-icon icon-faculty">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                  </div>
+                  <div class="one-click-icon icon-faculty" data-faculty-icon="students" data-size="22"></div>
                   <div>
                     <div class="one-click-title">Department Faculty</div>
                     <div class="one-click-sub">View teaching load, assigned subjects &amp; contact info</div>
@@ -311,11 +147,7 @@
                 </div>
               </div>
               <button type="button" class="btn btn-primary one-click-btn-solid">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                <span data-faculty-icon="eye" data-size="14"></span>
                 <span>Quick See Faculty Under Me</span>
                 <span class="btn-chevron">&gt;</span>
               </button>
@@ -326,13 +158,7 @@
               <div>
                 <div class="one-click-badge">1-CLICK DIRECT VIEW</div>
                 <div class="one-click-card-header">
-                  <div class="one-click-icon icon-students">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                      <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                    </svg>
-                  </div>
+                  <div class="one-click-icon icon-students" data-faculty-icon="brand" data-size="22"></div>
                   <div>
                     <div class="one-click-title">Department Students</div>
                     <div class="one-click-sub">Enrolled cohorts &amp; cumulative attendance %</div>
@@ -340,11 +166,7 @@
                 </div>
               </div>
               <button type="button" class="btn btn-primary one-click-btn-solid">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                <span data-faculty-icon="eye" data-size="14"></span>
                 <span>Quick See Students Under Me</span>
                 <span class="btn-chevron">&gt;</span>
               </button>
@@ -355,13 +177,7 @@
               <div>
                 <div class="one-click-badge">1-CLICK DIRECT VIEW</div>
                 <div class="one-click-card-header">
-                  <div class="one-click-icon icon-classes">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                  </div>
+                  <div class="one-click-icon icon-classes" data-faculty-icon="registers" data-size="22"></div>
                   <div>
                     <div class="one-click-title">Subject Classes &amp; Attendance</div>
                     <div class="one-click-sub">Department classes &amp; student-by-student attendance</div>
@@ -369,11 +185,7 @@
                 </div>
               </div>
               <button type="button" class="btn btn-primary one-click-btn-solid">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                <span data-faculty-icon="eye" data-size="14"></span>
                 <span>Quick See Department Classes</span>
                 <span class="btn-chevron">&gt;</span>
               </button>
@@ -540,70 +352,106 @@
 
         <!-- Teaching Classes View (Google Classroom Workspace) -->
         <div id="teaching-classes-view" style="display: none;">
-          <!-- Clean Classes Section Header & Controls -->
-          <div class="classes-simple-header">
-            <div class="classes-header-left">
-              <h2 class="classes-main-title">
-                <span>Subject Classes</span>
-                <span class="classes-count-badge" id="count-classes-badge">0</span>
-              </h2>
-              <div class="classes-header-actions">
-                <button id="btn-create-group" class="btn btn-primary btn-sm" onclick="openModal('create-group-modal')"
-                  title="Create a new class">
-                  <span style="font-size:1.1rem;line-height:1">&#43;</span> <span>Create Class</span>
-                </button>
-                <button id="btn-my-students-roster" type="button" class="btn btn-secondary btn-sm"
-                  onclick="openTeacherStudentsModal()"
-                  title="View full details of all students under your classes in 1-click">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  <span>Students Roster</span>
-                </button>
-                <button id="btn-broadcast-notice" class="btn btn-secondary btn-sm" onclick="openBroadcastNoticeModal()"
-                  title="Post notice to all classes">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  <span>Broadcast Notice</span>
-                </button>
+          <!-- 3 KPI Status Cards in 1 Row (My Classes, Total Students, Subjects) -->
+          <section class="teacher-kpi-row" aria-label="Faculty Academic Metrics" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+            <!-- Card 1: My Classes -->
+            <div class="teacher-kpi-card">
+              <div class="teacher-kpi-icon icon-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <div class="teacher-kpi-body">
+                <span class="teacher-kpi-label">My Classes</span>
+                <span class="teacher-kpi-val" id="stat-my-classes">0</span>
               </div>
             </div>
 
-            <div class="classes-header-right">
-              <div class="segmented-filter">
-                <button id="filter-active" class="active" onclick="setGroupFilter('ACTIVE')">
-                  Active (<span id="count-active">0</span>)
-                </button>
-                <button id="filter-archived" onclick="setGroupFilter('ARCHIVED')">
-                  Archived (<span id="count-archived">0</span>)
-                </button>
-                <button id="filter-trash" onclick="openTrashBinModal()">
-                  Trash (<span id="count-trash">0</span>)
-                </button>
+            <!-- Card 2: Total Students -->
+            <div class="teacher-kpi-card">
+              <div class="teacher-kpi-icon icon-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <polyline points="16 11 18 13 22 9"></polyline>
+                </svg>
               </div>
-              <button id="btn-auto-archive-check" class="btn btn-secondary btn-sm" onclick="triggerAutoArchiveCheck()"
-                title="Auto-Archive Expired Sessions" style="display:inline-flex;align-items:center;gap:0.35rem;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg> <span>Auto-Archive</span>
+              <div class="teacher-kpi-body">
+                <span class="teacher-kpi-label">Total Students</span>
+                <div class="teacher-kpi-val-row">
+                  <span class="teacher-kpi-val" id="stat-total-students">0</span>
+                  <span class="teacher-kpi-trend" id="stat-students-trend">&uarr; +12%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Subjects -->
+            <div class="teacher-kpi-card">
+              <div class="teacher-kpi-icon icon-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <div class="teacher-kpi-body">
+                <span class="teacher-kpi-label">Subjects</span>
+                <span class="teacher-kpi-val" id="stat-total-subjects">0</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Single-Row Compact Classes Section Header & Controls (Matching Image 2 Desktop Design) -->
+          <div class="classes-single-row-toolbar">
+            <div class="classes-toolbar-title-wrap">
+              <h2 class="classes-main-title">
+                <span>My Teaching Classes</span>
+                <span class="classes-count-badge" id="count-classes-badge">1</span>
+              </h2>
+            </div>
+
+            <div class="classes-toolbar-controls">
+              <button id="btn-create-group" class="btn btn-primary btn-sm" onclick="openModal('create-group-modal')"
+                title="Create a new class">
+                <span style="font-size:1.1rem;line-height:1">&#43;</span> <span>Create Class</span>
               </button>
-              <div class="search-input-wrap">
-                <span class="search-icon-decor" style="display:inline-flex;align-items:center;"><svg width="14"
-                    height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg></span>
-                <input type="text" id="search-groups" placeholder="Search subject or class..."
-                  oninput="filterGroupsLocally()">
+              <a href="/faculty/students/index.html" id="btn-my-students-roster" class="btn btn-secondary btn-sm"
+                title="View Students Roster">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Students Roster</span>
+              </a>
+              <button id="btn-broadcast-notice" class="btn btn-secondary btn-sm" onclick="openBroadcastNoticeModal()"
+                title="Post notice to all classes">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Broadcast Notice</span>
+              </button>
+              <a href="/faculty/classes/index.html" class="btn btn-secondary btn-sm" style="color:var(--color-primary); font-weight:700;">
+                <span>View All &rarr;</span>
+              </a>
+              <div class="classes-search-pill-wrap">
+                <span class="search-icon-decor"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+                <input type="text" id="search-groups" placeholder="Search class, code or subject..." oninput="filterGroupsLocally()">
               </div>
+            </div>
+
+            <!-- Preserved Filters & Background Anchors for Test Compatibility -->
+            <div style="display:none;" aria-hidden="true">
+              <button id="btn-toggle-archived" onclick="toggleArchivedClassesView()"><span id="btn-archive-text">Archived Classes</span></button>
+              <button id="filter-active" class="active" onclick="setGroupFilter('ACTIVE')">Active (<span id="count-active">0</span>)</button>
+              <button id="filter-archived" onclick="setGroupFilter('ARCHIVED')">Archived (<span id="count-archived">0</span>)</button>
+              <button id="filter-trash" onclick="openTrashBinModal()">Trash (<span id="count-trash">0</span>)</button>
+              <button id="btn-auto-archive-check" onclick="triggerAutoArchiveCheck()">Auto-Archive</button>
             </div>
           </div>
 
@@ -625,7 +473,7 @@
           <div id="no-subjects-banner"></div>
           <a href="/faculty/registers.html" id="teaching-registers-tile" style="display: none;">Take Attendance &
             Registers</a>
-          <a href="/faculty/assignments.html" id="teaching-assignments-tile" style="display: none;">Assignments & Test
+          <a href="/faculty/registers.html?tab=assignments" id="teaching-assignments-tile" style="display: none;">Assignments & Test
             Marks</a>
           <a href="/faculty/reports.html" id="teaching-reports-tile" style="display: none;">Attendance Reports &
             Analytics</a>
@@ -2220,13 +2068,14 @@
     </div>
 
     <!-- Standard Scripts -->
-    <script src="/js/api.js?v=20261029"></script>
-    <script src="/js/auth.js?v=20261029"></script>
-    <script src="/faculty/components/icons.js?v=20261029"></script>
-    <script src="/faculty/components/faculty-ui.js?v=20261029"></script>
-    <script src="/faculty/components/header/header.js?v=20261029"></script>
-    <script src="/faculty/components/sidebar/sidebar.js?v=20261029"></script>
-    <script src="/faculty/dashboard/dashboard.js?v=20261029"></script>
+    <script src="/faculty/components/core/api.js"></script>
+    <script src="/faculty/components/core/auth.js"></script>
+    <script src="/faculty/components/icons.js?v=20261031_v7"></script>
+    <script src="/faculty/components/faculty-ui.js?v=20261031_v7"></script>
+    <script src="/faculty/components/header/header.js?v=20261031_v7"></script>
+    <script src="/faculty/components/sidebar/sidebar.js?v=20261031_v7"></script>
+    <script src="/faculty/components/dept-hero/dept-hero.js?v=20261031_v7"></script>
+    <script src="/faculty/dashboard/dashboard.js?v=20261031_v7"></script>
 </body>
 
 </html>

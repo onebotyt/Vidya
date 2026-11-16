@@ -10,7 +10,9 @@ const { body, param } = require('express-validator');
 const auth = require('../middleware/auth');
 const requireRole = require('../middleware/requireRole');
 const validate = require('../middleware/validate');
+const { makeUploader } = require('../middleware/upload');
 const AdminController = require('../controllers/adminController');
+const uploadBranding = makeUploader('branding', 15);
 
 // All admin routes require authentication and SYSTEM_ADMIN role
 router.use(auth, requireRole('SYSTEM_ADMIN'));
@@ -233,6 +235,35 @@ router.put('/settings', [
   validate
 ], AdminController.updateSettings);
 
+// @route   POST /api/v1/admin/branding/upload
+// @desc    Upload institutional college logo or campus building banner
+// @access  Protected (SYSTEM_ADMIN)
+router.post('/branding/upload', uploadBranding.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: { message: 'No image file uploaded' } });
+    }
+    const fileUrl = `/uploads/branding/${req.file.filename}`;
+    const type = req.body.type || 'logo';
+    const key = type === 'banner' ? 'institution_banner_url' : 'institution_logo_url';
+
+    const AdminModel = require('../models/adminModel');
+    await AdminModel.updateSettings([[key, fileUrl]], req.user?.id || 1);
+
+    res.json({
+      success: true,
+      message: `${type === 'banner' ? 'Campus banner' : 'College logo'} uploaded and saved successfully`,
+      data: {
+        url: fileUrl,
+        key: key,
+        filename: req.file.filename
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: { message: err.message } });
+  }
+});
+
 // @route   GET /api/v1/admin/reports/department
 // @route   GET /api/v1/admin/reports/attendance
 // @desc    Compile and return department attendance analytics and scan logs
@@ -350,11 +381,88 @@ router.delete('/common-faculty-manager', AdminController.removeCommonFacultyMana
 // @handler AdminController.getAllTeachers() -> AdminModel.getAllTeachers()
 router.get('/teachers', AdminController.getAllTeachers);
 
+// @route   POST /api/v1/admin/teachers
+// @desc    Create any faculty member (Teacher, HOD, Common Faculty)
+// @access  Protected (SYSTEM_ADMIN)
+router.post('/teachers', [
+  body('full_name').custom((val, { req }) => {
+    const name = val || req.body.fullName;
+    if (!name || !String(name).trim()) throw new Error('Full name required');
+    return true;
+  }),
+  body('email').isEmail().withMessage('Valid institutional Gmail required'),
+  body('department_id').custom((val, { req }) => {
+    const dept = val !== undefined ? val : req.body.departmentId;
+    if (dept === undefined || isNaN(parseInt(dept, 10))) throw new Error('Department ID required');
+    return true;
+  }),
+  body('password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('role').optional().isIn(['TEACHER', 'HOD', 'COMMON_FACULTY_MANAGER', 'CFM']),
+  body('phone').optional().trim(),
+  body('employee_id').optional().trim(),
+  validate
+], AdminController.createFaculty);
+
+// @route   PUT /api/v1/admin/teachers/:id
+// @desc    Update faculty details, department, status, or role
+// @access  Protected (SYSTEM_ADMIN)
+router.put('/teachers/:id', [
+  param('id').isInt(),
+  body('full_name').optional().trim(),
+  body('department_id').optional(),
+  body('status').optional().isIn(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
+  body('role').optional().isIn(['TEACHER', 'HOD', 'COMMON_FACULTY_MANAGER', 'CFM']),
+  validate
+], AdminController.updateFaculty);
+
+// @route   PATCH /api/v1/admin/teachers/:id/status
+// @desc    Toggle faculty active/inactive status
+// @access  Protected (SYSTEM_ADMIN)
+router.patch('/teachers/:id/status', [param('id').isInt(), validate], AdminController.toggleFacultyStatus);
+
+// @route   POST /api/v1/admin/teachers/:id/reset-password
+// @desc    Reset password for any faculty member
+// @access  Protected (SYSTEM_ADMIN)
+router.post('/teachers/:id/reset-password', [
+  param('id').isInt(),
+  body('new_password').custom((val, { req }) => {
+    const pw = val || req.body.newPassword;
+    if (!pw || pw.length < 8) throw new Error('Password must be at least 8 characters');
+    return true;
+  }),
+  validate
+], AdminController.resetFacultyPassword);
+
+// @route   DELETE /api/v1/admin/teachers/:id
+// @desc    Delete or safely deactivate faculty member (soft delete with 30-day retention)
+// @access  Protected (SYSTEM_ADMIN)
+router.delete('/teachers/:id', [param('id').isInt(), validate], AdminController.deleteFaculty);
+
+// @route   GET /api/v1/admin/trash/faculty
+// @desc    Retrieve soft-deleted faculty in trash with countdown days left (30-day retention)
+// @access  Protected (SYSTEM_ADMIN)
+router.get('/trash/faculty', AdminController.getTrashFaculty);
+
+// @route   POST /api/v1/admin/trash/faculty/:id/restore
+// @desc    Restore a soft-deleted faculty member from trash back to active roster
+// @access  Protected (SYSTEM_ADMIN)
+router.post('/trash/faculty/:id/restore', [param('id').isInt(), validate], AdminController.restoreFaculty);
+
+// @route   DELETE /api/v1/admin/trash/faculty/:id/permanent
+// @desc    Permanently delete a faculty member from database (manual purge)
+// @access  Protected (SYSTEM_ADMIN)
+router.delete('/trash/faculty/:id/permanent', [param('id').isInt(), validate], AdminController.permanentDeleteFaculty);
+
 // @route   GET /api/v1/admin/registration-gates
 // @desc    Retrieve state of registration gates for HOD and Common Faculty
 // @access  Protected (SYSTEM_ADMIN)
 // @handler AdminController.getRegistrationGates() -> AdminModel.getRegistrationGates()
 router.get('/registration-gates', AdminController.getRegistrationGates);
+
+// @route   PUT /api/v1/admin/registration-gates
+// @desc    Update registration gates configuration (open for all, department checkboxes, HOD, Common Faculty)
+// @access  Protected (SYSTEM_ADMIN)
+router.put('/registration-gates', AdminController.updateRegistrationGates);
 
 // @route   POST /api/v1/admin/registration-gates/toggle
 // @desc    Toggle open/closed state of institutional registration gate (HOD or COMMON_FACULTY)
@@ -365,5 +473,33 @@ router.post('/registration-gates/toggle', [
   body('open').isBoolean().withMessage('open flag (boolean) is required'),
   validate
 ], AdminController.toggleRegistrationGate);
+
+// @route   GET /api/v1/admin/administrators
+// @desc    List all system administrator accounts
+// @access  Protected (SYSTEM_ADMIN)
+// @handler AdminController.getAdministrators() -> AdminModel.getAdministrators()
+router.get('/administrators', AdminController.getAdministrators);
+
+// @route   POST /api/v1/admin/administrators
+// @desc    Create a new permanent system administrator in database
+// @access  Protected (SYSTEM_ADMIN)
+// @handler AdminController.createAdministrator() -> AdminModel.createAdministrator()
+router.post('/administrators', [
+  body('email').isEmail().withMessage('Valid email required'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('full_name').trim().isLength({ min: 2 }).withMessage('Full name required (min 2 chars)'),
+  body('phone').optional().trim(),
+  body('employee_id').optional().trim(),
+  validate
+], AdminController.createAdministrator);
+
+// @route   DELETE /api/v1/admin/administrators/:id
+// @desc    Remove an administrator account
+// @access  Protected (SYSTEM_ADMIN)
+// @handler AdminController.deleteAdministrator() -> AdminModel.deleteAdministrator()
+router.delete('/administrators/:id', [
+  param('id').isInt().withMessage('Valid user ID required'),
+  validate
+], AdminController.deleteAdministrator);
 
 module.exports = router;

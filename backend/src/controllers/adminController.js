@@ -357,8 +357,9 @@ class AdminController {
    * @usesModel AdminModel.createHODTransaction() (models/adminModel.js)
    */
   static async createHod(req, res) {
-    const { full_name, email, password, department_id, phone, employee_id } = req.body;
+    const { full_name, email, password, department_id, phone, employee_id, employeeId } = req.body;
     const gmail = email.toLowerCase().trim();
+    const effectiveEmployeeId = employeeId || employee_id || null;
 
     try {
       const depts = await AdminModel.getDepartmentById(department_id);
@@ -388,7 +389,7 @@ class AdminController {
         gmail,
         passwordHash,
         departmentId: department_id,
-        employeeId,
+        employeeId: effectiveEmployeeId,
         fullName: full_name,
         phone,
         ayId: currentAy.id,
@@ -577,6 +578,31 @@ class AdminController {
     } else if (settingsObj.attendance_threshold && !settingsObj.default_attendance_threshold_percent) {
       settingsObj.default_attendance_threshold_percent = settingsObj.attendance_threshold;
     }
+
+    // Convert any Base64 Data URL images (e.g. logo or banner) into saved files on disk to prevent database bloat and column overflow
+    const fs = require('fs');
+    const path = require('path');
+    for (const [key, val] of Object.entries(settingsObj)) {
+      if (typeof val === 'string' && val.startsWith('data:image/')) {
+        try {
+          const match = val.match(/^data:image\/([a-zA-Z0-9+.-]+)(?:;[a-zA-Z0-9=-]+)*;base64,([\s\S]+)$/);
+          if (match) {
+            const rawMime = (match[1] || '').toLowerCase();
+            const ext = rawMime === 'jpeg' ? 'jpg' : (rawMime === 'svg+xml' ? 'svg' : (rawMime || 'png'));
+            const cleanBase64 = match[2].replace(/\s+/g, '');
+            const buffer = Buffer.from(cleanBase64, 'base64');
+            const uploadsDir = path.resolve(__dirname, '../../uploads/branding');
+            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+            const filename = `${key}_${Date.now()}.${ext}`;
+            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+            settingsObj[key] = `/uploads/branding/${filename}`;
+          }
+        } catch (e) {
+          logger.warn(`Failed to write base64 image for ${key}:`, e.message);
+        }
+      }
+    }
+
     const entries = Object.entries(settingsObj);
     if (!entries.length) return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'No settings provided' } });
 
@@ -728,7 +754,11 @@ class AdminController {
   static async getHierarchy(req, res) {
     try {
       const hierarchy = await AdminModel.getHierarchy();
-      res.json({ success: true, data: hierarchy });
+      res.json({
+        success: true,
+        data: hierarchy,
+        departments: hierarchy
+      });
     } catch (err) {
       res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
     }
@@ -950,6 +980,150 @@ class AdminController {
   }
 
   /**
+   * Create any faculty member (Teacher, HOD, or Common Faculty Manager)
+   * @route POST /api/v1/admin/teachers (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async createFaculty(req, res) {
+    try {
+      const full_name = req.body.full_name || req.body.fullName;
+      const email = req.body.email || req.body.gmail;
+      const department_id = req.body.department_id || req.body.departmentId;
+      const employee_id = req.body.employee_id || req.body.employeeId;
+      const phone = req.body.phone;
+      let role = req.body.role || 'TEACHER';
+      if (role === 'CFM') role = 'COMMON_FACULTY_MANAGER';
+      const password = req.body.password;
+      const gmail = (email || '').toLowerCase().trim();
+
+      const existing = await AdminModel.findExistingUser(gmail);
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          error: { code: 'USER_EXISTS', message: 'A user account with this email address already exists.' }
+        });
+      }
+
+      const passwordHash = await bcrypt.hash(password || 'Faculty@123', 12);
+      const result = await AdminModel.createFacultyTransaction({
+        fullName: full_name,
+        email: gmail,
+        passwordHash,
+        departmentId: department_id ? parseInt(department_id, 10) : null,
+        employeeId: employee_id ? employee_id.trim() : null,
+        phone: phone ? phone.trim() : null,
+        role: role || 'TEACHER',
+        adminUserId: req.user?.id || 1
+      });
+
+      res.status(201).json({
+        success: true,
+        message: `${full_name} registered successfully as ${role || 'Faculty'}`,
+        data: result
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'CREATE_FACULTY_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Update faculty details, department, status, or role
+   * @route PUT /api/v1/admin/teachers/:id (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async updateFaculty(req, res) {
+    try {
+      const teacherId = parseInt(req.params.id, 10);
+      const full_name = req.body.full_name || req.body.fullName;
+      const phone = req.body.phone;
+      const employee_id = req.body.employee_id || req.body.employeeId;
+      const department_id = req.body.department_id || req.body.departmentId;
+      const status = req.body.status;
+      let role = req.body.role;
+      if (role === 'CFM') role = 'COMMON_FACULTY_MANAGER';
+
+      const updated = await AdminModel.updateFaculty({
+        teacherId,
+        fullName: full_name,
+        phone,
+        employeeId: employee_id,
+        departmentId: department_id ? parseInt(department_id, 10) : undefined,
+        status,
+        role,
+        adminUserId: req.user?.id || 1
+      });
+
+      if (!updated) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Faculty member not found' } });
+      }
+
+      res.json({ success: true, message: 'Faculty profile updated successfully' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'UPDATE_FACULTY_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Toggle faculty active/inactive status
+   * @route PATCH /api/v1/admin/teachers/:id/status (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async toggleFacultyStatus(req, res) {
+    try {
+      const teacherId = parseInt(req.params.id, 10);
+      const result = await AdminModel.toggleFacultyStatus(teacherId, req.user?.id || 1);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Faculty member not found' } });
+      }
+      res.json({ success: true, message: `Faculty status updated to ${result.status}`, data: result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'TOGGLE_STATUS_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Reset faculty password administratively
+   * @route POST /api/v1/admin/teachers/:id/reset-password (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async resetFacultyPassword(req, res) {
+    try {
+      const teacherId = parseInt(req.params.id, 10);
+      const { new_password } = req.body;
+      if (!new_password || new_password.length < 8) {
+        return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Password must be at least 8 characters' } });
+      }
+      const passwordHash = await bcrypt.hash(new_password, 12);
+      const result = await AdminModel.resetTeacherPassword(teacherId, passwordHash);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Faculty member not found' } });
+      }
+      res.json({ success: true, message: 'Password reset successfully' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'RESET_PASSWORD_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Delete or safely deactivate faculty member
+   * @route DELETE /api/v1/admin/teachers/:id (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async deleteFaculty(req, res) {
+    try {
+      const teacherId = parseInt(req.params.id, 10);
+      const result = await AdminModel.deleteFaculty(teacherId, req.user?.id || 1);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Faculty member not found' } });
+      }
+      res.json({ success: true, message: result.message, data: result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'DELETE_FACULTY_ERROR', message: err.message } });
+    }
+  }
+
+
+  /**
    * Retrieve state of registration gates for HOD and Common Faculty
    * @route GET /api/v1/admin/registration-gates (routes/admin.js)
    * @access Protected (SYSTEM_ADMIN)
@@ -982,6 +1156,137 @@ class AdminController {
       });
     } catch (err) {
       res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Retrieve list of soft-deleted faculty in trash with countdown days left (30-day retention)
+   * @route GET /api/v1/admin/trash/faculty
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async getTrashFaculty(req, res) {
+    try {
+      const trash = await AdminModel.getTrashFaculty();
+      res.json({ success: true, data: trash });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Restore a soft-deleted faculty member back to active roster
+   * @route POST /api/v1/admin/trash/faculty/:id/restore
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async restoreFaculty(req, res) {
+    try {
+      const teacherId = parseInt(req.params.id, 10);
+      const result = await AdminModel.restoreFaculty(teacherId, req.user?.id || 1);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Trash faculty record not found' } });
+      }
+      res.json({ success: true, message: 'Faculty member restored successfully to active roster', data: result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'RESTORE_FACULTY_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Permanently delete a faculty member from trash (manual purge)
+   * @route DELETE /api/v1/admin/trash/faculty/:id/permanent
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async permanentDeleteFaculty(req, res) {
+    try {
+      const teacherId = parseInt(req.params.id, 10);
+      const result = await AdminModel.permanentDeleteFaculty(teacherId, req.user?.id || 1);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Trash faculty record not found' } });
+      }
+      res.json({ success: true, message: 'Faculty member permanently deleted from database' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'PERMANENT_DELETE_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Update full registration gates configuration (Open for all, department-wise checkboxes, HOD, Common Faculty)
+   * @route PUT /api/v1/admin/registration-gates
+   * @access Protected (SYSTEM_ADMIN)
+   */
+  static async updateRegistrationGates(req, res) {
+    try {
+      const { all_open, hod_open, common_faculty_open, open_departments } = req.body;
+      const updated = await AdminModel.updateRegistrationGates({
+        all_open: Boolean(all_open),
+        hod_open: Boolean(hod_open),
+        common_faculty_open: Boolean(common_faculty_open),
+        open_departments: Array.isArray(open_departments) ? open_departments : []
+      }, req.user?.id || 1);
+      res.json({
+        success: true,
+        message: 'Registration gate configuration updated successfully',
+        data: updated
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Retrieve list of all administrators
+   * @route GET /api/v1/admin/administrators (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   * @usesModel AdminModel.getAdministrators() (models/adminModel.js)
+   */
+  static async getAdministrators(req, res) {
+    try {
+      const admins = await AdminModel.getAdministrators();
+      const enriched = admins.map(a => ({
+        ...a,
+        is_current: parseInt(a.id, 10) === parseInt(req.user.id, 10)
+      }));
+      res.json({ success: true, data: enriched });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Create a new administrator account
+   * @route POST /api/v1/admin/administrators (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   * @usesModel AdminModel.createAdministrator() (models/adminModel.js)
+   */
+  static async createAdministrator(req, res) {
+    const { email, password, full_name, phone, employee_id } = req.body;
+    try {
+      const created = await AdminModel.createAdministrator({ email, password, full_name, phone, employee_id });
+      res.status(201).json({
+        success: true,
+        message: 'Administrator account created successfully',
+        data: created
+      });
+    } catch (err) {
+      const status = err.message.includes('already exists') ? 409 : 500;
+      res.status(status).json({ success: false, error: { code: 'ADMIN_CREATION_FAILED', message: err.message } });
+    }
+  }
+
+  /**
+   * Delete an administrator account
+   * @route DELETE /api/v1/admin/administrators/:id (routes/admin.js)
+   * @access Protected (SYSTEM_ADMIN)
+   * @usesModel AdminModel.deleteAdministrator() (models/adminModel.js)
+   */
+  static async deleteAdministrator(req, res) {
+    const adminId = req.params.id;
+    try {
+      await AdminModel.deleteAdministrator(adminId, req.user.id);
+      res.json({ success: true, message: 'Administrator account deleted successfully' });
+    } catch (err) {
+      const status = err.message.includes('cannot delete') ? 400 : 500;
+      res.status(status).json({ success: false, error: { code: 'ADMIN_DELETE_FAILED', message: err.message } });
     }
   }
 }

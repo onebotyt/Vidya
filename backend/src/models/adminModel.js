@@ -1,12 +1,13 @@
 /**
  * Admin Model
- * Encapsulates SQLite queries and transactions for institutional master data administration:
+ * Encapsulates MySQL 8.x queries and transactions for institutional master data administration:
  * departments, academic years, HODs, hardware terminals, system settings,
  * attendance corrections, hierarchy, student rosters, and registration anti-spam gates.
  * Provides bidirectional code traceability upward to AdminController and routes/admin.js.
  */
 
 const { query, withTransaction } = require('../config/db');
+const bcrypt = require('bcrypt');
 
 class AdminModel {
   /**
@@ -26,23 +27,93 @@ class AdminModel {
     );
     const [deptsCount] = await query(`SELECT COUNT(*) as total FROM departments WHERE is_active = 1`);
     const [devicesCount] = await query(`SELECT COUNT(*) as total FROM devices WHERE is_active = 1`);
+    const [classesCount] = await query(
+      `SELECT COUNT(*) as total FROM teaching_groups WHERE status = 'ACTIVE' AND deleted_at IS NULL`
+    );
     const [todaySessions] = await query(
-      `SELECT COUNT(*) as total FROM attendance_sessions WHERE session_date = DATE('now')`
+      `SELECT COUNT(*) as total FROM attendance_sessions WHERE session_date = CURDATE()`
     );
     const [openSessions] = await query(
       `SELECT COUNT(*) as total FROM attendance_sessions WHERE state = 'OPEN'`
     );
 
+    // Compute real today attendance statistics across all active sessions
+    const [todayAtt] = await query(`
+      SELECT 
+        COUNT(CASE WHEN ar.attendance_status IN ('PRESENT', 'LATE') THEN 1 END) as present_count,
+        COUNT(CASE WHEN ar.attendance_status = 'ABSENT' THEN 1 END) as absent_count,
+        COUNT(ar.id) as total_records
+      FROM register_attendance ar
+      JOIN attendance_sessions s ON ar.session_id = s.id
+      WHERE s.session_date = CURDATE()
+    `);
+
+    const presentCount = todayAtt?.present_count || 0;
+    const absentCount = todayAtt?.absent_count || 0;
+    const totalTodayRecords = todayAtt?.total_records || 0;
+    const todayPct = totalTodayRecords > 0 ? Math.round((presentCount / totalTodayRecords) * 100) : 0;
+
+    // Real department breakdown from live database
+    const deptRows = await query(`
+      SELECT 
+        d.id, 
+        d.name, 
+        d.code,
+        (SELECT COUNT(*) FROM students s 
+         JOIN enrollments e ON e.student_id = s.id 
+         WHERE e.department_id = d.id AND e.status = 'ENROLLED') as student_count,
+        (SELECT COUNT(CASE WHEN ar.attendance_status IN ('PRESENT', 'LATE') THEN 1 END) 
+         FROM register_attendance ar
+         JOIN attendance_sessions s ON ar.session_id = s.id
+         LEFT JOIN attendance_registers reg ON s.register_id = reg.id
+         WHERE COALESCE(s.department_id, reg.department_id) = d.id AND s.session_date = CURDATE()) as dept_present,
+        (SELECT COUNT(ar.id) 
+         FROM register_attendance ar
+         JOIN attendance_sessions s ON ar.session_id = s.id
+         LEFT JOIN attendance_registers reg ON s.register_id = reg.id
+         WHERE COALESCE(s.department_id, reg.department_id) = d.id AND s.session_date = CURDATE()) as dept_total
+      FROM departments d
+      WHERE d.is_active = 1
+      ORDER BY d.id ASC
+    `);
+
+    const departmentBreakdown = (deptRows || []).map(dept => {
+      const dTotal = dept.dept_total || 0;
+      const dPresent = dept.dept_present || 0;
+      const pct = dTotal > 0 ? Math.round((dPresent / dTotal) * 100) : 0;
+      return {
+        id: dept.id,
+        name: dept.name,
+        code: dept.code,
+        student_count: dept.student_count || 0,
+        present_count: dPresent,
+        total_records: dTotal,
+        attendance_pct: pct
+      };
+    });
+
+    const totalStudents = activeStudents?.total || allTimeStudents?.total || 0;
+
     return {
-      total_students: activeStudents?.total || allTimeStudents?.total || 0,
+      total_students: totalStudents,
       total_teachers: teachersCount?.total || 0,
       total_enrolled_students: allTimeStudents?.total || 0,
       total_hods: hodsCount?.total || 0,
       total_departments: deptsCount?.total || 0,
       total_branches: deptsCount?.total || 0,
+      total_classes: classesCount?.total || 0,
+      active_classes: classesCount?.total || 0,
       total_devices: devicesCount?.total || 0,
       today_sessions: todaySessions?.total || 0,
-      open_sessions: openSessions?.total || 0
+      open_sessions: openSessions?.total || 0,
+      today_attendance: {
+        present_count: presentCount,
+        absent_count: absentCount,
+        total_records: totalTodayRecords,
+        attendance_pct: todayPct,
+        has_records: totalTodayRecords > 0
+      },
+      department_breakdown: departmentBreakdown
     };
   }
 
@@ -484,7 +555,7 @@ class AdminModel {
     for (const [key, value] of entries) {
       await query(
         `INSERT INTO system_settings (setting_key, setting_value, updated_by) VALUES (?, ?, ?)
-         ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_by = excluded.updated_by, updated_at = CURRENT_TIMESTAMP`,
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
         [key, String(value), userId || 1]
       );
     }
@@ -527,9 +598,9 @@ class AdminModel {
     if (date_preset === 'today') {
       whereClauses.push(`DATE(ep.scan_time) = CURRENT_DATE`);
     } else if (date_preset === '7days') {
-      whereClauses.push(`DATE(ep.scan_time) >= DATE(datetime('now', '-7 days'))`);
+      whereClauses.push(`DATE(ep.scan_time) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`);
     } else if (date_preset === '30days') {
-      whereClauses.push(`DATE(ep.scan_time) >= DATE(datetime('now', '-30 days'))`);
+      whereClauses.push(`DATE(ep.scan_time) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`);
     } else if (date_from && date_to) {
       whereClauses.push(`DATE(ep.scan_time) BETWEEN ? AND ?`);
       params.push(date_from, date_to);
@@ -589,7 +660,7 @@ class AdminModel {
        LEFT JOIN students st ON ep.student_id = st.id
        LEFT JOIN enrollments e ON e.student_id = st.id
        WHERE ${whereSql}
-       GROUP BY d.id, COALESCE(e.year, dev.year), COALESCE(e.semester, dev.semester)
+       GROUP BY d.id, d.name, d.code, COALESCE(e.year, dev.year), COALESCE(e.semester, dev.semester)
        ORDER BY scan_count DESC`,
       params
     );
@@ -656,7 +727,7 @@ class AdminModel {
        FROM enrollments e
        JOIN departments d ON e.department_id = d.id
        WHERE ${cohortWhere.join(' AND ')}
-       GROUP BY d.id, e.year, e.semester
+       GROUP BY d.id, d.name, d.code, e.year, e.semester
        ORDER BY d.name, e.year, e.semester`,
       cohortParams
     );
@@ -682,7 +753,7 @@ class AdminModel {
        LEFT JOIN students st ON ep.student_id = st.id
        LEFT JOIN enrollments e ON e.student_id = st.id
        WHERE ${whereSql}
-       GROUP BY d.id, COALESCE(e.year, dev.year), COALESCE(e.semester, dev.semester)`,
+       GROUP BY d.id, d.name, d.code, COALESCE(e.year, dev.year), COALESCE(e.semester, dev.semester)`,
       params
     );
 
@@ -826,7 +897,7 @@ class AdminModel {
       deptBreakdownSql += ' AND d.id = ?';
       deptParams.push(deptId);
     }
-    deptBreakdownSql += ' GROUP BY d.id ORDER BY d.name';
+    deptBreakdownSql += ' GROUP BY d.id, d.name, d.code ORDER BY d.name';
     const departmentBreakdown = await query(deptBreakdownSql, deptParams);
 
     const cohortBreakdown = await query(
@@ -856,7 +927,7 @@ class AdminModel {
        JOIN students s ON e.student_id = s.id
        LEFT JOIN fingerprint_slots fs ON fs.student_id = s.id AND fs.is_active = 1
        ${filterSql}
-       GROUP BY d.id, e.year, e.semester
+       GROUP BY d.id, d.name, d.code, e.year, e.semester
        ORDER BY d.name, e.year, e.semester`,
       filterParams
     );
@@ -1098,7 +1169,7 @@ class AdminModel {
               frr.account_type, frr.approval_type, frr.created_at
        FROM faculty_registration_requests frr
        LEFT JOIN departments d ON frr.department_id = d.id
-       WHERE frr.approval_type = 'ADMIN' AND frr.status = 'PENDING'
+       WHERE frr.approval_type IN ('ADMIN', 'COMMON_FACULTY_MANAGER') AND frr.status = 'PENDING'
        ORDER BY frr.created_at DESC`
     );
   }
@@ -1114,7 +1185,7 @@ class AdminModel {
    */
   static async approveHODRegistration(reqId, reviewerId, ayId) {
     const reqRows = await query(
-      `SELECT * FROM faculty_registration_requests WHERE id = ? AND approval_type = 'ADMIN' AND status = 'PENDING'`,
+      `SELECT * FROM faculty_registration_requests WHERE id = ? AND approval_type IN ('ADMIN', 'COMMON_FACULTY_MANAGER') AND status = 'PENDING'`,
       [reqId]
     );
     if (!reqRows.length) return null;
@@ -1184,7 +1255,7 @@ class AdminModel {
    */
   static async rejectHODRegistration(reqId, reviewerId, reason) {
     const reqRows = await query(
-      `SELECT * FROM faculty_registration_requests WHERE id = ? AND approval_type = 'ADMIN' AND status = 'PENDING'`,
+      `SELECT * FROM faculty_registration_requests WHERE id = ? AND approval_type IN ('ADMIN', 'COMMON_FACULTY_MANAGER') AND status = 'PENDING'`,
       [reqId]
     );
     if (!reqRows.length) return false;
@@ -1259,14 +1330,14 @@ class AdminModel {
       );
 
       const [res] = await conn.execute(
-        `INSERT INTO common_faculty_manager_assignments (teacher_id, assigned_by, is_active)
-         VALUES (?, ?, 1)`,
-        [teacherId, adminUserId]
+        `INSERT INTO common_faculty_manager_assignments (teacher_id, appointed_by, assigned_by, is_active, appointed_at, assigned_at)
+         VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [teacherId, adminUserId || 1, adminUserId || 1]
       );
       const assignmentId = res.insertId ?? res.lastInsertRowid;
 
       await conn.execute(
-        `INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'COMMON_FACULTY_MANAGER')`,
+        `INSERT IGNORE INTO user_roles (user_id, role) VALUES (?, 'COMMON_FACULTY_MANAGER')`,
         [teacher.user_id]
       );
 
@@ -1325,43 +1396,473 @@ class AdminModel {
    */
   static async getAllTeachers() {
     return await query(
-      `SELECT t.id as teacher_id, t.full_name, t.employee_id, t.phone,
+      `SELECT t.id as teacher_id, t.full_name, t.employee_id, t.phone, t.created_at,
               d.id as department_id, d.name as department_name, d.code as department_code,
-              u.id as user_id, u.email as gmail, u.status
+              u.id as user_id, u.email as gmail, u.status,
+              CASE WHEN ta_hod.id IS NOT NULL THEN 1 ELSE 0 END as is_hod,
+              d_hod.name as hod_department_name,
+              0 as is_common_faculty_manager,
+              COALESCE((
+                SELECT GROUP_CONCAT(DISTINCT role SEPARATOR ',') 
+                FROM user_roles 
+                WHERE user_id = u.id
+              ), 'TEACHER') as roles,
+              (
+                SELECT GROUP_CONCAT(DISTINCT assignment_type SEPARATOR ', ')
+                FROM teacher_assignments
+                WHERE teacher_id = t.id AND is_active = 1
+              ) as assignments
        FROM teachers t
        JOIN users u ON t.user_id = u.id
        LEFT JOIN departments d ON t.department_id = d.id
-       WHERE u.status = 'ACTIVE'
+       LEFT JOIN teacher_assignments ta_hod ON ta_hod.teacher_id = t.id AND ta_hod.assignment_type = 'HOD' AND ta_hod.is_active = 1
+       LEFT JOIN departments d_hod ON ta_hod.department_id = d_hod.id
+       WHERE t.deleted_at IS NULL
+         AND NOT EXISTS (
+           SELECT 1 FROM user_roles ur_adm 
+           WHERE ur_adm.user_id = u.id AND ur_adm.role = 'SYSTEM_ADMIN'
+         )
        ORDER BY t.full_name ASC`
     );
   }
 
   /**
-   * Check status of institutional self-registration gates for HOD and Common Faculty
-   * @calledBy AdminController.getRegistrationGates() (controllers/adminController.js)
-   * @route GET /api/v1/admin/registration-gates (routes/admin.js)
-   * @returns {Promise<{hod_open: boolean, common_faculty_open: boolean}>}
+   * Create any faculty user account, teacher profile, and handle role assignments atomically
+   * @param {Object} params Faculty parameters
+   * @returns {Promise<Object>} Created faculty details
    */
-  static async getRegistrationGates() {
-    const settings = await query(
-      `SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('admin_reg_hod_open', 'admin_reg_common_faculty_open')`
-    );
-    const hodOpen = settings.some(s => s.setting_key === 'admin_reg_hod_open' && s.setting_value === '1');
-    const commonOpen = settings.some(s => s.setting_key === 'admin_reg_common_faculty_open' && s.setting_value === '1');
+  static async createFacultyTransaction({ fullName, email, passwordHash, departmentId, employeeId, phone, role = 'TEACHER', adminUserId = 1 }) {
+    const gmail = email.toLowerCase().trim();
+    return await withTransaction(async (conn) => {
+      // 1. Create user account
+      const [uRes] = await conn.execute(
+        `INSERT INTO users (username, email, password_hash, temp_password_hash, must_change_password, status)
+         VALUES (?, ?, ?, ?, 0, 'ACTIVE')`,
+        [gmail, gmail, passwordHash, passwordHash]
+      );
+      const userId = uRes.insertId ?? uRes.lastInsertRowid;
+
+      // 2. Base role TEACHER
+      await conn.execute(`INSERT INTO user_roles (user_id, role) VALUES (?, 'TEACHER')`, [userId]);
+
+      // 3. Create teachers row
+      const [tRes] = await conn.execute(
+        `INSERT INTO teachers (user_id, department_id, employee_id, full_name, phone) VALUES (?, ?, ?, ?, ?)`,
+        [userId, departmentId || null, employeeId ? employeeId.trim() : null, fullName.trim(), phone ? phone.trim() : null]
+      );
+      const teacherId = tRes.insertId ?? tRes.lastInsertRowid;
+
+      // 4. Role specific handling
+      if (role === 'HOD' && departmentId) {
+        await conn.execute(`INSERT INTO user_roles (user_id, role) VALUES (?, 'HOD')`, [userId]);
+
+        // Get current academic year
+        const [ayRows] = await conn.execute(`SELECT id FROM academic_years WHERE is_current = 1 LIMIT 1`);
+        const ayId = ayRows[0]?.id || 1;
+
+        // Deactivate old active HOD for this department
+        await conn.execute(
+          `UPDATE teacher_assignments SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+           WHERE department_id = ? AND assignment_type = 'HOD' AND is_active = 1`,
+          [departmentId]
+        );
+
+        // Assign new HOD
+        await conn.execute(
+          `INSERT INTO teacher_assignments (teacher_id, assignment_type, department_id, year, semester, academic_year_id, assigned_by, is_active)
+           VALUES (?, 'HOD', ?, 1, 1, ?, ?, 1)`,
+          [teacherId, departmentId, ayId, adminUserId]
+        );
+      } else if (role === 'COMMON_FACULTY_MANAGER') {
+        await conn.execute(`INSERT INTO user_roles (user_id, role) VALUES (?, 'COMMON_FACULTY_MANAGER')`, [userId]);
+
+        // Deactivate old active CFM
+        await conn.execute(
+          `UPDATE common_faculty_manager_assignments SET is_active = 0, revoked_at = CURRENT_TIMESTAMP WHERE is_active = 1`
+        );
+
+        // Assign new CFM
+        await conn.execute(
+          `INSERT INTO common_faculty_manager_assignments (teacher_id, appointed_by, is_active, appointed_at, assigned_by, assigned_at)
+           VALUES (?, ?, 1, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP)`,
+          [teacherId, adminUserId, adminUserId]
+        );
+      }
+
+      // 5. Audit log
+      try {
+        await conn.execute(
+          `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+           VALUES (?, 'FACULTY_CREATED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+          [adminUserId, String(teacherId), JSON.stringify({ fullName, email: gmail, role, departmentId, employeeId })]
+        );
+      } catch (_) {}
+
+      return { teacher_id: teacherId, user_id: userId, full_name: fullName.trim(), gmail, role, department_id: departmentId };
+    });
+  }
+
+  /**
+   * Update faculty details, department transfer, status, or role
+   */
+  static async updateFaculty({ teacherId, fullName, phone, employeeId, departmentId, status, role, adminUserId = 1 }) {
+    const tRows = await query(`SELECT id, user_id, department_id FROM teachers WHERE id = ?`, [teacherId]);
+    if (!tRows.length) return null;
+    const teacher = tRows[0];
+    const userId = teacher.user_id;
+
+    return await withTransaction(async (conn) => {
+      // 1. Update teachers table
+      const sets = [];
+      const params = [];
+      if (fullName !== undefined) { sets.push('full_name = ?'); params.push(fullName.trim()); }
+      if (phone !== undefined) { sets.push('phone = ?'); params.push(phone ? phone.trim() : null); }
+      if (employeeId !== undefined) { sets.push('employee_id = ?'); params.push(employeeId ? employeeId.trim() : null); }
+      if (departmentId !== undefined) { sets.push('department_id = ?'); params.push(departmentId); }
+
+      if (sets.length > 0) {
+        sets.push('updated_at = CURRENT_TIMESTAMP');
+        params.push(teacherId);
+        await conn.execute(`UPDATE teachers SET ${sets.join(', ')} WHERE id = ?`, params);
+      }
+
+      // 2. Update users status
+      if (status) {
+        await conn.execute(`UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [status, userId]);
+      }
+
+      // 3. Handle role adjustment if requested
+      if (role) {
+        if (role === 'HOD') {
+          const [hasHodRole] = await conn.execute(`SELECT id FROM user_roles WHERE user_id = ? AND role = 'HOD'`, [userId]);
+          if (!hasHodRole.length) {
+            await conn.execute(`INSERT INTO user_roles (user_id, role) VALUES (?, 'HOD')`, [userId]);
+          }
+          const targetDept = departmentId || teacher.department_id;
+          if (targetDept) {
+            const [ayRows] = await conn.execute(`SELECT id FROM academic_years WHERE is_current = 1 LIMIT 1`);
+            const ayId = ayRows[0]?.id || 1;
+            await conn.execute(
+              `UPDATE teacher_assignments SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+               WHERE department_id = ? AND assignment_type = 'HOD' AND is_active = 1`,
+              [targetDept]
+            );
+            await conn.execute(
+              `INSERT INTO teacher_assignments (teacher_id, assignment_type, department_id, year, semester, academic_year_id, assigned_by, is_active)
+               VALUES (?, 'HOD', ?, 1, 1, ?, ?, 1)`,
+              [teacherId, targetDept, ayId, adminUserId]
+            );
+          }
+        } else if (role === 'TEACHER') {
+          await conn.execute(`DELETE FROM user_roles WHERE user_id = ? AND role IN ('HOD', 'COMMON_FACULTY_MANAGER')`, [userId]);
+          await conn.execute(
+            `UPDATE teacher_assignments SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+             WHERE teacher_id = ? AND assignment_type = 'HOD'`,
+            [teacherId]
+          );
+          await conn.execute(
+            `UPDATE common_faculty_manager_assignments SET is_active = 0, revoked_at = CURRENT_TIMESTAMP
+             WHERE teacher_id = ?`,
+            [teacherId]
+          );
+        } else if (role === 'COMMON_FACULTY_MANAGER') {
+          const [hasCfmRole] = await conn.execute(`SELECT id FROM user_roles WHERE user_id = ? AND role = 'COMMON_FACULTY_MANAGER'`, [userId]);
+          if (!hasCfmRole.length) {
+            await conn.execute(`INSERT INTO user_roles (user_id, role) VALUES (?, 'COMMON_FACULTY_MANAGER')`, [userId]);
+          }
+          await conn.execute(
+            `UPDATE common_faculty_manager_assignments SET is_active = 0, revoked_at = CURRENT_TIMESTAMP WHERE is_active = 1`
+          );
+          await conn.execute(
+            `INSERT INTO common_faculty_manager_assignments (teacher_id, appointed_by, is_active, appointed_at, assigned_by, assigned_at)
+             VALUES (?, ?, 1, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP)`,
+            [teacherId, adminUserId, adminUserId]
+          );
+        }
+      }
+
+      // Audit log
+      try {
+        await conn.execute(
+          `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+           VALUES (?, 'FACULTY_UPDATED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+          [adminUserId, String(teacherId), JSON.stringify({ fullName, phone, employeeId, departmentId, status, role })]
+        );
+      } catch (_) {}
+
+      return true;
+    });
+  }
+
+  /**
+   * Toggle teacher active/inactive status
+   */
+  static async toggleFacultyStatus(teacherId, adminUserId = 1) {
+    const tRows = await query(`SELECT t.id, t.user_id, u.status FROM teachers t JOIN users u ON t.user_id = u.id WHERE t.id = ?`, [teacherId]);
+    if (!tRows.length) return null;
+    const currentStatus = tRows[0].status;
+    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    await query(`UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [newStatus, tRows[0].user_id]);
+
+    if (newStatus === 'INACTIVE') {
+      await query(`UPDATE teacher_assignments SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE teacher_id = ? AND assignment_type = 'HOD'`, [teacherId]);
+    }
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'FACULTY_STATUS_TOGGLED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+        [adminUserId, String(teacherId), JSON.stringify({ oldStatus: currentStatus, newStatus })]
+      );
+    } catch (_) {}
+
+    return { teacher_id: teacherId, status: newStatus };
+  }
+
+  /**
+   * Delete faculty member (Soft-delete to Trash, 30-day retention before automatic purge)
+   */
+  static async deleteFaculty(teacherId, adminUserId = 1) {
+    const tRows = await query(`SELECT id, user_id, full_name FROM teachers WHERE id = ? AND deleted_at IS NULL`, [teacherId]);
+    if (!tRows.length) return null;
+    const userId = tRows[0].user_id;
+
+    await query(`UPDATE teacher_assignments SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE teacher_id = ?`, [teacherId]);
+    await query(`UPDATE common_faculty_manager_assignments SET is_active = 0, revoked_at = CURRENT_TIMESTAMP WHERE teacher_id = ?`, [teacherId]);
+    await query(`UPDATE departments SET hod_user_id = NULL WHERE hod_user_id = ?`, [userId]);
+
+    // Mark soft-deleted with timestamp
+    await query(`UPDATE teachers SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [teacherId]);
+    await query(`UPDATE users SET deleted_at = CURRENT_TIMESTAMP, status = 'SUSPENDED', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [userId]);
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'FACULTY_MOVED_TO_TRASH', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+        [adminUserId, String(teacherId), JSON.stringify({ name: tRows[0].full_name, purge_in_days: 30 })]
+      );
+    } catch (_) {}
+
     return {
-      hod_open: hodOpen,
-      common_faculty_open: commonOpen
+      soft_deleted: true,
+      message: `${tRows[0].full_name} moved to Trash. Can be restored from the Restore page within 30 days.`
     };
   }
 
   /**
-   * Toggle open/closed state of registration gate with audit logging
-   * @calledBy AdminController.toggleRegistrationGate() (controllers/adminController.js)
-   * @route POST /api/v1/admin/registration-gates/toggle (routes/admin.js)
-   * @param {'HOD'|'COMMON_FACULTY'} target Gate target
-   * @param {boolean} isOpen Whether gate is open
-   * @param {number} userId Admin user ID
-   * @returns {Promise<void>}
+   * Retrieve all soft-deleted faculty currently in Trash (auto-purges older than 30 days)
+   */
+  static async getTrashFaculty() {
+    // 1. Automatic purge for records older than 30 days
+    try {
+      const expired = await query(
+        `SELECT id, user_id FROM teachers WHERE deleted_at IS NOT NULL AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`
+      );
+      for (const exp of expired) {
+        await query(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM teachers WHERE id = ?`, [exp.id]).catch(() => {});
+        await query(`DELETE FROM user_roles WHERE user_id = ?`, [exp.user_id]).catch(() => {});
+        await query(`DELETE FROM users WHERE id = ?`, [exp.user_id]).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Auto-purge check error:', e.message);
+    }
+
+    // 2. Return current soft-deleted items
+    return await query(
+      `SELECT t.id as teacher_id, t.full_name, t.employee_id, t.phone, t.created_at, t.deleted_at,
+              d.id as department_id, d.name as department_name, d.code as department_code,
+              u.id as user_id, u.email as gmail, u.status,
+              GREATEST(0, 30 - DATEDIFF(NOW(), t.deleted_at)) as days_left
+       FROM teachers t
+       JOIN users u ON t.user_id = u.id
+       LEFT JOIN departments d ON t.department_id = d.id
+       WHERE t.deleted_at IS NOT NULL
+       ORDER BY t.deleted_at DESC`
+    );
+  }
+
+  /**
+   * Restore a soft-deleted faculty member from Trash
+   */
+  static async restoreFaculty(teacherId, adminUserId = 1) {
+    const tRows = await query(`SELECT id, user_id, full_name FROM teachers WHERE id = ? AND deleted_at IS NOT NULL`, [teacherId]);
+    if (!tRows.length) return null;
+    const userId = tRows[0].user_id;
+
+    await query(`UPDATE teachers SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [teacherId]);
+    await query(`UPDATE users SET deleted_at = NULL, status = 'ACTIVE', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [userId]);
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'FACULTY_RESTORED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+        [adminUserId, String(teacherId), JSON.stringify({ name: tRows[0].full_name })]
+      );
+    } catch (_) {}
+
+    return {
+      success: true,
+      message: `${tRows[0].full_name} has been restored successfully!`
+    };
+  }
+
+  /**
+   * Permanently purge a faculty member from Trash
+   */
+  static async permanentDeleteFaculty(teacherId, adminUserId = 1) {
+    const tRows = await query(`SELECT id, user_id, full_name FROM teachers WHERE id = ?`, [teacherId]);
+    if (!tRows.length) return null;
+    const userId = tRows[0].user_id;
+
+    await withTransaction(async (conn) => {
+      await conn.execute(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [teacherId]);
+      await conn.execute(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [teacherId]);
+      await conn.execute(`DELETE FROM teachers WHERE id = ?`, [teacherId]);
+      await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
+      await conn.execute(`DELETE FROM users WHERE id = ?`, [userId]);
+    });
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'FACULTY_PERMANENTLY_PURGED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
+        [adminUserId, String(teacherId), JSON.stringify({ name: tRows[0].full_name })]
+      );
+    } catch (_) {}
+
+    return { success: true, message: 'Faculty record permanently purged from database.' };
+  }
+
+  /**
+   * Check status of institutional self-registration gates (master switch, HOD, common faculty, and department-wise)
+   */
+  /**
+   * Check status of institutional self-registration gates (master switch, HOD, common faculty, and department-wise)
+   */
+  static async getRegistrationGates() {
+    const [settings, depts] = await Promise.all([
+      query(
+        `SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN (
+          'admin_reg_all_open',
+          'admin_reg_hod_open',
+          'admin_reg_common_faculty_open',
+          'admin_reg_open_departments'
+        ) OR setting_key LIKE 'faculty_reg_dept_%'`
+      ),
+      query(`SELECT id, code, name FROM departments`)
+    ]);
+
+    const allOpen = settings.some(s => s.setting_key === 'admin_reg_all_open' && (s.setting_value === '1' || s.setting_value === 'true'));
+    const hodOpen = settings.some(s => s.setting_key === 'admin_reg_hod_open' && (s.setting_value === '1' || s.setting_value === 'true'));
+    const commonOpen = settings.some(s => s.setting_key === 'admin_reg_common_faculty_open' && (s.setting_value === '1' || s.setting_value === 'true'));
+    
+    let openDepts = [];
+    const deptsSetting = settings.find(s => s.setting_key === 'admin_reg_open_departments');
+    if (deptsSetting && deptsSetting.setting_value) {
+      try {
+        openDepts = JSON.parse(deptsSetting.setting_value);
+      } catch (_) {
+        openDepts = [];
+      }
+    }
+    if (!Array.isArray(openDepts)) openDepts = [];
+
+    // Merge any individual departmental gates that are '1'
+    const openSet = new Set();
+    const deptIdToCode = new Map(depts.map(d => [String(d.id), d.code]));
+    openDepts.forEach(item => {
+      const s = String(item);
+      if (deptIdToCode.has(s)) {
+        openSet.add(deptIdToCode.get(s));
+      } else if (isNaN(s)) {
+        openSet.add(s);
+      }
+    });
+
+    if (allOpen) {
+      depts.forEach(d => {
+        openSet.add(d.code);
+      });
+    } else {
+      for (const d of depts) {
+        const dSetting = settings.find(s => s.setting_key === `faculty_reg_dept_${d.id}`);
+        if (dSetting && (dSetting.setting_value === '1' || dSetting.setting_value === 'true')) {
+          openSet.add(d.code);
+        }
+      }
+    }
+
+    return {
+      all_open: allOpen,
+      hod_open: hodOpen,
+      common_faculty_open: commonOpen,
+      open_departments: Array.from(openSet)
+    };
+  }
+
+  /**
+   * Update full registration gates configuration
+   */
+  static async updateRegistrationGates({ all_open, hod_open, common_faculty_open, open_departments }, userId = 1) {
+    const isAll = Boolean(all_open);
+    const isHod = Boolean(hod_open);
+    const isCommon = Boolean(common_faculty_open);
+    let depts = Array.isArray(open_departments) ? open_departments.map(d => typeof d === 'number' ? d : String(d).trim()) : [];
+
+    const allDeptRows = await query(`SELECT id, code FROM departments`);
+
+    if (isAll) {
+      // If master open, include all dept codes
+      depts = allDeptRows.map(d => d.code);
+    }
+
+    const pairs = [
+      ['admin_reg_all_open', isAll ? '1' : '0', 'Allow Registration For All Departments'],
+      ['admin_reg_hod_open', isHod ? '1' : '0', 'HOD Self-Registration Open/Closed'],
+      ['admin_reg_common_faculty_open', isCommon ? '1' : '0', 'Common Faculty Self-Registration Open/Closed'],
+      ['admin_reg_open_departments', JSON.stringify(depts), 'Departments with Open Self-Registration']
+    ];
+
+    for (const [key, val, desc] of pairs) {
+      await query(
+        `INSERT INTO system_settings (setting_key, setting_value, description, updated_by, updated_at)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
+        [key, val, desc, userId]
+      );
+    }
+
+    // Two-way sync to departmental gates
+    for (const d of allDeptRows) {
+      const isDeptOpen = isAll || depts.includes(d.code) || depts.includes(d.id) || depts.includes(String(d.id));
+      await query(
+        `INSERT INTO system_settings (setting_key, setting_value, description, updated_by, updated_at)
+         VALUES (?, ?, 'Department Faculty Self-Registration Open/Closed', ?, CURRENT_TIMESTAMP)
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
+        [`faculty_reg_dept_${d.id}`, isDeptOpen ? '1' : '0', userId]
+      );
+    }
+
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'REGISTRATION_GATES_UPDATED', 'system_settings', 'gates', ?, CURRENT_TIMESTAMP)`,
+        [userId, JSON.stringify({ all_open: isAll, hod_open: isHod, common_faculty_open: isCommon, open_departments: depts })]
+      );
+    } catch (_) {}
+
+    return {
+      all_open: isAll,
+      hod_open: isHod,
+      common_faculty_open: isCommon,
+      open_departments: depts
+    };
+  }
+
+  /**
+   * Toggle open/closed state of registration gate (MySQL compatible)
    */
   static async toggleRegistrationGate(target, isOpen, userId) {
     const settingKey = target === 'HOD' ? 'admin_reg_hod_open' : 'admin_reg_common_faculty_open';
@@ -1370,16 +1871,113 @@ class AdminModel {
     await query(
       `INSERT INTO system_settings (setting_key, setting_value, description, updated_by, updated_at)
        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(setting_key)
-       DO UPDATE SET setting_value = excluded.setting_value, updated_by = excluded.updated_by, updated_at = CURRENT_TIMESTAMP`,
+       ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
       [settingKey, isOpen ? '1' : '0', desc, userId]
     );
 
-    await query(
-      `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
-       VALUES (?, 'REGISTRATION_GATE_TOGGLED', 'system_settings', ?, ?, CURRENT_TIMESTAMP)`,
-      [userId, settingKey, JSON.stringify({ target, is_open: isOpen })]
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'REGISTRATION_GATE_TOGGLED', 'system_settings', ?, ?, CURRENT_TIMESTAMP)`,
+        [userId, settingKey, JSON.stringify({ target, is_open: isOpen })]
+      );
+    } catch (_) {}
+  }
+
+  /**
+   * Retrieve list of all administrators
+   */
+  static async getAdministrators() {
+    const rows = await query(`
+      SELECT 
+        u.id, 
+        u.username, 
+        u.email, 
+        u.status, 
+        u.created_at,
+        t.full_name,
+        t.employee_id,
+        t.phone
+      FROM users u
+      JOIN user_roles ur ON u.id = ur.user_id AND ur.role = 'SYSTEM_ADMIN'
+      LEFT JOIN teachers t ON t.user_id = u.id
+      ORDER BY u.id ASC
+    `);
+
+    const envEmail = (process.env.ADMIN_EMAIL || process.env.INITIAL_ADMIN_EMAIL || '').trim().toLowerCase();
+
+    return rows.map(r => ({
+      ...r,
+      is_env_admin: Boolean(envEmail && r.email && r.email.toLowerCase() === envEmail)
+    }));
+  }
+
+  /**
+   * Create a new administrator account
+   */
+  static async createAdministrator({ email, password, full_name, phone, employee_id }) {
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = await query(`SELECT id FROM users WHERE LOWER(email) = ?`, [cleanEmail]);
+
+    if (existing && existing.length > 0) {
+      const existingId = existing[0].id;
+      const existingRoles = await query(`SELECT role FROM user_roles WHERE user_id = ? AND role = 'SYSTEM_ADMIN'`, [existingId]);
+      if (existingRoles && existingRoles.length > 0) {
+        throw new Error('An administrator account with this email already exists');
+      }
+      // Upgrade existing user to SYSTEM_ADMIN
+      await query(`INSERT INTO user_roles (user_id, role) VALUES (?, 'SYSTEM_ADMIN')`, [existingId]);
+      return { id: existingId, email: cleanEmail, full_name };
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const insertUser = await query(
+      `INSERT INTO users (username, email, password_hash, must_change_password, status) VALUES (?, ?, ?, 0, 'ACTIVE')`,
+      [cleanEmail, cleanEmail, passwordHash]
     );
+
+    const newUserId = insertUser.insertId || insertUser.lastID || (
+      await query(`SELECT id FROM users WHERE LOWER(email) = ?`, [cleanEmail])
+    )[0]?.id;
+
+    await query(`INSERT INTO user_roles (user_id, role) VALUES (?, 'SYSTEM_ADMIN')`, [newUserId]);
+
+    const depts = await query(`SELECT id FROM departments ORDER BY id ASC LIMIT 1`);
+    const deptId = (depts && depts.length > 0) ? depts[0].id : 1;
+    const empId = employee_id || `ADMIN-${Math.floor(100 + Math.random() * 900)}`;
+
+    await query(
+      `INSERT INTO teachers (user_id, department_id, full_name, employee_id, phone) VALUES (?, ?, ?, ?, ?)`,
+      [newUserId, deptId, full_name || 'Administrator', empId, phone || '']
+    );
+
+    return { id: newUserId, email: cleanEmail, full_name, employee_id: empId };
+  }
+
+  /**
+   * Delete an administrator account
+   */
+  static async deleteAdministrator(adminId, currentUserId) {
+    if (parseInt(adminId, 10) === parseInt(currentUserId, 10)) {
+      throw new Error('You cannot delete your own active administrator account');
+    }
+
+    const adminCount = await query(`SELECT COUNT(*) as c FROM user_roles WHERE role = 'SYSTEM_ADMIN'`);
+    if (adminCount[0]?.c <= 1) {
+      throw new Error('Cannot delete the sole remaining administrator account');
+    }
+
+    // Remove SYSTEM_ADMIN role
+    await query(`DELETE FROM user_roles WHERE user_id = ? AND role = 'SYSTEM_ADMIN'`, [adminId]);
+
+    // If user has no other roles, delete teachers & user record
+    const remainingRoles = await query(`SELECT role FROM user_roles WHERE user_id = ?`, [adminId]);
+    if (!remainingRoles || remainingRoles.length === 0) {
+      await query(`DELETE FROM teachers WHERE user_id = ?`, [adminId]);
+      await query(`DELETE FROM users WHERE id = ?`, [adminId]);
+    }
+
+    return true;
   }
 }
 

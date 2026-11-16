@@ -297,11 +297,24 @@ function handleClassesSearch(query) {
 }
 
 /**
+ * Verifies if user account possesses teacher, HOD, or administrative privileges
+ */
+function canAccessStaffNavigation(user) {
+  if (!user) return false;
+  const roles = Array.isArray(user.roles) ? user.roles : (user.role ? [user.role] : []);
+  const staffRoles = ['TEACHER', 'FACULTY', 'HOD', 'DEPT_HEAD', 'SYSTEM_ADMIN', 'ADMIN'];
+  return roles.some(r => staffRoles.includes(r)) || Boolean(user.is_hod || user.is_admin || user.teacher_id);
+}
+
+/**
  * Renders the authentic Google Classroom Class Cards grid
  */
 function renderGoogleClassCards() {
   const grid = document.getElementById('classes-grid');
   if (!grid) return;
+
+  const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+  const isStaff = canAccessStaffNavigation(currentUser);
 
   let filtered = studentDashboardState.classes;
 
@@ -357,7 +370,22 @@ function renderGoogleClassCards() {
     return;
   }
 
-  grid.innerHTML = filtered.map((c, index) => {
+  const hiddenCards = JSON.parse(localStorage.getItem('vidya_hidden_subject_cards') || '[]');
+  const visible = filtered.filter(c => !hiddenCards.includes(Number(c.id)));
+
+  if (visible.length === 0 && hiddenCards.length > 0) {
+    grid.innerHTML = `
+      <div class="gc-empty-state" style="grid-column: 1 / -1; padding: 3rem 1.5rem; text-align: center; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: var(--radius-lg);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+        <h3 class="gc-empty-title" style="margin: 0.75rem 0 0.25rem 0;">All Subject Cards Hidden</h3>
+        <p class="gc-empty-text" style="color: var(--text-muted); font-size: 0.88rem;">You have removed subject cards from your dashboard view.</p>
+        <button class="btn btn-secondary btn-sm" onclick="restoreHiddenSubjectCards()" style="margin-top:0.75rem;">Restore All Subject Cards</button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = visible.map((c, index) => {
     const paletteClass = `palette-${index % 6}`;
     const isTheory = (c.component || '').toUpperCase() === 'THEORY';
     const compLabel = isTheory ? 'Theory' : 'Practical';
@@ -377,8 +405,21 @@ function renderGoogleClassCards() {
         <!-- Gradient Banner Header -->
         <header class="gc-card-header ${paletteClass}">
           <div class="gc-card-header-top">
-            <span class="gc-card-code-tag">${escapeHtml(code)}</span>
-            <span class="gc-component-tag">${compLabel}</span>
+            <div class="gc-card-header-tags">
+              <span class="gc-card-code-tag">${escapeHtml(code)}</span>
+              <span class="gc-component-tag">${compLabel}</span>
+            </div>
+            <div class="gc-card-header-right-meta">
+              <button type="button" class="gc-header-dots-btn" onclick="toggleStudentCardMenu(event, 'student-${c.id}')" title="Subject Options" aria-label="Subject Options">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+              </button>
+              <div class="gc-menu-dropdown gc-menu-header" id="card-menu-student-${c.id}">
+                <button type="button" class="gc-menu-item danger" onclick="openDeleteSubjectCardModal(${c.id}, '${escapeHtml(c.name || c.subject_name).replace(/'/g, "\\'")}')" title="Delete Subject Card">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <span>Delete Subject Card</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -438,46 +479,98 @@ function renderGoogleClassCards() {
           </div>
         </div>
 
-        <!-- 4 Action Toolbar Footer -->
-        <footer class="gc-card-footer">
-          <a href="/student/group-detail.html?id=${c.id}&tab=attendance" class="gc-action-btn" title="View Detailed Attendance Register">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Attendance</span>
-          </a>
-
-          <a href="/student/group-detail.html?id=${c.id}&tab=classwork" class="gc-action-btn ${(c.pending_work_count > 0) ? 'has-pending' : ''}" title="Classwork & Assignments${(c.pending_work_count > 0) ? (' (' + c.pending_work_count + ' pending)') : ''}">
-            <div class="gc-action-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-              </svg>
-              ${(c.pending_work_count > 0) ? '<span class="gc-red-dot" title="' + c.pending_work_count + ' pending work"></span>' : ''}
-            </div>
-            <span>Classwork</span>
-          </a>
-
-          <a href="/student/group-detail.html?id=${c.id}&tab=people" class="gc-action-btn" title="Classmates & Teachers">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        ${isStaff ? `
+        <!-- Staff Navigation Quick Links Grid (Students, Classwork, Resources, NBA, Theory Classes, Laboratory Classes, Student Performance, Direct Assessment, Indirect Assessment) -->
+        <div class="card-quick-links-grid" onclick="event.stopPropagation()">
+          <a href="/student/group-detail.html?id=${c.id}&tab=people" class="card-quick-link" title="Classmates & Teachers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
-            <span>People</span>
+            <span>Students</span>
           </a>
 
-          <a href="/student/group-detail.html?id=${c.id}&tab=stream" class="gc-action-btn" title="Classroom Stream & Announcements">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <a href="/student/group-detail.html?id=${c.id}&tab=classwork" class="card-quick-link ${(c.pending_work_count > 0) ? 'has-pending' : ''}" title="Classwork & Assignments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
-            <span>Stream</span>
+            <span>Classwork</span>
           </a>
-        </footer>
+
+          <a href="/student/group-detail.html?id=${c.id}&tab=resources" class="card-quick-link" title="Class Resources & Documents">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Resources</span>
+          </a>
+
+          <a href="/student/nba/index.html?groupId=${c.id}" class="card-quick-link" title="NBA Academic Accreditation Dossier & Course Outcomes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>NBA</span>
+          </a>
+
+          <a href="/student/theory-classes/index.html?groupId=${c.id}" class="card-quick-link" title="Theory Classes Dossier, Notes & Lesson Plans">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Theory Classes</span>
+          </a>
+
+          <a href="/student/lab-classes/index.html?groupId=${c.id}" class="card-quick-link" title="Laboratory Classes, Manuals & Experiments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 2v7.31L4.62 18.2A2 2 0 0 0 6.36 21h11.28a2 2 0 0 0 1.74-2.8L14 9.31V2"></path>
+              <path d="M8.5 2h7"></path>
+              <path d="M14 9.3h-4"></path>
+            </svg>
+            <span>Laboratory Classes</span>
+          </a>
+
+          <a href="/student/student-performance/index.html?groupId=${c.id}" class="card-quick-link" title="Student Performance Monitoring (Advanced & Slow Learners, Remedial Measures)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 16v5"></path>
+              <path d="M16 14v7"></path>
+              <path d="M20 10v11"></path>
+              <path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"></path>
+              <path d="M4 18v3"></path>
+              <path d="M8 14v7"></path>
+            </svg>
+            <span>Student Performance</span>
+          </a>
+
+          <a href="/student/direct-assessment/index.html?groupId=${c.id}" class="card-quick-link" title="Direct Assessment (CO Attainment, Examinations & Marksheets)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <path d="m9 14 2 2 4-4"></path>
+            </svg>
+            <span>Direct Assessment</span>
+          </a>
+
+          <a href="/student/indirect-assessment/index.html?groupId=${c.id}" class="card-quick-link" title="Indirect Assessment (Course Exit Surveys & Stakeholder Feedback)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <path d="M12 11h4"></path>
+              <path d="M12 16h4"></path>
+              <path d="M8 11h.01"></path>
+              <path d="M8 16h.01"></path>
+            </svg>
+            <span>Indirect Assessment</span>
+          </a>
+        </div>
+        ` : ''}
       </article>
     `;
   }).join('');
@@ -607,6 +700,11 @@ function initDropdownCloseListeners() {
     if (profilePopover && profilePopover.style.display !== 'none' && !profilePopover.contains(e.target) && !profileTrigger) {
       profilePopover.style.display = 'none';
     }
+
+    // Subject Card Dropdowns
+    if (!e.target.closest('.gc-card-header-right-meta')) {
+      document.querySelectorAll('.gc-menu-dropdown.open').forEach(m => m.classList.remove('open'));
+    }
   });
 
   // Close on Escape key
@@ -618,6 +716,8 @@ function initDropdownCloseListeners() {
       closeJoinModal();
       closeSelfAttendanceModal();
       closeStudentStreamModal();
+      closeDeleteSubjectCardModal();
+      document.querySelectorAll('.gc-menu-dropdown.open').forEach(m => m.classList.remove('open'));
     }
   });
 }
@@ -944,3 +1044,146 @@ window.loadEnrolledClasses = loadEnrolledClasses;
 window.openCompleteProfileModal = openCompleteProfileModal;
 window.closeCompleteProfileModal = closeCompleteProfileModal;
 window.handlePopupProfileSubmit = handlePopupProfileSubmit;
+
+/* --- Three-Dot Menu & Delete Subject Card Modal Handlers --- */
+let pendingDeleteCardId = null;
+let pendingDeleteCardName = '';
+
+function ensureDeleteSubjectCardModal() {
+  if (document.getElementById('delete-subject-card-modal')) return;
+  const modalHtml = `
+    <div id="delete-subject-card-modal" class="gc-modal-backdrop" style="display:none;" onclick="closeDeleteSubjectCardModal(event)">
+      <div class="gc-modal-card" onclick="event.stopPropagation()">
+        <div class="gc-modal-header danger-header">
+          <div class="gc-modal-icon-badge danger">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 class="gc-modal-title">Delete Subject Card</h3>
+            <p class="gc-modal-subtitle">Dashboard Customization</p>
+          </div>
+          <button type="button" class="gc-modal-close" onclick="closeDeleteSubjectCardModal()" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="gc-modal-body">
+          <p class="delete-confirm-text">
+            Are you sure you want to remove the subject card for <strong id="delete-subject-card-name" class="highlight-subject-name">Subject</strong> from your dashboard?
+          </p>
+          <div class="delete-permission-note">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span>This removes the subject card from your active dashboard view. Permanent course records, student enrollments, and academic data remain securely stored in the institutional database.</span>
+          </div>
+        </div>
+        <div class="gc-modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeDeleteSubjectCardModal()">Cancel</button>
+          <button type="button" class="btn btn-danger" id="btn-confirm-delete-card" onclick="executeDeleteSubjectCard()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Delete Card</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+window.openDeleteSubjectCardModal = function(id, name) {
+  pendingDeleteCardId = id;
+  pendingDeleteCardName = name;
+  ensureDeleteSubjectCardModal();
+  const nameEl = document.getElementById('delete-subject-card-name');
+  if (nameEl) nameEl.textContent = name || 'this Subject';
+  const modal = document.getElementById('delete-subject-card-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+};
+
+window.closeDeleteSubjectCardModal = function(e) {
+  if (e && e.target !== e.currentTarget && !e.target.classList.contains('gc-modal-close') && !e.target.classList.contains('btn-secondary')) return;
+  const modal = document.getElementById('delete-subject-card-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  pendingDeleteCardId = null;
+  pendingDeleteCardName = '';
+};
+
+window.executeDeleteSubjectCard = function() {
+  if (!pendingDeleteCardId) return;
+  const targetId = pendingDeleteCardId;
+  const targetName = pendingDeleteCardName;
+  closeDeleteSubjectCardModal();
+
+  const cardEl = document.getElementById(`class-card-${targetId}`);
+  if (cardEl) {
+    cardEl.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    cardEl.style.opacity = '0';
+    cardEl.style.transform = 'scale(0.92) translateY(10px)';
+    setTimeout(() => {
+      cardEl.remove();
+      renderEnrolledClasses();
+    }, 320);
+  }
+
+  try {
+    const hidden = JSON.parse(localStorage.getItem('vidya_hidden_subject_cards') || '[]');
+    if (!hidden.includes(Number(targetId))) {
+      hidden.push(Number(targetId));
+      localStorage.setItem('vidya_hidden_subject_cards', JSON.stringify(hidden));
+    }
+  } catch (err) {
+    console.warn('Could not persist hidden card state', err);
+  }
+
+  if (typeof showToast === 'function') {
+    showToast(`Subject card "${targetName}" removed from your dashboard.`, 'success');
+  } else if (typeof window.showToast === 'function') {
+    window.showToast(`Subject card "${targetName}" removed from your dashboard.`, 'success');
+  }
+};
+
+window.restoreHiddenSubjectCards = function() {
+  localStorage.removeItem('vidya_hidden_subject_cards');
+  renderEnrolledClasses();
+  if (typeof showToast === 'function') {
+    showToast('All subject cards restored to dashboard.', 'success');
+  }
+};
+
+window.promptStudentEditSubject = function(subjectName) {
+  const msg = `Permission Restricted: Editing "${subjectName}" requires instructor or administrator authority.`;
+  if (typeof showToast === 'function') {
+    showToast(msg, 'warning');
+  } else if (typeof window.showToast === 'function') {
+    window.showToast(msg, 'warning');
+  } else {
+    alert(msg);
+  }
+};
+
+window.toggleStudentCardMenu = function(e, menuKey) {
+  e.stopPropagation();
+  const menuId = `card-menu-${menuKey}`;
+  const menu = document.getElementById(menuId);
+  if (!menu) return;
+
+  document.querySelectorAll('.gc-menu-dropdown.open').forEach(m => {
+    if (m.id !== menuId) m.classList.remove('open');
+  });
+
+  menu.classList.toggle('open');
+};

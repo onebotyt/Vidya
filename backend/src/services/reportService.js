@@ -109,7 +109,7 @@ class ReportService {
        JOIN attendance_session_students ass ON ass.session_id = s.id AND ass.student_id = ? AND ass.included = TRUE
        LEFT JOIN register_attendance ra ON ra.session_id = s.id AND ra.student_id = ?
        WHERE s.state = 'FINALIZED'
-       GROUP BY r.id, tg.id, sub.id
+       GROUP BY r.id, r.session_type_scope, tg.id, tg.subject_name, sub.id, sub.name, r.name, sub.code
        ORDER BY subject_name ASC`,
       [studentId, studentId]
     );
@@ -201,8 +201,8 @@ class ReportService {
        JOIN students s ON ass.student_id = s.id
        LEFT JOIN register_attendance ra ON ra.session_id = ass.session_id AND ra.student_id = ass.student_id
        LEFT JOIN esp32_presence ep ON ep.student_id = ass.student_id 
-            AND ep.scan_time BETWEEN (SELECT datetime(start_time, '-30 minutes') FROM attendance_sessions WHERE id = ass.session_id)
-                                 AND (SELECT datetime(COALESCE(end_time, auto_close_at, start_time), '+30 minutes') FROM attendance_sessions WHERE id = ass.session_id)
+            AND ep.scan_time BETWEEN (SELECT DATE_SUB(start_time, INTERVAL 30 MINUTE) FROM attendance_sessions WHERE id = ass.session_id)
+                                 AND (SELECT DATE_ADD(COALESCE(end_time, auto_close_at, start_time), INTERVAL 30 MINUTE) FROM attendance_sessions WHERE id = ass.session_id)
        LEFT JOIN student_self_attendance ssa ON ssa.session_id = ass.session_id AND ssa.student_id = ass.student_id
        WHERE ass.session_id = ? AND ass.included = TRUE
        ORDER BY ass.class_roll_no ASC`,

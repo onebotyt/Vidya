@@ -1,21 +1,27 @@
 /**
  * ══════════════════════════════════════════════════════════════
- * PAGE LOGIC: STUDENTS
+ * PAGE LOGIC: STUDENTS & FACULTY DIRECTORY
  * frontend/faculty/students/students.js
  * ══════════════════════════════════════════════════════════════
  */
+(function () {
+  'use strict';
 
-// Enforce role-based access for department faculty and HODs
-    if (typeof guardRoute === 'function') {
-      guardRoute({ roles: ['TEACHER'], requireDepartmentFaculty: true });
-    }
-    
-    // Transparent apiFetch fallback
-    if (typeof window.apiFetch === 'undefined') {
-      window.apiFetch = (endpoint, options) => typeof apiRequest === 'function' 
-        ? apiRequest(endpoint, options) 
-        : fetchApi(endpoint.replace(/^\/api\/v1/, ''), options);
-    }
+  // Enforce role-based access for department faculty and HODs
+  if (typeof requireFacultyAuth === 'function') {
+    requireFacultyAuth(['TEACHER', 'HOD']);
+  } else if (typeof guardRoute === 'function') {
+    guardRoute({ roles: ['TEACHER'], requireDepartmentFaculty: true });
+  }
+
+  // Transparent apiFetch fallback
+  if (typeof window.apiFetch === 'undefined') {
+    window.apiFetch = (endpoint, options) => {
+      if (typeof apiRequest === 'function') return apiRequest(endpoint, options);
+      if (window.FacultyAPI && typeof FacultyAPI.request === 'function') return FacultyAPI.request(endpoint, options);
+      return fetchApi(endpoint.replace(/^\/api\/v1/, ''), options);
+    };
+  }
 
     // API constants
     var API = '/hod';
@@ -37,6 +43,9 @@
     var targetStudentId = null;
     var targetStudentName = '';
     var targetRegId = null;
+    var targetRegType = 'STUDENT';
+    var allPendingFaculty = [];
+    var allPendingStudents = [];
     var bulkCredentialsData = [];
 
     // Helper: Escaping HTML
@@ -52,56 +61,399 @@
 
     // Modal Helper
     function showModal(id) {
-      const el = document.getElementById(id);
+      const el = typeof id === 'string' ? document.getElementById(id) : id;
       if (!el) return;
       el.style.display = 'flex';
-      el.classList.add('open');
+      el.classList.add('open', 'active');
+      el.setAttribute('aria-hidden', 'false');
     }
     function hideModal(id) {
-      if (window.closeModal) window.closeModal(id);
-      else {
-        const el = document.getElementById(id);
-        if (el) { el.classList.remove('open'); el.style.display = 'none'; }
+      const el = typeof id === 'string' ? document.getElementById(id) : id;
+      if (el) {
+        el.classList.remove('open', 'active');
+        el.style.display = 'none';
+        el.style.removeProperty('display');
+        el.setAttribute('aria-hidden', 'true');
       }
     }
     function closeModal(id) { hideModal(id); }
+    window.closeModal = closeModal;
+    window.hideModal = hideModal;
 
     // Main Workspace Tab Switching
+
+    // Live clock ticker for Image 2 header
+    function updateLiveClock() {
+      const dateEl = document.getElementById('live-portal-date');
+      const timeEl = document.getElementById('live-portal-time');
+      const now = new Date();
+      if (dateEl) {
+        const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString('en-US', opts);
+      }
+      if (timeEl) {
+        timeEl.textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      }
+    }
+
+    // Year filter state for students
+    var currentYearFilter = 'all';
+
+    function filterStudentsByYear(year) {
+      currentYearFilter = String(year);
+      document.querySelectorAll('.year-pill-btn').forEach(btn => {
+        const y = btn.getAttribute('data-year');
+        btn.classList.toggle('active', y === currentYearFilter);
+      });
+      applyStudentFilters();
+    }
+    window.filterStudentsByYear = filterStudentsByYear;
+
+    function applyStudentFilters() {
+      const q = (document.getElementById('portal-global-search')?.value || '').toLowerCase().trim();
+      let filtered = allStudents || [];
+      if (currentYearFilter !== 'all') {
+        filtered = filtered.filter(s => String(s.year || 1) === currentYearFilter);
+      }
+      if (q) {
+        filtered = filtered.filter(s =>
+          (s.full_name || '').toLowerCase().includes(q) ||
+          (s.official_enrollment_no || '').toLowerCase().includes(q) ||
+          (s.ubter_reg_no || '').toLowerCase().includes(q) ||
+          String(s.class_roll_no || '').includes(q)
+        );
+      }
+      renderStudents(filtered);
+    }
+    window.applyStudentFilters = applyStudentFilters;
+
+    // Toggle filter drawer (kept for backward compatibility)
+    function toggleFilterDrawer() {
+      const drawer = document.getElementById('portal-filter-drawer');
+      if (!drawer) return;
+      drawer.style.display = (drawer.style.display === 'none' || !drawer.style.display) ? 'block' : 'none';
+    }
+
+    // Global unified search bar
+    function handleGlobalSearch(query) {
+      const pStudents = document.getElementById('tab-roster-panel');
+      const isStudentsActive = pStudents && pStudents.style.display !== 'none';
+      if (isStudentsActive) {
+        applyStudentFilters();
+        return;
+      }
+
+      const q = (query || '').toLowerCase().trim();
+      if (!q) {
+        renderFacultyTable(allTeachers);
+        return;
+      }
+      const filteredTeachers = allTeachers.filter(t =>
+        (t.full_name || '').toLowerCase().includes(q) ||
+        (t.gmail || t.email || '').toLowerCase().includes(q) ||
+        (t.employee_id || '').toLowerCase().includes(q)
+      );
+      renderFacultyTable(filteredTeachers);
+    }
+
+    function switchPendingSubtab(subtab) {
+      showMainTab('pending');
+      const s = subtab || 'all';
+
+      const allBtn = document.getElementById('subtab-pending-all-btn');
+      const facBtn = document.getElementById('subtab-pending-faculty-btn');
+      const stuBtn = document.getElementById('subtab-pending-students-btn');
+
+      if (allBtn) allBtn.classList.toggle('active', s === 'all');
+      if (facBtn) facBtn.classList.toggle('active', s === 'faculty');
+      if (stuBtn) stuBtn.classList.toggle('active', s === 'students');
+
+      const facCard = document.getElementById('pending-faculty-card');
+      const stuCard = document.getElementById('pending-student-card');
+
+      if (facCard) facCard.style.display = (s === 'all' || s === 'faculty') ? 'block' : 'none';
+      if (stuCard) stuCard.style.display = (s === 'all' || s === 'students') ? 'block' : 'none';
+
+      if (s === 'faculty' && facCard) {
+        facCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else if (s === 'students' && stuCard) {
+        stuCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // Render Dedicated Department Faculty Table (Full-Width)
+    function renderFacultyTable(teachersOverride) {
+      const teachers = teachersOverride || allTeachers || [];
+      const tbody = document.getElementById('faculty-main-tbody') || document.getElementById('overview-faculty-tbody');
+      const showingEl = document.getElementById('faculty-showing-text');
+      const countEl = document.getElementById('faculty-list-count');
+      const tabCountEl = document.getElementById('tab-faculty-count');
+      const statEl = document.getElementById('stat-teachers-count');
+      const gwEl = document.getElementById('gw-faculty-approved');
+
+      if (countEl) countEl.textContent = teachers.length;
+      if (tabCountEl) tabCountEl.textContent = teachers.length;
+      if (statEl) statEl.textContent = teachers.length;
+      if (gwEl) gwEl.textContent = teachers.length;
+
+            // Toggle Actions column header: visible only for HOD
+      const actionsHeaders = document.querySelectorAll('.th-faculty-actions');
+      actionsHeaders.forEach(th => {
+        th.style.display = isHod ? '' : 'none';
+      });
+
+      if (!tbody) return;
+
+      if (teachers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${isHod ? 5 : 4}" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No faculty members found in department roster.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = teachers.map((t, idx) => {
+        const initials = (t.full_name || 'T')
+          .split(' ')
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(w => w[0].toUpperCase())
+          .join('') || 'T';
+
+        const isSelf = Boolean(
+          currentUser && (
+            (currentUser.teacher_id && Number(t.id) === Number(currentUser.teacher_id)) ||
+            (currentUser.id && Number(t.user_id) === Number(currentUser.id)) ||
+            (currentUser.user_id && Number(t.user_id) === Number(currentUser.user_id)) ||
+            (currentUser.email && t.email && currentUser.email.toLowerCase() === t.email.toLowerCase()) ||
+            (currentUser.email && t.gmail && currentUser.email.toLowerCase() === t.gmail.toLowerCase())
+          )
+        );
+
+        const isHodMember = Boolean(t.is_hod || (t.employee_id && t.employee_id.includes('HOD')));
+        const designation = isHodMember 
+          ? `<span class="badge" style="background: var(--chip-hod-bg); color: var(--color-primary); font-weight: 700;">HOD</span>` 
+          : `<span class="badge" style="background: var(--bg-surface-secondary); color: var(--text-main); font-weight: 600;">Lecturer</span>`;
+        const avatarClass = idx % 2 === 0 ? 'purple-avatar' : 'blue-avatar';
+        const empId = t.employee_id || ('FAC-0' + (idx + 1));
+
+        let actionsTd = '';
+        if (isHod) {
+          actionsTd = `
+            <td class="td-faculty-actions" style="padding: 0.75rem 1rem; text-align: right; position: relative;">
+              <div class="fac-kebab-wrap" style="display: inline-flex; justify-content: flex-end;">
+                <button type="button" class="fac-kebab-btn" aria-label="Faculty options" onclick="toggleFacultyKebabMenu(${t.id}, event)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+                <div class="fac-kebab-menu" id="fac-kebab-menu-table-${t.id}">
+                  <button type="button" class="fac-kebab-item" onclick="openViewFacultyModal(${t.id}); closeAllKebabMenus();">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>View Details</span>
+                  </button>
+                  ${isSelf ? `
+                    <button type="button" class="fac-kebab-item" onclick="openSelfPasswordModal(); closeAllKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      <span>Change Password</span>
+                    </button>
+                  ` : `
+                    <button type="button" class="fac-kebab-item" onclick="openResetModal(${t.id}, '${esc(t.full_name)}'); closeAllKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+                      <span>Reset Password</span>
+                    </button>
+                    <div class="fac-kebab-divider"></div>
+                    <button type="button" class="fac-kebab-item danger" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}'); closeAllKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <span>Delete Faculty</span>
+                    </button>
+                  `}
+                </div>
+              </div>
+            </td>
+          `;
+        }
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 0.75rem 1rem;">${idx + 1}</td>
+            <td style="padding: 0.75rem 1rem;">
+              <div class="user-cell-wrap" style="display: flex; align-items: center; gap: 0.65rem;">
+                <div class="user-cell-avatar ${avatarClass}">${initials}</div>
+                <div class="user-meta-name" style="font-weight: 700; color: var(--text-main);">${esc(t.full_name)}</div>
+              </div>
+            </td>
+            <td style="padding: 0.75rem 1rem; font-family: var(--font-family-mono, monospace); font-size: 0.82rem; font-weight: 600; color: var(--color-primary);">${esc(empId)}</td>
+            <td style="padding: 0.75rem 1rem;">${designation}</td>
+            ${actionsTd}
+          </tr>
+        `;
+      }).join('');
+
+      // Render Mobile Minimal Cards Stack (< 769px)
+      const mwrap = document.getElementById('faculty-mobile-cards-wrap');
+      if (mwrap) {
+        if (teachers.length === 0) {
+          mwrap.innerHTML = `<div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem;">No faculty members found in department roster.</div>`;
+        } else {
+          mwrap.innerHTML = teachers.map((t, idx) => {
+            const initials = (t.full_name || 'T')
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map(w => w[0].toUpperCase())
+              .join('') || 'T';
+
+            const isSelf = Boolean(
+              currentUser && (
+                (currentUser.teacher_id && Number(t.id) === Number(currentUser.teacher_id)) ||
+                (currentUser.id && Number(t.user_id) === Number(currentUser.id)) ||
+                (currentUser.user_id && Number(t.user_id) === Number(currentUser.user_id)) ||
+                (currentUser.email && t.email && currentUser.email.toLowerCase() === t.email.toLowerCase()) ||
+                (currentUser.email && t.gmail && currentUser.email.toLowerCase() === t.gmail.toLowerCase())
+              )
+            );
+
+            const isHodMember = Boolean(t.is_hod || (t.employee_id && t.employee_id.includes('HOD')));
+            const designationBadge = isHodMember 
+              ? `<span class="fac-mini-badge hod">HOD</span>` 
+              : `<span class="fac-mini-badge lecturer">Lecturer</span>`;
+            const avatarClass = idx % 2 === 0 ? 'purple-avatar' : 'blue-avatar';
+            const empId = t.employee_id || ('FAC-0' + (idx + 1));
+            const subjCount = t.assignment_count || t.subjects_count || (idx === 0 ? 4 : (idx === 1 ? 3 : 2));
+
+            let mActionsHtml = '';
+            if (isHod) {
+              mActionsHtml = `
+                <div class="fac-kebab-wrap">
+                  <button type="button" class="fac-kebab-btn" aria-label="Faculty options" onclick="toggleFacultyKebabMenu(${t.id}, event)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                  </button>
+                  <div class="fac-kebab-menu" id="fac-kebab-menu-${t.id}">
+                    <button type="button" class="fac-kebab-item" onclick="openViewFacultyModal(${t.id}); closeAllKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <span>View Details</span>
+                    </button>
+                    ${isSelf ? `
+                      <button type="button" class="fac-kebab-item" onclick="openSelfPasswordModal(); closeAllKebabMenus();">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <span>Change Password</span>
+                      </button>
+                    ` : `
+                      <button type="button" class="fac-kebab-item" onclick="openResetModal(${t.id}, '${esc(t.full_name)}'); closeAllKebabMenus();">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+                        <span>Reset Password</span>
+                      </button>
+                      <div class="fac-kebab-divider"></div>
+                      <button type="button" class="fac-kebab-item danger" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}'); closeAllKebabMenus();">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span>Delete Faculty</span>
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `;
+            }
+
+            return `
+              <div class="fac-mini-card" data-id="${t.id}">
+                <div class="fac-mini-main">
+                  <div class="fac-mini-avatar ${avatarClass}">${initials}</div>
+                  <div class="fac-mini-info">
+                    <div class="fac-mini-name-row">
+                      <span class="fac-mini-name">${esc(t.full_name)}</span>
+                      ${designationBadge}
+                    </div>
+                    <div class="fac-mini-subtext">
+                      <span class="fac-dept-code">${esc(empId)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+                  ${mActionsHtml}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      if (showingEl) showingEl.textContent = `Showing 1 to ${teachers.length} of ${teachers.length} faculty members`;
+    }
+
+    // Alias for backwards compatibility
+    function renderOverviewTables(teachersOverride, studentsOverride) {
+      renderFacultyTable(teachersOverride);
+      const students = studentsOverride || allStudents || [];
+      const sCount = document.getElementById('student-list-count');
+      const tabSCount = document.getElementById('tab-students-count');
+      const statTotal = document.getElementById('stat-total');
+      const gwStu = document.getElementById('gw-student-approved');
+      if (sCount) sCount.textContent = students.length;
+      if (tabSCount) tabSCount.textContent = students.length;
+      if (statTotal) statTotal.textContent = students.length;
+      if (gwStu) gwStu.textContent = students.length;
+    }
 
     // Main Workspace Tab Switching
     function showMainTab(tab) {
-      const isTeachers = tab === 'teachers';
-      const isRoster = tab === 'roster';
+      const isFaculty = tab === 'faculty' || tab === 'teachers' || tab === 'overview' || (!tab && !['students', 'roster', 'pending', 'lifecycle', 'analytics'].includes(tab));
+      const isStudents = tab === 'students' || tab === 'roster';
       const isPending = tab === 'pending';
+      const isLifecycle = tab === 'lifecycle';
       const isAnalytics = tab === 'analytics';
 
-      const tPanel = document.getElementById('tab-teachers-panel');
-      const rPanel = document.getElementById('tab-roster-panel');
-      const pPanel = document.getElementById('tab-pending-panel');
-      const aPanel = document.getElementById('tab-analytics-panel');
-      if (tPanel) tPanel.style.display = isTeachers ? 'block' : 'none';
-      if (rPanel) rPanel.style.display = isRoster ? 'block' : 'none';
-      if (pPanel) pPanel.style.display = isPending ? 'block' : 'none';
-      if (aPanel) aPanel.style.display = isAnalytics ? 'block' : 'none';
+      const pFaculty = document.getElementById('tab-faculty-panel') || document.getElementById('tab-teachers-panel');
+      const pStudents = document.getElementById('tab-roster-panel');
+      const pPending = document.getElementById('tab-pending-panel');
+      const pLifecycle = document.getElementById('tab-lifecycle-panel');
+      const pAnalytics = document.getElementById('tab-analytics-panel');
 
-      const tBtn = document.getElementById('tab-teachers-btn');
-      const rBtn = document.getElementById('tab-roster-btn');
-      const pBtn = document.getElementById('tab-pending-btn');
-      const aBtn = document.getElementById('tab-analytics-btn');
-      if (tBtn) tBtn.className = isTeachers ? 'workspace-tab-btn active' : 'workspace-tab-btn';
-      if (rBtn) rBtn.className = isRoster ? 'workspace-tab-btn active' : 'workspace-tab-btn';
-      if (pBtn) pBtn.className = isPending ? 'workspace-tab-btn active' : 'workspace-tab-btn';
-      if (aBtn) aBtn.className = isAnalytics ? 'workspace-tab-btn active' : 'workspace-tab-btn';
+      if (pFaculty) pFaculty.style.display = isFaculty ? 'block' : 'none';
+      if (pStudents) pStudents.style.display = isStudents ? 'block' : 'none';
+      if (pPending) pPending.style.display = isPending ? 'block' : 'none';
+      if (pLifecycle) pLifecycle.style.display = isLifecycle ? 'block' : 'none';
+      if (pAnalytics) pAnalytics.style.display = isAnalytics ? 'block' : 'none';
 
-      if (isTeachers) {
+      // Update tab buttons
+      const tabBtns = [
+        { id: 'tab-faculty-btn', active: isFaculty },
+        { id: 'tab-overview-btn', active: isFaculty },
+        { id: 'tab-teachers-btn', active: isFaculty },
+        { id: 'tab-students-btn', active: isStudents },
+        { id: 'tab-roster-btn', active: isStudents },
+        { id: 'tab-pending-btn', active: isPending },
+        { id: 'tab-lifecycle-btn', active: isLifecycle },
+        { id: 'tab-analytics-btn', active: isAnalytics }
+      ];
+      tabBtns.forEach(t => {
+        const el = document.getElementById(t.id);
+        if (el) {
+          if (t.active) el.classList.add('active');
+          else el.classList.remove('active');
+        }
+      });
+
+      // Search actions container & year filter visibility
+      const searchActions = document.getElementById('portal-nav-actions');
+      const searchInput = document.getElementById('portal-global-search');
+      const yearPills = document.getElementById('student-year-filter-pills');
+
+      if (isPending) {
+        if (searchActions) searchActions.style.display = 'none';
+      } else {
+        if (searchActions) searchActions.style.display = 'flex';
+        if (isFaculty) {
+          if (yearPills) yearPills.style.display = 'none';
+          if (searchInput) searchInput.placeholder = 'Search faculty by name, ID...';
+        } else if (isStudents) {
+          if (yearPills) yearPills.style.display = 'inline-flex';
+          if (searchInput) searchInput.placeholder = 'Search students by name, roll no, PRN...';
+        }
+      }
+
+      if (isFaculty) {
+        renderFacultyTable();
         loadTeachers();
-        loadPendingFaculty();
-      } else if (isPending) {
-        loadPendingRegistrations();
-      } else if (isRoster) {
+      } else if (isStudents) {
         loadStudents();
-      } else if (isAnalytics) {
-        updateAnalyticsTab();
+      } else if (isPending) {
+        loadAllPendingData();
       }
     }
 
@@ -151,8 +503,23 @@
     // Initialization
     (async function init() {
       try {
+        // Start live header clock
+        updateLiveClock();
+        setInterval(updateLiveClock, 30000);
+
         currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-        isHod = Boolean(currentUser && (currentUser.is_hod));
+        isHod = Boolean(currentUser && (currentUser.is_hod || currentUser.role === 'HOD' || currentUser.roles?.includes('HOD') || currentUser.roles?.includes('SYSTEM_ADMIN')));
+
+        if (isHod) {
+          document.body.classList.add('is-hod');
+          document.body.classList.remove('is-faculty');
+        } else {
+          document.body.classList.remove('is-hod');
+          document.body.classList.add('is-faculty');
+        }
+
+        const roleLabel = document.getElementById('portal-role-label');
+        if (roleLabel) roleLabel.textContent = isHod ? 'HOD Access' : 'Faculty Access';
 
         if (isHod) {
           const hodBadge = document.getElementById('hod-badge');
@@ -168,6 +535,10 @@
             if (el) el.style.display = 'inline-flex';
           });
         } else {
+          ['btn-add-teacher', 'btn-add-student', 'btn-bulk-csv', 'btn-promotion', 'btn-reindex-roll', 'btn-archive-link'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+          });
           const notice = document.getElementById('faculty-provision-notice');
           if (notice) notice.style.display = 'inline-block';
         }
@@ -178,29 +549,46 @@
           if (hRes && hRes.data) {
             currentDeptId = hRes.data.department_id || hRes.data.id;
             currentDeptCode = hRes.data.department_code || hRes.data.code || 'IT';
-            const deptName = hRes.data.department_name || hRes.data.name || 'Department';
-            document.getElementById('dept-header-name').textContent = `${deptName} — Portal`;
-            document.getElementById('dept-subtitle').textContent = `Directory for ${deptName}: faculty members, student enrollment, and progression.`;
+            const deptName = hRes.data.department_name || hRes.data.name || 'Department of Computer Science';
+            const portalDeptEl = document.getElementById('portal-dept-name');
+            if (portalDeptEl) portalDeptEl.textContent = deptName;
+            const titleEl = document.getElementById('dept-header-name');
+            if (titleEl) titleEl.textContent = `${deptName} — Portal`;
+            const subEl = document.getElementById('dept-subtitle');
+            if (subEl) subEl.textContent = `Manage your department faculty, students, classes and academic activities.`;
+
+            const subCountEl = document.getElementById('stat-subjects-count');
+            if (subCountEl && hRes.data.subjects) {
+              subCountEl.textContent = hRes.data.subjects.length;
+            }
             const codeLbl = document.getElementById('promo-dept-code-label');
             if (codeLbl) codeLbl.textContent = currentDeptCode;
           }
         } catch (_) {}
 
-        // Load Cohorts & Teachers
+        // Load Cohorts, Teachers, Students & Gateways
         await loadCohorts();
         await loadTeachers();
+        await loadStudents();
         await loadFacultyRegistrationStatus();
         await updateRegistrationStatusBadge();
+        await loadAllPendingData();
 
-        // Check URL tab parameter or default to roster
+        // Check URL tab parameter or default to overview (Image 2)
         const urlParams = new URLSearchParams(window.location.search);
         const tabParam = urlParams.get('tab');
         if (tabParam === 'teachers' || tabParam === 'faculty' || window.location.pathname.includes('hod-teachers')) {
           showMainTab('teachers');
+        } else if (tabParam === 'roster' || tabParam === 'students') {
+          showMainTab('roster');
         } else if (tabParam === 'pending' || tabParam === 'approvals') {
           showMainTab('pending');
+        } else if (tabParam === 'lifecycle') {
+          showMainTab('lifecycle');
+        } else if (tabParam === 'analytics') {
+          showMainTab('analytics');
         } else {
-          showMainTab('roster');
+          showMainTab('overview');
         }
       } catch (err) {
         console.error('Initialization error:', err);
@@ -232,6 +620,7 @@
           return true;
         });
         renderTeachers(allTeachers);
+        renderOverviewTables();
         const countEl = document.getElementById('stat-teachers-count');
         if (countEl) countEl.textContent = allTeachers.length;
       } catch (err) {
@@ -241,263 +630,85 @@
     }
 
     function renderTeachers(teachers) {
-      const tbody = document.getElementById('faculty-table-body');
       const grid = document.getElementById('teacher-grid');
-      
       if (!teachers || teachers.length === 0) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No faculty members found in this department.</td></tr>`;
-        if (grid) grid.innerHTML = `<div style="text-align: center; padding: 2.5rem; color: var(--text-muted); grid-column: 1 / -1;">No faculty members found in this department.</div>`;
+        grid.innerHTML = `<div style="text-align: center; padding: 2.5rem; color: var(--text-muted); grid-column: 1 / -1;">No faculty members found in this department.</div>`;
         return;
       }
 
-      // Render modern table matching image
-      if (tbody) {
-        tbody.innerHTML = teachers.map((t, idx) => {
-          const initials = (t.full_name || 'T')
-            .split(' ')
-            .filter(Boolean)
-            .slice(0, 2)
-            .map(w => w[0].toUpperCase())
-            .join('') || 'T';
+      grid.innerHTML = teachers.map(t => {
+        const initials = (t.full_name || 'T')
+          .split(' ')
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(w => w[0].toUpperCase())
+          .join('') || 'T';
 
-          const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id || t.role === 'HOD');
-          const roleLabel = isHodMember ? 'HOD' : 'Faculty Member';
-          const designation = isHodMember ? 'HOD' : 'Lecturer';
-          const empid = t.employee_id || (isHodMember ? 'IT-HOD-01' : `IT-T-0${idx}`);
-          const email = t.gmail || t.email || '—';
-          const subCount = t.active_assignments != null && t.active_assignments > 0 
-            ? t.active_assignments 
-            : (isHodMember ? 4 : (idx === 1 ? 3 : 2));
+        const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id);
+        const roleBadge = isHodMember
+          ? `<span class="badge" style="background: var(--chip-hod-bg); color: var(--color-primary); font-weight: 700;">HOD</span>`
+          : `<span class="badge" style="background: var(--bg-surface-secondary); color: var(--text-main); font-weight: 600;">Faculty Member</span>`;
 
-          return `
-            <tr>
-              <td style="text-align: center; font-weight: 600; color: var(--text-muted);">${idx + 1}</td>
-              <td>
-                <div class="faculty-name-wrap">
-                  <div class="faculty-avatar-circle">${initials}</div>
-                  <div class="faculty-meta-col">
-                    <div class="faculty-full-name">${esc(t.full_name)}</div>
-                    <div class="faculty-role-pill">${roleLabel}</div>
+        return `
+          <div class="teacher-card">
+            <div>
+              <div class="tc-header">
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                  <div class="tc-avatar">${initials}</div>
+                  <div>
+                    <div class="tc-name">${esc(t.full_name)}</div>
+                    ${t.employee_id ? `<div class="tc-empid">EMP #${esc(t.employee_id)}</div>` : ''}
                   </div>
                 </div>
-              </td>
-              <td><span style="font-weight: 500;">${esc(designation)}</span></td>
-              <td><span style="font-family: var(--font-family-mono, monospace); font-weight: 600; color: var(--text-muted);">${esc(empid)}</span></td>
-              <td><span style="font-family: var(--font-family-mono, monospace); color: var(--text-main); font-size: 0.85rem;">${esc(email)}</span></td>
-              <td><span class="faculty-badge-subjects">${subCount} Subjects</span></td>
-              <td>
-                <span class="status-dot"></span>
-                <span style="font-weight: 600; color: var(--status-present); font-size: 0.85rem;">Active</span>
-              </td>
-              <td>
-                <div class="action-btns-cell">
-                  <button type="button" class="btn-action-icon" onclick="openViewTeacherModal(${t.id})" title="View Faculty Profile">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  </button>
-                  <button type="button" class="btn-action-icon" onclick="openEditTeacherModal(${t.id})" title="Edit Details">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  </button>
-                  ${isHod ? `
-                    <button type="button" class="btn-action-icon btn-action-delete" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}')" title="Remove Faculty">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                  ` : ''}
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      // Also sync cards container for backwards compatibility
-      if (grid) {
-        grid.innerHTML = teachers.map(t => {
-          const initials = (t.full_name || 'T')
-            .split(' ')
-            .filter(Boolean)
-            .slice(0, 2)
-            .map(w => w[0].toUpperCase())
-            .join('') || 'T';
-
-          const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id);
-          const roleBadge = isHodMember
-            ? `<span class="badge" style="background: var(--chip-hod-bg); color: var(--color-primary); font-weight: 700;">HOD</span>`
-            : `<span class="badge" style="background: var(--bg-surface-secondary); color: var(--text-main); font-weight: 600;">Faculty Member</span>`;
-
-          return `
-            <div class="teacher-card">
-              <div>
-                <div class="tc-header">
-                  <div style="display: flex; gap: 0.75rem; align-items: center;">
-                    <div class="tc-avatar">${initials}</div>
-                    <div>
-                      <div class="tc-name">${esc(t.full_name)}</div>
-                      ${t.employee_id ? `<div class="tc-empid">EMP #${esc(t.employee_id)}</div>` : ''}
-                    </div>
-                  </div>
-                  <div>${roleBadge}</div>
-                </div>
-
-                <div class="tc-meta">
-                  <div style="display: flex; align-items: center; gap: 0.4rem;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    <span style="font-family: var(--font-family-mono, monospace); color: var(--text-main);">${esc(t.gmail || t.email)}</span>
-                  </div>
-                  ${t.phone ? `
-                    <div style="display: flex; align-items: center; gap: 0.4rem;">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                      <span>${esc(t.phone)}</span>
-                    </div>` : ''}
-                  <div style="display: flex; align-items: center; gap: 0.4rem;">
-                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--status-present);"></span>
-                    <span>Status: <strong style="color: var(--status-present);">${esc(t.status || 'ACTIVE')}</strong></span>
-                  </div>
-                </div>
+                <div>${roleBadge}</div>
               </div>
 
-              ${isHod ? `
-                <div class="tc-actions" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="openResetModal(${t.id}, '${esc(t.full_name)}')" title="Reset faculty password">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"></circle><path d="M21 2l-9.6 9.6M15.5 7.5l2.5 2.5M18.5 4.5l2.5 2.5"></path></svg>
-                    <span>Reset</span>
-                  </button>
-                  <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}')" title="Remove faculty from department">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    <span>Remove</span>
-                  </button>
+              <div class="tc-meta">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  ${window.FacultyIcons ? FacultyIcons.get('mail', { size: 14 }) : ''}
+                  <span style="font-family: var(--font-family-mono, monospace); color: var(--text-main);">${esc(t.gmail || t.email)}</span>
                 </div>
-              ` : ''}
+                ${t.phone ? `
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    ${window.FacultyIcons ? FacultyIcons.get('phone', { size: 14 }) : ''}
+                    <span>${esc(t.phone)}</span>
+                  </div>` : ''}
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--status-present);"></span>
+                  <span>Status: <strong style="color: var(--status-present);">${esc(t.status || 'ACTIVE')}</strong></span>
+                </div>
+              </div>
             </div>
-          `;
-        }).join('');
-      }
-    }
 
-    function openViewTeacherModal(id) {
-      const t = allTeachers.find(item => item.id === id);
-      if (!t) return;
-      const initials = (t.full_name || 'T')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(w => w[0].toUpperCase())
-        .join('') || 'T';
-      const isHodMember = Boolean(t.is_hod || t.user_id === currentUser?.user_id || t.role === 'HOD');
-
-      const av = document.getElementById('view-t-avatar');
-      if (av) av.textContent = initials;
-      const nm = document.getElementById('view-t-name');
-      if (nm) nm.textContent = t.full_name;
-      const rl = document.getElementById('view-t-role');
-      if (rl) rl.textContent = isHodMember ? 'Head of Department' : 'Faculty Member';
-      const em = document.getElementById('view-t-empid');
-      if (em) em.textContent = t.employee_id || (isHodMember ? 'IT-HOD-01' : '—');
-      const ds = document.getElementById('view-t-desig');
-      if (ds) ds.textContent = isHodMember ? 'HOD' : 'Lecturer';
-      const ml = document.getElementById('view-t-email');
-      if (ml) ml.textContent = t.gmail || t.email || '—';
-      const ph = document.getElementById('view-t-phone');
-      if (ph) ph.textContent = t.phone || 'Not provided';
-
-      showModal('view-teacher-modal');
-    }
-
-    function openEditTeacherModal(id) {
-      const t = allTeachers.find(item => item.id === id);
-      if (!t) return;
-      targetTeacherId = id;
-      const nm = document.getElementById('edit-t-name');
-      if (nm) nm.value = t.full_name || '';
-      const em = document.getElementById('edit-t-empid');
-      if (em) em.value = t.employee_id || '';
-      const ph = document.getElementById('edit-t-phone');
-      if (ph) ph.value = t.phone || '';
-      showModal('edit-teacher-modal');
-    }
-
-    async function submitEditTeacher(e) {
-      e.preventDefault();
-      const saveBtn = document.getElementById('edit-t-save-btn');
-      if (saveBtn) saveBtn.disabled = true;
-      try {
-        const fullName = document.getElementById('edit-t-name').value.trim();
-        const employeeId = document.getElementById('edit-t-empid').value.trim();
-        const phone = document.getElementById('edit-t-phone').value.trim();
-
-        await apiFetch(`${API}/teachers/${targetTeacherId}`, {
-          method: 'PUT',
-          body: JSON.stringify({ fullName, employeeId, phone })
-        });
-        showToast('Faculty details updated successfully!', 'success');
-        closeModal('edit-teacher-modal');
-        await loadTeachers();
-      } catch (err) {
-        showToast(err.message || 'Failed to update faculty details', 'error');
-      } finally {
-        if (saveBtn) saveBtn.disabled = false;
-      }
-    }
-
-    let facultySortAsc = true;
-    function toggleFacultySort() {
-      facultySortAsc = !facultySortAsc;
-      allTeachers.sort((a, b) => {
-        return facultySortAsc 
-          ? (a.full_name || '').localeCompare(b.full_name || '')
-          : (b.full_name || '').localeCompare(a.full_name || '');
-      });
-      renderTeachers(allTeachers);
-      showToast(facultySortAsc ? 'Sorted A to Z' : 'Sorted Z to A', 'info');
-    }
-
-    function updateLiveClock() {
-      const now = new Date();
-      const dateEl = document.getElementById('live-date-val');
-      const timeEl = document.getElementById('live-time-val');
-      if (dateEl) {
-        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        dateEl.textContent = now.toLocaleDateString('en-US', options);
-      }
-      if (timeEl) {
-        let hours = now.getHours();
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        timeEl.textContent = `${hours}:${minutes} ${ampm}`;
-      }
-    }
-    updateLiveClock();
-    setInterval(updateLiveClock, 1000);
-
-    function updateAnalyticsTab() {
-      const total = allStudents.length || 8;
-      const y1 = allStudents.filter(s => s.year === 1).length || 3;
-      const y2 = allStudents.filter(s => s.year === 2).length || 3;
-      const y3 = allStudents.filter(s => s.year === 3).length || (total - y1 - y2);
-
-      const y1pct = Math.round((y1 / (total || 1)) * 100);
-      const y2pct = Math.round((y2 / (total || 1)) * 100);
-      const y3pct = Math.round((y3 / (total || 1)) * 100);
-
-      const y1Val = document.getElementById('stat-y1-val');
-      const y1Bar = document.getElementById('stat-y1-bar');
-      const y2Val = document.getElementById('stat-y2-val');
-      const y2Bar = document.getElementById('stat-y2-bar');
-      const y3Val = document.getElementById('stat-y3-val');
-      const y3Bar = document.getElementById('stat-y3-bar');
-
-      if (y1Val) y1Val.textContent = `${y1} Students (${y1pct}%)`;
-      if (y1Bar) y1Bar.style.width = `${y1pct}%`;
-      if (y2Val) y2Val.textContent = `${y2} Students (${y2pct}%)`;
-      if (y2Bar) y2Bar.style.width = `${y2pct}%`;
-      if (y3Val) y3Val.textContent = `${y3} Students (${y3pct}%)`;
-      if (y3Bar) y3Bar.style.width = `${y3pct}%`;
+            ${Boolean(currentUser && ((currentUser.teacher_id && Number(t.id) === Number(currentUser.teacher_id)) || (currentUser.id && Number(t.user_id) === Number(currentUser.id)) || (currentUser.user_id && Number(t.user_id) === Number(currentUser.user_id)) || (currentUser.email && (t.email || t.gmail) && currentUser.email.toLowerCase() === (t.email || t.gmail).toLowerCase()))) ? `
+              <div class="tc-actions" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="openSelfPasswordModal()" title="Change My Password" style="color: var(--color-primary); display: inline-flex; align-items: center; gap: 0.35rem;">
+                  ${window.FacultyIcons ? FacultyIcons.get('key', { size: 14 }) : ''}
+                  <span>Change Password</span>
+                </button>
+              </div>
+            ` : (isHod ? `
+              <div class="tc-actions" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="openResetModal(${t.id}, '${esc(t.full_name)}')" title="Reset faculty password">
+                  ${window.FacultyIcons ? FacultyIcons.get('key', { size: 14 }) : ''}
+                  <span>Reset</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openDeleteModal(${t.id}, '${esc(t.full_name)}')" title="Remove faculty from department">
+                  ${window.FacultyIcons ? FacultyIcons.get('trash', { size: 14 }) : ''}
+                  <span>Remove</span>
+                </button>
+              </div>
+            ` : '')}
+          </div>
+        `;
+      }).join('');
     }
 
     function filterTeachers(query) {
       const q = (query || '').toLowerCase().trim();
       if (!q) {
         renderTeachers(allTeachers);
+        renderFacultyTable(allTeachers);
         return;
       }
       const filtered = allTeachers.filter(t => 
@@ -506,6 +717,7 @@
         (t.employee_id || '').toLowerCase().includes(q)
       );
       renderTeachers(filtered);
+      renderFacultyTable(filtered);
     }
 
     async function loadFacultyRegistrationStatus() {
@@ -539,15 +751,20 @@
       // Update Quick Registration Gateway Hub elements
       const qBadge = document.getElementById('quick-teacher-reg-badge');
       const qBtn = document.getElementById('quick-teacher-reg-toggle-btn');
+      const chkFac = document.getElementById('chk-faculty-reg');
+      if (chkFac) chkFac.checked = Boolean(isFacultyRegOpen);
+
       if (qBadge) {
         if (isFacultyRegOpen) {
-          qBadge.innerHTML = 'OPEN (Accepting)';
-          qBadge.style.background = 'var(--status-present-bg)';
-          qBadge.style.color = 'var(--status-present)';
+          qBadge.className = 'badge-status-pill open';
+          qBadge.innerHTML = '● OPEN';
+          qBadge.style.background = '';
+          qBadge.style.color = '';
         } else {
-          qBadge.innerHTML = 'CLOSED (Blocked)';
-          qBadge.style.background = 'var(--chip-admin-bg)';
-          qBadge.style.color = 'var(--status-absent)';
+          qBadge.className = 'badge-status-pill closed';
+          qBadge.innerHTML = '● CLOSED';
+          qBadge.style.background = '';
+          qBadge.style.color = '';
         }
       }
       if (qBtn) {
@@ -573,87 +790,129 @@
     }
 
     async function loadPendingFaculty() {
-      const card = document.getElementById('pending-faculty-card');
-      const wrap = document.getElementById('pending-faculty-wrap');
+      const tbody = document.getElementById('pending-faculty-tbody');
+      const mcards = document.getElementById('pending-faculty-mobile-cards');
       const badge = document.getElementById('pending-faculty-badge');
+      const countEl = document.getElementById('pending-faculty-count');
       const tabBadge = document.getElementById('pending-faculty-badge-tab');
-      if (!card || !wrap) return;
+      const gwEl = document.getElementById('gw-faculty-pending');
 
       try {
         const res = await apiFetch(`${API}/faculty-registrations/pending`);
-        const list = res?.data || [];
+        allPendingFaculty = res?.data || [];
 
-        if (list.length === 0) {
-          card.style.display = 'none';
-          if (tabBadge) tabBadge.style.display = 'none';
+        if (badge) badge.textContent = `${allPendingFaculty.length} Pending`;
+        if (countEl) countEl.textContent = allPendingFaculty.length;
+        if (gwEl) gwEl.textContent = allPendingFaculty.length;
+        if (tabBadge) {
+          tabBadge.textContent = allPendingFaculty.length;
+          tabBadge.style.display = allPendingFaculty.length > 0 ? 'inline-block' : 'none';
+        }
+
+        if (allPendingFaculty.length === 0) {
+          const emptyHtml = `
+            <div class="pending-empty-state">
+              <div class="pending-empty-icon">✓</div>
+              <div class="pending-empty-title">Faculty Queue is Clear</div>
+              <div class="pending-empty-text">No pending faculty applications awaiting adjudication.</div>
+            </div>
+          `;
+          if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="padding: 0;">${emptyHtml}</td></tr>`;
+          if (mcards) mcards.innerHTML = emptyHtml;
           return;
         }
 
-        card.style.display = 'block';
-        if (badge) badge.textContent = `${list.length} Pending`;
-        if (tabBadge) {
-          tabBadge.textContent = list.length;
-          tabBadge.style.display = 'inline-block';
+        // Render Desktop Table
+        if (tbody) {
+          tbody.innerHTML = allPendingFaculty.map((f, idx) => {
+            const initials = (f.full_name || 'T')
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map(w => w[0].toUpperCase())
+              .join('') || 'T';
+            const appliedDate = new Date(f.created_at || Date.now()).toLocaleDateString();
+
+            return `
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 0.75rem 1rem;">${idx + 1}</td>
+                <td style="padding: 0.75rem 1rem;">
+                  <div class="user-cell-wrap" style="display: flex; align-items: center; gap: 0.65rem;">
+                    <div class="user-cell-avatar purple-avatar">${initials}</div>
+                    <div>
+                      <div style="font-weight: 700; color: var(--text-main);">${esc(f.full_name)}</div>
+                      <div style="font-size: 0.72rem; color: var(--text-muted);">${esc(f.department_name || currentDeptCode || 'IT')} Faculty</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 0.75rem 1rem; font-family: var(--font-family-mono, monospace); font-size: 0.82rem;">${esc(f.email || '—')}</td>
+                <td style="padding: 0.75rem 1rem; font-size: 0.82rem;">${esc(f.phone || '—')}</td>
+                <td style="padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text-muted);">${appliedDate}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right;">
+                  <div style="display: inline-flex; gap: 0.4rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="approveFaculty(${f.id}, '${esc(f.full_name)}')">Approve</button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openRejectModal(${f.id}, '${esc(f.full_name)}', 'FACULTY')">Reject</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
         }
 
-        wrap.innerHTML = `
-          <table class="table" style="width: 100%; margin: 0;">
-            <thead>
-              <tr style="background: var(--table-th-bg);">
-                <th style="padding: 0.5rem 0.75rem;">Applicant Name</th>
-                <th style="padding: 0.5rem 0.75rem;">Institutional Gmail</th>
-                <th style="padding: 0.5rem 0.75rem;">Phone</th>
-                <th style="padding: 0.5rem 0.75rem; text-align: right;">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${list.map(f => `
-                <tr>
-                  <td style="padding: 0.5rem 0.75rem; font-weight: 600;">${esc(f.full_name)}</td>
-                  <td style="padding: 0.5rem 0.75rem; font-family: monospace;">${esc(f.email)}</td>
-                  <td style="padding: 0.5rem 0.75rem;">${esc(f.phone || '—')}</td>
-                  <td style="padding: 0.5rem 0.75rem; text-align: right;">
-                    <button class="btn btn-primary btn-sm" onclick="approveFaculty(${f.id}, '${esc(f.full_name)}')">Approve</button>
-                    <button class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="rejectFaculty(${f.id})">Reject</button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
+        // Render Mobile Cards
+        if (mcards) {
+          mcards.innerHTML = allPendingFaculty.map(f => {
+            const initials = (f.full_name || 'T')
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map(w => w[0].toUpperCase())
+              .join('') || 'T';
+            const appliedDate = new Date(f.created_at || Date.now()).toLocaleDateString();
+
+            return `
+              <div class="pending-mini-card">
+                <div class="pending-mini-top">
+                  <div class="user-cell-avatar purple-avatar" style="width: 40px; height: 40px; font-size: 0.95rem;">${initials}</div>
+                  <div class="pending-mini-info">
+                    <div class="pending-mini-name">
+                      <span>${esc(f.full_name)}</span>
+                      <span class="fac-mini-badge lecturer">Faculty Applicant</span>
+                    </div>
+                    <div class="pending-mini-sub">${esc(f.email || '—')} • ${esc(f.phone || 'No phone')}</div>
+                  </div>
+                  <span class="pending-pill-badge orange" style="font-size: 0.65rem;">PENDING</span>
+                </div>
+                <div class="pending-mini-actions">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); margin-right: auto;">Applied: ${appliedDate}</span>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="approveFaculty(${f.id}, '${esc(f.full_name)}')">✓ Approve</button>
+                  <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openRejectModal(${f.id}, '${esc(f.full_name)}', 'FACULTY')">✕ Reject</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
       } catch (err) {
         console.warn('Failed to load pending faculty registrations:', err);
       }
     }
 
     async function approveFaculty(id, name) {
-      if (!confirm(`Approve teacher registration for ${name}?`)) return;
       try {
         await apiFetch(`${API}/faculty-registrations/${id}/adjudicate`, {
           method: 'POST',
           body: JSON.stringify({ action: 'APPROVE' })
         });
         showToast(`Approved teacher ${name}!`, 'success');
-        loadPendingFaculty();
+        loadAllPendingData();
         loadTeachers();
       } catch (err) {
         showToast(err.message || 'Failed to approve teacher.', 'error');
       }
     }
 
-    async function rejectFaculty(id) {
-      const reason = prompt('Enter rejection reason:');
-      if (!reason) return;
-      try {
-        await apiFetch(`${API}/faculty-registrations/${id}/adjudicate`, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'REJECT', rejection_reason: reason })
-        });
-        showToast('Registration rejected.', 'info');
-        loadPendingFaculty();
-      } catch (err) {
-        showToast(err.message || 'Failed to reject registration.', 'error');
-      }
+    async function rejectFaculty(id, name) {
+      openRejectModal(id, name || 'Faculty Applicant', 'FACULTY');
     }
 
     // Teacher Modal Openers
@@ -706,6 +965,70 @@
       }
     }
 
+    function openSelfPasswordModal() {
+      const form = document.getElementById('self-password-form');
+      if (form) form.reset();
+      const err = document.getElementById('self-password-error');
+      if (err) { err.textContent = ''; err.style.display = 'none'; }
+      showModal('self-password-modal');
+    }
+    function closeSelfPasswordModal() {
+      hideModal('self-password-modal');
+    }
+
+    async function submitSelfPassword(e) {
+      e.preventDefault();
+      const btn = document.getElementById('self-pass-btn');
+      const errDiv = document.getElementById('self-password-error');
+      const current_password = document.getElementById('self-curr-pass').value;
+      const new_password = document.getElementById('self-new-pass').value;
+      const confirm_password = document.getElementById('self-confirm-pass').value;
+
+      if (errDiv) { errDiv.textContent = ''; errDiv.style.display = 'none'; }
+
+      if (new_password !== confirm_password) {
+        if (errDiv) {
+          errDiv.textContent = 'New passwords do not match.';
+          errDiv.style.display = 'block';
+        } else {
+          showToast('New passwords do not match.', 'error');
+        }
+        return;
+      }
+
+      if (new_password.length < 8) {
+        if (errDiv) {
+          errDiv.textContent = 'New password must be at least 8 characters.';
+          errDiv.style.display = 'block';
+        } else {
+          showToast('New password must be at least 8 characters.', 'error');
+        }
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      try {
+        await apiFetch('/auth/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ current_password, new_password })
+        });
+        showToast('Your password has been changed successfully!', 'success');
+        closeSelfPasswordModal();
+      } catch (err) {
+        if (errDiv) {
+          errDiv.textContent = err.message || 'Failed to update password. Please check your current password.';
+          errDiv.style.display = 'block';
+        } else {
+          showToast(err.message || 'Failed to update password.', 'error');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Update Password';
+      }
+    }
+
     function openResetModal(id, name) {
       targetTeacherId = id;
       document.getElementById('reset-name').textContent = name;
@@ -735,10 +1058,19 @@
     }
 
     function openDeleteModal(id, name) {
+      if (window.confirmTeacherDelete) {
+        window.confirmTeacherDelete(id, name, () => {
+          loadTeachers();
+        });
+        return;
+      }
       targetTeacherId = id;
-      document.getElementById('del-name').textContent = name;
-      document.getElementById('del-confirm-input').value = '';
-      document.getElementById('del-btn').disabled = true;
+      const nameEl = document.getElementById('del-name');
+      if (nameEl) nameEl.textContent = name;
+      const inp = document.getElementById('del-confirm-input');
+      if (inp) inp.value = '';
+      const btn = document.getElementById('del-btn');
+      if (btn) btn.disabled = true;
       showModal('delete-modal');
     }
     function closeDeleteModal() { hideModal('delete-modal'); targetTeacherId = null; }
@@ -851,15 +1183,20 @@
         isCohortRegOpen = isDeptRegOpen;
 
         // Dedicated Top Gateway Hub (Student Gateway)
+        const chkStu = document.getElementById('chk-student-reg');
+        if (chkStu) chkStu.checked = Boolean(isDeptRegOpen);
+
         if (quickBadge) {
           if (isDeptRegOpen) {
-            quickBadge.textContent = 'OPEN (ALL SEMESTERS)';
-            quickBadge.style.background = 'var(--status-present-bg)';
-            quickBadge.style.color = 'var(--status-present)';
+            quickBadge.className = 'badge-status-pill open';
+            quickBadge.textContent = '● OPEN';
+            quickBadge.style.background = '';
+            quickBadge.style.color = '';
           } else {
-            quickBadge.textContent = 'CLOSED (BLOCKED)';
-            quickBadge.style.background = 'var(--chip-admin-bg)';
-            quickBadge.style.color = 'var(--status-absent)';
+            quickBadge.className = 'badge-status-pill closed';
+            quickBadge.textContent = '● CLOSED';
+            quickBadge.style.background = '';
+            quickBadge.style.color = '';
           }
         }
         if (quickBtn) {
@@ -986,10 +1323,11 @@
           }
           return true;
         });
-        renderStudents(allStudents);
+        applyStudentFilters();
+        renderOverviewTables();
       } catch (err) {
         console.error('Failed to load students:', err);
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--status-absent);">Failed to load student roster.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--status-absent);">Failed to load student roster.</td></tr>`;
       }
     }
 
@@ -1002,13 +1340,18 @@
       const activeAccounts = students.filter(s => s.user_status === 'ACTIVE' || s.status === 'ENROLLED' || s.status === 'ACTIVE').length;
       const googleCount = students.filter(s => s.google_linked).length;
 
-      document.getElementById('stat-total').textContent = totalStudents;
+      const allCount = allStudents ? allStudents.length : totalStudents;
+      const statTotalEl = document.getElementById('stat-total');
+      if (statTotalEl) statTotalEl.textContent = allCount;
       document.getElementById('stat-active').textContent = activeAccounts;
       document.getElementById('stat-google').textContent = googleCount;
       if (countLabel) countLabel.textContent = `Showing ${totalStudents} students`;
 
+      const smwrap = document.getElementById('students-mobile-cards-wrap');
+
       if (totalStudents === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No students found matching current filters.</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No students found matching current filters.</td></tr>`;
+        if (smwrap) smwrap.innerHTML = `<div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem;">No students found matching current filters.</div>`;
         return;
       }
 
@@ -1016,14 +1359,6 @@
         const rollDisplay = s.class_roll_no ? `<span style="font-weight: 700; color: var(--color-primary);">${s.class_roll_no}</span>` : '<span style="color: var(--text-muted);">—</span>';
         const ubterDisplay = s.ubter_reg_no ? `<span style="font-family: monospace; font-size: 0.85rem;">${esc(s.ubter_reg_no)}</span>` : '<span style="color: var(--text-muted);">—</span>';
         const enrollDisplay = `<span style="font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.85rem;">${esc(s.official_enrollment_no)}</span>`;
-        const bioDisplay = s.biometric_slot ? `<span class="badge" style="background: var(--bg-surface-secondary); color: var(--text-main);">Slot #${s.biometric_slot}</span>` : '<span style="color: var(--text-muted); font-size: 0.8rem;">Unassigned</span>';
-        const googleDisplay = s.google_linked ? `<span title="Google Linked" style="color: var(--color-primary); font-weight: 700;">Linked</span>` : '<span style="color: var(--text-muted);">No</span>';
-        
-        const statusBadge = (s.status === 'DETAINED')
-          ? `<span class="badge" style="background: var(--status-absent-bg); color: var(--status-absent); font-weight: 700;">DETAINED</span>`
-          : (s.status === 'COMPLETED' || s.status === 'GRADUATED'
-              ? `<span class="badge" style="background: var(--chip-hod-bg); color: var(--color-primary); font-weight: 700;">ALUMNI</span>`
-              : `<span class="badge" style="background: var(--status-present-bg); color: var(--status-present); font-weight: 700;">ENROLLED</span>`);
 
         return `
           <tr style="border-bottom: 1px solid var(--border-color);">
@@ -1036,23 +1371,99 @@
               </a>
             </td>
             <td style="padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-muted);">Y${s.year || 1} • Sem ${s.semester || 1}</td>
-            <td style="padding: 0.75rem 1rem;">${bioDisplay}</td>
-            <td style="padding: 0.75rem 1rem;">${statusBadge}</td>
-            <td style="padding: 0.75rem 1rem; font-size: 0.85rem;">${googleDisplay}</td>
-            <td style="padding: 0.75rem 1rem; text-align: right;">
-              <div style="display: inline-flex; gap: 0.35rem; align-items: center;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="openStudentDossier(${s.id})" title="View Student Academic Dossier &amp; Vault" style="font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.6rem;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Dossier
+            <td class="td-faculty-actions" style="padding: 0.75rem 1rem; text-align: right; position: relative;">
+              <div class="fac-kebab-wrap" style="display: inline-flex; justify-content: flex-end;">
+                <button type="button" class="fac-kebab-btn" aria-label="Student options" onclick="toggleStudentKebabMenu(${s.id}, event)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
                 </button>
-                ${isHod ? `
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="openResetStudentModal(${s.id}, '${esc(s.full_name)}')" title="Reset Password"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"></circle><path d="M21 2l-9.6 9.6M15.5 7.5l2.5 2.5M18.5 4.5l2.5 2.5"></path></svg></button>
-                  <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openDeleteStudentModal(${s.id}, '${esc(s.full_name)}')" title="Withdraw Student">Withdraw</button>
-                ` : ''}
+                <div class="fac-kebab-menu" id="student-kebab-menu-table-${s.id}">
+                  <button type="button" class="fac-kebab-item" onclick="openStudentDossier(${s.id}); closeAllStudentKebabMenus();">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    <span>Academic Dossier</span>
+                  </button>
+                  ${isHod ? `
+                    <button type="button" class="fac-kebab-item" onclick="openResetStudentModal(${s.id}, '${esc(s.full_name)}'); closeAllStudentKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+                      <span>Reset Password</span>
+                    </button>
+                    <div class="fac-kebab-divider"></div>
+                    <button type="button" class="fac-kebab-item danger" onclick="openDeleteStudentModal(${s.id}, '${esc(s.full_name)}'); closeAllStudentKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <span>Withdraw Student</span>
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             </td>
           </tr>
         `;
       }).join('');
+
+      // Render Mobile Minimal Cards for Students (< 769px)
+      if (smwrap) {
+        if (totalStudents === 0) {
+          smwrap.innerHTML = `<div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem;">No students found matching current filters.</div>`;
+        } else {
+          smwrap.innerHTML = students.map(s => {
+            const rollDisplay = s.class_roll_no ? `Roll #${s.class_roll_no}` : 'No Roll #';
+            const enrollDisplay = s.official_enrollment_no || '—';
+            const rollBadge = s.class_roll_no ? String(s.class_roll_no).padStart(2, '0') : 'ST';
+
+            let sActionsHtml = '';
+            if (isHod) {
+              sActionsHtml = `
+                <div class="fac-kebab-wrap">
+                  <button type="button" class="fac-kebab-btn" aria-label="Student options" onclick="toggleStudentKebabMenu(${s.id}, event)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                  </button>
+                  <div class="fac-kebab-menu" id="student-kebab-menu-${s.id}">
+                    <button type="button" class="fac-kebab-item" onclick="openStudentDossier(${s.id}); closeAllStudentKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                      <span>Academic Dossier</span>
+                    </button>
+                    <button type="button" class="fac-kebab-item" onclick="openResetStudentModal(${s.id}, '${esc(s.full_name)}'); closeAllStudentKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+                      <span>Reset Password</span>
+                    </button>
+                    <div class="fac-kebab-divider"></div>
+                    <button type="button" class="fac-kebab-item danger" onclick="openDeleteStudentModal(${s.id}, '${esc(s.full_name)}'); closeAllStudentKebabMenus();">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <span>Withdraw Student</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+            }
+
+            return `
+              <div class="fac-mini-card" data-id="${s.id}">
+                <div class="fac-mini-main">
+                  <div class="fac-mini-avatar" style="background:var(--color-primary-light);color:var(--color-primary);font-size:0.75rem;font-weight:700;">
+                    ${rollBadge}
+                  </div>
+                  <div class="fac-mini-info">
+                    <div class="fac-mini-name-row">
+                      <a href="javascript:void(0)" onclick="openStudentDossier(${s.id})" class="fac-mini-name" style="text-decoration:none;">${esc(s.full_name)}</a>
+                      <span class="fac-mini-badge" style="background:var(--status-present-bg);color:var(--status-present);">Y${s.year || 1} S${s.semester || 1}</span>
+                    </div>
+                    <div class="fac-mini-subtext">
+                      <span class="fac-dept-code">${esc(enrollDisplay)}</span>
+                      <span class="fac-sub-dot">•</span>
+                      <span>${esc(rollDisplay)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.35rem;flex-shrink:0;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="openStudentDossier(${s.id})" title="Dossier" style="padding:0.25rem 0.55rem;font-size:0.75rem;font-weight:600;">
+                    Dossier
+                  </button>
+                  ${sActionsHtml}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
     }
 
     function debounceSearch() {
@@ -1203,16 +1614,41 @@
     let selectedStudentIds = new Set();
 
     function openPromotionModal() {
-      document.getElementById('promotion-form').reset();
-      document.getElementById('promo-confirm-code').value = '';
+      const pForm = document.getElementById('promotion-form');
+      if (pForm) pForm.reset();
+      const codeEl = document.getElementById('promo-confirm-code');
+      if (codeEl) codeEl.value = '';
       selectedStudentIds.clear();
-      loadPromotionPreview();
+      switchPromotionTab('promote');
       showModal('promotion-modal');
     }
 
+    function switchPromotionTab(tab) {
+      const promoteTab = document.getElementById('tab-promo-promote');
+      const demoteTab = document.getElementById('tab-promo-demote');
+      const promoteSec = document.getElementById('promo-promote-section');
+      const demoteSec = document.getElementById('promo-demote-section');
+
+      if (tab === 'promote') {
+        if (promoteTab) { promoteTab.className = 'btn btn-sm btn-primary'; }
+        if (demoteTab) { demoteTab.className = 'btn btn-sm btn-secondary'; }
+        if (promoteSec) promoteSec.style.display = 'block';
+        if (demoteSec) demoteSec.style.display = 'none';
+        loadPromotionPreview();
+      } else {
+        if (promoteTab) { promoteTab.className = 'btn btn-sm btn-secondary'; }
+        if (demoteTab) { demoteTab.className = 'btn btn-sm btn-primary'; }
+        if (promoteSec) promoteSec.style.display = 'none';
+        if (demoteSec) demoteSec.style.display = 'block';
+        loadDemotionPreview();
+      }
+    }
+
     async function loadPromotionPreview() {
-      const box = document.getElementById('promotion-preview-box');
-      const action = document.getElementById('promo-action').value;
+      const box = document.getElementById('promo-preview-table-wrap') || document.getElementById('promotion-preview-box');
+      if (!box) return;
+      const actionEl = document.getElementById('promo-action');
+      const action = actionEl ? actionEl.value : 'PROMOTE';
       const cohortFilter = document.getElementById('promo-cohort-filter');
       box.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);"><span class="spinner" style="display:inline-block;margin-right:6px;"></span>Loading cohort progression preview...</div>';
 
@@ -1255,6 +1691,32 @@
         renderPromotionStudents();
       } catch (err) {
         box.innerHTML = `<div style="color: var(--status-absent); padding: 1rem;">Failed to load preview: ${esc(err.message)}</div>`;
+      }
+    }
+
+    async function loadDemotionPreview() {
+      const box = document.getElementById('demote-preview-table-wrap');
+      if (!box) return;
+      box.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-muted);"><span class="spinner" style="display:inline-block;margin-right:6px;"></span>Loading reversal breakdown...</div>';
+      try {
+        const res = await apiFetch(`${API}/promotion/preview?action=DEMOTE`);
+        const data = res?.data;
+        if (!data || !data.cohorts || data.cohorts.length === 0) {
+          box.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">No cohorts eligible for reversal.</div>';
+          return;
+        }
+        let html = '<table class="table" style="width: 100%; font-size: 0.82rem;"><thead><tr><th>Cohort</th><th>Current Sem</th><th>Rollback Sem</th><th>Students</th></tr></thead><tbody>';
+        data.cohorts.forEach(c => {
+          const yr = c.current_year || c.year || 1;
+          const sem = c.current_sem || c.semester || 1;
+          const prevSem = sem > 1 ? sem - 1 : 1;
+          const count = (c.students || []).length;
+          html += `<tr><td>Year ${esc(yr)}</td><td>Sem ${esc(sem)}</td><td>Sem ${esc(prevSem)}</td><td>${esc(count)}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        box.innerHTML = html;
+      } catch (err) {
+        box.innerHTML = `<div style="color: var(--status-absent); padding: 1rem;">Failed to load reversal preview: ${esc(err.message)}</div>`;
       }
     }
 
@@ -1328,9 +1790,11 @@
                   ${students.map(s => {
                     const stId = Number(s.student_id);
                     const isChecked = selectedStudentIds.has(stId);
+                    const checkIcon = window.FacultyIcons ? FacultyIcons.get('check', { size: 11 }) : '✓';
+                    const closeIcon = window.FacultyIcons ? FacultyIcons.get('close', { size: 11 }) : '✕';
                     const decisionTag = isChecked
-                      ? `<span class="badge badge-present" style="font-size: 0.68rem; padding: 0.2rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem;">${window.getSvgIcon('check', 11)} Pass &bull; ${isGrad ? 'Graduate' : 'Promote'}</span>`
-                      : `<span class="badge badge-absent" style="font-size: 0.68rem; padding: 0.2rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem;">${window.getSvgIcon('close', 11)} Retain in Sem ${sem}</span>`;
+                      ? `<span class="badge badge-present" style="font-size: 0.68rem; padding: 0.2rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem;">${checkIcon} Pass &bull; ${isGrad ? 'Graduate' : 'Promote'}</span>`
+                      : `<span class="badge badge-absent" style="font-size: 0.68rem; padding: 0.2rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem;">${closeIcon} Retain in Sem ${sem}</span>`;
 
                     return `
                       <tr style="background: ${isChecked ? 'transparent' : 'var(--status-absent-bg)'};">
@@ -1366,7 +1830,8 @@
 
     function toggleAllPromotionStudents(selectAll) {
       if (!currentPromotionData || !currentPromotionData.cohorts) return;
-      const filterVal = document.getElementById('promo-cohort-filter').value;
+      const cohortFilterEl = document.getElementById('promo-cohort-filter');
+      const filterVal = cohortFilterEl ? cohortFilterEl.value : 'ALL';
       const cohorts = filterVal === 'ALL' 
         ? currentPromotionData.cohorts 
         : [currentPromotionData.cohorts[parseInt(filterVal, 10)]].filter(Boolean);
@@ -1386,7 +1851,7 @@
 
     function updatePromotionSummary() {
       const badge = document.getElementById('promo-summary-badge');
-      const submitBtn = document.getElementById('promo-submit-btn');
+      const submitBtn = document.getElementById('btn-execute-promotion') || document.getElementById('promo-submit-btn');
       if (!currentPromotionData) return;
 
       const total = currentPromotionData.total_students || 0;
@@ -1397,17 +1862,19 @@
         badge.innerHTML = `<strong>${selected}</strong> Passed &bull; <strong>${unselected}</strong> Retained (of ${total} total)`;
       }
       if (submitBtn) {
-        submitBtn.innerHTML = `Execute Progression (${selected} Passed) &rarr;`;
+        submitBtn.innerHTML = `Confirm &amp; Advance All Cohorts (${selected} Passed) &rarr;`;
       }
     }
 
     async function executePromotion(e) {
-      e.preventDefault();
-      const btn = document.getElementById('promo-submit-btn');
-      btn.disabled = true;
+      if (e && e.preventDefault) e.preventDefault();
+      const btn = document.getElementById('btn-execute-promotion') || document.getElementById('promo-submit-btn');
+      if (btn) btn.disabled = true;
 
-      const action = document.getElementById('promo-action').value;
-      const confirm_code = document.getElementById('promo-confirm-code').value.trim().toUpperCase();
+      const actionEl = document.getElementById('promo-action');
+      const action = actionEl ? actionEl.value : 'PROMOTE';
+      const codeEl = document.getElementById('promo-confirm-code');
+      const confirm_code = codeEl ? codeEl.value.trim().toUpperCase() : (currentPromotionData?.department_code || currentDeptCode || 'IT');
 
       const promotedIds = Array.from(selectedStudentIds);
       const allStudentIds = [];
@@ -1434,24 +1901,51 @@
         closeModal('promotion-modal');
         loadStudents();
       } catch (err) {
-        showToast(err.message || 'Safety code verification failed.', 'error');
+        showToast(err.message || 'Progression execution failed.', 'error');
       } finally {
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function submitPromotion(e) {
+      return executePromotion(e);
+    }
+
+    async function submitDemotion(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const btn = document.getElementById('btn-execute-demotion');
+      if (btn) btn.disabled = true;
+      try {
+        const res = await apiFetch(`${API}/promotion/execute`, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'DEMOTE' })
+        });
+        showToast(res.message || 'Semester rollback successfully executed!', 'success');
+        closeModal('promotion-modal');
+        loadStudents();
+      } catch (err) {
+        showToast(err.message || 'Failed to execute rollback.', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 
     function openReindexModal() {
       if (selectedCohort) {
-        document.getElementById('reindex-year').value = selectedCohort.year;
-        document.getElementById('reindex-sem').value = selectedCohort.semester;
+        const yearEl = document.getElementById('reindex-year');
+        if (yearEl) yearEl.value = selectedCohort.year;
+        const semEl = document.getElementById('reindex-sem');
+        if (semEl) semEl.value = selectedCohort.semester;
       }
       showModal('reindex-modal');
     }
 
-    async function submitReindex(e) {
-      e.preventDefault();
-      const year = parseInt(document.getElementById('reindex-year').value);
-      const semester = parseInt(document.getElementById('reindex-sem').value);
+    async function submitReindexRoll(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const yearEl = document.getElementById('reindex-year');
+      const semEl = document.getElementById('reindex-sem');
+      const year = yearEl ? parseInt(yearEl.value, 10) : (selectedCohort?.year || 1);
+      const semester = semEl ? parseInt(semEl.value, 10) : (selectedCohort?.semester || 1);
 
       try {
         await apiFetch(`${API}/students/reindex-roll`, {
@@ -1464,6 +1958,10 @@
       } catch (err) {
         showToast(err.message || 'Failed to re-index roll numbers.', 'error');
       }
+    }
+
+    function submitReindex(e) {
+      return submitReindexRoll(e);
     }
 
     function openResetStudentModal(id, name) {
@@ -1489,8 +1987,16 @@
     }
 
     function openDeleteStudentModal(id, name) {
+      if (window.confirmStudentWithdrawal) {
+        window.confirmStudentWithdrawal(id, name, () => {
+          loadStudents();
+          loadCohorts();
+        });
+        return;
+      }
       targetStudentId = id;
-      document.getElementById('del-student-name').textContent = name;
+      const nameEl = document.getElementById('del-student-name');
+      if (nameEl) nameEl.textContent = name;
       showModal('delete-student-modal');
     }
 
@@ -1509,42 +2015,106 @@
 
     async function loadPendingRegistrations() {
       const tbody = document.getElementById('pending-tbody');
-      const badge = document.getElementById('pending-badge');
-      const statBadge = document.getElementById('stat-pending');
+      const mcards = document.getElementById('pending-student-mobile-cards');
+      const label = document.getElementById('pending-count-label');
+      const countEl = document.getElementById('pending-students-count');
+      const gwEl = document.getElementById('gw-student-pending');
 
       try {
         const res = await apiFetch('/students/registrations/pending');
-        const list = res?.data || [];
+        allPendingStudents = res?.data || [];
 
-        if (badge) {
-          badge.textContent = list.length;
-          badge.style.display = list.length > 0 ? 'inline-block' : 'none';
-        }
-        if (statBadge) statBadge.textContent = list.length;
-        document.getElementById('pending-count-label').textContent = `${list.length} requests pending`;
+        if (label) label.textContent = `${allPendingStudents.length} requests pending`;
+        if (countEl) countEl.textContent = allPendingStudents.length;
+        if (gwEl) gwEl.textContent = allPendingStudents.length;
 
-        if (list.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No pending student registrations.</td></tr>`;
+        if (allPendingStudents.length === 0) {
+          const emptyHtml = `
+            <div class="pending-empty-state">
+              <div class="pending-empty-icon">✓</div>
+              <div class="pending-empty-title">Student Queue is Clear</div>
+              <div class="pending-empty-text">All student self-registration requests have been adjudicated.</div>
+            </div>
+          `;
+          if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding: 0;">${emptyHtml}</td></tr>`;
+          if (mcards) mcards.innerHTML = emptyHtml;
           return;
         }
 
-        tbody.innerHTML = list.map(r => `
-          <tr style="border-bottom: 1px solid var(--border-color);">
-            <td style="padding: 0.75rem 1rem; font-weight: 600;">${esc(r.full_name)}</td>
-            <td style="padding: 0.75rem 1rem; font-family: monospace;">${esc(r.official_enrollment_no || r.enrollment_no)}</td>
-            <td style="padding: 0.75rem 1rem; font-family: monospace; font-size: 0.85rem;">${esc(r.email)}</td>
-            <td style="padding: 0.75rem 1rem; font-size: 0.85rem;">${esc(r.department_name || 'IT')} Y${r.year} S${r.semester}</td>
-            <td style="padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text-muted);">${new Date(r.registered_at || r.created_at || Date.now()).toLocaleDateString()}</td>
-            <td style="padding: 0.75rem 1rem; text-align: right;">
-              <button class="btn btn-primary btn-sm" onclick="openApproveModal(${r.student_id || r.id}, '${esc(r.full_name)}', '${esc(r.official_enrollment_no || r.enrollment_no)}')">Approve</button>
-              <button class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openRejectModal(${r.student_id || r.id}, '${esc(r.full_name)}')">Reject</button>
-            </td>
-          </tr>
-        `).join('');
+        // Render Desktop Table
+        if (tbody) {
+          tbody.innerHTML = allPendingStudents.map((r, idx) => {
+            const appliedDate = new Date(r.registered_at || r.created_at || Date.now()).toLocaleDateString();
+            const enrollNo = r.official_enrollment_no || r.enrollment_no || '—';
+
+            return `
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 0.75rem 1rem;">${idx + 1}</td>
+                <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--text-main);">${esc(r.full_name)}</td>
+                <td style="padding: 0.75rem 1rem; font-family: var(--font-family-mono, monospace); font-weight: 600; color: var(--color-primary);">${esc(enrollNo)}</td>
+                <td style="padding: 0.75rem 1rem; font-family: var(--font-family-mono, monospace); font-size: 0.82rem;">${esc(r.email)}</td>
+                <td style="padding: 0.75rem 1rem; font-size: 0.82rem;"><span class="fac-mini-badge" style="background: var(--status-present-bg); color: var(--status-present);">Y${r.year || 1} S${r.semester || 1}</span></td>
+                <td style="padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text-muted);">${appliedDate}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right;">
+                  <div style="display: inline-flex; gap: 0.4rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openApproveModal(${r.student_id || r.id}, '${esc(r.full_name)}', '${esc(enrollNo)}')">Approve</button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openRejectModal(${r.student_id || r.id}, '${esc(r.full_name)}', 'STUDENT')">Reject</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        // Render Mobile Cards
+        if (mcards) {
+          mcards.innerHTML = allPendingStudents.map(r => {
+            const appliedDate = new Date(r.registered_at || r.created_at || Date.now()).toLocaleDateString();
+            const enrollNo = r.official_enrollment_no || r.enrollment_no || 'Pending';
+
+            return `
+              <div class="pending-mini-card">
+                <div class="pending-mini-top">
+                  <div class="user-cell-avatar blue-avatar" style="width: 40px; height: 40px; font-size: 0.85rem; font-weight: 700;">
+                    ${r.class_roll_no ? String(r.class_roll_no).padStart(2, '0') : 'ST'}
+                  </div>
+                  <div class="pending-mini-info">
+                    <div class="pending-mini-name">
+                      <span>${esc(r.full_name)}</span>
+                      <span class="fac-mini-badge" style="background: var(--status-present-bg); color: var(--status-present);">Y${r.year || 1} S${r.semester || 1}</span>
+                    </div>
+                    <div class="pending-mini-sub">${esc(enrollNo)} • ${esc(r.email)}</div>
+                  </div>
+                  <span class="pending-pill-badge green" style="font-size: 0.65rem;">PENDING</span>
+                </div>
+                <div class="pending-mini-actions">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); margin-right: auto;">Applied: ${appliedDate}</span>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="openApproveModal(${r.student_id || r.id}, '${esc(r.full_name)}', '${esc(enrollNo)}')">✓ Approve</button>
+                  <button type="button" class="btn btn-secondary btn-sm" style="color: var(--status-absent);" onclick="openRejectModal(${r.student_id || r.id}, '${esc(r.full_name)}', 'STUDENT')">✕ Reject</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
       } catch (err) {
         console.error('Failed to load pending registrations:', err);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--status-absent);">Failed to load pending registrations queue.</td></tr>`;
       }
+    }
+
+    async function loadAllPendingData() {
+      await Promise.all([loadPendingFaculty(), loadPendingRegistrations()]);
+      const totalPending = allPendingFaculty.length + allPendingStudents.length;
+
+      const allCountEl = document.getElementById('pending-all-count');
+      const badge = document.getElementById('pending-badge');
+      const statBadge = document.getElementById('stat-pending');
+
+      if (allCountEl) allCountEl.textContent = totalPending;
+      if (badge) {
+        badge.textContent = totalPending;
+        badge.style.display = totalPending > 0 ? 'inline-block' : 'none';
+      }
+      if (statBadge) statBadge.textContent = totalPending;
     }
 
     function openApproveModal(id, name, enrollNo) {
@@ -1567,33 +2137,402 @@
         });
         showToast('Student registration approved!', 'success');
         closeModal('approve-modal');
-        loadPendingRegistrations();
+        loadAllPendingData();
         loadStudents();
       } catch (err) {
         showToast(err.message || 'Failed to approve student.', 'error');
       }
     }
 
-    function openRejectModal(id, name) {
+    function openRejectModal(id, name, type) {
       targetRegId = id;
-      document.getElementById('reject-name').textContent = name;
-      document.getElementById('reject-reason').value = '';
+      targetRegType = type || 'STUDENT';
+      const nameEl = document.getElementById('reject-name');
+      if (nameEl) nameEl.textContent = name;
+      const reasonEl = document.getElementById('reject-reason');
+      if (reasonEl) reasonEl.value = '';
       showModal('reject-modal');
     }
 
     async function submitRejectRegistration(e) {
       e.preventDefault();
-      const reason = document.getElementById('reject-reason').value.trim();
+      const reason = (document.getElementById('reject-reason').value || '').trim();
       try {
-        await apiFetch(`/students/registrations/${targetRegId}/adjudicate`, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'REJECT', rejection_reason: reason })
-        });
-        showToast('Registration rejected.', 'info');
+        if (targetRegType === 'FACULTY') {
+          await apiFetch(`${API}/faculty-registrations/${targetRegId}/adjudicate`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'REJECT', rejection_reason: reason })
+          });
+          showToast('Faculty registration rejected.', 'info');
+        } else {
+          await apiFetch(`/students/registrations/${targetRegId}/adjudicate`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'REJECT', rejection_reason: reason })
+          });
+          showToast('Student registration rejected.', 'info');
+        }
         closeModal('reject-modal');
-        loadPendingRegistrations();
+        loadAllPendingData();
       } catch (err) {
         showToast(err.message || 'Failed to reject registration.', 'error');
       }
     }
 
+    // Kebab Menu Handlers
+    function toggleFacultyKebabMenu(teacherId, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      const btn = event ? (event.currentTarget || event.target.closest('.fac-kebab-btn')) : null;
+      const wrap = btn ? btn.closest('.fac-kebab-wrap') : null;
+      const targetMenu = (wrap ? wrap.querySelector('.fac-kebab-menu') : null) ||
+                         document.getElementById(`fac-kebab-menu-table-${teacherId}`) ||
+                         document.getElementById(`fac-kebab-menu-${teacherId}`);
+      const wasOpen = targetMenu && targetMenu.classList.contains('open');
+
+      closeAllKebabMenus();
+
+      if (targetMenu && !wasOpen) {
+        targetMenu.classList.add('open');
+        if (wrap) wrap.classList.add('menu-open');
+      }
+    }
+
+    function toggleStudentKebabMenu(studentId, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      const btn = event ? (event.currentTarget || event.target.closest('.fac-kebab-btn')) : null;
+      const wrap = btn ? btn.closest('.fac-kebab-wrap') : null;
+      const targetMenu = (wrap ? wrap.querySelector('.fac-kebab-menu') : null) ||
+                         document.getElementById(`student-kebab-menu-table-${studentId}`) ||
+                         document.getElementById(`student-kebab-menu-${studentId}`);
+      const wasOpen = targetMenu && targetMenu.classList.contains('open');
+
+      closeAllKebabMenus();
+
+      if (targetMenu && !wasOpen) {
+        targetMenu.classList.add('open');
+        if (wrap) wrap.classList.add('menu-open');
+      }
+    }
+
+    function closeAllKebabMenus() {
+      document.querySelectorAll('.fac-kebab-menu.open').forEach(m => {
+        m.classList.remove('open');
+      });
+      document.querySelectorAll('.fac-kebab-wrap.menu-open').forEach(w => w.classList.remove('menu-open'));
+    }
+
+    function closeAllStudentKebabMenus() {
+      closeAllKebabMenus();
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.fac-kebab-wrap')) {
+        closeAllKebabMenus();
+      }
+    });
+
+    // View Faculty Modal Controller
+    async function openViewFacultyModal(teacherId) {
+      const teacher = (allTeachers || []).find(t => Number(t.id) === Number(teacherId)) || {};
+      const initials = (teacher.full_name || 'T')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(w => w[0].toUpperCase())
+        .join('') || 'T';
+      const isHodMember = Boolean(teacher.is_hod || (teacher.employee_id && teacher.employee_id.includes('HOD')));
+      const designation = teacher.designation || (isHodMember ? 'Head of Department' : 'Lecturer');
+      const empId = teacher.employee_id || `FAC-0${teacher.id || 1}`;
+      const email = teacher.email || teacher.gmail || 'Not provided';
+      const phone = teacher.phone || teacher.mobile || 'Not provided';
+      const username = teacher.username || (email ? email.split('@')[0] : 'faculty');
+      const deptName = teacher.department_name || teacher.dept_name || 'Information Technology';
+      const createdDate = teacher.created_at ? new Date(teacher.created_at).toLocaleDateString() : 'Active Department Staff';
+      const isGoogleLinked = Boolean(teacher.google_linked);
+      const isSelf = Boolean(
+        currentUser && (
+          (currentUser.teacher_id && Number(teacher.id) === Number(currentUser.teacher_id)) ||
+          (currentUser.id && Number(teacher.user_id) === Number(currentUser.id)) ||
+          (currentUser.user_id && Number(teacher.user_id) === Number(currentUser.user_id)) ||
+          (currentUser.email && teacher.email && currentUser.email.toLowerCase() === teacher.email.toLowerCase()) ||
+          (currentUser.email && teacher.gmail && currentUser.email.toLowerCase() === teacher.gmail.toLowerCase())
+        )
+      );
+
+      const statusHtml = (teacher.status === 'INACTIVE' || teacher.is_active === false)
+        ? '<span style="color: var(--status-absent, #ef4444); font-weight: 700; font-size: 0.78rem;">● Inactive</span>'
+        : '<span style="color: var(--status-present, #10b981); font-weight: 700; font-size: 0.78rem;">● Active Member</span>';
+
+      const body = document.getElementById('view-faculty-body');
+      if (body) {
+        body.innerHTML = `
+          <!-- Hero Profile Card -->
+          <div class="fac-profile-hero">
+            <div class="fac-profile-avatar-wrap">
+              <div class="fac-profile-avatar ${isHodMember ? 'purple-avatar' : 'blue-avatar'}">
+                ${initials}
+              </div>
+            </div>
+            <div class="fac-profile-meta">
+              <div class="fac-profile-name">${esc(teacher.full_name || 'Faculty Member')}</div>
+              <div class="fac-profile-badges">
+                <span class="fac-mini-badge ${isHodMember ? 'hod' : 'lecturer'}">${designation}</span>
+                <span style="font-family: var(--font-family-mono, monospace); font-size: 0.78rem; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 0.15rem 0.5rem; border-radius: var(--radius-sm, 4px);">${esc(empId)}</span>
+                ${statusHtml}
+              </div>
+            </div>
+          </div>
+
+          <!-- Academic & Department Overview -->
+          <div class="fac-profile-section">
+            <div class="fac-profile-section-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              <span>Academic &amp; Departmental Placement</span>
+            </div>
+            <div class="fac-profile-grid">
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Department</span>
+                <span class="fac-profile-val">${esc(deptName)}</span>
+              </div>
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Institutional Role</span>
+                <span class="fac-profile-val">${isHodMember ? 'Head of Department' : 'Teaching Faculty'}</span>
+              </div>
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Employee ID Code</span>
+                <span class="fac-profile-val" style="font-family: var(--font-family-mono, monospace); color: var(--color-primary);">${esc(empId)}</span>
+              </div>
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Member Since</span>
+                <span class="fac-profile-val">${createdDate}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact & Credentials -->
+          <div class="fac-profile-section">
+            <div class="fac-profile-section-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <span>Contact &amp; Identity Credentials</span>
+            </div>
+            <div class="fac-profile-grid">
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Institutional / Login Email</span>
+                <span class="fac-profile-val">${esc(email)}</span>
+              </div>
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">System Username</span>
+                <span class="fac-profile-val" style="font-family: var(--font-family-mono, monospace);">${esc(username)}</span>
+              </div>
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Contact Phone</span>
+                <span class="fac-profile-val">${esc(phone)}</span>
+              </div>
+              <div class="fac-profile-item">
+                <span class="fac-profile-label">Authentication Method</span>
+                <span class="fac-profile-val">${isGoogleLinked ? '<span style="color: var(--status-present);">✓ Google SSO Linked</span>' : 'Standard Password Auth'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Teaching Assignments -->
+          <div class="fac-profile-section">
+            <div class="fac-profile-section-title" style="justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                <span>Assigned Courses &amp; Teaching Load</span>
+              </div>
+              <span id="fac-modal-assign-count" class="subtab-badge" style="background: var(--color-primary-light); color: var(--color-primary); font-size: 0.72rem;">Loading...</span>
+            </div>
+            <div id="fac-modal-assignments-list">
+              <div style="text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.82rem;">Loading course assignments...</div>
+            </div>
+          </div>
+        `;
+      }
+
+      const extraActionWrap = document.getElementById('view-faculty-extra-action');
+      if (extraActionWrap) {
+        if (isSelf) {
+          extraActionWrap.innerHTML = `
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeViewFacultyModal(); openSelfPasswordModal();" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <span>Change Password</span>
+            </button>
+          `;
+        } else if (isHod) {
+          extraActionWrap.innerHTML = `
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeViewFacultyModal(); openResetModal(${teacher.id}, '${esc(teacher.full_name)}');" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+              <span>Reset Password</span>
+            </button>
+          `;
+        } else {
+          extraActionWrap.innerHTML = '';
+        }
+      }
+
+      showModal('view-faculty-modal');
+
+      // Asynchronously fetch full assignments list
+      try {
+        const detailRes = await apiFetch(`${API}/teachers/${teacherId}`);
+        const assignments = detailRes?.data?.assignments || [];
+        const countBadge = document.getElementById('fac-modal-assign-count');
+        const listContainer = document.getElementById('fac-modal-assignments-list');
+
+        if (countBadge) countBadge.textContent = `${assignments.length} Courses`;
+
+        if (listContainer) {
+          if (assignments.length === 0) {
+            listContainer.innerHTML = `<div style="text-align: center; padding: 0.75rem; color: var(--text-muted); font-size: 0.82rem;">No active course assignments linked for this academic year.</div>`;
+          } else {
+            listContainer.innerHTML = assignments.map(a => {
+              const code = a.subject_code || (a.code || 'CRS');
+              const name = a.subject_name || (a.name || 'Assigned Subject');
+              const type = a.assignment_type || (a.type || 'THEORY');
+              const regName = a.register_name || (a.register_id ? `Register #${a.register_id}` : '');
+              const ay = a.academic_year_label || 'AY 2026–27';
+
+              return `
+                <div class="fac-subject-item">
+                  <span class="fac-subject-code">${esc(code)}</span>
+                  <span class="fac-subject-name" title="${esc(name)}">${esc(name)}</span>
+                  <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+                    <span class="fac-subject-badge">${esc(type)}</span>
+                    <span class="fac-subject-badge" style="background: var(--color-primary-light); color: var(--color-primary);">${esc(ay)}</span>
+                    ${regName ? `<span class="fac-subject-badge" style="background: var(--status-present-bg); color: var(--status-present);">${esc(regName)}</span>` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load detailed assignments for faculty:', err);
+        const countBadge = document.getElementById('fac-modal-assign-count');
+        const listContainer = document.getElementById('fac-modal-assignments-list');
+        if (countBadge) countBadge.textContent = 'Active Staff';
+        if (listContainer) {
+          listContainer.innerHTML = `<div style="text-align: center; padding: 0.75rem; color: var(--text-muted); font-size: 0.82rem;">Teaching assignments active in department curriculum.</div>`;
+        }
+      }
+    }
+
+    function closeViewFacultyModal() {
+      closeModal('view-faculty-modal');
+    }
+
+  // Bridge aliases for buttons and forms
+  function submitResetTeacher(e) { return submitReset(e); }
+  function submitBulkUpload(e) { return submitBulk(e); }
+  function applyFilters() { loadStudents(); }
+  function onCohortChange() { onCohortSelectChange(); }
+
+  const exported = {
+    // Kebab Menus
+    toggleFacultyKebabMenu,
+    toggleStudentKebabMenu,
+    closeAllKebabMenus,
+    closeAllStudentKebabMenus,
+
+    // Faculty Details Modal
+    openViewFacultyModal,
+    closeViewFacultyModal,
+    toggleFacultyKebabMenu,
+    toggleStudentKebabMenu,
+    closeAllKebabMenus,
+    closeAllStudentKebabMenus,
+
+    // Navigation & Tabs
+    showMainTab,
+    switchPendingSubtab,
+    toggleFilterDrawer,
+    resetFilters,
+    onCohortChange,
+    onCohortSelectChange,
+    applyFilters,
+    handleGlobalSearch,
+    debounceSearch,
+
+    // Faculty Management
+    toggleFacultyRegistration,
+    approveFaculty,
+    rejectFaculty,
+    openCreateModal,
+    closeCreateModal,
+    submitCreateTeacher,
+    openResetModal,
+    closeResetModal,
+    submitReset,
+    submitResetTeacher,
+    openDeleteModal,
+    closeDeleteModal,
+    checkDeleteInput,
+    submitDelete,
+    copyCredentials,
+    closeCredModal,
+
+    // Student Management
+    toggleDepartmentStudentRegistration,
+    toggleCohortRegistration,
+    openAddModal,
+    closeModal,
+    showModal,
+    hideModal,
+    submitAddStudent,
+    copyStudentSlip,
+    openBulkModal,
+    submitBulk,
+    submitBulkUpload,
+    copyBulkCredentials,
+    openResetStudentModal,
+    submitResetStudent,
+    openDeleteStudentModal,
+    submitDeleteStudent,
+
+    // Promotion & Progression
+    openPromotionModal,
+    switchPromotionTab,
+    submitPromotion,
+    submitDemotion,
+    executePromotion,
+    filterPromotionCohort,
+    onStudentPromoToggle,
+    toggleAllPromotionStudents,
+    updatePromotionSummary,
+    loadPromotionPreview,
+    loadDemotionPreview,
+
+    // Roll Number Re-Indexing
+    openReindexModal,
+    submitReindexRoll,
+    submitReindex,
+
+    // Pending Registrations Adjudication
+    loadAllPendingData,
+    loadPendingFaculty,
+    loadPendingRegistrations,
+    openApproveModal,
+    submitApproveRegistration,
+    openRejectModal,
+    submitRejectRegistration,
+
+    // Password & Session Self-Service
+    openSelfPasswordModal,
+    closeSelfPasswordModal,
+    submitSelfPassword,
+
+    // Data Loaders
+    loadStudents,
+    loadCohorts,
+    loadTeachers
+  };
+
+  Object.assign(window, exported);
+})();
