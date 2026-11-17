@@ -38,6 +38,63 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 435: Student Transfer & Withdrawal Workflow with Zero Data Loss and Permanent Document Access
+
+- **Student 3-Dot (Kebab) Dropdown Action Menu Upgrades**:
+  - Added dedicated **Transfer Student** (`⇄ Transfer Student`) and **Withdraw Student** (`⊘ Withdraw Student`) options to the actions menu in `/faculty/students/index.html`.
+  - Added **Re-Activate Enrollment** (`↺ Re-Activate`) action for inactive students (transferred/withdrawn) to seamlessly restore them back into active cohort enrollment.
+- **Explicit Type-to-Confirm Confirmation Dialog Boxes**:
+  - **Transfer Confirmation**: Integrated with `window.openDeleteModal`, requiring the user to explicitly type `transfer` to unlock the action. Explanatory message informs the user that student data is NOT deleted, but placed in inactive status.
+  - **Withdraw Confirmation**: Integrated with `window.openDeleteModal`, requiring the user to explicitly type `withdraw` to unlock the action. Explanatory message informs the user that academic history, exam marks, and uploaded documents remain permanently accessible.
+- **Zero Data Loss & Inactive State Governance**:
+  - Transferred and withdrawn students are NEVER deleted or purged from the database.
+  - `enrollments.status` is updated to `'TRANSFERRED'` or `'WITHDRAWN'`.
+  - Student user credentials are suspended (`users.status = 'SUSPENDED'`) and live sessions cleared to prevent active attendance taking.
+  - Backend endpoints implemented: `POST /api/v1/hod/students/:id/transfer`, `POST /api/v1/hod/students/:id/withdraw`, `POST /api/v1/hod/students/:id/reactivate`.
+- **Permanent Teacher Access to Student Documents & Records**:
+  - Added **`Inactive`** filter pill on `/faculty/students/index.html` displaying live counts of all transferred and withdrawn students.
+  - Created `student_documents` table in MySQL (`id`, `student_id`, `department_id`, `title`, `document_type`, `file_path`, `file_name`, `file_size`, `uploaded_by`, `uploader_name`, `notes`, `created_at`) with migration `010_add_student_documents_table.sql`.
+  - In View Details Modal (`#modal-student-details`), integrated an **Academic Records & Documents** dossier displaying:
+    - Uploaded official certificates (Transfer Certificates, Withdrawal Slips, Admission Proofs, Medicals, ID Proofs).
+    - Academic assessment submissions with grades and filenames.
+    - Leave application records and approvals.
+    - An inline document upload tool allowing teachers and faculty to upload and attach documents to any student record at any time.
+  - Added REST endpoints: `GET /api/v1/hod/students/:id/documents`, `POST /api/v1/hod/students/:id/documents` (with `multer`), `DELETE /api/v1/hod/students/:id/documents/:docId`.
+- **Verification & Theme Token Compliance**:
+  - 100% Theme Token compliant (0 hardcoded hex colors, strict use of CSS variables from `variables.css`).
+  - Automated API verification passed (Login, Transfer, Status Check, Documents Retrieval, Withdraw, Reactivate).
+  - All regression tests passing (88/88 theme tokens).
+
+### ✅ Milestone 434: Decouple Faculty and Students Pages into Clean Compact UI/UX with 58% Code Reduction
+
+- **Decoupled Dedicated Faculty Management Page (`/faculty/faculty/index.html`)**:
+  - HOD-Only Access (`requireFacultyAuth(['HOD', 'SYSTEM_ADMIN'])`).
+  - Total Faculty, Pending Verification, and Faculty Self-Registration gate toggle.
+  - Role filter pills (`All Faculty`, `HOD`, `Lecturers`, `Pending`) with live queue counts and instant table rendering.
+  - Clean table layout with Teaching Scope removed; member card streamlined to Name and Initials (email removed from cell for clean compact look, viewable in full modal).
+  - Actions column powered by a compact **3-Dot (Kebab) Menu** featuring smart **Drop-Up Flipping** to prevent viewport and card bottom cutting.
+  - **Ultra-Compact Mobile Layout**: 2-column compact metric cards, slim self-registration toggle, horizontal scrollable pills, inline search & add bar, dense touch-friendly table rows, and **responsive column suppression** (`Employee ID` and `Role` hidden on mobile screens, viewable in details modal).
+  - **Componentized Type-to-Confirm Removal Modal**: Integrated `/faculty/components/delete-modal/` requiring explicit confirmation text typing (`remove`) before unlocking deletion.
+  - **30-Day Trash Bin Architecture**: Soft-deletes faculty into Department Trash Bin (`deleted_at = CURRENT_TIMESTAMP`, account suspended) with automatic permanent purge query after 30-day retention period.
+  - **View Details Modal**: Comprehensive modal showing full faculty dossier (Avatar, Name, Employee ID, Role, Email, Phone, Department, Onboarded Date, and Assigned Teaching Subjects).
+  - Searchable roster with credentials management, password reset, and onboard modal.
+  - Fixed database column schema error: added missing `account_type` column to `faculty_registration_requests`.
+  - Zero hardcoded hex colors, strict theme token compliance with `variables.css`.
+
+- **Decoupled Dedicated Students Management Page (`/faculty/students/index.html`)**:
+  - Accessible to all department instructors and class teachers.
+  - Cohort management, roll number sequencing, attendance summary percentage badges.
+  - 3-Year academic filter pills (`All Years`, `1st Year`, `2nd Year`, `3rd Year`, `Pending Queue`) — 4th year removed per curriculum requirements.
+  - Add individual student modal and Bulk CSV import modal.
+  - Responsive compact mobile layout (<= 640px).
+
+- **Code Cleanliness & Bloat Elimination**:
+  - Original monolithic students files: **5,614 lines**.
+  - New decoupled faculty files: **1,133 lines**.
+  - New decoupled students files: **1,234 lines**.
+  - Total combined lines across both pages: **2,367 lines**.
+  - **Net Code Reduction**: **3,247 lines of redundant bloat removed (58% reduction)**!
+
 ### ✅ Milestone 433: Simple Year-Based PDF Timetable Architecture & Attendance Matrix Period Sequencing
 
 - **Simple Year-Based PDF Timetable Engine**:

@@ -90,7 +90,7 @@
         updateCounts();
         if (currentYearFilter === 'PENDING') renderTable();
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   async function loadTrashStudents() {
@@ -113,7 +113,7 @@
         studentRegOpen = Boolean(res.data.is_open);
         renderToggleState();
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function renderToggleState() {
@@ -152,26 +152,30 @@
     const badgeAll = document.getElementById('badge-count-all');
     const badgePending = document.getElementById('badge-count-pending');
     const badgeTrash = document.getElementById('badge-count-trash');
+    const badgeInactive = document.getElementById('badge-count-inactive');
     const headerTrash = document.getElementById('header-trash-count');
 
     const total = allStudents.length;
-    const defaulters = allStudents.filter(s => s.is_defaulter || s.below_threshold).length;
+    const enrolledStudents = allStudents.filter(s => (s.enrollment_status || 'ENROLLED') === 'ENROLLED');
+    const inactiveStudents = allStudents.filter(s => s.enrollment_status === 'TRANSFERRED' || s.enrollment_status === 'WITHDRAWN' || s.enrollment_status === 'INACTIVE');
+    const defaulters = enrolledStudents.filter(s => s.is_defaulter || s.below_threshold).length;
     const pending = pendingStudents.length;
     const trash = trashStudents.length;
 
-    if (elTotal) elTotal.textContent = total;
+    if (elTotal) elTotal.textContent = enrolledStudents.length;
     if (elDefaulter) elDefaulter.textContent = `${defaulters} below 75%`;
     if (elPending) elPending.textContent = pending;
     if (badgeAll) badgeAll.textContent = total;
+    if (badgeInactive) badgeInactive.textContent = inactiveStudents.length;
     if (badgePending) badgePending.textContent = pending;
     if (badgeTrash) badgeTrash.textContent = trash;
     if (headerTrash) headerTrash.textContent = trash;
 
-    // Update Year Pill Counts
+    // Update Year Pill Counts (Enrolled)
     for (let yr = 1; yr <= 3; yr++) {
       const badgeYr = document.getElementById(`badge-count-y${yr}`);
       if (badgeYr) {
-        const c = allStudents.filter(s => parseInt(s.year || Math.ceil((s.semester || 1) / 2), 10) === yr).length;
+        const c = enrolledStudents.filter(s => parseInt(s.year || Math.ceil((s.semester || 1) / 2), 10) === yr).length;
         badgeYr.textContent = c;
       }
     }
@@ -219,12 +223,15 @@
 
     let list = allStudents;
 
-    // Year filter (1, 2, 3)
-    if (currentYearFilter !== 'ALL') {
+    // Tab Filters
+    if (currentYearFilter === 'INACTIVE') {
+      list = list.filter(s => s.enrollment_status === 'TRANSFERRED' || s.enrollment_status === 'WITHDRAWN' || s.enrollment_status === 'INACTIVE');
+    } else if (currentYearFilter !== 'ALL') {
       const targetYr = parseInt(currentYearFilter, 10);
       list = list.filter(s => {
+        const isEnrolled = (s.enrollment_status || 'ENROLLED') === 'ENROLLED';
         const y = parseInt(s.year || Math.ceil((s.semester || 1) / 2), 10);
-        return y === targetYr;
+        return isEnrolled && y === targetYr;
       });
     }
 
@@ -255,6 +262,14 @@
       const enroll = st.official_enrollment_no || '—';
       const name = st.full_name || 'Student';
       const studentId = st.student_id || st.id;
+      const isInactive = st.enrollment_status === 'TRANSFERRED' || st.enrollment_status === 'WITHDRAWN';
+
+      let statusChip = '';
+      if (st.enrollment_status === 'TRANSFERRED') {
+        statusChip = `<span class="stu-status-chip transferred">Transferred</span>`;
+      } else if (st.enrollment_status === 'WITHDRAWN') {
+        statusChip = `<span class="stu-status-chip withdrawn">Withdrawn</span>`;
+      }
 
       return `
         <tr>
@@ -262,7 +277,10 @@
           <td class="col-enrollment"><span class="stu-code-mono">${esc(enroll)}</span></td>
           <td>
             <div class="stu-name-wrap">
-              <a href="#" class="stu-name-cell" onclick="viewStudentDetails(${studentId}); return false;">${esc(name)}</a>
+              <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                <a href="#" class="stu-name-cell" onclick="viewStudentDetails(${studentId}); return false;">${esc(name)}</a>
+                ${statusChip}
+              </div>
               <span class="stu-sub-mono">${esc(enroll)}</span>
             </div>
           </td>
@@ -281,6 +299,21 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     <span>View Details</span>
                   </button>
+                  ${isInactive ? `
+                  <button type="button" class="stu-menu-item" onclick="reactivateStudentAction(${studentId}, '${esc(name)}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    <span>Re-Activate</span>
+                  </button>
+                  ` : `
+                  <button type="button" class="stu-menu-item" onclick="transferStudentAction(${studentId}, '${esc(name)}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                    <span>Transfer Student</span>
+                  </button>
+                  <button type="button" class="stu-menu-item" onclick="withdrawStudentAction(${studentId}, '${esc(name)}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                    <span>Withdraw Student</span>
+                  </button>
+                  `}
                   <button type="button" class="stu-menu-item" onclick="resetStudentPassword(${studentId}, '${esc(name)}')">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                     <span>Reset Password</span>
@@ -457,7 +490,38 @@
     document.getElementById('detail-stu-email').textContent = st.email || '—';
     document.getElementById('detail-stu-phone').textContent = st.phone || '—';
 
+    // Status badge
+    const statusBadge = document.getElementById('detail-stu-status-badge');
+    const isInactive = st.enrollment_status === 'TRANSFERRED' || st.enrollment_status === 'WITHDRAWN';
+    if (statusBadge) {
+      if (st.enrollment_status === 'TRANSFERRED') {
+        statusBadge.className = 'stu-status-chip transferred';
+        statusBadge.textContent = 'Transferred';
+      } else if (st.enrollment_status === 'WITHDRAWN') {
+        statusBadge.className = 'stu-status-chip withdrawn';
+        statusBadge.textContent = 'Withdrawn';
+      } else {
+        statusBadge.className = 'stu-status-chip enrolled';
+        statusBadge.textContent = 'Enrolled (Active)';
+      }
+    }
+
+    // Toggle footer buttons
+    const btnTransfer = document.getElementById('detail-btn-transfer');
+    const btnWithdraw = document.getElementById('detail-btn-withdraw');
+    const btnReactivate = document.getElementById('detail-btn-reactivate');
+    if (btnTransfer) btnTransfer.style.display = isInactive ? 'none' : '';
+    if (btnWithdraw) btnWithdraw.style.display = isInactive ? 'none' : '';
+    if (btnReactivate) btnReactivate.style.display = isInactive ? '' : 'none';
+
+    // Hide inline upload box initially
+    const uploadBox = document.getElementById('stu-inline-upload-box');
+    if (uploadBox) uploadBox.style.display = 'none';
+
     modal.style.display = 'flex';
+
+    // Load student documents & academic records
+    loadStudentDocuments(id);
   }
 
   function closeStudentDetailsModal() {
@@ -479,7 +543,209 @@
     closeStudentDetailsModal();
   }
 
-  // 9. Actions: Reset, Delete, Restore, Reindex, Approve, Reject
+  function detailTransferStudent() {
+    if (!currentDetailStudentId) return;
+    const st = allStudents.find(s => (s.student_id || s.id) === currentDetailStudentId);
+    transferStudentAction(currentDetailStudentId, st?.full_name || 'Student');
+    closeStudentDetailsModal();
+  }
+
+  function detailWithdrawStudent() {
+    if (!currentDetailStudentId) return;
+    const st = allStudents.find(s => (s.student_id || s.id) === currentDetailStudentId);
+    withdrawStudentAction(currentDetailStudentId, st?.full_name || 'Student');
+    closeStudentDetailsModal();
+  }
+
+  function detailReactivateStudent() {
+    if (!currentDetailStudentId) return;
+    const st = allStudents.find(s => (s.student_id || s.id) === currentDetailStudentId);
+    reactivateStudentAction(currentDetailStudentId, st?.full_name || 'Student');
+    closeStudentDetailsModal();
+  }
+
+  async function loadStudentDocuments(id) {
+    const listEl = document.getElementById('detail-doc-list');
+    const countEl = document.getElementById('detail-docs-count');
+    if (!listEl) return;
+
+    listEl.innerHTML = `<div style="padding:0.6rem; text-align:center; color:var(--text-muted); font-size:0.75rem;">Loading documents...</div>`;
+
+    try {
+      const res = await api(`/hod/students/${id}/documents`);
+      if (res && res.success && res.data) {
+        const docs = res.data.documents || [];
+        const subs = res.data.submissions || [];
+        const leaves = res.data.leaves || [];
+        const totalItems = docs.length + subs.length + leaves.length;
+
+        if (countEl) countEl.textContent = `${totalItems} file${totalItems === 1 ? '' : 's'}`;
+
+        if (totalItems === 0) {
+          listEl.innerHTML = `<div style="padding:0.75rem; text-align:center; color:var(--text-muted); font-size:0.74rem;">No uploaded documents or academic submissions yet. Use &ldquo;+ Attach Doc&rdquo; to add records.</div>`;
+          return;
+        }
+
+        let html = '';
+
+        docs.forEach(doc => {
+          const typeLabel = doc.document_type ? doc.document_type.replace(/_/g, ' ') : 'Document';
+          html += `
+            <div class="stu-doc-item">
+              <div class="stu-doc-item-left">
+                <svg class="stu-doc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <div style="min-width:0; flex:1;">
+                  <div class="stu-doc-name" title="${esc(doc.title)}">${esc(doc.title)}</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted); display:flex; align-items:center; gap:0.4rem;">
+                    <span>${new Date(doc.created_at).toLocaleDateString()}</span>
+                    <span>&bull;</span>
+                    <span>${esc(doc.uploader_name || 'Faculty')}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stu-doc-actions">
+                <span class="stu-doc-tag">${esc(typeLabel)}</span>
+                <a href="${esc(doc.file_path)}" target="_blank" download class="stu-doc-link" title="Open or Download File">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>View</span>
+                </a>
+                <button type="button" class="btn-kebab" style="width:24px; height:24px; border:none; color:var(--status-absent);" title="Delete Document" onclick="deleteStudentDocumentAction(${doc.id})">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        subs.forEach(sub => {
+          html += `
+            <div class="stu-doc-item">
+              <div class="stu-doc-item-left">
+                <svg class="stu-doc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 11 12 14 22 4"></polyline>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <div style="min-width:0; flex:1;">
+                  <div class="stu-doc-name" title="${esc(sub.assessment_title)}">${esc(sub.assessment_title)}</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted);">
+                    ${esc(sub.subject_code || '')} &bull; Marks: ${sub.marks_obtained != null ? sub.marks_obtained : 'Ungraded'}
+                  </div>
+                </div>
+              </div>
+              <div class="stu-doc-actions">
+                <span class="stu-doc-tag">${esc(sub.assessment_type || 'COURSEWORK')}</span>
+                ${sub.file_path ? `
+                <a href="${esc(sub.file_path)}" target="_blank" download class="stu-doc-link" title="Download Submission File">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>View</span>
+                </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        leaves.forEach(lv => {
+          html += `
+            <div class="stu-doc-item">
+              <div class="stu-doc-item-left">
+                <svg class="stu-doc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <div style="min-width:0; flex:1;">
+                  <div class="stu-doc-name">Leave: ${esc(lv.reason || 'Medical / Personal Leave')}</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted);">
+                    ${lv.start_date} to ${lv.end_date} &bull; Status: ${esc(lv.status)}
+                  </div>
+                </div>
+              </div>
+              <div class="stu-doc-actions">
+                <span class="stu-doc-tag">LEAVE</span>
+              </div>
+            </div>
+          `;
+        });
+
+        listEl.innerHTML = html;
+      }
+    } catch (err) {
+      listEl.innerHTML = `<div style="padding:0.6rem; text-align:center; color:var(--status-absent); font-size:0.74rem;">Failed to load documents: ${esc(err.message)}</div>`;
+    }
+  }
+
+  function toggleUploadDocBox() {
+    const box = document.getElementById('stu-inline-upload-box');
+    if (!box) return;
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function submitStudentDocument() {
+    if (!currentDetailStudentId) return;
+    const titleInput = document.getElementById('doc-upload-title');
+    const typeSelect = document.getElementById('doc-upload-type');
+    const fileInput = document.getElementById('doc-upload-file');
+
+    if (!fileInput || !fileInput.files.length) {
+      notify('Please select a file to upload', 'error');
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const title = titleInput?.value.trim() || file.name;
+    const document_type = typeSelect?.value || 'ACADEMIC_RECORD';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', title);
+    formData.append('document_type', document_type);
+
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      const res = await fetch(`/api/v1/hod/students/${currentDetailStudentId}/documents`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        notify('Student document uploaded and archived successfully!', 'success');
+        if (titleInput) titleInput.value = '';
+        if (fileInput) fileInput.value = '';
+        toggleUploadDocBox();
+        await loadStudentDocuments(currentDetailStudentId);
+      } else {
+        throw new Error(data?.error?.message || 'Upload failed');
+      }
+    } catch (err) {
+      notify(err.message, 'error');
+    }
+  }
+
+  async function deleteStudentDocumentAction(docId) {
+    if (!currentDetailStudentId) return;
+    if (!confirm('Remove this document from the student records?')) return;
+    try {
+      const res = await api(`/hod/students/${currentDetailStudentId}/documents/${docId}`, { method: 'DELETE' });
+      if (res && res.success) {
+        notify('Document removed successfully', 'success');
+        await loadStudentDocuments(currentDetailStudentId);
+      } else {
+        throw new Error(res?.error?.message || 'Delete failed');
+      }
+    } catch (err) {
+      notify(err.message, 'error');
+    }
+  }
+
+  // 9. Actions: Reset, Transfer, Withdraw, Reactivate, Delete, Restore, Reindex, Approve, Reject
   async function resetStudentPassword(id, name) {
     closeAllMenus();
     const newPass = prompt(`Enter new password for ${name}:`, 'Password@123');
@@ -491,6 +757,98 @@
       });
       if (res && res.success) notify(`Password reset successfully for ${name}`, 'success');
       else throw new Error(res?.error?.message || 'Password reset failed');
+    } catch (err) {
+      notify(err.message, 'error');
+    }
+  }
+
+  function transferStudentAction(id, name) {
+    closeAllMenus();
+    if (typeof window.openDeleteModal === 'function') {
+      window.openDeleteModal({
+        title: 'Transfer Student',
+        subtitle: 'Institutional Transfer (Data Preserved)',
+        itemName: name,
+        message: 'The student will be marked as <strong>TRANSFERRED</strong> and placed in Inactive status. Their academic history, attendance records, exam marks, and uploaded documents will <strong>NOT</strong> be deleted and will remain permanently accessible to teachers.',
+        confirmKeyword: 'transfer',
+        strictCase: false,
+        confirmButtonText: 'Transfer Student',
+        onConfirm: async () => {
+          const res = await api(`/hod/students/${id}/transfer`, { method: 'POST', body: JSON.stringify({}) });
+          if (res && res.success) {
+            notify(`${name} transferred successfully. All records preserved.`, 'success');
+            await loadStudentsRoster();
+          } else {
+            throw new Error(res?.error?.message || 'Transfer failed');
+          }
+        }
+      });
+      return;
+    }
+
+    const val = prompt(`Type "transfer" to transfer ${name} (data preserved):`);
+    if (val?.toLowerCase() !== 'transfer') return;
+    api(`/hod/students/${id}/transfer`, { method: 'POST', body: JSON.stringify({}) })
+      .then(res => {
+        if (res && res.success) {
+          notify(`${name} transferred successfully. All records preserved.`, 'success');
+          loadStudentsRoster();
+        } else {
+          notify(res?.error?.message || 'Transfer failed', 'error');
+        }
+      })
+      .catch(err => notify(err.message, 'error'));
+  }
+
+  function withdrawStudentAction(id, name) {
+    closeAllMenus();
+    if (typeof window.openDeleteModal === 'function') {
+      window.openDeleteModal({
+        title: 'Withdraw Student',
+        subtitle: 'Formal Withdrawal (Data Preserved)',
+        itemName: name,
+        message: 'The student will be marked as <strong>WITHDRAWN</strong> and placed in Inactive status. Their academic history, attendance records, exam marks, and uploaded documents will <strong>NOT</strong> be deleted and will remain permanently accessible to teachers.',
+        confirmKeyword: 'withdraw',
+        strictCase: false,
+        confirmButtonText: 'Withdraw Student',
+        onConfirm: async () => {
+          const res = await api(`/hod/students/${id}/withdraw`, { method: 'POST', body: JSON.stringify({}) });
+          if (res && res.success) {
+            notify(`${name} marked as withdrawn. All records preserved.`, 'success');
+            await loadStudentsRoster();
+          } else {
+            throw new Error(res?.error?.message || 'Withdrawal failed');
+          }
+        }
+      });
+      return;
+    }
+
+    const val = prompt(`Type "withdraw" to withdraw ${name} (data preserved):`);
+    if (val?.toLowerCase() !== 'withdraw') return;
+    api(`/hod/students/${id}/withdraw`, { method: 'POST', body: JSON.stringify({}) })
+      .then(res => {
+        if (res && res.success) {
+          notify(`${name} marked as withdrawn. All records preserved.`, 'success');
+          loadStudentsRoster();
+        } else {
+          notify(res?.error?.message || 'Withdrawal failed', 'error');
+        }
+      })
+      .catch(err => notify(err.message, 'error'));
+  }
+
+  async function reactivateStudentAction(id, name) {
+    closeAllMenus();
+    if (!confirm(`Re-activate ${name} into active enrolled status?`)) return;
+    try {
+      const res = await api(`/hod/students/${id}/reactivate`, { method: 'POST' });
+      if (res && res.success) {
+        notify(`${name} re-activated into active enrollment!`, 'success');
+        await loadStudentsRoster();
+      } else {
+        throw new Error(res?.error?.message || 'Re-activation failed');
+      }
     } catch (err) {
       notify(err.message, 'error');
     }
@@ -743,6 +1101,15 @@
   window.closeStudentDetailsModal = closeStudentDetailsModal;
   window.detailResetPassword = detailResetPassword;
   window.detailDeleteStudent = detailDeleteStudent;
+  window.detailTransferStudent = detailTransferStudent;
+  window.detailWithdrawStudent = detailWithdrawStudent;
+  window.detailReactivateStudent = detailReactivateStudent;
+  window.transferStudentAction = transferStudentAction;
+  window.withdrawStudentAction = withdrawStudentAction;
+  window.reactivateStudentAction = reactivateStudentAction;
+  window.toggleUploadDocBox = toggleUploadDocBox;
+  window.submitStudentDocument = submitStudentDocument;
+  window.deleteStudentDocumentAction = deleteStudentDocumentAction;
   window.resetStudentPassword = resetStudentPassword;
   window.deleteStudentMember = deleteStudentMember;
   window.restoreStudentMember = restoreStudentMember;

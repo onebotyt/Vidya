@@ -452,15 +452,15 @@ class HodModel {
    */
   static async getStudentsRoster(deptId) {
     const students = await query(
-      `SELECT st.id as student_id, st.full_name, u.email, st.official_enrollment_no, st.registration_no,
+      `SELECT st.id as student_id, st.full_name, u.email, st.phone, st.official_enrollment_no, st.registration_no,
               COALESCE(st.class_roll_no, e.class_roll_no) as class_roll_no,
-              e.year, e.semester, e.status as enrollment_status,
+              e.year, e.semester, COALESCE(e.status, 'ENROLLED') as enrollment_status,
               d.name as department_name, d.code as department_code
        FROM students st
        JOIN users u ON st.user_id = u.id
        JOIN enrollments e ON e.student_id = st.id
        JOIN departments d ON e.department_id = d.id
-       WHERE e.department_id = ? AND e.status != 'WITHDRAWN' AND st.deleted_at IS NULL
+       WHERE e.department_id = ? AND st.deleted_at IS NULL
        ORDER BY e.year, e.semester, COALESCE(st.class_roll_no, e.class_roll_no) ASC`,
       [deptId]
     );
@@ -1523,6 +1523,213 @@ class HodModel {
       success: true,
       message: `${sRows[0].full_name} has been restored successfully!`
     };
+  }
+
+  /**
+   * Transfer student to another institution/branch.
+   * Student data is NEVER deleted; status is set to TRANSFERRED and account suspended.
+   * Academic records, attendance, and documents remain permanently accessible.
+   */
+  static async transferStudent(studentId, deptId, reason = '', userId = 1) {
+    const sRows = await query(
+      `SELECT s.id, s.user_id, s.full_name, e.department_id, e.status as enrollment_status
+       FROM students s
+       LEFT JOIN enrollments e ON e.student_id = s.id
+       WHERE s.id = ? ${deptId ? 'AND (e.department_id = ? OR e.department_id IS NULL)' : ''} AND s.deleted_at IS NULL`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+    if (!sRows.length) return null;
+
+    const student = sRows[0];
+    const uid = student.user_id;
+
+    // 1. Mark enrollment as TRANSFERRED (records preserved)
+    await query(
+      `UPDATE enrollments SET status = 'TRANSFERRED', updated_at = CURRENT_TIMESTAMP WHERE student_id = ? ${deptId ? 'AND department_id = ?' : ''}`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+
+    // 2. Suspend user account and clear active sessions
+    if (uid) {
+      await query(`UPDATE users SET status = 'SUSPENDED', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [uid]);
+      try {
+        await query(`DELETE FROM user_sessions WHERE user_id = ?`, [uid]);
+      } catch (_) {}
+    }
+
+    // 3. Log audit event
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'STUDENT_TRANSFERRED', 'students', ?, ?, CURRENT_TIMESTAMP)`,
+        [userId || 1, String(studentId), JSON.stringify({ name: student.full_name, reason: reason || 'Institutional Transfer' })]
+      );
+    } catch (_) {}
+
+    return {
+      success: true,
+      message: `${student.full_name} has been transferred. Academic records and documents remain permanently accessible.`
+    };
+  }
+
+  /**
+   * Withdraw student permanently.
+   * Student data is NEVER deleted; status is set to WITHDRAWN and account suspended.
+   * Academic records, attendance, and documents remain permanently accessible.
+   */
+  static async withdrawStudent(studentId, deptId, reason = '', userId = 1) {
+    const sRows = await query(
+      `SELECT s.id, s.user_id, s.full_name, e.department_id, e.status as enrollment_status
+       FROM students s
+       LEFT JOIN enrollments e ON e.student_id = s.id
+       WHERE s.id = ? ${deptId ? 'AND (e.department_id = ? OR e.department_id IS NULL)' : ''} AND s.deleted_at IS NULL`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+    if (!sRows.length) return null;
+
+    const student = sRows[0];
+    const uid = student.user_id;
+
+    // 1. Mark enrollment as WITHDRAWN (records preserved)
+    await query(
+      `UPDATE enrollments SET status = 'WITHDRAWN', updated_at = CURRENT_TIMESTAMP WHERE student_id = ? ${deptId ? 'AND department_id = ?' : ''}`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+
+    // 2. Suspend user account and clear active sessions
+    if (uid) {
+      await query(`UPDATE users SET status = 'SUSPENDED', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [uid]);
+      try {
+        await query(`DELETE FROM user_sessions WHERE user_id = ?`, [uid]);
+      } catch (_) {}
+    }
+
+    // 3. Log audit event
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'STUDENT_WITHDRAWN', 'students', ?, ?, CURRENT_TIMESTAMP)`,
+        [userId || 1, String(studentId), JSON.stringify({ name: student.full_name, reason: reason || 'Formal Withdrawal' })]
+      );
+    } catch (_) {}
+
+    return {
+      success: true,
+      message: `${student.full_name} has been marked as withdrawn. Academic records and documents remain permanently accessible.`
+    };
+  }
+
+  /**
+   * Re-activate a transferred or withdrawn student back into active enrollment.
+   */
+  static async reactivateStudent(studentId, deptId, userId = 1) {
+    const sRows = await query(
+      `SELECT s.id, s.user_id, s.full_name, e.department_id
+       FROM students s
+       LEFT JOIN enrollments e ON e.student_id = s.id
+       WHERE s.id = ? ${deptId ? 'AND (e.department_id = ? OR e.department_id IS NULL)' : ''} AND s.deleted_at IS NULL`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+    if (!sRows.length) return null;
+
+    const student = sRows[0];
+    const uid = student.user_id;
+
+    // 1. Mark enrollment as ENROLLED
+    await query(
+      `UPDATE enrollments SET status = 'ENROLLED', updated_at = CURRENT_TIMESTAMP WHERE student_id = ? ${deptId ? 'AND department_id = ?' : ''}`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+
+    // 2. Re-activate user account
+    if (uid) {
+      await query(`UPDATE users SET status = 'ACTIVE', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [uid]);
+    }
+
+    // 3. Log audit event
+    try {
+      await query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details_json, created_at)
+         VALUES (?, 'STUDENT_REACTIVATED', 'students', ?, ?, CURRENT_TIMESTAMP)`,
+        [userId || 1, String(studentId), JSON.stringify({ name: student.full_name })]
+      );
+    } catch (_) {}
+
+    return {
+      success: true,
+      message: `${student.full_name} has been re-activated into active enrollment.`
+    };
+  }
+
+  /**
+   * Get all archived documents & records for a student (accessible anytime)
+   */
+  static async getStudentDocuments(studentId, deptId) {
+    const sRows = await query(
+      `SELECT s.id, s.full_name, s.official_enrollment_no, s.registration_no, s.class_roll_no,
+              e.status as enrollment_status, e.year, e.semester, d.name as department_name
+       FROM students s
+       LEFT JOIN enrollments e ON e.student_id = s.id
+       LEFT JOIN departments d ON d.id = e.department_id
+       WHERE s.id = ? ${deptId ? 'AND (e.department_id = ? OR e.department_id IS NULL)' : ''}`,
+      deptId ? [studentId, deptId] : [studentId]
+    );
+    if (!sRows.length) return null;
+
+    // 1. Custom uploaded student documents
+    const documents = await query(
+      `SELECT id, student_id, department_id, title, document_type, file_path, file_name, file_size, mime_type, uploader_name, notes, created_at
+       FROM student_documents
+       WHERE student_id = ?
+       ORDER BY created_at DESC`,
+      [studentId]
+    );
+
+    // 2. Academic assignment submissions & coursework files
+    const submissions = await query(
+      `SELECT asub.id, asub.assessment_id, asub.original_filename, asub.file_path, asub.marks_obtained, asub.status, asub.submitted_at,
+              a.title as assessment_title, a.type as assessment_type,
+              s.name as subject_name, s.code as subject_code
+       FROM assessment_submissions asub
+       JOIN assessments a ON a.id = asub.assessment_id
+       LEFT JOIN subjects s ON s.id = a.subject_id
+       WHERE asub.student_id = ?
+       ORDER BY asub.submitted_at DESC`,
+      [studentId]
+    );
+
+    // 3. Leave applications & records
+    const leaves = await query(
+      `SELECT id, start_date, end_date, reason, status, reviewed_at, review_notes, created_at
+       FROM leave_applications
+       WHERE student_id = ?
+       ORDER BY created_at DESC`,
+      [studentId]
+    );
+
+    return {
+      student: sRows[0],
+      documents,
+      submissions,
+      leaves
+    };
+  }
+
+  static async addStudentDocument({ student_id, department_id, title, document_type, file_path, file_name, file_size, mime_type, uploaded_by, uploader_name, notes }) {
+    const result = await query(
+      `INSERT INTO student_documents (student_id, department_id, title, document_type, file_path, file_name, file_size, mime_type, uploaded_by, uploader_name, notes, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [student_id, department_id, title, document_type || 'ACADEMIC_RECORD', file_path, file_name, file_size, mime_type, uploaded_by, uploader_name, notes || null]
+    );
+    return { id: result.insertId, title, file_path };
+  }
+
+  static async deleteStudentDocument(docId, studentId, deptId) {
+    await query(
+      `DELETE FROM student_documents WHERE id = ? AND student_id = ? ${deptId ? 'AND (department_id = ? OR department_id IS NULL)' : ''}`,
+      deptId ? [docId, studentId, deptId] : [docId, studentId]
+    );
+    return true;
   }
 
   /**
