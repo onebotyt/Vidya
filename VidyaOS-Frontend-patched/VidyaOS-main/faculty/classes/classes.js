@@ -390,7 +390,7 @@
       academic_year_id: sessionInput?.value ? parseInt(sessionInput.value, 10) : undefined,
       semester: sem,
       year: yr,
-      room_no: roomInput?.value || '101'
+      room_no: roomInput?.value || code || '101'
     };
 
     try {
