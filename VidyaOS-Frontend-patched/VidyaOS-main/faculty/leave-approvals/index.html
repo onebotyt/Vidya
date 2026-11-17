@@ -190,6 +190,26 @@
     </div>
   </div>
 
+  <!-- Styled Alert / Confirmation Dialog Box -->
+  <div class="leave-modal-backdrop" id="leave-alert-modal" style="display:none;" aria-hidden="true">
+    <div class="leave-modal-dialog leave-alert-dialog" role="dialog" aria-modal="true" aria-labelledby="alert-modal-title">
+      <div class="leave-alert-icon-box" id="leave-alert-icon-box">
+        <svg id="leave-alert-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="leave-alert-content">
+        <h3 id="alert-modal-title" class="leave-alert-title">Notice</h3>
+        <p id="alert-modal-message" class="leave-alert-desc">Message content goes here.</p>
+      </div>
+      <div class="leave-alert-actions" id="leave-alert-actions">
+        <button type="button" class="btn btn-primary leave-alert-btn" id="leave-alert-ok-btn" onclick="closeLeaveAlert(true)">OK</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Standard Scripts -->
   <script src="/faculty/components/core/api.js"></script>
   <script src="/faculty/components/core/auth.js"></script>
