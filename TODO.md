@@ -38,43 +38,182 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 448: Comprehensive Schema Self-Healing (Year & Metadata Columns), Trash Bin Client Fix & Safe Role Normalization
-- **Comprehensive Schema Auto-Healing (`teachingGroupModel.js`)**:
-  - Expanded `ensureColumns()` with direct DDL execution to auto-create all missing columns across remote production environments: `year INT NULL`, `subject_short_name VARCHAR(100) NULL`, `deleted_at DATETIME NULL`, `department_id INT NULL`, `syllabus_units LONGTEXT NULL`, `total_units INT NULL DEFAULT 5`, `component VARCHAR(50) NULL DEFAULT 'THEORY'`, and `archived_at DATETIME NULL`.
-  - Added automated fallback data migration calculating `year = CASE WHEN semester IN (1, 2) THEN 1 WHEN semester IN (3, 4) THEN 2 ELSE 3 END WHERE year IS NULL`.
-  - Completely resolved `Unknown column 'tg.year' in 'field list'` on deployed `/faculty/dashboard`.
-- **Classroom Trash Bin Controller Fix (`trash.js`)**:
-  - Replaced undefined `api.get('/teaching-groups?status=TRASH')` with authenticated `fetch()` containing Bearer token and proper JSON response handling.
-  - Eliminated "Error Loading Trash: Could not connect to classroom service", rendering trashed classrooms with active countdowns and restoration controls.
-- **Safe Role Normalization (`teachingGroupModel.js`)**:
-  - Normalized `user?.roles` before checking `SYSTEM_ADMIN` membership, preventing `TypeError: Cannot read properties of undefined (reading 'includes')` on single-role sessions.
-- **Regression Verification**:
-  - `test-ui-manifest-sync.js`: 208/208 tests passed.
-  - `test-theme-support.js`: 88/88 tests passed.
-  - `test-rbac-and-structure.js`: 38/38 tests passed.
+### ✅ Milestone 455: Universal Mobile Android Compatibility, Safe-Area Insets & UI Polish
+- **Universal Safe Area Inset Support Across Portals (`header.css`, `index.css`)**:
+  - Transformed fixed headers to responsive sticky headers with safe-area insets (`height: calc(60px + env(safe-area-inset-top, 0px))`, `padding-top: env(safe-area-inset-top, 0px)`) across Admin (`admin/components/header/header.css`), Faculty (`faculty/components/header/header.css`), Student (`student/components/header/header.css`), and Login/Register (`login/index.css`).
+  - Eliminates punch-hole camera and Android status bar overlap with top icons, notification bells, theme toggles, and user profile avatars on all modern Android devices.
+- **HTML Viewport Meta Tag Standardization (`viewport-fit=cover`)**:
+  - Updated 23 HTML files across Admin, Faculty, Student, Login, and Landing pages with `<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">`, enabling CSS safe area queries (`env(safe-area-inset-*)`) in Android WebView.
+- **Fixed Corrupted Binary `college-logo.svg` & Cloud Branding Fallback**:
+  - Replaced corrupted JPEG binary data disguised inside `images/college-logo.svg` with a clean, valid vector SVG emblem across repositories.
+  - Hardened institutional branding resolution across `admin/dashboard/dashboard.js`, `faculty/dashboard/dashboard.js`, and `student/dashboard/dashboard.js` to prepend `window.VIDYAOS_CLOUD_BACKEND` on native mobile shells and gracefully fall back to `/images/collegelogo.jpeg`.
+- **Admin Dashboard Quick Access Mobile Clean-up (`dashboard.css`, `index.html`)**:
+  - Removed link underlines (`text-decoration: none !important`) from `.dash-quick-tile` and `.dash-tile-name`.
+  - Added missing 3rd tile: "Analytics & Reports" (`/admin/reports.html`) to establish a balanced, symmetric 2x3 6-tile grid on mobile screens.
+- **Universal Bottom Dock Clearance & Mobile FAB Elevation**:
+  - Set `padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px))` across all main page containers (`.dashboard-container`, `.classes-container`, `.page-main-container`, `body.classroom-page`) to prevent bottom navigation docks from obscuring content.
+  - Elevated student Attendance FAB (`#open-self-attendance-btn`) to `bottom: calc(var(--student-bottom-bar-height, 64px) + 16px + env(safe-area-inset-bottom, 0px))`.
+- **Automated Verification Suites & Published Release**:
+  - `extract-ui-manifest.js` & `test-ui-manifest-sync.js`: 208/208 passed (100% manifest parity across all 32 pages).
+  - `test-theme-support.js`: 88/88 passed (zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 38/38 passed (RBAC and routing integrity).
+  - **Published GitHub Release `v1.0.12`**: [VidyaOS Mobile App v1.0.12](https://github.com/onebotyt/VidyaOS/releases/tag/v1.0.12) with standalone direct download [VidyaOS.apk](https://github.com/onebotyt/VidyaOS/releases/download/v1.0.12/VidyaOS.apk).
 
-### ✅ Milestone 447: Production Self-Healing Schema Migrations, Student Roster Restoration, Vercel Zero-404 Clean Routing & Mobile Responsive Hardening
-- **Automated Startup Migration & Schema Self-Healing (`teachingGroupModel.js`, `server.js`)**:
-  - Implemented `TeachingGroupModel.ensureColumns()` executing automated schema migrations on startup and before queries for `subject_short_name` and `deleted_at`.
-  - Upgraded `status` column definition to `VARCHAR(50) NOT NULL DEFAULT 'ACTIVE'` to safely support 30-day classroom trash retention (`'TRASH'`).
-  - Fixed MySQL error 1054 (`Unknown column 'tg.subject_short_name' in 'field list'`) on production Render deployment.
-  - Resolved classroom deletion failure: `setTrashStatus` now cleanly timestamps `deleted_at = CURRENT_TIMESTAMP` and sets `status = 'TRASH'`.
-- **Department & Campus Student Roster Access Restoration (`hodModel.js`)**:
-  - Fixed `HodModel.getStudentsRoster(deptId)`: When `deptId` is null (Admin or campus faculty), dynamically queries all active students without evaluating `e.department_id = NULL`.
-  - Migrated `JOIN enrollments` to `LEFT JOIN enrollments` and `LEFT JOIN departments` so newly approved and unassigned students remain 100% visible on `/faculty/students/index.html`.
-- **Accurate Student Counts & Mock Fallback Elimination (`classes.js`, `teachingGroupModel.js`)**:
-  - Updated member counting subquery to check `(tgm.status IN ('ENROLLED', 'ACTIVE') OR tgm.status IS NULL)`, accurately counting all active student enrollments.
-  - Completely excised obsolete hardcoded demo mock data (`Cloud Computing & DevOps [IT601]`, 62 students) from `classes.js`. Classes strictly reflect authentic database state.
-- **Vercel Zero-404 Clean Routing Engine (`vercel.json`, `register.html`)**:
-  - Fixed Vercel 404 on `/register`: Updated destination paths in `vercel.json` from `/login/register/index.html` to clean directory URL `/login/register/` (bypassing Vercel cleanUrls 308 redirect loops).
-  - Created standalone meta & JS redirect landing file `register.html` ensuring immediate redirection to `/login/register/` from any legacy bookmark.
-- **Mobile Responsive Hardening (<768px)**:
-  - Extended 2x2 grid layout on `.classes-action-buttons-row` to 768px with full-width primary button and zero horizontal overflow.
-  - Enforced unconditional mobile hiding on `.td-days` in `leave-approvals.css`.
-- **Regression Verification**:
-  - `test-ui-manifest-sync.js`: 208/208 tests passed.
-  - `test-theme-support.js`: 88/88 tests passed.
-  - `test-rbac-and-structure.js`: 38/38 tests passed.
+### ✅ Milestone 454: Resolved APK Sign-In Freeze, Cloud API Routing & Static URL Resolution
+- **Capacitor Android Mobile Detection & Bridge Hardening (`mobile-bridge.js`, `prepare-mobile.js`)**:
+  - Identified root cause of APK sign-in screen freeze: in vanilla HTML on Android Capacitor WebView (`androidScheme: "https"`), `window.Capacitor` was undefined on head script execution, causing `isCapacitor` to evaluate to `false` and preventing `window.fetch` from intercepting `/api/v1/*` requests.
+  - Added multi-layered mobile environment detection including `window.VIDYAOS_FORCE_NATIVE === true`, `(window.location.hostname === 'localhost' && (window.location.protocol === 'https:' || !window.location.port))`, and Android WebView user agent detection.
+  - Injected `window.VIDYAOS_FORCE_NATIVE = true;` directly at the top of `www/mobile-bridge.js` and `www/index.html` during `scripts/prepare-mobile.js`.
+  - Expanded `window.fetch` interceptor in `mobile-bridge.js` to rewrite all relative (`/api/v1`, `api/v1`), upload (`/uploads`, `uploads`), and absolute localhost endpoints (`https://localhost/api/v1`) directly to `https://vidyaos-backend.onrender.com`.
+- **Dynamic API Base Resolution Across All Portals (`api.js`)**:
+  - Updated `login/core/api.js`, `student/components/core/api.js`, `faculty/components/core/api.js`, `admin/components/core/api.js`, and `frontend/shared/js/api.js` to dynamically compute `API_BASE` via `getVidyaApiBase()`.
+  - Automatically targets `https://vidyaos-backend.onrender.com/api/v1` on mobile shells while retaining standard `/api/v1` proxying for desktop web development.
+  - Hardened endpoint normalization in `fetchApi()` to prevent double prefixing (`//`, `/api/v1/api/v1`) or strip errors.
+- **Deterministic Static Route Resolution with Explicit `.html` (`login/index.js`)**:
+  - Replaced directory route redirects (`/student/dashboard`, `/faculty/dashboard`, `/admin/dashboard`) with explicit `.html` file paths (`/student/dashboard/index.html`, `/faculty/dashboard/index.html`, `/admin/academic-structure/index.html`).
+  - Eliminates Android WebView `ERR_FILE_NOT_FOUND` / 404 directory index resolution failures in static APK packages.
+- **Enabled WebContents Debugging (`capacitor.config.json`)**:
+  - Set `webContentsDebuggingEnabled: true` in `capacitor.config.json` to allow Chrome DevTools inspection (`chrome://inspect`) on Android devices.
+- **Automated Verification Suites & Published Release**:
+  - `extract-ui-manifest.js` & `test-ui-manifest-sync.js`: 208/208 passed (100% manifest parity across all 32 pages).
+  - `test-theme-support.js`: 88/88 passed (zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 38/38 passed (RBAC and routing integrity).
+  - **Published GitHub Release `v1.0.11`**: [VidyaOS Mobile App v1.0.11](https://github.com/onebotyt/VidyaOS/releases/tag/v1.0.11) with standalone download [VidyaOS.apk](https://github.com/onebotyt/VidyaOS/releases/download/v1.0.11/VidyaOS.apk).
+
+### ✅ Milestone 453: Mobile Direct Sign-In Routing & Landing Page Bypass
+- **Direct Sign-In Entry Point on Mobile (`prepare-mobile.js`, `www/index.html`)**:
+  - Replaced marketing landing page on mobile with lightweight native launcher at `www/index.html`.
+  - Automatically checks `localStorage` on mobile launch:
+    - If unauthenticated: Instantly routes directly to `/login/index.html` (zero marketing landing page shown).
+    - If authenticated: Instantly routes directly to their active role console (`/student/dashboard/index.html`, `/faculty/classes/index.html`, or `/admin/academic-structure/index.html`).
+- **Capacitor Mobile Environment Detection (`index.html`)**:
+  - Embedded native platform detection script in root `index.html` (`window.Capacitor?.isNativePlatform() || window.location.protocol === 'capacitor:'`) to ensure mobile webview always redirects directly to sign-in while standard desktop/web visitors continue to see the full institutional showcase.
+- **Android APK & Capacitor Assets Synchronized**:
+  - Re-synced mobile assets into `www/` and `android/app/src/main/assets/public/` via `scripts/prepare-mobile.js` and `npx cap sync android`.
+
+### ✅ Milestone 452: Resolved Capacitor CI/CD Android APK Build Pipeline
+- **Root Cause Resolution**:
+  - `Node.js >= 22.0.0 Requirement`: Capacitor CLI 8.1.2 requires Node.js 22 LTS. Upgraded GitHub Actions workflow from `node-version: 20` to `node-version: 22`.
+  - `Executable Permissions`: Added `chmod +x android/gradlew` before Capacitor sync and committed POSIX 755 mode in Git (`git update-index --chmod=+x android/gradlew`).
+  - `Groovy Undefined Property`: Fixed `MissingPropertyException: Could not get unknown property 'undefined'` by properly exporting `BUILD_NUM` and `VERSION` in the GitHub Actions runner environment and using direct shell parameter interpolation in `android/app/build.gradle`.
+  - `Java 21 & Android SDK 36`: Upgraded JDK to Java 21 (`actions/setup-java@v5`) and Android SDK manager to `android-actions/setup-android@v4` with `platforms;android-36` and `build-tools;36.0.0`.
+- **Successful APK Release**:
+  - GitHub Actions Workflow Run `44171225572` finished with **100% SUCCESS** across all 15 stages.
+  - Published GitHub Release **`v1.0.9`**: [VidyaOS Mobile App v1.0.9](https://github.com/onebotyt/VidyaOS/releases/tag/v1.0.9).
+  - Standalone release APK artifact generated and ready for direct download: [VidyaOS.apk](https://github.com/onebotyt/VidyaOS/releases/download/v1.0.9/VidyaOS.apk).
+
+### ✅ Milestone 451: Classroom Mobile Bottom Navigation Tabs & Trash API Parity
+- **Classroom Mobile Bottom Navigation Dock (`group-detail/index.html`, `student-group.css`)**:
+  - Restored `.student-mobile-bottom-nav` on mobile screens (`@media (max-width: 768px)`), removing overriding `display: none !important`.
+  - Added missing 4th mobile tab `mob-tab-attendance` (`Attendance`), providing full 4-tab parity with desktop (`Stream`, `Classwork`, `People`, `Attendance`).
+  - Suppressed the global 5-module student dock (`.student-mobile-bottom-bar`) on `group-detail` pages to avoid overlap with classroom tabs.
+  - Added safe bottom content clearance `padding-bottom: 76px !important` to `body.classroom-page` on mobile.
+- **Trash Bin Service API Fallback & Resilience (`faculty/classes/trash.js`)**:
+  - Replaced fragile raw fetch calls in `loadTrash()`, `restoreClass()`, and `executePermanentDelete()` with `window.api` client integration and transparent auth bearer token handling.
+- **Capacitor Mobile Assets Sync**:
+  - Rebuilt `www/` and synchronized Capacitor Android assets with `npx cap sync android`.
+- **Automated Verification Suites**:
+  - `test-ui-manifest-sync.js`: 208/208 passed (100% manifest parity across all 32 pages).
+  - `test-theme-support.js`: 88/88 passed (zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 38/38 passed.
+
+### ✅ Milestone 450: Student UI/UX Modernization, Mobile Attendance FAB, Compact Cards & Sidebar Fix
+- **Student Top Header Streamlining (`header.js`, `header.css`)**:
+  - Removed `+ Join Class` button, `STUDENT` text/badge, and 9-Dot academic apps launcher from the student top navigation bar.
+  - Eliminated mobile header squishing and horizontal overflow; header cleanly hosts hamburger menu, VidyaOS brand, theme toggle, and user avatar.
+- **Classroom Card Modernization & Compact Design (`dashboard.js`, `dashboard.css`)**:
+  - Removed `100% Attendance`, progress bar, and attendance/requirement counts from each classroom card.
+  - Redesigned card body into a sleek, minimal layout with compact coursework metrics (`0 Assignments • 0 Tests`) and an instant "Enter →" direct navigation link.
+- **Removed Bulky Attendance Analytics & Predictor Section (`index.html`)**:
+  - Completely removed the 4-card metric grid (Attendance %, Attended, Absent, Conducted), `Good Standing (Eligible)` compliance predictor box, `Subject-Wise Attendance Matrix`, and `Recent Session Log` from `student/dashboard/index.html`.
+- **Removed Top Live Session Active Banner (`index.html`)**:
+  - Removed the `● Live Session Active IT501` banner from top of dashboard.
+- **Mobile-Only Floating Attendance Button (FAB) & Camera QR Scanner (`index.html`, `dashboard.js`, `dashboard.css`)**:
+  - Moved self-attendance submission inside a floating action speed dial (`#student-fab-wrapper`) strictly hidden on desktop (`min-width: 769px`) and active on mobile screens (`max-width: 768px`).
+  - Added options: `PIN Attendance` (6-digit PIN modal), `Scan QR (Camera)` (live video camera stream QR scanner with crosshair overlay & token input fallback), and `Join Class` (6-character invite code modal).
+- **Institutional Hero Card Parity with Faculty Dashboard (`index.html`, `dashboard.js`, `dashboard.css`)**:
+  - Replaced legacy student hero banner with institutional hero card (`.hero-card`) displaying institution logo (`#hero-logo-slot`), institution name (`#hero-inst-title`), campus photo banner (`#hero-banner-slot`), and student cohort info.
+- **Classroom Detail Sidebar Fix (`student-group.js`, `sidebar.js`, `group-detail/index.html`)**:
+  - Fixed unresponsive hamburger drawer toggle in `student-group.js` and `sidebar.js` by unifying `window.toggleStudentDrawer` and `window.toggleDrawerComponent` referencing `#student-drawer`.
+  - Cleaned unclosed comment in `student/group-detail/index.html`.
+- **Automated Verification Suites**:
+  - `test-theme-support.js`: 88/88 passed (zero hardcoded colors, theme tokens intact).
+  - `test-rbac-and-structure.js`: 38/38 passed (RBAC and routing integrity).
+  - `extract-ui-manifest.js` & `test-ui-manifest-sync.js`: 208/208 passed (100% manifest parity across all 32 pages).
+
+### ✅ Milestone 449: Eradication of Dummy Mock Cohorts & Fake Marks in Sheet Studio
+- **Authentic Student Cohort & Score Binding across Sheet Studio (`sheets.js`)**:
+  - **Internal Evaluation Sheet (`loadEvaluationSheetData`)**:
+    - Removed hardcoded fallback dummy cohort (`AARAV SHARMA`, `ADITI VERMA`, `AKASH PATEL`, `ANANYA GUPTA`, `ARJUN RAO`, `BHAVYA NAIR`, `CHIRAG JOSHI`, `DEEPIKA SINGH`, `ROHAN KULKARNI`, `SNEHA PATIL`) and fake attendance score generator `[4.4, 5.0, ...]`.
+    - Removed fake 60% mark multipliers `Math.round(max * 0.6)` that auto-filled unrecorded student scores.
+    - Removed fallback null-coalescing `?? 15` and `?? 5` in table cell inputs. Unscored assignments and exams cleanly display empty inputs for teachers to grade.
+    - Added responsive empty state row in table body when a teaching group has no enrolled students or when no records match filter criteria.
+  - **Unit Tests & Mid-Term Exam Sheet (`loadCurrentTestData` & `renderTestSheetTable`)**:
+    - Removed 10-student fake cohort generator and hardcoded student #7 absent trigger (`idx === 7`).
+    - Removed simulated question score formula (`Math.max(0, Math.min(q.max, q.max - (idx % 2)))`). Unscored test questions strictly default to 0.
+    - Added dedicated empty state row preserving the right-hand exam instructions panel when a class has no enrolled students.
+  - **All Unit Tests Combined Summary Sheet (`loadAllTestsCombinedData` & `renderAllTestsCombinedTable`)**:
+    - Stripped fabricated marks generator (`defaultUT1 = [18, 16, 17, 18, 19, 20, 14, 15, 16, 17]`). Unscored exams default to real zero marks.
+    - Added responsive empty state message for classes with zero student enrollments.
+  - **Coursework & Theory Assignments Sheet (`loadAssignmentsSheetData` & `renderAssignmentsSheetTable`)**:
+    - Removed hardcoded fake assignments (`A1: SQL Queries & Relational Algebra`, `A2: Database Normalization`, `A3: Transaction Management`) and fake 10-student cohort.
+    - Cleanly rendered dynamic columns when 0 assignments exist (`Assignments: —`) without table breakage.
+  - **Laboratory & Practical Experiments Sheet (`loadPracticalsSheetData` & `renderPracticalsSheetTable`)**:
+    - Removed hardcoded fake labs (`Lab 1: ER Modeling`, `Lab 2: DDL Table Creation`, etc.) and fake 10-student cohort.
+    - Cleanly rendered dynamic columns when 0 practicals exist without table layout issues.
+  - **Spreadsheet Roster Modals (`openEditStudentRosterModal`, `openAddRowModal`)**:
+    - Removed fallback fake student cohort generation from edit modal.
+    - Removed pre-filled dummy enrollment numbers (`2024IT0...`) and fake score presets (`[18, 17]`) from add student row modal.
+- **Verification & Parity**:
+  - `test-theme-support.js`: 88/88 passed (zero hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 38/38 passed.
+  - `test-ui-manifest-sync.js`: 208/208 passed (100% manifest parity across all 32 pages).
+
+### ✅ Milestone 447: ESP32 Wi-Fi Multi-Network Manager, Real-Time Nearby Scan, Dual-Stack MQTT & Complete Hardware Installation Guide
+- **Why MQTT vs HTTPS REST & VidyaOS Dual-Stack Solution (`HARDWARE_WIRING_AND_PROTOCOL.md`)**:
+  - Authored comprehensive architectural analysis explaining why consumer IoT uses MQTT (low-overhead persistent TCP socket, 2-byte header, pub/sub) and why university/college enterprise campus networks break with raw MQTT (strict institutional firewalls and proxy filters block non-standard outbound TCP ports 1883 and 8883, dropping connections).
+  - Implemented VidyaOS Dual-Stack Architecture:
+    - Primary: Universal HTTPS REST on standard port 443 with hardware-accelerated AES-256-GCM encryption (guaranteed firewall-proof across all academic Wi-Fi, 4G/5G hotspots, and captive portals).
+    - Secondary: Optional lightweight MQTT telemetry via `PubSubClient` (`#define ENABLE_MQTT_TELEMETRY true` in `config.h`) for subnets where open broker connections are permitted.
+- **Complete Library Installation Guide (`HARDWARE_WIRING_AND_PROTOCOL.md` & `platformio.ini`)**:
+  - Documented exact library search strings for Arduino IDE Library Manager:
+    - `Adafruit Fingerprint Sensor Library` (Adafruit, v2.1.3+)
+    - `Adafruit SSD1306` (Adafruit, v2.5.9+)
+    - `Adafruit GFX Library` (Adafruit, v1.11.9+)
+    - `ArduinoJson` (Benoit Blanchon, v6.21.4)
+    - `PubSubClient` (Nick O'Leary, v2.8+)
+  - Updated `platformio.ini` with ready-to-flash `lib_deps`.
+- **Dynamic Wi-Fi Management, Persistent NVS & Failover Firmware (`config.h` & `VidyaOS_ESP32_Biometric_Node.ino`)**:
+  - Implemented multi-AP failover using `<WiFiMulti.h>` and persistent credential storage using `<Preferences.h>` (NVS namespace `vidya_wifi`).
+  - Added remote command handlers:
+    - `SCAN_WIFI`: Triggers `WiFi.scanNetworks()`, measures signal strength (RSSI), detects BSSIDs and encryption protocols (`WPA2_PSK`, `WPA3_PSK`, `OPEN`), and sends report to `/api/v1/devices/esp32/wifi-scan-report`.
+    - `SWITCH_WIFI` / `ADD_WIFI`: Persists credentials to NVS, attempts connection with 12s timeout; automatically rolls back to default AP if connection fails.
+    - `FALLBACK_WIFI`: Forces immediate re-association with the primary designated default AP.
+    - `RESET_WIFI`: Emergency reset clearing custom networks from NVS and restoring factory defaults.
+- **Backend Wi-Fi Services & Database Schema (`deviceService.js`, `deviceController.js`, `routes/devices.js`)**:
+  - Created database tables `device_wifi_networks` and `device_wifi_scans` across both `college_attendance` and `vdiyaos`.
+  - Added full REST endpoints:
+    - `GET /api/v1/devices/hod/:device_id/wifi` (List saved Wi-Fi networks).
+    - `POST /api/v1/devices/hod/:device_id/wifi` (Add Wi-Fi credentials).
+    - `PUT /api/v1/devices/hod/:device_id/wifi/:wifi_id/default` (Designate default failover AP).
+    - `DELETE /api/v1/devices/hod/:device_id/wifi/:wifi_id` (Remove Wi-Fi credentials).
+    - `POST /api/v1/devices/hod/:device_id/wifi/scan` (Dispatch scan command).
+    - `GET /api/v1/devices/hod/:device_id/wifi/scans` (Retrieve real-time scan results).
+    - `POST /api/v1/devices/hod/:device_id/wifi/switch` (Remotely switch active AP).
+    - `POST /api/v1/devices/hod/:device_id/wifi/fallback` (Trigger fallback to default AP).
+    - `POST /api/v1/devices/hod/:device_id/wifi/reset` (Emergency factory reset).
+    - `POST /api/v1/devices/esp32/wifi-scan-report` (Report scanned APs).
+- **Frontend HOD ESP32 Portal UI (`esp32-devices/index.html`, `esp32-devices.js`, `esp32-devices.css`)**:
+  - Added **Wi-Fi Connectivity & Multi-Network Failover Card** with live connection status badge.
+  - Added buttons: `🔍 Scan Nearby Wi-Fi`, `+ Add Wi-Fi Manually`, `🔄 Fallback to Default Wi-Fi`, and `⚠️ Emergency Reset`.
+  - Added **Nearby Scanned Wi-Fi Networks Modal** (`#scan-wifi-modal`) with real-time RSSI signal badges, security tags, and 1-click password connect prompt.
+  - Added **Add Wi-Fi Network Modal** (`#add-wifi-modal`) supporting immediate switch and default designation.
+  - Zero hardcoded colors: all styles fully tokenized via CSS variables (`var(--bg-surface)`, `var(--color-primary)`, `var(--status-present)`, etc.).
+- **Automated Verification Suite**:
+  - `test-esp32-secure-terminal.js`: 34/34 Passed (100% pass rate: 23 hardware/crypto/mode tests + 11 Wi-Fi multi-network, scan, switch, fallback, and reset tests).
+  - `test-ui-manifest-sync.js`: 208/208 Passed (100% manifest parity for 32 pages).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded colors).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
 
 ### ✅ Milestone 446: ESP32 Biometric Hardware Node & Secure Attendance Terminal (AS608 Optical, 4 Dedicated LEDs, Touch-Wake Light Sleep & Dual-Layer Security)
 - **Hardware Architecture & Pin-by-Pin Wiring Specification (`config.h` & `HARDWARE_WIRING_AND_PROTOCOL.md`)**:
@@ -10315,6 +10454,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   3. **4-Column Segmented Tab Grid (Zero Horizontal Overflow)**: Replaced horizontally scrolling `.leave-tabs-cluster` with a responsive 4-column CSS grid (`grid-template-columns: repeat(4, 1fr)`). All 4 tabs (`Pending 3`, `Approved 12`, `Rejected 4`, `All`) fit on screen without cutoffs or horizontal scrolling on all phone viewports (320px–428px).
   4. **Consolidated Mobile Media Queries**: Removed fragmented `@media` queries throughout `leave-approvals.css` and unified all mobile responsive rules into Section 8.
   5. **Verification & Regression Suites**: Verified 100% passing across **88/88 theme token tests** (zero hex colors) and **195/195 UI manifest tests** (`npm run ui:verify`).
+
+### âœ… Milestone 460: Capacitor Native Mobile App Integration, GitHub Actions Auto-APK Release & In-App Auto-Updates
+- **Date**: November 18, 2026
+- **Scope & Objectives**:
+  1. **Capacitor Mobile Setup (Frontend-Only Native Wrapper)**:
+     - Configured Capacitor (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`, `@capacitor/app`) in `VidyaOS-main` and synced to `Attendance-System-Simplified`.
+     - Standardized `capacitor.config.json` with `appId: "com.vidyaos.app"`, `webDir: "www"`, cleartext traffic and native scheme support.
+     - Generated full native Android project under `android/` with camera permissions (`android.permission.CAMERA`) and Internet access.
+     - Zero separate mobile code required — standard HTML5, CSS3, and JavaScript are bundled seamlessly.
+  2. **Mobile Environment & API Proxy Bridge (`mobile-bridge.js`)**:
+     - Transparently detects native mobile shell (`isCapacitor`) and reroutes `/api/v1/*` and `/uploads/*` requests to cloud backend (`https://vidyaos-backend.onrender.com`).
+     - Added native Android hardware back button handler to dismiss open modals/drawers first before navigating back or exiting.
+     - Implemented in-app OTA update checker against GitHub Releases / `app-version.json` with modern non-intrusive update notification banner and 1-click APK download.
+  3. **Automated CI/CD Workflow (`.github/workflows/build-android.yml`)**:
+     - Automatically triggers on every `git push` to `main`.
+     - Packages web assets using `scripts/prepare-mobile.js`, syncs Android workspace, builds APK with Gradle, creates official GitHub Release with tag `v1.0.<run_number>`, and attaches `VidyaOS.apk`.
+     - Updates `README.md` and `app-version.json` with the latest direct download links on each automated release.
+  4. **Database Resilience & Vercel Route Fixes**:
+     - Fixed Vercel 404 for `/register` in `vercel.json` by specifying destination `/login/register/index.html`.
+     - Hardened `teachingGroupModel.js` against missing `tg.year` and `tg.subject_short_name` errors on remote databases via dynamic column reflection.
+  5. **Verification & Regression Suites**:
+     - Verified 88/88 theme token compliance tests (`test-theme-support.js`).
+     - Verified 38/38 RBAC route gate tests (`test-rbac-and-structure.js`).
+     - Verified 208/208 UI Manifest Parity tests (`test-ui-manifest-sync.js`).
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.
