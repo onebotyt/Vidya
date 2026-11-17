@@ -38,6 +38,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 448: Comprehensive Schema Self-Healing (Year & Metadata Columns), Trash Bin Client Fix & Safe Role Normalization
+- **Comprehensive Schema Auto-Healing (`teachingGroupModel.js`)**:
+  - Expanded `ensureColumns()` with direct DDL execution to auto-create all missing columns across remote production environments: `year INT NULL`, `subject_short_name VARCHAR(100) NULL`, `deleted_at DATETIME NULL`, `department_id INT NULL`, `syllabus_units LONGTEXT NULL`, `total_units INT NULL DEFAULT 5`, `component VARCHAR(50) NULL DEFAULT 'THEORY'`, and `archived_at DATETIME NULL`.
+  - Added automated fallback data migration calculating `year = CASE WHEN semester IN (1, 2) THEN 1 WHEN semester IN (3, 4) THEN 2 ELSE 3 END WHERE year IS NULL`.
+  - Completely resolved `Unknown column 'tg.year' in 'field list'` on deployed `/faculty/dashboard`.
+- **Classroom Trash Bin Controller Fix (`trash.js`)**:
+  - Replaced undefined `api.get('/teaching-groups?status=TRASH')` with authenticated `fetch()` containing Bearer token and proper JSON response handling.
+  - Eliminated "Error Loading Trash: Could not connect to classroom service", rendering trashed classrooms with active countdowns and restoration controls.
+- **Safe Role Normalization (`teachingGroupModel.js`)**:
+  - Normalized `user?.roles` before checking `SYSTEM_ADMIN` membership, preventing `TypeError: Cannot read properties of undefined (reading 'includes')` on single-role sessions.
+- **Regression Verification**:
+  - `test-ui-manifest-sync.js`: 208/208 tests passed.
+  - `test-theme-support.js`: 88/88 tests passed.
+  - `test-rbac-and-structure.js`: 38/38 tests passed.
+
 ### ✅ Milestone 447: Production Self-Healing Schema Migrations, Student Roster Restoration, Vercel Zero-404 Clean Routing & Mobile Responsive Hardening
 - **Automated Startup Migration & Schema Self-Healing (`teachingGroupModel.js`, `server.js`)**:
   - Implemented `TeachingGroupModel.ensureColumns()` executing automated schema migrations on startup and before queries for `subject_short_name` and `deleted_at`.
