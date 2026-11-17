@@ -135,9 +135,9 @@ class TeachingGroupModel {
    */
   static async listGroups({ user, statusFilter }) {
     let sql = `
-      SELECT tg.id, tg.name, tg.subject_name, tg.subject_code, tg.component, tg.total_units, tg.syllabus_units, tg.teacher_id,
+      SELECT tg.id, tg.name, tg.subject_name, tg.subject_short_name, tg.subject_code, tg.component, tg.total_units, tg.syllabus_units, tg.teacher_id,
              tg.academic_year_id, ay.label as academic_year_label,
-             tg.semester, tg.invite_code, tg.status, tg.created_at, tg.archived_at, tg.deleted_at,
+             tg.semester, tg.year, tg.invite_code, tg.status, tg.created_at, tg.archived_at, tg.deleted_at,
              t.full_name as teacher_name, t.department_id as teacher_department_id,
              d.name as department_name, d.code as department_code,
              ar.id as register_id,
@@ -212,11 +212,13 @@ class TeachingGroupModel {
   static async createGroupTransaction({
     name,
     subjectName,
+    subjectShortName,
     subjectCode,
     component,
     effTeacherId,
     ayId,
     semester,
+    year: inputYear,
     inviteCode,
     targetDeptId,
     enrollmentMode,
@@ -225,15 +227,17 @@ class TeachingGroupModel {
   }) {
     return await withTransaction(async (conn) => {
       const finalCode = (subjectCode || '').trim() || (subjectName || '').split(/[\s-]+/).map(w => w[0]).join('').toUpperCase().slice(0, 8);
+      const computedYear = inputYear ? Number(inputYear) : Math.ceil(semester / 2);
+      const finalShort = (subjectShortName || '').trim() || finalCode;
       const groupInsert = await conn.query(
         `INSERT INTO teaching_groups 
-          (name, subject_name, subject_code, component, total_units, teacher_id, academic_year_id, semester, invite_code, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP)`,
-        [name, subjectName, finalCode, component, totalUnits || 5, effTeacherId, ayId, semester, inviteCode]
+          (name, subject_name, subject_short_name, subject_code, component, total_units, teacher_id, academic_year_id, semester, year, invite_code, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP)`,
+        [name, subjectName, finalShort, finalCode, component, totalUnits || 5, effTeacherId, ayId, semester, computedYear, inviteCode]
       );
       const groupId = groupInsert.insertId || groupInsert.lastInsertRowid;
 
-      const year = Math.ceil(semester / 2);
+      const year = computedYear;
       const isDual = (component === 'THEORY_PRACTICAL' || component === 'THEORY + PRACTICAL' || component === 'BOTH');
       let registerId;
 
@@ -711,6 +715,7 @@ class TeachingGroupModel {
       await conn.execute(`DELETE FROM teaching_group_members WHERE group_id = ?`, [groupId]);
       await conn.execute(`DELETE FROM classroom_posts WHERE group_id = ?`, [groupId]);
       await conn.execute(`UPDATE attendance_registers SET group_id = NULL, is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE group_id = ?`, [groupId]);
+      await conn.execute(`UPDATE assessments SET group_id = NULL WHERE group_id = ?`, [groupId]);
       await conn.execute(`DELETE FROM teaching_groups WHERE id = ?`, [groupId]);
     });
   }

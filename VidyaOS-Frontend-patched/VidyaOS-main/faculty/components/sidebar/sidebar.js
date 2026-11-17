@@ -29,7 +29,7 @@
   const FACULTY_NAV_ITEMS = [
     { key: 'dashboard', label: 'Dashboard', shortLabel: 'Home', href: '/faculty/dashboard/index.html', icon: 'home' },
     { key: 'classes', label: 'Classroom', shortLabel: 'Classes', href: '/faculty/classes/index.html', icon: 'classes' },
-    { key: 'attendance', label: 'Attendance Register', shortLabel: 'Register', href: '/faculty/registers/index.html', icon: 'registers' },
+    { key: 'records', label: 'Student Records', shortLabel: 'Records', href: '/faculty/student-records/index.html', icon: 'registers' },
     { key: 'sheets', label: 'Sheet Studio', shortLabel: 'Sheets', href: '/faculty/sheets/index.html', icon: 'sheets' },
     { key: 'leaves', label: 'Leave Request', shortLabel: 'Leave', href: '/faculty/leave-approvals/index.html', icon: 'leaves' },
     { key: 'students', label: 'Students Management', shortLabel: 'Students', href: '/faculty/students/index.html', icon: 'students' },
@@ -42,7 +42,7 @@
   const FACULTY_MOBILE_TABS = [
     { key: 'home', label: 'Home', href: '/faculty/dashboard/index.html', icon: 'home' },
     { key: 'classes', label: 'Classes', href: '/faculty/classes/index.html', icon: 'classes' },
-    { key: 'attendance', label: 'Register', href: '/faculty/registers/index.html', icon: 'registers' },
+    { key: 'records', label: 'Records', href: '/faculty/student-records/index.html', icon: 'registers' },
     { key: 'students', label: 'Students', href: '/faculty/students/index.html', icon: 'students' },
     { key: 'settings', label: 'Settings', href: '/faculty/profile/index.html', icon: 'settings' }
   ];

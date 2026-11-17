@@ -142,20 +142,49 @@
 
   <!-- Modal: Create Teaching Class -->
   <div id="create-class-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:11000; align-items:center; justify-content:center; padding:1rem;">
-    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; width:100%; max-width:480px; box-shadow:0 12px 36px rgba(0,0,0,0.2); overflow:hidden;">
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; width:100%; max-width:520px; box-shadow:0 12px 36px rgba(0,0,0,0.2); overflow:hidden;">
       <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
         <strong style="font-size:1.1rem; color:var(--text-main);">+ Create New Class</strong>
         <button type="button" onclick="closeCreateGroupModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text-muted);">&times;</button>
       </div>
       <form onsubmit="submitCreateClass(event)" style="padding:1.25rem;">
-        <div style="margin-bottom:1rem;">
+        <div style="margin-bottom:0.85rem;">
           <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Subject Name *</label>
-          <input type="text" id="input-class-name" required placeholder="e.g. Cloud Computing &amp; DevOps" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+          <input type="text" id="input-class-name" required placeholder="e.g. Database Management Systems" oninput="autoSuggestShortName(this.value)" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
+          <div>
+            <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Subject Short Name</label>
+            <input type="text" id="input-class-short-name" placeholder="e.g. DBMS" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Subject Code</label>
+            <input type="text" id="input-class-code" placeholder="e.g. IT501" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
+          <div>
+            <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Components *</label>
+            <select id="select-class-comp" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+              <option value="THEORY" selected>THEORY</option>
+              <option value="PRACTICAL">PRACTICAL</option>
+              <option value="THEORY+PRACTICAL">THEORY + PRACTICAL</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Academic Session</label>
+            <select id="select-class-session" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+              <option value="">Loading session...</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
           <div>
             <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Semester</label>
-            <select id="select-class-sem" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+            <select id="select-class-sem" onchange="autoUpdateYear(this.value)" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
               <option value="1">Sem 1</option>
               <option value="2">Sem 2</option>
               <option value="3">Sem 3</option>
@@ -165,17 +194,16 @@
             </select>
           </div>
           <div>
-            <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Component</label>
-            <select id="select-class-comp" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
-              <option value="THEORY" selected>THEORY</option>
-              <option value="PRACTICAL">PRACTICAL</option>
-            </select>
+            <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Year (Auto-Derived)</label>
+            <input type="text" id="input-class-year" value="3rd Year" readonly style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-muted); font-size:0.88rem; box-sizing:border-box; cursor:not-allowed;">
           </div>
         </div>
+
         <div style="margin-bottom:1.25rem;">
           <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Room / Batch Code</label>
-          <input type="text" id="input-class-room" placeholder="e.g. 101" value="101" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
+          <input type="text" id="input-class-room" placeholder="e.g. Room 101 or Lab 2 / Batch A" value="101" style="width:100%; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.88rem; box-sizing:border-box;">
         </div>
+
         <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
           <button type="button" onclick="closeCreateGroupModal()" style="padding:0.65rem 1.15rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); cursor:pointer;">Cancel</button>
           <button type="submit" style="padding:0.65rem 1.35rem; border-radius:8px; border:none; background:var(--color-primary); color:#ffffff; font-weight:700; cursor:pointer;">Create Class</button>

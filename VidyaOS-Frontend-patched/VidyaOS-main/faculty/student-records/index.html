@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Student Academic Records & Dossiers — VidyaOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/faculty/components/core/reset.css">
+  <link rel="stylesheet" href="/faculty/components/core/variables.css">
+  <link rel="stylesheet" href="/faculty/components/faculty-base.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/components/header/header.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/components/sidebar/sidebar.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/components/delete-modal/delete-modal.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/student-records/records.css?v=20261117">
+  <script>
+    (function () {
+      try {
+        if (window.innerWidth >= 769) {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (_) { }
+    })();
+  </script>
+</head>
+
+<body class="page-layout">
+
+  <div class="faculty-app-layout" id="faculty-app-layout">
+    <div class="faculty-main-wrap">
+      <!-- Dedicated Faculty Header Mount -->
+      <div id="faculty-header-mount"></div>
+
+      <main class="rec-container">
+        <!-- Page Title & Primary Actions Row -->
+        <div class="rec-page-header">
+          <div class="rec-title-group">
+            <h1>Student Academic Records &amp; Dossiers</h1>
+            <p>Decoupled historical records archive, student profile dossiers, multi-semester evaluation matrices, and multi-format exports.</p>
+          </div>
+          <div class="rec-header-actions">
+            <button type="button" class="btn-rec-export-all" onclick="openCohortExportModal()"
+              title="Export all student records matching active filters">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export All Records</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="rec-filter-card">
+          <div class="rec-filter-grid">
+            <!-- Academic Session Filter -->
+            <div class="rec-filter-item">
+              <label for="filter-session">Session</label>
+              <select id="filter-session" onchange="onFilterChange()">
+                <option value="">Loading Sessions...</option>
+              </select>
+            </div>
+
+            <!-- Year Filter Pills / Select -->
+            <div class="rec-filter-item">
+              <label for="filter-year">Year</label>
+              <select id="filter-year" onchange="onYearFilterChange()">
+                <option value="">All Years</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+              </select>
+            </div>
+
+            <!-- Semester Filter -->
+            <div class="rec-filter-item">
+              <label for="filter-semester">Semester</label>
+              <select id="filter-semester" onchange="onFilterChange()">
+                <option value="">All Semesters</option>
+                <option value="1">Sem 1</option>
+                <option value="2">Sem 2</option>
+                <option value="3">Sem 3</option>
+                <option value="4">Sem 4</option>
+                <option value="5">Sem 5</option>
+                <option value="6">Sem 6</option>
+              </select>
+            </div>
+
+            <!-- Batch Filter -->
+            <div class="rec-filter-item">
+              <label for="filter-batch">Batch / Passing Year</label>
+              <select id="filter-batch" onchange="onFilterChange()">
+                <option value="">All Batches</option>
+              </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="rec-filter-item">
+              <label for="filter-status">Status</label>
+              <select id="filter-status" onchange="onFilterChange()">
+                <option value="active">Active Enrolled</option>
+                <option value="all">All (Active &amp; Archived)</option>
+                <option value="transferred">Transferred</option>
+                <option value="withdrawn">Withdrawn</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Search Row -->
+          <div class="rec-search-row">
+            <div class="rec-search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="rec-search-input" placeholder="Search by student name, roll #, enrollment #, or email..."
+                oninput="onSearchInput(this.value)">
+            </div>
+            <button type="button" class="btn-rec-clear" onclick="resetFilters()">Reset Filters</button>
+          </div>
+        </div>
+
+        <!-- Student Records Data Section -->
+        <div class="rec-table-card">
+          <!-- Table Header Meta -->
+          <div class="rec-table-meta">
+            <div class="rec-meta-info">
+              <span id="rec-records-count">Showing 0 students</span>
+              <span class="rec-meta-badge" id="rec-active-cohort-tag">All Cohorts</span>
+            </div>
+          </div>
+
+          <!-- Desktop Table & Mobile Cards -->
+          <div class="rec-table-wrap">
+            <table class="rec-table" id="rec-students-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Roll #</th>
+                  <th class="col-enrollment">Enrollment No</th>
+                  <th>Student Name</th>
+                  <th class="col-cohort">Cohort</th>
+                  <th class="col-batch">Batch</th>
+                  <th>Attendance</th>
+                  <th style="width: 70px; text-align: center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rec-table-body">
+                <tr>
+                  <td colspan="7" class="rec-loading-cell">
+                    <div class="rec-spinner"></div>
+                    <span>Loading student records...</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Single Student Full Dossier & Export -->
+  <div id="modal-student-dossier" class="rec-modal-backdrop" style="display:none;"
+    onclick="if(event.target===this)closeDossierModal()">
+    <div class="rec-modal-card">
+      <div class="rec-modal-header">
+        <div class="rec-modal-header-titles">
+          <strong id="dossier-modal-name">Student Academic Dossier</strong>
+          <span id="dossier-modal-sub" class="rec-dossier-sub">Roll # -- &bull; Enrollment --</span>
+        </div>
+        <button type="button" class="btn-modal-close" onclick="closeDossierModal()">&times;</button>
+      </div>
+
+      <div class="rec-dossier-body">
+        <!-- Student Profile Demographic Summary -->
+        <div class="rec-dossier-profile-card">
+          <div class="rec-profile-grid">
+            <div class="rec-info-item">
+              <span class="rec-info-label">Full Name</span>
+              <strong class="rec-info-val" id="dossier-full-name">--</strong>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Class Roll No</span>
+              <strong class="rec-info-val" id="dossier-roll-no">--</strong>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Official Enrollment</span>
+              <strong class="rec-info-val" id="dossier-enrollment-no">--</strong>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">UBTER Reg. No</span>
+              <strong class="rec-info-val" id="dossier-reg-no">--</strong>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Father's Name</span>
+              <span class="rec-info-val" id="dossier-father-name">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Mother's Name</span>
+              <span class="rec-info-val" id="dossier-mother-name">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Aadhar Number</span>
+              <span class="rec-info-val" id="dossier-aadhar">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Date of Birth (DOB)</span>
+              <span class="rec-info-val" id="dossier-dob">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Gender / Category</span>
+              <span class="rec-info-val" id="dossier-gender-cat">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Contact Email</span>
+              <span class="rec-info-val" id="dossier-email">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Contact Phone</span>
+              <span class="rec-info-val" id="dossier-phone">--</span>
+            </div>
+            <div class="rec-info-item">
+              <span class="rec-info-label">Permanent Address</span>
+              <span class="rec-info-val" id="dossier-address">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Semester Filter Checkboxes (Real-time Filter) -->
+        <div class="rec-sem-checkboxes-bar">
+          <div class="rec-checkbox-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span>Filter Academic Scope by Semester:</span>
+          </div>
+          <div class="rec-checkboxes-list">
+            <label class="rec-check-label">
+              <input type="checkbox" id="check-sem-all" checked onchange="toggleSelectAllSemesters(this.checked)">
+              <span>All Semesters</span>
+            </label>
+            <label class="rec-check-label">
+              <input type="checkbox" class="check-sem-item" value="1" checked onchange="onSemesterCheckboxToggle()">
+              <span>Sem 1</span>
+            </label>
+            <label class="rec-check-label">
+              <input type="checkbox" class="check-sem-item" value="2" checked onchange="onSemesterCheckboxToggle()">
+              <span>Sem 2</span>
+            </label>
+            <label class="rec-check-label">
+              <input type="checkbox" class="check-sem-item" value="3" checked onchange="onSemesterCheckboxToggle()">
+              <span>Sem 3</span>
+            </label>
+            <label class="rec-check-label">
+              <input type="checkbox" class="check-sem-item" value="4" checked onchange="onSemesterCheckboxToggle()">
+              <span>Sem 4</span>
+            </label>
+            <label class="rec-check-label">
+              <input type="checkbox" class="check-sem-item" value="5" checked onchange="onSemesterCheckboxToggle()">
+              <span>Sem 5</span>
+            </label>
+            <label class="rec-check-label">
+              <input type="checkbox" class="check-sem-item" value="6" checked onchange="onSemesterCheckboxToggle()">
+              <span>Sem 6</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Dossier View Sub-tabs -->
+        <div class="rec-dossier-tabs">
+          <button type="button" class="rec-dossier-tab active" data-tab="tests" onclick="switchDossierTab('tests')">
+            <span>Tests &amp; Exams</span>
+            <span class="rec-tab-badge" id="dossier-tests-count">0</span>
+          </button>
+          <button type="button" class="rec-dossier-tab" data-tab="attendance" onclick="switchDossierTab('attendance')">
+            <span>Attendance Matrix</span>
+            <span class="rec-tab-badge" id="dossier-att-count">0</span>
+          </button>
+          <button type="button" class="rec-dossier-tab" data-tab="documents" onclick="switchDossierTab('documents')">
+            <span>Official Documents</span>
+            <span class="rec-tab-badge" id="dossier-docs-count">0</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Tests & Exams Content -->
+        <div id="dossier-content-tests" class="rec-tab-content active">
+          <div class="rec-subtable-wrap">
+            <table class="rec-subtable">
+              <thead>
+                <tr>
+                  <th>Semester</th>
+                  <th>Subject</th>
+                  <th>Assessment / Exam</th>
+                  <th>Type</th>
+                  <th>Max Marks</th>
+                  <th>Marks Scored</th>
+                  <th>Performance</th>
+                </tr>
+              </thead>
+              <tbody id="dossier-tests-body">
+                <tr>
+                  <td colspan="7" class="rec-empty-cell">No tests recorded for selected semesters.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Attendance Content -->
+        <div id="dossier-content-attendance" class="rec-tab-content">
+          <div class="rec-subtable-wrap">
+            <table class="rec-subtable">
+              <thead>
+                <tr>
+                  <th>Semester</th>
+                  <th>Subject Name</th>
+                  <th>Subject Code</th>
+                  <th>Total Lectures</th>
+                  <th>Attended</th>
+                  <th>Attendance %</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dossier-att-body">
+                <tr>
+                  <td colspan="7" class="rec-empty-cell">No attendance recorded for selected semesters.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 3: Official Documents Content -->
+        <div id="dossier-content-documents" class="rec-tab-content">
+          <div class="rec-subtable-wrap">
+            <table class="rec-subtable">
+              <thead>
+                <tr>
+                  <th>Document Title</th>
+                  <th>Category</th>
+                  <th>File Name</th>
+                  <th>Size</th>
+                  <th>Uploaded Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dossier-docs-body">
+                <tr>
+                  <td colspan="6" class="rec-empty-cell">No student documents uploaded.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dossier Modal Footer (Multi-Format Export) -->
+      <div class="rec-modal-footer">
+        <div class="rec-export-formats">
+          <span class="rec-export-format-label">Select Formats to Export:</span>
+          <label class="rec-format-label">
+            <input type="checkbox" id="export-single-pdf" checked>
+            <span>PDF Document</span>
+          </label>
+          <label class="rec-format-label">
+            <input type="checkbox" id="export-single-doc" checked>
+            <span>Word Document (.doc)</span>
+          </label>
+          <label class="rec-format-label">
+            <input type="checkbox" id="export-single-excel" checked>
+            <span>Excel (.xlsx)</span>
+          </label>
+        </div>
+        <div class="rec-footer-actions">
+          <button type="button" class="btn-rec-outline" onclick="closeDossierModal()">Close</button>
+          <button type="button" class="btn-rec-solid" onclick="executeSingleStudentExport()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export Selected Dossier</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cohort Batch Export (Export All) -->
+  <div id="modal-cohort-export" class="rec-modal-backdrop" style="display:none;"
+    onclick="if(event.target===this)closeCohortExportModal()">
+    <div class="rec-modal-card" style="max-width: 540px;">
+      <div class="rec-modal-header">
+        <strong style="font-size:1.05rem; color:var(--text-main);">Export All Cohort Records</strong>
+        <button type="button" class="btn-modal-close" onclick="closeCohortExportModal()">&times;</button>
+      </div>
+
+      <form id="form-cohort-export" onsubmit="executeCohortExport(event)" style="padding: 1.25rem;">
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">
+          Filters active on the student records page have been pre-filled. Adjust any scope parameter as needed:
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
+          <div>
+            <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Academic Session</label>
+            <select id="export-cohort-session" onchange="onExportSessionChange(this.value)" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.85rem;">
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Batch / Passing Year</label>
+            <select id="export-cohort-batch" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.85rem;">
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+          <div>
+            <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Year</label>
+            <select id="export-cohort-year" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.85rem;">
+              <option value="">All Years</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">Semester</label>
+            <select id="export-cohort-semester" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main); font-size:0.85rem;">
+              <option value="">All Semesters</option>
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+              <option value="3">Sem 3</option>
+              <option value="4">Sem 4</option>
+              <option value="5">Sem 5</option>
+              <option value="6">Sem 6</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:1.25rem;">
+          <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:0.45rem;">Export Formats</label>
+          <div style="display:flex; flex-wrap:wrap; gap:0.85rem;">
+            <label class="rec-format-label">
+              <input type="checkbox" id="cohort-fmt-excel" checked>
+              <span>Excel Spreadsheet (.xlsx)</span>
+            </label>
+            <label class="rec-format-label">
+              <input type="checkbox" id="cohort-fmt-pdf">
+              <span>PDF Roster (.pdf)</span>
+            </label>
+            <label class="rec-format-label">
+              <input type="checkbox" id="cohort-fmt-doc">
+              <span>Word Roster (.doc)</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
+          <button type="button" class="btn-rec-outline" onclick="closeCohortExportModal()">Cancel</button>
+          <button type="submit" class="btn-rec-solid">Download Cohort Records</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shared Notification Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Core Scripts -->
+  <script src="/faculty/components/core/exceljs.min.js"></script>
+  <script src="/faculty/components/core/api.js"></script>
+  <script src="/faculty/components/core/auth.js"></script>
+  <script src="/faculty/components/icons.js?v=20261117"></script>
+  <script src="/faculty/components/sidebar/sidebar.js?v=20261117"></script>
+  <script src="/faculty/components/header/header.js?v=20261117"></script>
+  <script src="/faculty/student-records/records.js?v=20261117"></script>
+</body>
+
+</html>
