@@ -38,6 +38,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 438: Academic Dossier Modal Refinement & Dedicated Student Personal Details Export Engine
+
+- **Dedicated Export Button for Student Personal Details (Bio-Data)**:
+  - Added dedicated header on the Student Personal Profile card (`.rec-profile-card-header`) with a styled **`Export Personal Details`** button and dropdown menu in `/faculty/student-records/index.html`.
+  - Independent export triggers for:
+    - **Bio-Data Sheet (PDF)**: Printable institutional bio-data sheet with verification stamp and signatures (Student, Faculty In-Charge, HOD Seal).
+    - **Demographics Spreadsheet (.xlsx)**: Clean formatted Excel workbook with 19 personal KYC profile fields.
+    - **Bio-Data Document (.doc)**: Word document with full demographics table and signature lines.
+  - Added quick **Export Personal Details (Bio-Data)** directly inside the 3-dot kebab action menu on the main student list table, allowing 1-click personal profile exports without opening the modal.
+- **Academic Dossier Modal Upgrades**:
+  - Fixed subtitle text bullet entity bug: replaced literal `&bull;` with Unicode bullet `•` (`Roll #... • Enrollment: ... • Batch: ...`).
+  - Added dedicated **`Coursework & Assignments`** tab with live badge count alongside `Tests & Exams`, `Attendance Matrix`, and `Official Documents`.
+  - Added intelligent assessment classifier separating tests/exams from assignments/coursework/lab projects.
+  - **Selective Data Section Inclusion**: Added checkboxes in modal footer allowing faculty to choose exactly what to export:
+    - `[x] Student Profile Details`
+    - `[x] Tests & Exams`
+    - `[x] Coursework & Assignments`
+    - `[x] Attendance Matrix`
+    - `[x] Official Documents`
+  - Selective semester filtering applies across all exported sections (only checked semesters are included).
+  - Multi-format support: PDF, Word (.doc), and Excel (.xlsx) generated with only the selected sections.
+- **Verification & Theme Integrity**:
+  - 100% Theme Token compliant (0 hardcoded colors, verified with `test-theme-support.js` - 88/88 passed).
+  - Responsive on mobile (<= 412px viewports) with full dropdown menu containment and zero horizontal overflow.
+  - Synced across `VidyaOS` and `Attendance-System-Simplified`.
+  - Committed and pushed to `onebotyt/Vidya.git` (commit `7be5b0a`).
+
 ### ✅ Milestone 435: Student Transfer & Withdrawal Workflow with Zero Data Loss and Permanent Document Access
 
 - **Student 3-Dot (Kebab) Dropdown Action Menu Upgrades**:
