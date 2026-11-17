@@ -249,7 +249,7 @@ class StudentRecordModel {
     }
     const profile = studentRows[0];
 
-    // 2. Tests, exams, and assignments
+    // 2. Tests, exams, lab practicals, and coursework assignments
     const assessments = await query(
       `SELECT 
         a.id as assessment_id,
@@ -258,17 +258,20 @@ class StudentRecordModel {
         a.max_marks,
         a.semester,
         a.year,
-        COALESCE(sub.marks_obtained, 0) as marks_obtained,
-        sub.status as submission_status,
+        sub.marks_obtained,
+        COALESCE(sub.status, 'PENDING') as submission_status,
         sub.submitted_at,
-        s.name as subject_name,
-        s.code as subject_code
-      FROM assessment_submissions sub
-      JOIN assessments a ON sub.assessment_id = a.id
+        sub.file_path,
+        sub.original_filename,
+        sub.feedback,
+        COALESCE(s.name, 'Department Subject') as subject_name,
+        COALESCE(s.code, 'IT500') as subject_code
+      FROM assessments a
+      LEFT JOIN assessment_submissions sub ON a.id = sub.assessment_id AND sub.student_id = ?
       LEFT JOIN subjects s ON a.subject_id = s.id
-      WHERE sub.student_id = ?
+      WHERE (sub.student_id = ? OR (a.department_id = ? AND a.semester = ?))
       ORDER BY a.semester ASC, a.created_at DESC`,
-      [studentId]
+      [studentId, studentId, profile.department_id || deptId || 2, profile.current_semester || 5]
     );
 
     // 3. Attendance broken down by semester & subject
@@ -285,6 +288,25 @@ class StudentRecordModel {
       WHERE ra.student_id = ?
       GROUP BY s.semester, sub.name, sub.code
       ORDER BY s.semester ASC, sub.name ASC`,
+      [studentId]
+    );
+
+    // 3b. Detailed daily attendance sessions for Day 1-31 monthly matrix ledger
+    const attendanceSessions = await query(
+      `SELECT 
+        s.id as session_id,
+        s.semester,
+        s.session_date,
+        s.session_type,
+        s.period_number,
+        COALESCE(sub.name, 'Department Subject') as subject_name,
+        COALESCE(sub.code, 'IT500') as subject_code,
+        ra.attendance_status
+      FROM register_attendance ra
+      JOIN attendance_sessions s ON ra.session_id = s.id
+      LEFT JOIN subjects sub ON s.subject_id = sub.id
+      WHERE ra.student_id = ?
+      ORDER BY s.session_date ASC, s.period_number ASC`,
       [studentId]
     );
 
@@ -311,6 +333,7 @@ class StudentRecordModel {
       profile,
       assessments,
       attendance: attendanceBySemester,
+      attendanceSessions,
       documents
     };
   }

@@ -38,6 +38,47 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 439: Academic Dossier Redesign — 5 Interactive Status Cards, View-Only Excel Ledgers, Day 1-31 Attendance Matrix, and Student Uploads Studio
+
+- **Clean Modal Header & Student Identifiers**:
+  - Replaced the large 12-item profile grid in `#modal-student-dossier` with a compact, modern header displaying:
+    - **Student Full Name** & Avatar badge initials.
+    - **Official Enrollment Number** (`Enrollment: <strong id="dossier-enrollment-val">`).
+    - Class Roll Number, UBTER Registration Number, Dynamic Batch Label, and Cohort.
+    - Dedicated **Personal Details Export** dropdown button (PDF Bio-Data sheet with signatures, Demographics Excel `.xlsx`, and Word `.doc`).
+- **5 Interactive Status Metric Cards**:
+  - **Assignments (`8/8` Evaluated)**: View Sheet button switches to Coursework & Assignments studio.
+  - **Class Tests (`5/5` Scheduled)**: View Sheet button switches to Sessional Exams studio.
+  - **Lab Record (`9/9` Practicals)**: View Sheet button switches to Practical experiments & viva studio.
+  - **Attendance (`100%` Eligible)**: View Matrix button switches to Monthly Attendance Matrix studio.
+  - **Other Documents (`2 Files` Proofs)**: View Files button switches to Official Documents repository.
+- **Dedicated View-Only Excel Sheet Designs & Data Studios**:
+  - **Assignments Studio**:
+    - Authentic view-only Excel marks ledger table with Semester, Subject Code, Subject Name, Title, Max Marks, Marks Scored, Score %, Status, and Submission Date.
+    - Summary footer with total evaluation score and average percentage.
+    - **Student Assignment Uploads & Submitted Digital Files**: Container directly below the marks ledger rendering student's uploaded submission files (`.pdf`), submission date, score, teacher feedback/remarks, and direct download links.
+  - **Class Tests Studio**:
+    - View-only Excel ledger table displaying test/sessional examination scores, max marks, percentage, and academic grades (A+, A, B+, B, C, Pass, Fail).
+  - **Lab Records Studio**:
+    - View-only Excel practicals ledger table with experiment title, marks, and verification status.
+  - **Monthly Attendance Matrix Studio (Day 1 - 31 Grid)**:
+    - Matches institutional physical attendance register design.
+    - Day 1 through 31 columns dynamically injected with digital pen marks: `P` (Present, green), `A` (Absent, red), `L` (Late, amber), and `-` (No session).
+    - Summary tallies per month/subject: Total Held, Attended, Absent, Attendance %, and Eligibility (`Eligible` >= 75% vs `Defaulter` < 75%).
+  - **Other Documents Studio**:
+    - Displays official student certificates, transcripts, and KYC proofs with strict exclusion of assignment files.
+- **Real-Time Semester Checkbox Filtering**:
+  - Checkboxes for `All Semesters`, `Sem 1`, `Sem 2`, `Sem 3`, `Sem 4`, `Sem 5`, `Sem 6` instantly filter active studios and update summaries.
+- **Dossier Multi-Format Export Engine**:
+  - Multi-format selection (`PDF Document`, `Word Document .doc`, `Excel .xlsx`).
+  - Selective data sections (`Student Profile`, `Tests & Exams`, `Assignments`, `Lab Records`, `Attendance Matrix`, `Official Documents`).
+- **Theme Compliance & Verification**:
+  - 100% Theme Token compliant (0 hardcoded hex colors in `records.css` and `index.html`).
+  - Automated tests passing:
+    - `node scripts/test-theme-support.js`: 88/88 passed.
+    - `node scratch/test_dossier_dom.js`: 36/36 passed.
+    - `node scratch/test_dossier_interactive.js`: 29/29 passed.
+
 ### ✅ Milestone 438: Academic Dossier Modal Refinement & Dedicated Student Personal Details Export Engine
 
 - **Dedicated Export Button for Student Personal Details (Bio-Data)**:

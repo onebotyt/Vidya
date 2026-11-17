@@ -84,7 +84,7 @@
     // Populate Sessions
     if (sessionSelect && state.filterOptions.sessions) {
       sessionSelect.innerHTML = '<option value="">All Sessions</option>' +
-        state.filterOptions.sessions.map(s => 
+        state.filterOptions.sessions.map(s =>
           `<option value="${s.id}" ${s.is_current ? 'selected' : ''}>${escapeHtml(s.name || s.label)}</option>`
         ).join('');
       const current = state.filterOptions.sessions.find(s => s.is_current);
@@ -93,7 +93,7 @@
 
     if (cohortSessionSelect && state.filterOptions.sessions) {
       cohortSessionSelect.innerHTML = '<option value="">All Sessions</option>' +
-        state.filterOptions.sessions.map(s => 
+        state.filterOptions.sessions.map(s =>
           `<option value="${s.id}" ${s.is_current ? 'selected' : ''}>${escapeHtml(s.name || s.label)}</option>`
         ).join('');
     }
@@ -101,14 +101,14 @@
     // Populate Batches
     if (batchSelect && state.filterOptions.batches) {
       batchSelect.innerHTML = '<option value="">All Batches</option>' +
-        state.filterOptions.batches.map(b => 
+        state.filterOptions.batches.map(b =>
           `<option value="${b.passing_year}">${escapeHtml(b.label)}</option>`
         ).join('');
     }
 
     if (cohortBatchSelect && state.filterOptions.batches) {
       cohortBatchSelect.innerHTML = '<option value="">All Batches</option>' +
-        state.filterOptions.batches.map(b => 
+        state.filterOptions.batches.map(b =>
           `<option value="${b.passing_year}">${escapeHtml(b.label)}</option>`
         ).join('');
     }
@@ -190,7 +190,7 @@
       const enroll = s.official_enrollment_no || '--';
       const name = s.full_name || 'Unnamed Student';
       const reg = s.registration_no ? `Reg: ${s.registration_no}` : '';
-      const cohort = s.current_semester ? `Y${s.current_year || Math.ceil(s.current_semester/2)} • Sem ${s.current_semester}` : '--';
+      const cohort = s.current_semester ? `Y${s.current_year || Math.ceil(s.current_semester / 2)} • Sem ${s.current_semester}` : '--';
       const batch = s.batch_label || (s.admission_year ? `Batch ${s.admission_year}` : '--');
       const attPct = typeof s.attendance_percentage === 'number' ? s.attendance_percentage : 100;
 
@@ -408,165 +408,561 @@
     }
   };
 
-  // Assessment classifier helper
-  function isAssignmentAssessment(t) {
-    const type = String(t.type || '').toUpperCase();
-    return type.includes('ASSIGN') || type.includes('HOMEWORK') || type.includes('PROJECT') || type.includes('LAB');
+  // Assessment Classifier Helper (Mutually exclusive: LAB, ASSIGNMENT, TEST)
+  function classifyAssessment(a) {
+    const type = String(a.type || '').toUpperCase();
+    const title = String(a.title || '').toUpperCase();
+    if (type === 'PRACTICAL' || type.includes('LAB') || title.includes('LAB') || title.includes('PRACTICAL') || title.includes('EXPERIMENT')) {
+      return 'LAB';
+    }
+    if (type === 'ASSIGNMENT' || type.includes('ASSIGN') || type.includes('HOMEWORK') || title.includes('ASSIGNMENT') || title.includes('PROJECT')) {
+      return 'ASSIGNMENT';
+    }
+    return 'TEST'; // EXAM, TEST, UNIT_TEST, MID_TERM, etc.
   }
 
   function populateDossierModal(dossier) {
+    state.activeDossier = dossier;
     const p = dossier.profile || {};
 
-    // Header info (Clean Unicode bullets)
+    // 1. Avatar Initials
+    const avatarEl = document.getElementById('dossier-avatar');
+    if (avatarEl) {
+      const parts = (p.full_name || 'ST').trim().split(/\s+/);
+      avatarEl.textContent = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+    }
+
+    // 2. Header Title & Identifiers (Clean Unicode bullets)
     const nameEl = document.getElementById('dossier-modal-name');
-    const subEl = document.getElementById('dossier-modal-sub');
     if (nameEl) nameEl.textContent = `${p.full_name || 'Student Profile'} - Academic Dossier`;
-    if (subEl) subEl.textContent = `Roll #${p.class_roll_no || '--'} • Enrollment: ${p.official_enrollment_no || '--'} • Batch: ${p.batch_label || ''}`;
 
-    // Demographic profile cards
-    const setText = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val || '--';
-    };
+    const enrollEl = document.getElementById('dossier-enrollment-val');
+    if (enrollEl) enrollEl.textContent = p.official_enrollment_no || '--';
 
-    setText('dossier-full-name', p.full_name);
-    setText('dossier-roll-no', p.class_roll_no);
-    setText('dossier-enrollment-no', p.official_enrollment_no);
-    setText('dossier-reg-no', p.registration_no);
-    setText('dossier-father-name', p.father_name);
-    setText('dossier-mother-name', p.mother_name);
-    setText('dossier-aadhar', p.aadhar_number ? `•••• •••• ${p.aadhar_number.slice(-4)}` : '--');
-    setText('dossier-dob', p.dob ? new Date(p.dob).toLocaleDateString() : '--');
-    setText('dossier-gender-cat', `${p.gender || '--'} / ${p.category || 'General'}`);
-    setText('dossier-email', p.email);
-    setText('dossier-phone', p.phone);
-    setText('dossier-address', p.address);
+    const rollEl = document.getElementById('dossier-roll-val');
+    if (rollEl) rollEl.textContent = p.class_roll_no || '--';
 
-    // Badges count (Tests vs Assignments vs Attendance vs Docs)
+    const regEl = document.getElementById('dossier-reg-val');
+    if (regEl) regEl.textContent = p.registration_no || '--';
+
+    const batchEl = document.getElementById('dossier-batch-val');
+    if (batchEl) batchEl.textContent = p.batch_label ? `Batch ${p.batch_label}` : 'Batch --';
+
+    const cohortEl = document.getElementById('dossier-cohort-val');
+    if (cohortEl) cohortEl.textContent = `Sem ${p.current_semester || '--'} (Yr ${p.current_year || '--'})`;
+
+    // 3. Separate Assessments by Category
     const allAssessments = dossier.assessments || [];
-    const testsCount = document.getElementById('dossier-tests-count');
-    const assignCount = document.getElementById('dossier-assignments-count');
-    const attCount = document.getElementById('dossier-att-count');
-    const docsCount = document.getElementById('dossier-docs-count');
+    const assignments = allAssessments.filter(a => classifyAssessment(a) === 'ASSIGNMENT');
+    const tests = allAssessments.filter(a => classifyAssessment(a) === 'TEST');
+    const labs = allAssessments.filter(a => classifyAssessment(a) === 'LAB');
 
-    if (testsCount) testsCount.textContent = allAssessments.filter(a => !isAssignmentAssessment(a)).length;
-    if (assignCount) assignCount.textContent = allAssessments.filter(a => isAssignmentAssessment(a)).length;
-    if (attCount) attCount.textContent = (dossier.attendance || []).length;
-    if (docsCount) docsCount.textContent = (dossier.documents || []).length;
+    // 4. Attendance Sessions & Calculations
+    const sessions = dossier.attendanceSessions || [];
+    const totalHeld = sessions.length;
+    const totalAttended = sessions.filter(s => s.attendance_status === 'PRESENT' || s.attendance_status === 'LATE').length;
+    const overallPct = totalHeld > 0 ? Math.round((totalAttended * 100) / totalHeld) : 100;
 
-    renderFilteredDossierTables();
+    // 5. Non-Assignment Documents
+    const nonAssignDocs = (dossier.documents || []).filter(d => {
+      const dtype = String(d.document_type || '').toUpperCase();
+      const dtitle = String(d.title || '').toUpperCase();
+      return !dtype.includes('ASSIGN') && !dtitle.includes('ASSIGN') && !dtitle.includes('HOMEWORK');
+    });
+
+    // 6. Update Status Cards Metrics
+    const mAssign = document.getElementById('card-metric-assignments');
+    const sAssign = document.getElementById('card-sub-assignments');
+    if (mAssign) {
+      const evalCount = assignments.filter(a => a.submission_status === 'GRADED' || a.marks_obtained !== null).length;
+      mAssign.textContent = `${evalCount}/${assignments.length || 0}`;
+      if (sAssign) sAssign.textContent = `${assignments.length} Assigned`;
+    }
+
+    const mTests = document.getElementById('card-metric-tests');
+    const sTests = document.getElementById('card-sub-tests');
+    if (mTests) {
+      const scoredCount = tests.filter(t => t.marks_obtained !== null && t.marks_obtained !== undefined).length;
+      mTests.textContent = `${scoredCount}/${tests.length || 0}`;
+      if (sTests) sTests.textContent = `${tests.length} Scheduled`;
+    }
+
+    const mLabs = document.getElementById('card-metric-labs');
+    const sLabs = document.getElementById('card-sub-labs');
+    if (mLabs) {
+      const verifiedCount = labs.filter(l => l.marks_obtained !== null && l.marks_obtained !== undefined).length;
+      mLabs.textContent = `${verifiedCount}/${labs.length || 0}`;
+      if (sLabs) sLabs.textContent = `${labs.length} Practicals`;
+    }
+
+    const mAtt = document.getElementById('card-metric-attendance');
+    const sAtt = document.getElementById('card-sub-attendance');
+    if (mAtt) {
+      mAtt.textContent = `${overallPct}%`;
+      if (sAtt) sAtt.textContent = overallPct >= 75 ? 'Eligible' : 'Defaulter';
+    }
+
+    const mDocs = document.getElementById('card-metric-documents');
+    if (mDocs) {
+      mDocs.textContent = `${nonAssignDocs.length} Files`;
+    }
+
+    // Set default view to 'assignments'
+    selectDossierSection(state.activeDossierSection || 'assignments');
   }
+  window.populateDossierModal = populateDossierModal;
 
-  function renderFilteredDossierTables() {
+  // Active Dossier Section Switcher
+  window.selectDossierSection = function (section) {
+    state.activeDossierSection = section;
+
+    const cards = ['assignments', 'tests', 'labs', 'attendance', 'documents'];
+    cards.forEach(c => {
+      const cardEl = document.getElementById(`card-status-${c}`);
+      if (cardEl) cardEl.classList.toggle('active', c === section);
+
+      const studioEl = document.getElementById(`section-studio-${c}`);
+      if (studioEl) {
+        if (c === section) {
+          studioEl.classList.add('active');
+          studioEl.style.display = 'flex';
+        } else {
+          studioEl.classList.remove('active');
+          studioEl.style.display = 'none';
+        }
+      }
+    });
+
+    renderActiveDossierStudio();
+  };
+
+  function renderActiveDossierStudio() {
     if (!state.activeDossier) return;
-
+    const section = state.activeDossierSection || 'assignments';
     const selectedSems = state.selectedDossierSemesters || [1, 2, 3, 4, 5, 6];
     const allAssessments = state.activeDossier.assessments || [];
 
-    // 1. Tests & Exams
-    const testsBody = document.getElementById('dossier-tests-body');
-    if (testsBody) {
-      const tests = allAssessments.filter(a => !isAssignmentAssessment(a) && selectedSems.includes(Number(a.semester)));
-      if (tests.length === 0) {
-        testsBody.innerHTML = `<tr><td colspan="7" class="rec-empty-cell">No test or exam records found for selected semesters.</td></tr>`;
-      } else {
-        testsBody.innerHTML = tests.map(t => {
-          const scored = t.marks_obtained !== null && t.marks_obtained !== undefined ? t.marks_obtained : 0;
-          const max = t.max_marks || 100;
-          const pct = Math.round((Number(scored) / max) * 100);
-          return `
-            <tr>
-              <td><strong>Sem ${t.semester || '--'}</strong></td>
-              <td>${escapeHtml(t.subject_name || t.subject_code || '--')}</td>
-              <td>${escapeHtml(t.title || '--')}</td>
-              <td><span class="rec-meta-badge">${escapeHtml(t.type || 'TEST')}</span></td>
-              <td>${max}</td>
-              <td><strong>${scored}</strong></td>
-              <td><span class="rec-att-badge ${pct < 40 ? 'low' : ''}">${pct}%</span></td>
-            </tr>
-          `;
-        }).join('');
-      }
+    if (section === 'assignments') {
+      renderAssignmentsStudio(allAssessments.filter(a => classifyAssessment(a) === 'ASSIGNMENT' && selectedSems.includes(Number(a.semester))));
+    } else if (section === 'tests') {
+      renderTestsStudio(allAssessments.filter(a => classifyAssessment(a) === 'TEST' && selectedSems.includes(Number(a.semester))));
+    } else if (section === 'labs') {
+      renderLabsStudio(allAssessments.filter(a => classifyAssessment(a) === 'LAB' && selectedSems.includes(Number(a.semester))));
+    } else if (section === 'attendance') {
+      renderAttendanceMatrixStudio((state.activeDossier.attendanceSessions || []).filter(s => selectedSems.includes(Number(s.semester))));
+    } else if (section === 'documents') {
+      renderOtherDocumentsStudio(state.activeDossier.documents || []);
     }
+  }
 
-    // 2. Coursework & Assignments
-    const assignBody = document.getElementById('dossier-assignments-body');
-    if (assignBody) {
-      const assignments = allAssessments.filter(a => isAssignmentAssessment(a) && selectedSems.includes(Number(a.semester)));
+  // 1. Assignments Studio & Uploads Renderer
+  function renderAssignmentsStudio(assignments) {
+    const tbody = document.getElementById('dossier-assignments-body');
+    const tfoot = document.getElementById('dossier-assignments-foot');
+    const uploadsGrid = document.getElementById('student-assignment-uploads-grid');
+    const uploadsCount = document.getElementById('student-assignment-uploads-count');
+
+    if (tbody) {
       if (assignments.length === 0) {
-        assignBody.innerHTML = `<tr><td colspan="8" class="rec-empty-cell">No assignment records found for selected semesters.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="rec-empty-cell">No assignments recorded for selected semesters.</td></tr>`;
+        if (tfoot) tfoot.innerHTML = '';
       } else {
-        assignBody.innerHTML = assignments.map(a => {
-          const scored = a.marks_obtained !== null && a.marks_obtained !== undefined ? a.marks_obtained : '--';
-          const max = a.max_marks || 100;
-          const status = a.submission_status || (scored !== '--' ? 'EVALUATED' : 'SUBMITTED');
+        let totalMax = 0;
+        let totalScored = 0;
+        let scoredCount = 0;
+
+        tbody.innerHTML = assignments.map((a, idx) => {
+          const max = Number(a.max_marks) || 100;
+          totalMax += max;
+          const hasScore = a.marks_obtained !== null && a.marks_obtained !== undefined;
+          const scored = hasScore ? Number(a.marks_obtained) : null;
+          if (hasScore) {
+            totalScored += scored;
+            scoredCount++;
+          }
+          const pct = hasScore ? Math.round((scored / max) * 100) : null;
+          const status = a.submission_status || (hasScore ? 'GRADED' : 'PENDING');
+          const statusClass = status === 'GRADED' ? 'evaluated' : (status === 'SUBMITTED' ? 'submitted' : 'pending');
           const dateStr = a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : '--';
+
           return `
             <tr>
+              <td class="td-num">${idx + 1}</td>
               <td><strong>Sem ${a.semester || '--'}</strong></td>
-              <td>${escapeHtml(a.subject_name || a.subject_code || '--')}</td>
-              <td>${escapeHtml(a.title || '--')}</td>
-              <td><span class="rec-meta-badge">${escapeHtml(a.type || 'ASSIGNMENT')}</span></td>
-              <td>${max}</td>
-              <td><strong>${scored}</strong></td>
-              <td><span class="rec-status-pill ${status.toLowerCase()}">${escapeHtml(status)}</span></td>
+              <td><code>${escapeHtml(a.subject_code || '--')}</code></td>
+              <td>${escapeHtml(a.subject_name || '--')}</td>
+              <td><strong>${escapeHtml(a.title || '--')}</strong></td>
+              <td class="td-num">${max}</td>
+              <td class="td-num">${hasScore ? scored : '--'}</td>
+              <td class="td-num">${hasScore ? `${pct}%` : '--'}</td>
+              <td><span class="rec-status-pill ${statusClass}">${escapeHtml(status)}</span></td>
               <td>${dateStr}</td>
             </tr>
           `;
         }).join('');
+
+        if (tfoot) {
+          const avgPct = scoredCount > 0 ? Math.round((totalScored / (scoredCount * (totalMax / assignments.length))) * 100) : '--';
+          tfoot.innerHTML = `
+            <tr>
+              <td colspan="5" style="text-align:right;"><strong>Total / Evaluation Summary:</strong></td>
+              <td class="td-num">${totalMax}</td>
+              <td class="td-num">${totalScored}</td>
+              <td class="td-num">${avgPct !== '--' ? `${avgPct}%` : '--'}</td>
+              <td colspan="2"><strong>${scoredCount} of ${assignments.length} Evaluated</strong></td>
+            </tr>
+          `;
+        }
       }
     }
 
-    // 3. Attendance
-    const attBody = document.getElementById('dossier-att-body');
-    if (attBody) {
-      const atts = (state.activeDossier.attendance || []).filter(a => selectedSems.includes(Number(a.semester)));
-      if (atts.length === 0) {
-        attBody.innerHTML = `<tr><td colspan="7" class="rec-empty-cell">No attendance recorded for selected semesters.</td></tr>`;
+    // Uploaded Assignment Submissions Grid (Below Excel Sheet)
+    if (uploadsGrid) {
+      const uploadedAssignments = assignments.filter(a => a.file_path || a.original_filename || a.submission_status === 'SUBMITTED' || a.submission_status === 'GRADED');
+      if (uploadsCount) uploadsCount.textContent = `${uploadedAssignments.length} Uploads`;
+
+      if (uploadedAssignments.length === 0) {
+        uploadsGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding: 2rem; color:var(--text-muted); font-style:italic;">
+            No digital assignment files or submission documents uploaded for selected semesters.
+          </div>
+        `;
       } else {
-        attBody.innerHTML = atts.map(a => {
-          const tot = Number(a.total_sessions) || 0;
-          const pres = Number(a.attended_sessions) || 0;
-          const pct = tot > 0 ? Math.round((pres * 100) / tot) : 100;
+        uploadsGrid.innerHTML = uploadedAssignments.map(a => {
+          let feedbackObj = null;
+          if (a.feedback) {
+            try {
+              feedbackObj = typeof a.feedback === 'string' ? JSON.parse(a.feedback) : a.feedback;
+            } catch (e) {
+              feedbackObj = { remarks: a.feedback };
+            }
+          }
+          const remarks = feedbackObj?.remarks || (typeof a.feedback === 'string' && !a.feedback.startsWith('{') ? a.feedback : null);
+          const fileName = a.original_filename || (a.file_path ? a.file_path.split(/[\/\\]/).pop() : 'Assignment_Submission.pdf');
+          const status = a.submission_status || 'SUBMITTED';
+
           return `
-            <tr>
-              <td><strong>Sem ${a.semester || '--'}</strong></td>
-              <td>${escapeHtml(a.subject_name || '--')}</td>
-              <td><code>${escapeHtml(a.subject_code || '--')}</code></td>
-              <td>${tot}</td>
-              <td><strong>${pres}</strong></td>
-              <td><span class="rec-att-badge ${pct < 75 ? 'low' : ''}">${pct}%</span></td>
-              <td>${pct >= 75 ? '<span style="color:var(--color-success)">Eligible</span>' : '<span style="color:var(--color-danger)">Defaulter</span>'}</td>
-            </tr>
+            <div class="rec-upload-card">
+              <div class="rec-upload-card-top">
+                <div class="rec-upload-file-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                </div>
+                <div class="rec-upload-details">
+                  <div class="rec-upload-title" title="${escapeHtml(a.title || 'Assignment')}">${escapeHtml(a.title || 'Assignment')}</div>
+                  <div class="rec-upload-meta">
+                    <span>${escapeHtml(a.subject_code || '')} • Sem ${a.semester}</span>
+                    <span>• ${a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : 'Uploaded'}</span>
+                  </div>
+                </div>
+                <span class="rec-status-pill ${status.toLowerCase()}">${escapeHtml(status)}</span>
+              </div>
+              ${remarks ? `<div class="rec-upload-feedback"><strong>Teacher Remarks:</strong> ${escapeHtml(remarks)}</div>` : ''}
+              <div class="rec-upload-actions">
+                <span style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-family-mono, monospace);">
+                  Marks: <strong>${a.marks_obtained !== null && a.marks_obtained !== undefined ? a.marks_obtained : '--'}</strong> / ${a.max_marks || 100}
+                </span>
+                <a href="${escapeHtml(a.file_path || '#')}" target="_blank" download="${escapeHtml(fileName)}" class="btn-rec-download-file">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>${escapeHtml(fileName)}</span>
+                </a>
+              </div>
+            </div>
           `;
         }).join('');
       }
     }
+  }
 
-    // 4. Documents
-    const docsBody = document.getElementById('dossier-docs-body');
-    if (docsBody) {
-      const docs = state.activeDossier.documents || [];
-      if (docs.length === 0) {
-        docsBody.innerHTML = `<tr><td colspan="6" class="rec-empty-cell">No uploaded official documents found.</td></tr>`;
-      } else {
-        docsBody.innerHTML = docs.map(d => `
-          <tr>
-            <td><strong>${escapeHtml(d.title || '--')}</strong></td>
-            <td><span class="rec-meta-badge">${escapeHtml(d.document_type || 'DOCUMENT')}</span></td>
-            <td>${escapeHtml(d.file_name || '--')}</td>
-            <td>${d.file_size ? `${Math.round(d.file_size / 1024)} KB` : '--'}</td>
-            <td>${d.created_at ? new Date(d.created_at).toLocaleDateString() : '--'}</td>
-            <td>
-              <a href="${escapeHtml(d.file_path)}" target="_blank" class="btn-rec-outline" style="text-decoration:none; padding:0.25rem 0.65rem; font-size:0.76rem;">View File</a>
-            </td>
-          </tr>
-        `).join('');
+  // 2. Class Tests & Exams Studio Renderer
+  function renderTestsStudio(tests) {
+    const tbody = document.getElementById('dossier-tests-body');
+    const tfoot = document.getElementById('dossier-tests-foot');
+    if (!tbody) return;
+
+    if (tests.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" class="rec-empty-cell">No test or exam records found for selected semesters.</td></tr>`;
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+
+    let totalMax = 0;
+    let totalScored = 0;
+    let scoredCount = 0;
+
+    tbody.innerHTML = tests.map((t, idx) => {
+      const max = Number(t.max_marks) || 100;
+      totalMax += max;
+      const hasScore = t.marks_obtained !== null && t.marks_obtained !== undefined;
+      const scored = hasScore ? Number(t.marks_obtained) : null;
+      if (hasScore) {
+        totalScored += scored;
+        scoredCount++;
       }
+      const pct = hasScore ? Math.round((scored / max) * 100) : null;
+      let grade = '--';
+      if (pct !== null) {
+        if (pct >= 90) grade = 'A+';
+        else if (pct >= 80) grade = 'A';
+        else if (pct >= 70) grade = 'B+';
+        else if (pct >= 60) grade = 'B';
+        else if (pct >= 50) grade = 'C';
+        else if (pct >= 40) grade = 'Pass';
+        else grade = 'Fail';
+      }
+
+      return `
+        <tr>
+          <td class="td-num">${idx + 1}</td>
+          <td><strong>Sem ${t.semester || '--'}</strong></td>
+          <td><code>${escapeHtml(t.subject_code || '--')}</code></td>
+          <td>${escapeHtml(t.subject_name || '--')}</td>
+          <td><strong>${escapeHtml(t.title || '--')}</strong></td>
+          <td><span class="rec-meta-badge">${escapeHtml(t.component || 'THEORY')}</span></td>
+          <td class="td-num">${max}</td>
+          <td class="td-num">${hasScore ? scored : '--'}</td>
+          <td class="td-num">${hasScore ? `${pct}%` : '--'}</td>
+          <td><span class="rec-att-badge ${pct !== null && pct < 40 ? 'low' : ''}">${grade}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    if (tfoot) {
+      const avgPct = scoredCount > 0 ? Math.round((totalScored / totalMax) * 100) : '--';
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:right;"><strong>Total Sessional Marks / Overall Grade:</strong></td>
+          <td class="td-num">${totalMax}</td>
+          <td class="td-num">${totalScored}</td>
+          <td class="td-num">${avgPct !== '--' ? `${avgPct}%` : '--'}</td>
+          <td><strong>${scoredCount} Scored</strong></td>
+        </tr>
+      `;
     }
   }
 
-  // Semester Checkbox handlers
+  // 3. Lab Records Studio Renderer
+  function renderLabsStudio(labs) {
+    const tbody = document.getElementById('dossier-labs-body');
+    const tfoot = document.getElementById('dossier-labs-foot');
+    if (!tbody) return;
+
+    if (labs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" class="rec-empty-cell">No practical or lab records found for selected semesters.</td></tr>`;
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+
+    let totalMax = 0;
+    let totalScored = 0;
+    let scoredCount = 0;
+
+    tbody.innerHTML = labs.map((l, idx) => {
+      const max = Number(l.max_marks) || 50;
+      totalMax += max;
+      const hasScore = l.marks_obtained !== null && l.marks_obtained !== undefined;
+      const scored = hasScore ? Number(l.marks_obtained) : null;
+      if (hasScore) {
+        totalScored += scored;
+        scoredCount++;
+      }
+      const pct = hasScore ? Math.round((scored / max) * 100) : null;
+      const status = hasScore ? 'Verified' : 'Pending Verification';
+      const statusClass = hasScore ? 'evaluated' : 'pending';
+
+      return `
+        <tr>
+          <td class="td-num">${idx + 1}</td>
+          <td><strong>Sem ${l.semester || '--'}</strong></td>
+          <td><code>${escapeHtml(l.subject_code || '--')}</code></td>
+          <td>${escapeHtml(l.subject_name || '--')}</td>
+          <td><strong>${escapeHtml(l.title || '--')}</strong></td>
+          <td><span class="rec-meta-badge">PRACTICAL</span></td>
+          <td class="td-num">${max}</td>
+          <td class="td-num">${hasScore ? scored : '--'}</td>
+          <td class="td-num">${hasScore ? `${pct}%` : '--'}</td>
+          <td><span class="rec-status-pill ${statusClass}">${status}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    if (tfoot) {
+      const avgPct = scoredCount > 0 ? Math.round((totalScored / totalMax) * 100) : '--';
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:right;"><strong>Total Practical Record Marks:</strong></td>
+          <td class="td-num">${totalMax}</td>
+          <td class="td-num">${totalScored}</td>
+          <td class="td-num">${avgPct !== '--' ? `${avgPct}%` : '--'}</td>
+          <td><strong>${scoredCount} Verified</strong></td>
+        </tr>
+      `;
+    }
+  }
+
+  // 4. Monthly Attendance Matrix (Day 1 - 31 Grid) Studio Renderer
+  function renderAttendanceMatrixStudio(sessions) {
+    const headerRow = document.getElementById('matrix-header-row');
+    const tbody = document.getElementById('dossier-matrix-body');
+    const tfoot = document.getElementById('dossier-matrix-foot');
+    if (!tbody) return;
+
+    if (headerRow) {
+      let dayCols = '';
+      for (let d = 1; d <= 31; d++) {
+        dayCols += `<th style="width:24px; min-width:24px; padding:0.4rem 0.15rem;">${d}</th>`;
+      }
+      headerRow.innerHTML = `
+        <th class="col-pinned-left" style="min-width:130px;">Month / Session</th>
+        <th style="min-width:140px;">Subject Name</th>
+        <th>Code</th>
+        ${dayCols}
+        <th>Held</th>
+        <th>Attended</th>
+        <th>Absent</th>
+        <th>Att %</th>
+        <th>Status</th>
+      `;
+    }
+
+    if (sessions.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="39" class="rec-empty-cell">No attendance recorded for selected semesters.</td></tr>`;
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+
+    const groups = {};
+    sessions.forEach(s => {
+      const dateStr = String(s.session_date || '').split('T')[0];
+      const monthKey = dateStr ? dateStr.slice(0, 7) : 'Unknown';
+      const subKey = s.subject_code || 'General';
+      const groupKey = `${monthKey}__${subKey}`;
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = {
+          monthKey,
+          subject_name: s.subject_name || 'Subject',
+          subject_code: s.subject_code || '--',
+          days: {},
+          held: 0,
+          attended: 0,
+          absent: 0
+        };
+      }
+
+      if (dateStr) {
+        const dayNum = parseInt(dateStr.slice(8, 10), 10);
+        const status = String(s.attendance_status || '').toUpperCase();
+        groups[groupKey].days[dayNum] = status;
+        groups[groupKey].held++;
+        if (status === 'PRESENT' || status === 'LATE') {
+          groups[groupKey].attended++;
+        } else {
+          groups[groupKey].absent++;
+        }
+      }
+    });
+
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    let grandHeld = 0;
+    let grandAtt = 0;
+    let grandAbs = 0;
+
+    const rows = Object.values(groups).sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+    tbody.innerHTML = rows.map(g => {
+      grandHeld += g.held;
+      grandAtt += g.attended;
+      grandAbs += g.absent;
+      const pct = g.held > 0 ? Math.round((g.attended * 100) / g.held) : 100;
+
+      let monthLabel = g.monthKey;
+      if (g.monthKey && g.monthKey.includes('-')) {
+        const [yr, mo] = g.monthKey.split('-');
+        const mIdx = parseInt(mo, 10) - 1;
+        monthLabel = `${monthNames[mIdx] || mo} ${yr}`;
+      }
+
+      let dayCells = '';
+      for (let d = 1; d <= 31; d++) {
+        const st = g.days[d];
+        if (st === 'PRESENT') {
+          dayCells += `<td class="att-day-cell att-p" title="Day ${d}: Present">P</td>`;
+        } else if (st === 'ABSENT') {
+          dayCells += `<td class="att-day-cell att-a" title="Day ${d}: Absent">A</td>`;
+        } else if (st === 'LATE') {
+          dayCells += `<td class="att-day-cell att-l" title="Day ${d}: Late">L</td>`;
+        } else {
+          dayCells += `<td class="att-day-cell att-empty">-</td>`;
+        }
+      }
+
+      return `
+        <tr>
+          <td class="col-pinned-left"><strong>${monthLabel}</strong></td>
+          <td>${escapeHtml(g.subject_name)}</td>
+          <td><code>${escapeHtml(g.subject_code)}</code></td>
+          ${dayCells}
+          <td class="td-num">${g.held}</td>
+          <td class="td-num"><strong>${g.attended}</strong></td>
+          <td class="td-num">${g.absent}</td>
+          <td><span class="rec-att-badge ${pct < 75 ? 'low' : ''}">${pct}%</span></td>
+          <td>${pct >= 75 ? '<span style="color:var(--status-present); font-weight:700;">Eligible</span>' : '<span style="color:var(--status-absent); font-weight:700;">Defaulter</span>'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    if (tfoot) {
+      const overallPct = grandHeld > 0 ? Math.round((grandAtt * 100) / grandHeld) : 100;
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align:right;"><strong>Total Monthly Attendance Summary:</strong></td>
+          <td colspan="31" style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Day 1 to 31 Lecture Attendance Ledger</td>
+          <td class="td-num">${grandHeld}</td>
+          <td class="td-num"><strong>${grandAtt}</strong></td>
+          <td class="td-num">${grandAbs}</td>
+          <td><span class="rec-att-badge ${overallPct < 75 ? 'low' : ''}">${overallPct}%</span></td>
+          <td><strong>${overallPct >= 75 ? 'Eligible' : 'Defaulter'}</strong></td>
+        </tr>
+      `;
+    }
+  }
+
+  // 5. Official Documents Studio Renderer (Excluding assignments)
+  function renderOtherDocumentsStudio(documents) {
+    const tbody = document.getElementById('dossier-docs-body');
+    const countTag = document.getElementById('other-docs-count-tag');
+    if (!tbody) return;
+
+    const nonAssignDocs = (documents || []).filter(d => {
+      const dtype = String(d.document_type || '').toUpperCase();
+      const dtitle = String(d.title || '').toUpperCase();
+      return !dtype.includes('ASSIGN') && !dtitle.includes('ASSIGN') && !dtitle.includes('HOMEWORK');
+    });
+
+    if (countTag) countTag.textContent = `${nonAssignDocs.length} Official Documents`;
+
+    if (nonAssignDocs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="rec-empty-cell">No official student documents uploaded (excluding assignments).</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = nonAssignDocs.map(d => `
+      <tr>
+        <td><strong>${escapeHtml(d.title || '--')}</strong></td>
+        <td><span class="rec-meta-badge">${escapeHtml(d.document_type || 'DOCUMENT')}</span></td>
+        <td>${escapeHtml(d.file_name || '--')}</td>
+        <td>${d.file_size ? `${Math.round(d.file_size / 1024)} KB` : '--'}</td>
+        <td>${d.created_at ? new Date(d.created_at).toLocaleDateString() : '--'}</td>
+        <td>
+          <a href="${escapeHtml(d.file_path)}" target="_blank" class="btn-rec-outline" style="text-decoration:none; padding:0.25rem 0.65rem; font-size:0.76rem;">View File</a>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Semester Checkbox Handlers (Reactive Dynamic Filtering)
   window.toggleSelectAllSemesters = function (checked) {
     document.querySelectorAll('.check-sem-item').forEach(c => c.checked = checked);
     if (checked) {
@@ -574,7 +970,7 @@
     } else {
       state.selectedDossierSemesters = [];
     }
-    renderFilteredDossierTables();
+    renderActiveDossierStudio();
   };
 
   window.onSemesterCheckboxToggle = function () {
@@ -585,17 +981,7 @@
     state.selectedDossierSemesters = checked;
     const allBox = document.getElementById('check-sem-all');
     if (allBox) allBox.checked = checked.length === 6;
-    renderFilteredDossierTables();
-  };
-
-  window.switchDossierTab = function (tab) {
-    state.activeDossierTab = tab;
-    document.querySelectorAll('.rec-dossier-tab').forEach(b => {
-      b.classList.toggle('active', b.dataset.tab === tab);
-    });
-    document.querySelectorAll('.rec-tab-content').forEach(c => {
-      c.classList.toggle('active', c.id === `dossier-content-${tab}`);
-    });
+    renderActiveDossierStudio();
   };
 
   window.closeDossierModal = function () {
@@ -860,10 +1246,11 @@
     const incProfile = document.getElementById('export-inc-profile')?.checked ?? true;
     const incTests = document.getElementById('export-inc-tests')?.checked ?? true;
     const incAssignments = document.getElementById('export-inc-assignments')?.checked ?? true;
+    const incLabs = document.getElementById('export-inc-labs')?.checked ?? true;
     const incAttendance = document.getElementById('export-inc-attendance')?.checked ?? true;
     const incDocuments = document.getElementById('export-inc-documents')?.checked ?? true;
 
-    if (!incProfile && !incTests && !incAssignments && !incAttendance && !incDocuments) {
+    if (!incProfile && !incTests && !incAssignments && !incLabs && !incAttendance && !incDocuments) {
       showToast('Please select at least one data section to include in the dossier', 'warning');
       return;
     }
@@ -872,6 +1259,7 @@
       incProfile,
       incTests,
       incAssignments,
+      incLabs,
       incAttendance,
       incDocuments,
       selectedSemesters: state.selectedDossierSemesters || [1, 2, 3, 4, 5, 6]
@@ -897,6 +1285,7 @@
         incProfile: true,
         incTests: true,
         incAssignments: true,
+        incLabs: true,
         incAttendance: true,
         incDocuments: true,
         selectedSemesters: [1, 2, 3, 4, 5, 6]
@@ -954,22 +1343,29 @@
       const wsTests = workbook.addWorksheet('Tests & Exams');
       wsTests.columns = [
         { header: 'Semester', key: 'sem', width: 14 },
-        { header: 'Subject', key: 'sub', width: 30 },
+        { header: 'Subject Code', key: 'code', width: 16 },
+        { header: 'Subject Name', key: 'sub', width: 30 },
         { header: 'Assessment Title', key: 'title', width: 35 },
-        { header: 'Type', key: 'type', width: 16 },
+        { header: 'Component', key: 'type', width: 16 },
         { header: 'Max Marks', key: 'max', width: 14 },
-        { header: 'Marks Scored', key: 'scored', width: 16 }
+        { header: 'Marks Scored', key: 'scored', width: 16 },
+        { header: 'Score %', key: 'pct', width: 14 }
       ];
       allAssessments
-        .filter(t => !isAssignmentAssessment(t) && selectedSems.includes(Number(t.semester)))
+        .filter(t => classifyAssessment(t) === 'TEST' && selectedSems.includes(Number(t.semester)))
         .forEach(t => {
+          const max = t.max_marks || 100;
+          const scored = t.marks_obtained !== null ? t.marks_obtained : '--';
+          const pct = scored !== '--' ? `${Math.round((scored / max) * 100)}%` : '--';
           wsTests.addRow({
             sem: `Sem ${t.semester || ''}`,
-            sub: t.subject_name || t.subject_code || '',
+            code: t.subject_code || '',
+            sub: t.subject_name || '',
             title: t.title || '',
-            type: t.type || '',
-            max: t.max_marks || 0,
-            scored: t.marks_obtained !== null ? t.marks_obtained : 0
+            type: t.component || 'THEORY',
+            max: max,
+            scored: scored,
+            pct: pct
           });
         });
     }
@@ -979,44 +1375,76 @@
       const wsAssignments = workbook.addWorksheet('Assignments');
       wsAssignments.columns = [
         { header: 'Semester', key: 'sem', width: 14 },
-        { header: 'Subject', key: 'sub', width: 30 },
+        { header: 'Subject Code', key: 'code', width: 16 },
+        { header: 'Subject Name', key: 'sub', width: 30 },
         { header: 'Assignment Title', key: 'title', width: 35 },
-        { header: 'Component', key: 'type', width: 16 },
         { header: 'Max Marks', key: 'max', width: 14 },
         { header: 'Marks Scored', key: 'scored', width: 16 },
-        { header: 'Status', key: 'status', width: 16 }
+        { header: 'Status', key: 'status', width: 16 },
+        { header: 'Submission File', key: 'file', width: 30 }
       ];
       allAssessments
-        .filter(a => isAssignmentAssessment(a) && selectedSems.includes(Number(a.semester)))
+        .filter(a => classifyAssessment(a) === 'ASSIGNMENT' && selectedSems.includes(Number(a.semester)))
         .forEach(a => {
           wsAssignments.addRow({
             sem: `Sem ${a.semester || ''}`,
-            sub: a.subject_name || a.subject_code || '',
+            code: a.subject_code || '',
+            sub: a.subject_name || '',
             title: a.title || '',
-            type: a.type || 'ASSIGNMENT',
-            max: a.max_marks || 0,
+            max: a.max_marks || 100,
             scored: a.marks_obtained !== null ? a.marks_obtained : '--',
-            status: a.submission_status || 'SUBMITTED'
+            status: a.submission_status || 'PENDING',
+            file: a.original_filename || (a.file_path ? a.file_path.split(/[\/\\]/).pop() : '--')
           });
         });
     }
 
-    // Sheet 4: Attendance Matrix
+    // Sheet 4: Lab Practical Records
+    if (options.incLabs !== false) {
+      const wsLabs = workbook.addWorksheet('Lab Records');
+      wsLabs.columns = [
+        { header: 'Semester', key: 'sem', width: 14 },
+        { header: 'Subject Code', key: 'code', width: 16 },
+        { header: 'Lab Subject Name', key: 'sub', width: 30 },
+        { header: 'Practical / Experiment Title', key: 'title', width: 35 },
+        { header: 'Max Marks', key: 'max', width: 14 },
+        { header: 'Marks Scored', key: 'scored', width: 16 },
+        { header: 'Verification Status', key: 'status', width: 20 }
+      ];
+      allAssessments
+        .filter(l => classifyAssessment(l) === 'LAB' && selectedSems.includes(Number(l.semester)))
+        .forEach(l => {
+          wsLabs.addRow({
+            sem: `Sem ${l.semester || ''}`,
+            code: l.subject_code || '',
+            sub: l.subject_name || '',
+            title: l.title || '',
+            max: l.max_marks || 50,
+            scored: l.marks_obtained !== null ? l.marks_obtained : '--',
+            status: l.marks_obtained !== null ? 'Verified' : 'Pending Verification'
+          });
+        });
+    }
+
+    // Sheet 5: Monthly Attendance Matrix Ledger
     if (options.incAttendance !== false) {
-      const wsAtt = workbook.addWorksheet('Attendance Summary');
+      const wsAtt = workbook.addWorksheet('Attendance Ledger');
       wsAtt.columns = [
         { header: 'Semester', key: 'sem', width: 14 },
         { header: 'Subject Name', key: 'sub', width: 32 },
         { header: 'Subject Code', key: 'code', width: 18 },
-        { header: 'Total Sessions', key: 'total', width: 16 },
-        { header: 'Attended Sessions', key: 'attended', width: 18 },
-        { header: 'Attendance %', key: 'pct', width: 16 }
+        { header: 'Total Held', key: 'total', width: 16 },
+        { header: 'Attended', key: 'attended', width: 18 },
+        { header: 'Absent', key: 'absent', width: 16 },
+        { header: 'Attendance %', key: 'pct', width: 16 },
+        { header: 'Eligibility Status', key: 'status', width: 18 }
       ];
       (dossier.attendance || [])
         .filter(a => selectedSems.includes(Number(a.semester)))
         .forEach(a => {
           const tot = Number(a.total_sessions) || 0;
           const pres = Number(a.attended_sessions) || 0;
+          const abs = tot - pres >= 0 ? tot - pres : 0;
           const pct = tot > 0 ? Math.round((pres * 100) / tot) : 100;
           wsAtt.addRow({
             sem: `Sem ${a.semester || ''}`,
@@ -1024,30 +1452,39 @@
             code: a.subject_code || '',
             total: tot,
             attended: pres,
-            pct: `${pct}%`
+            absent: abs,
+            pct: `${pct}%`,
+            status: pct >= 75 ? 'Eligible' : 'Defaulter'
           });
         });
     }
 
-    // Sheet 5: Uploaded Documents
-    if (options.incDocuments !== false && dossier.documents?.length) {
-      const wsDocs = workbook.addWorksheet('Official Documents');
-      wsDocs.columns = [
-        { header: 'Document Title', key: 'title', width: 30 },
-        { header: 'Category', key: 'cat', width: 20 },
-        { header: 'File Name', key: 'file', width: 35 },
-        { header: 'Size (KB)', key: 'size', width: 14 },
-        { header: 'Uploaded Date', key: 'date', width: 18 }
-      ];
-      (dossier.documents || []).forEach(d => {
-        wsDocs.addRow({
-          title: d.title || '',
-          cat: d.document_type || '',
-          file: d.file_name || '',
-          size: d.file_size ? Math.round(d.file_size / 1024) : '--',
-          date: d.created_at ? new Date(d.created_at).toLocaleDateString() : ''
-        });
+    // Sheet 6: Official Documents (Excluding Coursework Assignments)
+    if (options.incDocuments !== false) {
+      const nonAssignDocs = (dossier.documents || []).filter(d => {
+        const dtype = String(d.document_type || '').toUpperCase();
+        const dtitle = String(d.title || '').toUpperCase();
+        return !dtype.includes('ASSIGN') && !dtitle.includes('ASSIGN') && !dtitle.includes('HOMEWORK');
       });
+      if (nonAssignDocs.length) {
+        const wsDocs = workbook.addWorksheet('Official Documents');
+        wsDocs.columns = [
+          { header: 'Document Title', key: 'title', width: 30 },
+          { header: 'Category', key: 'cat', width: 20 },
+          { header: 'File Name', key: 'file', width: 35 },
+          { header: 'Size (KB)', key: 'size', width: 14 },
+          { header: 'Uploaded Date', key: 'date', width: 18 }
+        ];
+        nonAssignDocs.forEach(d => {
+          wsDocs.addRow({
+            title: d.title || '',
+            cat: d.document_type || '',
+            file: d.file_name || '',
+            size: d.file_size ? Math.round(d.file_size / 1024) : '--',
+            date: d.created_at ? new Date(d.created_at).toLocaleDateString() : ''
+          });
+        });
+      }
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -1064,8 +1501,9 @@
     const p = dossier.profile || {};
     const selectedSems = options.selectedSemesters || state.selectedDossierSemesters || [1, 2, 3, 4, 5, 6];
     const allAssessments = dossier.assessments || [];
-    const tests = allAssessments.filter(t => !isAssignmentAssessment(t) && selectedSems.includes(Number(t.semester)));
-    const assignments = allAssessments.filter(a => isAssignmentAssessment(a) && selectedSems.includes(Number(a.semester)));
+    const tests = allAssessments.filter(t => classifyAssessment(t) === 'TEST' && selectedSems.includes(Number(t.semester)));
+    const assignments = allAssessments.filter(a => classifyAssessment(a) === 'ASSIGNMENT' && selectedSems.includes(Number(a.semester)));
+    const labs = allAssessments.filter(l => classifyAssessment(l) === 'LAB' && selectedSems.includes(Number(l.semester)));
     const atts = (dossier.attendance || []).filter(a => selectedSems.includes(Number(a.semester)));
 
     let html = `
@@ -1102,15 +1540,15 @@
 
     if (options.incTests !== false) {
       html += `
-        <h2>2. Assessment &amp; Test Records</h2>
+        <h2>2. Class Tests &amp; Sessional Examination Marks Ledger</h2>
         <table>
-          <tr><th>Semester</th><th>Subject</th><th>Assessment Title</th><th>Type</th><th>Max Marks</th><th>Scored Marks</th></tr>
+          <tr><th>Semester</th><th>Subject</th><th>Assessment Title</th><th>Component</th><th>Max Marks</th><th>Scored Marks</th></tr>
           ${tests.map(t => `
             <tr>
               <td>Sem ${t.semester || ''}</td>
               <td>${escapeHtml(t.subject_name || '')}</td>
               <td>${escapeHtml(t.title || '')}</td>
-              <td>${escapeHtml(t.type || '')}</td>
+              <td>${escapeHtml(t.component || 'THEORY')}</td>
               <td>${t.max_marks || 0}</td>
               <td><b>${t.marks_obtained !== null ? t.marks_obtained : 0}</b></td>
             </tr>
@@ -1121,15 +1559,14 @@
 
     if (options.incAssignments !== false) {
       html += `
-        <h2>3. Coursework &amp; Assignments</h2>
+        <h2>3. Coursework &amp; Assignment Evaluation Ledger</h2>
         <table>
-          <tr><th>Semester</th><th>Subject</th><th>Assignment Title</th><th>Component</th><th>Max Marks</th><th>Scored Marks</th><th>Status</th></tr>
+          <tr><th>Semester</th><th>Subject</th><th>Assignment Title</th><th>Max Marks</th><th>Scored Marks</th><th>Status</th></tr>
           ${assignments.map(a => `
             <tr>
               <td>Sem ${a.semester || ''}</td>
               <td>${escapeHtml(a.subject_name || '')}</td>
               <td>${escapeHtml(a.title || '')}</td>
-              <td>${escapeHtml(a.type || 'ASSIGNMENT')}</td>
               <td>${a.max_marks || 0}</td>
               <td><b>${a.marks_obtained !== null ? a.marks_obtained : '--'}</b></td>
               <td>${escapeHtml(a.submission_status || 'SUBMITTED')}</td>
@@ -1139,11 +1576,30 @@
       `;
     }
 
+    if (options.incLabs !== false) {
+      html += `
+        <h2>4. Lab Practical Records, Experiments &amp; Viva Ledger</h2>
+        <table>
+          <tr><th>Semester</th><th>Subject</th><th>Experiment / Practical Title</th><th>Max Marks</th><th>Scored Marks</th><th>Status</th></tr>
+          ${labs.map(l => `
+            <tr>
+              <td>Sem ${l.semester || ''}</td>
+              <td>${escapeHtml(l.subject_name || '')}</td>
+              <td>${escapeHtml(l.title || '')}</td>
+              <td>${l.max_marks || 0}</td>
+              <td><b>${l.marks_obtained !== null ? l.marks_obtained : '--'}</b></td>
+              <td>${l.marks_obtained !== null ? 'Verified' : 'Pending'}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+
     if (options.incAttendance !== false) {
       html += `
-        <h2>4. Attendance Matrix &amp; Lecture Summary</h2>
+        <h2>5. Monthly Attendance Matrix &amp; Lecture Summary</h2>
         <table>
-          <tr><th>Semester</th><th>Subject Name</th><th>Code</th><th>Total Lectures</th><th>Attended</th><th>Percentage</th></tr>
+          <tr><th>Semester</th><th>Subject Name</th><th>Code</th><th>Total Lectures</th><th>Attended</th><th>Percentage</th><th>Eligibility</th></tr>
           ${atts.map(a => {
             const tot = Number(a.total_sessions) || 0;
             const pres = Number(a.attended_sessions) || 0;
@@ -1156,6 +1612,7 @@
                 <td>${tot}</td>
                 <td><b>${pres}</b></td>
                 <td><b>${pct}%</b></td>
+                <td>${pct >= 75 ? 'Eligible' : 'Defaulter'}</td>
               </tr>
             `;
           }).join('')}
@@ -1186,8 +1643,9 @@
     const p = dossier.profile || {};
     const selectedSems = options.selectedSemesters || state.selectedDossierSemesters || [1, 2, 3, 4, 5, 6];
     const allAssessments = dossier.assessments || [];
-    const tests = allAssessments.filter(t => !isAssignmentAssessment(t) && selectedSems.includes(Number(t.semester)));
-    const assignments = allAssessments.filter(a => isAssignmentAssessment(a) && selectedSems.includes(Number(a.semester)));
+    const tests = allAssessments.filter(t => classifyAssessment(t) === 'TEST' && selectedSems.includes(Number(t.semester)));
+    const assignments = allAssessments.filter(a => classifyAssessment(a) === 'ASSIGNMENT' && selectedSems.includes(Number(a.semester)));
+    const labs = allAssessments.filter(l => classifyAssessment(l) === 'LAB' && selectedSems.includes(Number(l.semester)));
     const atts = (dossier.attendance || []).filter(a => selectedSems.includes(Number(a.semester)));
 
     let sectionsHtml = '';
@@ -1210,13 +1668,13 @@
       sectionsHtml += `
         <h2>Class Tests &amp; Examinations</h2>
         <table>
-          <tr><th>Semester</th><th>Subject</th><th>Title</th><th>Type</th><th>Max</th><th>Scored</th></tr>
+          <tr><th>Semester</th><th>Subject</th><th>Title</th><th>Component</th><th>Max</th><th>Scored</th></tr>
           ${tests.map(t => `
             <tr>
               <td>Sem ${t.semester || ''}</td>
               <td>${escapeHtml(t.subject_name || '')}</td>
               <td>${escapeHtml(t.title || '')}</td>
-              <td>${escapeHtml(t.type || '')}</td>
+              <td>${escapeHtml(t.component || 'THEORY')}</td>
               <td>${t.max_marks || 0}</td>
               <td><b>${t.marks_obtained !== null ? t.marks_obtained : 0}</b></td>
             </tr>
@@ -1229,16 +1687,34 @@
       sectionsHtml += `
         <h2>Coursework &amp; Assignments</h2>
         <table>
-          <tr><th>Semester</th><th>Subject</th><th>Title</th><th>Component</th><th>Max</th><th>Scored</th><th>Status</th></tr>
+          <tr><th>Semester</th><th>Subject</th><th>Title</th><th>Max</th><th>Scored</th><th>Status</th></tr>
           ${assignments.map(a => `
             <tr>
               <td>Sem ${a.semester || ''}</td>
               <td>${escapeHtml(a.subject_name || '')}</td>
               <td>${escapeHtml(a.title || '')}</td>
-              <td>${escapeHtml(a.type || 'ASSIGNMENT')}</td>
               <td>${a.max_marks || 0}</td>
               <td><b>${a.marks_obtained !== null ? a.marks_obtained : '--'}</b></td>
               <td>${escapeHtml(a.submission_status || 'SUBMITTED')}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+
+    if (options.incLabs !== false) {
+      sectionsHtml += `
+        <h2>Lab Practicals &amp; Experiments</h2>
+        <table>
+          <tr><th>Semester</th><th>Subject</th><th>Title</th><th>Max</th><th>Scored</th><th>Status</th></tr>
+          ${labs.map(l => `
+            <tr>
+              <td>Sem ${l.semester || ''}</td>
+              <td>${escapeHtml(l.subject_name || '')}</td>
+              <td>${escapeHtml(l.title || '')}</td>
+              <td>${l.max_marks || 0}</td>
+              <td><b>${l.marks_obtained !== null ? l.marks_obtained : '--'}</b></td>
+              <td>${l.marks_obtained !== null ? 'Verified' : 'Pending'}</td>
             </tr>
           `).join('')}
         </table>
@@ -1249,7 +1725,7 @@
       sectionsHtml += `
         <h2>Attendance Summary</h2>
         <table>
-          <tr><th>Semester</th><th>Subject Name</th><th>Code</th><th>Total</th><th>Attended</th><th>Percentage</th></tr>
+          <tr><th>Semester</th><th>Subject Name</th><th>Code</th><th>Total</th><th>Attended</th><th>Percentage</th><th>Status</th></tr>
           ${atts.map(a => {
             const tot = Number(a.total_sessions) || 0;
             const pres = Number(a.attended_sessions) || 0;
@@ -1262,6 +1738,7 @@
                 <td>${tot}</td>
                 <td><b>${pres}</b></td>
                 <td><b>${pct}%</b></td>
+                <td>${pct >= 75 ? 'Eligible' : 'Defaulter'}</td>
               </tr>
             `;
           }).join('')}

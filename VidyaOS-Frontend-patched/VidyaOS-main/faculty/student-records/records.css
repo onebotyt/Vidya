@@ -48,7 +48,7 @@
   gap: 0.45rem;
   padding: 0.55rem 1.15rem;
   background: var(--color-primary);
-  color: var(--text-on-primary, #ffffff);
+  color: var(--text-white);
   border: none;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -271,18 +271,18 @@
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 700;
-  background: var(--badge-bg, rgba(16, 185, 129, 0.1));
-  color: var(--color-success, #10b981);
+  background: var(--status-present-bg);
+  color: var(--status-present);
 }
 
 .rec-att-badge.low {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger, #ef4444);
+  background: var(--status-absent-bg);
+  color: var(--status-absent);
 }
 
 .rec-att-badge.warning {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning, #f59e0b);
+  background: var(--status-late-bg);
+  color: var(--status-late);
 }
 
 /* 3-Dot Kebab Menu */
@@ -385,6 +385,12 @@
   overflow: hidden;
 }
 
+.rec-dossier-modal-card {
+  max-width: 1080px;
+  width: 95vw;
+  max-height: 92vh;
+}
+
 .rec-modal-header {
   padding: 1.15rem 1.35rem;
   border-bottom: 1px solid var(--border-color);
@@ -394,83 +400,98 @@
   gap: 1rem;
 }
 
-.rec-modal-header-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.rec-modal-header-titles strong {
-  font-size: 1.15rem;
-  color: var(--text-main);
-}
-
-.rec-dossier-sub {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.btn-modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0 0.25rem;
-  line-height: 1;
-}
-
-.btn-modal-close:hover {
-  color: var(--text-main);
-}
-
-.rec-dossier-body {
-  padding: 1.25rem 1.35rem;
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-/* Demographic Profile Card */
-.rec-dossier-profile-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1rem 1.15rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.rec-profile-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-color);
+.rec-dossier-header {
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
   flex-wrap: wrap;
 }
 
-.rec-profile-card-title {
+.rec-header-student-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text-main);
+  gap: 0.85rem;
+  flex: 1;
+  min-width: 260px;
 }
 
-.rec-profile-card-title svg {
+.rec-student-avatar-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary-light);
   color: var(--color-primary);
-}
-
-.rec-profile-card-actions {
+  font-weight: 800;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.rec-student-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rec-student-title-line {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.rec-dossier-student-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.rec-enrollment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.6rem;
+  border-radius: 20px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+}
+
+.rec-dossier-identifiers {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.rec-id-pill {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rec-id-pill strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.rec-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .rec-export-btn-group {
@@ -485,7 +506,7 @@
   padding: 0.45rem 0.85rem;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--color-primary);
   font-size: 0.82rem;
   font-weight: 700;
@@ -494,7 +515,7 @@
 }
 
 .btn-rec-export-profile:hover {
-  background: var(--bg-surface);
+  background: var(--bg-surface-hover);
   border-color: var(--color-primary);
 }
 
@@ -505,7 +526,7 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   min-width: 220px;
   z-index: 100;
   padding: 0.35rem;
@@ -528,49 +549,201 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
 }
 
 .rec-profile-export-dropdown button:hover {
-  background: var(--bg-surface);
+  background: var(--bg-surface-hover);
   color: var(--color-primary);
 }
 
-.rec-profile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.85rem 1rem;
+.btn-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
 }
 
-.rec-info-item {
+.btn-modal-close:hover {
+  color: var(--text-main);
+}
+
+.rec-dossier-body {
+  padding: 1.15rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 1.15rem;
 }
 
-.rec-info-label {
-  font-size: 0.72rem;
+/* 5 Interactive Status Cards Row */
+.rec-status-cards-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+
+.rec-status-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.65rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.rec-status-card:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.rec-status-card.active {
+  background: var(--bg-card);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light), var(--shadow-sm);
+}
+
+.rec-status-card.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-primary);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.rec-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rec-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.rec-card-icon.assignments {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.rec-card-icon.tests {
+  background: var(--status-pending-bg);
+  color: var(--status-pending);
+}
+
+.rec-card-icon.labs {
+  background: var(--status-present-bg);
+  color: var(--status-present);
+}
+
+.rec-card-icon.attendance {
+  background: var(--col-att-group-bg);
+  color: var(--col-att-group-color);
+}
+
+.rec-card-icon.documents {
+  background: var(--bg-surface-secondary);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.rec-card-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.rec-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rec-card-label {
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-muted);
 }
 
-.rec-info-val {
-  font-size: 0.86rem;
+.rec-card-metric-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.rec-card-metric {
+  font-size: 1.25rem;
+  font-weight: 900;
   color: var(--text-main);
-  word-break: break-word;
+  font-family: var(--font-family-mono, monospace);
+  line-height: 1.1;
+}
+
+.rec-card-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.btn-rec-card-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--color-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-rec-card-view:hover,
+.rec-status-card.active .btn-rec-card-view {
+  background: var(--color-primary);
+  color: var(--text-white);
+  border-color: var(--color-primary);
 }
 
 /* Semester Checkbox Filter Bar */
 .rec-sem-checkboxes-bar {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .rec-checkbox-title {
@@ -584,16 +757,16 @@
 
 .rec-checkboxes-list {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem 1.25rem;
+  gap: 0.65rem 1.15rem;
+  flex-wrap: wrap;
 }
 
 .rec-check-label {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.82rem;
+  gap: 0.35rem;
+  font-size: 0.8rem;
   color: var(--text-main);
   font-weight: 600;
   cursor: pointer;
@@ -601,56 +774,416 @@
 }
 
 .rec-check-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   accent-color: var(--color-primary);
   cursor: pointer;
 }
 
-/* Sub-tabs */
-.rec-dossier-tabs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.25rem;
-}
-
-.rec-dossier-tab {
-  background: none;
-  border: none;
-  padding: 0.55rem 0.85rem;
-  border-radius: 8px;
-  color: var(--text-muted);
-  font-size: 0.84rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  transition: all 0.2s ease;
-}
-
-.rec-dossier-tab.active {
-  background: var(--color-primary);
-  color: var(--text-on-primary, #ffffff);
-}
-
-.rec-tab-badge {
-  padding: 0.15rem 0.45rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  background: rgba(0, 0, 0, 0.12);
-  color: inherit;
-}
-
-/* Sub-table */
-.rec-tab-content {
+/* Section Studios */
+.rec-section-studio {
   display: none;
 }
 
-.rec-tab-content.active {
-  display: block;
+.rec-section-studio.active {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Excel View & Table Styling (Read-Only Marks Ledger) */
+.excel-sheet-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.excel-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.84rem;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.excel-app-tag {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: var(--text-white);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.excel-badge-readonly {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.rec-excel-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: var(--table-bg);
+  max-height: 380px;
+}
+
+.rec-excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-family: var(--font-family-sans);
+}
+
+.rec-excel-table thead th {
+  background: var(--table-th-bg);
+  color: var(--table-th-color);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 2px solid var(--border-color);
+  border-right: 1px solid var(--table-border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.rec-excel-table thead th.th-num {
+  text-align: right;
+}
+
+.rec-excel-table tbody td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--table-border-subtle);
+  border-right: 1px solid var(--table-border-subtle);
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.rec-excel-table tbody td.td-num {
+  text-align: right;
+  font-family: var(--font-family-mono, monospace);
+  font-weight: 600;
+}
+
+.rec-excel-table tbody tr:hover {
+  background: var(--table-hover-bg);
+}
+
+.rec-excel-table tfoot td {
+  background: var(--bg-surface);
+  font-weight: 800;
+  padding: 0.65rem 0.85rem;
+  border-top: 2px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.rec-excel-table tfoot td.td-num {
+  text-align: right;
+  font-family: var(--font-family-mono, monospace);
+}
+
+/* Student Assignment Uploads Container */
+.rec-uploads-container {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+}
+
+.rec-uploads-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rec-uploads-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.rec-uploads-title svg {
+  color: var(--color-primary);
+}
+
+.rec-uploads-count {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.rec-uploads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.85rem;
+}
+
+.rec-upload-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.rec-upload-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.rec-upload-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.rec-upload-file-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rec-upload-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.rec-upload-title {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-upload-meta {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.rec-upload-feedback {
+  background: var(--bg-surface);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-left: 3px solid var(--color-primary);
+}
+
+.rec-upload-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.btn-rec-download-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: var(--color-primary-light);
+  border: 1px solid var(--border-color);
+  transition: all 0.15s ease;
+}
+
+.btn-rec-download-file:hover {
+  background: var(--color-primary);
+  color: var(--text-white);
+}
+
+/* Attendance Matrix Grid Table (Day 1 - 31) */
+.rec-matrix-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-weight: 900;
+  font-size: 0.75rem;
+}
+
+.legend-dot.att-p {
+  background: var(--status-present-bg);
+  color: var(--status-present);
+  border: 1px solid var(--status-present);
+}
+
+.legend-dot.att-a {
+  background: var(--status-absent-bg);
+  color: var(--status-absent);
+  border: 1px solid var(--status-absent);
+}
+
+.legend-dot.att-l {
+  background: var(--status-late-bg);
+  color: var(--status-late);
+  border: 1px solid var(--status-late);
+}
+
+.legend-dot.att-empty {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.rec-matrix-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: var(--table-bg);
+  max-height: 420px;
+}
+
+.rec-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.rec-matrix-table th,
+.rec-matrix-table td {
+  border: 1px solid var(--table-border-subtle);
+  padding: 0.45rem 0.35rem;
+  white-space: nowrap;
+}
+
+.rec-matrix-table thead th {
+  background: var(--table-th-bg);
+  color: var(--table-th-color);
+  font-weight: 800;
+  font-size: 0.72rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.rec-matrix-table thead th.col-pinned-left,
+.rec-matrix-table tbody td.col-pinned-left {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--bg-card);
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+}
+
+.rec-matrix-table td.att-day-cell {
+  width: 24px;
+  min-width: 24px;
+  max-width: 28px;
+  padding: 0.3rem 0.15rem;
+  font-weight: 900;
+  font-size: 0.78rem;
+  font-family: var(--font-family-mono, monospace);
+}
+
+.att-day-cell.att-p {
+  color: var(--status-present);
+  background: var(--status-present-bg);
+}
+
+.att-day-cell.att-a {
+  color: var(--status-absent);
+  background: var(--status-absent-bg);
+}
+
+.att-day-cell.att-l {
+  color: var(--status-late);
+  background: var(--status-late-bg);
+}
+
+.att-day-cell.att-empty {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.rec-matrix-table tfoot td {
+  background: var(--bg-surface);
+  font-weight: 800;
+  padding: 0.55rem 0.5rem;
 }
 
 .rec-subtable-wrap {
@@ -816,7 +1349,7 @@
   padding: 0.55rem 1.25rem;
   border: none;
   background: var(--color-primary);
-  color: var(--text-on-primary, #ffffff);
+  color: var(--text-white);
   border-radius: 8px;
   font-size: 0.84rem;
   font-weight: 700;
@@ -910,28 +1443,35 @@
     padding: 0.85rem;
   }
 
-  .rec-profile-grid {
+  .rec-status-cards-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .rec-status-card {
+    padding: 0.7rem;
+  }
+
+  .rec-card-metric {
+    font-size: 1.1rem;
+  }
+
+  .rec-uploads-grid {
     grid-template-columns: 1fr;
-    gap: 0.65rem;
   }
 
-  .rec-profile-card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.6rem;
-  }
-
-  .rec-profile-card-actions {
+  .rec-header-actions {
     width: 100%;
+    justify-content: space-between;
   }
 
   .rec-export-btn-group {
-    width: 100%;
+    flex: 1;
   }
 
   .btn-rec-export-profile {
     width: 100%;
-    justify-content: space-between;
+    justify-content: center;
   }
 
   .rec-profile-export-dropdown {
