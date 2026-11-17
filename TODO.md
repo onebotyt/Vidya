@@ -38,6 +38,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 456: Presentation-Ready Institutional Database Seeding & Zero Test Data Cleanup
+- **Complete Test & Junk Data Purge (`vdiyaos` & `college_attendance`)**:
+  - Purged all automated test artifacts and leftover dummy accounts: deleted all `delstu_*`, `delfac_*`, `teststudent*`, `rejecttest*`, `test_del_*`, `EMPTEST_*` faculty records.
+  - Removed junk group ("Test Group"), junk test subject ("Test Subject" / `SUB101`), junk assessment ("djdd"), and duplicate classroom stream announcements.
+  - Zero junk/test data remaining across all 58 relational database tables.
+- **Realistic Presentation Personas for Live Impersonation**:
+  - **System Administrator** (`admin@gmail.com` / `Admin@123`): Complete administrative view with 6 active departments (IT, CSE, ECE, EE, ME, CE), academic term `2026-27 (Winter Session)`, 400+ system audit logs, system settings.
+  - **Head of Department (HOD)** (`hod@gmail.com` / `Password@123`): Dr. Rajesh Sharma (Professor & HOD IT), 3 active classes (IT501 DBMS, IT504 Web Tech, IT501P DBMS Lab), course files, student performance analytics, leave approvals.
+  - **Class Teacher** (`classteacher@gmail.com` / `Password@123`): Prof. Priya Mehta (Associate Professor & Class Teacher 3rd Year), active class (IT502 Operating Systems), student roster dossiers.
+  - **Subject Teacher** (`teacher@gmail.com` / `Password@123`): Prof. Amit Verma (Assistant Professor), 2 active classes (IT503 Computer Networks, IT505P Linux Lab).
+  - **Cross-Department Faculty**: Dr. Arvind Swaminathan (CSE), Dr. Sunita Rao (ECE), Prof. Manish Kapoor (EE), Dr. Vikram Singhania (ME), Dr. Neha Agarwal (CE).
+  - **13 Enrolled Students (Batch 2024-27, Semester 5 IT)**:
+    - Primary Student Persona: Aarav Sharma (`student1@gmail.com` / `Password@123`, Roll 1, Enrollment `2024IT001`, 88.03% attendance, complete profile, graded assignments).
+    - Students 2–10: Aditi Verma, Akash Patel, Ananya Gupta, Arjun Rao, Bhavya Nair, Chirag Joshi, Deepika Singh, Rohan Kulkarni, Sneha Patil (`student2@gmail.com` to `student10@gmail.com`).
+    - Students 11–13: Amit Kumar, Sneha Pal, Rahul Sharma (`cs2024001@college.edu`, `cs2024005@college.edu`, `cs2024008@college.edu`).
+- **Complete Academic Content & Interactive Data**:
+  - **Weekly Timetable / Routine**: 20 timetable slots across Monday to Friday with rooms (Room 402, Database Lab 3, Linux Lab 2), times, and assigned professors; plus master timetable PDF files in `timetable_files`.
+  - **Attendance Ledger**: 291 attendance sessions and 3,182 student records (realistic attendance distribution: Aarav 88%, Aditi 94%, Arjun 76%).
+  - **Coursework & Marksheets**: 26 assessments across 6 classes, 245 graded submissions with realistic marks and teacher feedback comments.
+  - **Leave Applications**: 8 realistic student leave requests (Medical, Family, Sports, Hackathon duty) with HOD review decisions and notes.
+- **Dual-Database Synchronization**:
+  - Both `vdiyaos` (primary MySQL backend) and `college_attendance` synchronized to 100% parity.
+- **Automated Verification Suites**:
+  - `test-ui-manifest-sync.js`: 208/208 passed.
+  - `test-theme-support.js`: 88/88 passed.
+  - `test-rbac-and-structure.js`: 38/38 passed.
+
 ### ✅ Milestone 455: Universal Mobile Android Compatibility, Safe-Area Insets & UI Polish
 - **Universal Safe Area Inset Support Across Portals (`header.css`, `index.css`)**:
   - Transformed fixed headers to responsive sticky headers with safe-area insets (`height: calc(60px + env(safe-area-inset-top, 0px))`, `padding-top: env(safe-area-inset-top, 0px)`) across Admin (`admin/components/header/header.css`), Faculty (`faculty/components/header/header.css`), Student (`student/components/header/header.css`), and Login/Register (`login/index.css`).
