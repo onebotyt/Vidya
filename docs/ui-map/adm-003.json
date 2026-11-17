@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "ADM-003",
+  "role": "Admin",
+  "route": "/admin/dashboard.html",
+  "source_file": "frontend/admin/dashboard/index.html",
+  "content_hash": "9171883c9b4a",
+  "last_scanned": "2026-11-17T17:56:40.356Z",
+  "title": "Admin Dashboard — VidyaOS Institutional Console",
+  "purpose": "System-wide institutional KPIs, attendance averages, active sessions",
+  "shell": "Admin Shell (`nav.css`, `nav.js`)",
+  "states": "Desktop: 3-column KPI grid + module cards; Mobile: single-column scrollable metric cards",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [],
+    "input_controls": [],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [],
+  "companion_scripts": [
+    "admin/components/core/api.js",
+    "admin/components/core/auth.js",
+    "admin/components/icons.js",
+    "admin/components/sidebar/sidebar.js",
+    "admin/components/header/header.js",
+    "admin/components/admin-ui.js",
+    "admin/dashboard/dashboard.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "openSidebar",
+    "closeSidebar",
+    "toggleNotifications",
+    "closeAdminLogoutModal",
+    "toggleAdminProfileMenu",
+    "toggleDashboardTheme",
+    "openModal",
+    "closeModal",
+    "loadInstitutionalBranding",
+    "loadAdminStats"
+  ]
+}

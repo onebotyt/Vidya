@@ -1,0 +1,478 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-001",
+  "role": "Student",
+  "route": "/student/dashboard.html",
+  "source_file": "frontend/student/dashboard/index.html",
+  "content_hash": "0cbf5b9fce1e",
+  "last_scanned": "2026-11-17T17:56:40.584Z",
+  "title": "Student Classroom Dashboard — VidyaOS",
+  "purpose": "Student classroom dashboard, enrolled courses, attendance progress",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: multi-column course grid; Mobile: single-column cards with tap-to-enter",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
+          "Date",
+          "Subject",
+          "Status",
+          "Source"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "self-attendance-modal",
+        "title": "Submit Classroom Attendance",
+        "field_count": 0
+      },
+      {
+        "id": "join-group-modal",
+        "title": "Join Class with Code",
+        "field_count": 0
+      },
+      {
+        "id": "join-invite-code",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-submit-join",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "student-stream-modal",
+        "title": "Class Stream",
+        "field_count": 0
+      },
+      {
+        "id": "stream-posts-container",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "complete-profile-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "pop-submit-btn",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "open-self-attendance-btn",
+        "label": "Submit Presence (PIN / QR) →",
+        "action": "openSelfAttendanceModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Join Class",
+        "action": "openStudentJoinModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "filter-all",
+        "label": "All (0)",
+        "action": "setClassesFilter(",
+        "class": "active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "filter-theory",
+        "label": "Theory (0)",
+        "action": "setClassesFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "filter-practical",
+        "label": "Practical (0)",
+        "action": "setClassesFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeSelfAttendanceModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "submit-self-btn",
+        "label": "Submit Presence Claim →",
+        "action": null,
+        "class": "btn btn-success",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeJoinModal()",
+        "class": "btn-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeJoinModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-join",
+        "label": "Join Class",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeStudentStreamModal()",
+        "class": "btn-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeStudentStreamModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "fab-action-join-class",
+        "label": "Join Class",
+        "action": "openStudentJoinModal(); toggleStudentFabMenu(false);",
+        "class": "gc-fab-menu-action",
+        "data_ui": null,
+        "title": "Join Class with Invite Code"
+      },
+      {
+        "id": "student-fab-trigger",
+        "label": "Student Actions",
+        "action": "toggleStudentFabMenu()",
+        "class": "gc-fab-trigger",
+        "data_ui": null,
+        "title": "Student Actions"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeCompleteProfileModal()",
+        "class": "btn-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Remind Me Later",
+        "action": "closeCompleteProfileModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pop-submit-btn",
+        "label": "Save &amp; Complete Profile",
+        "action": null,
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "search-classes",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search classes, subjects or teachers...",
+        "handler": "handleClassesSearch(this.value)",
+        "class": null
+      },
+      {
+        "id": "self-pin",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 482109",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "self-qr",
+        "type": "text",
+        "name": null,
+        "placeholder": "Scan or paste QR token",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "join-invite-code",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 7X9K2P",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "pop-father-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Rajesh Sharma",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "pop-mother-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Sunita Sharma",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "pop-dob",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "pop-aadhar",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 1234 5678 9012",
+        "handler": null,
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "self-method",
+        "title": null,
+        "onchange": "toggleSelfMethod()",
+        "class": "form-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "PIN",
+            "text": "6-Digit Session PIN"
+          },
+          {
+            "value": "QR",
+            "text": "Dynamic QR Code Token"
+          },
+          {
+            "value": "BUTTON",
+            "text": "One-Tap Presence Request"
+          }
+        ]
+      },
+      {
+        "id": "pop-gender",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select —"
+          },
+          {
+            "value": "Male",
+            "text": "Male"
+          },
+          {
+            "value": "Female",
+            "text": "Female"
+          },
+          {
+            "value": "Other",
+            "text": "Other"
+          }
+        ]
+      },
+      {
+        "id": "pop-category",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select —"
+          },
+          {
+            "value": "General",
+            "text": "General"
+          },
+          {
+            "value": "OBC",
+            "text": "OBC"
+          },
+          {
+            "value": "SC",
+            "text": "SC"
+          },
+          {
+            "value": "ST",
+            "text": "ST"
+          },
+          {
+            "value": "EWS",
+            "text": "EWS"
+          },
+          {
+            "value": "Other",
+            "text": "Other"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "self-attendance-modal",
+      "title": "Submit Classroom Attendance",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "join-group-modal",
+      "title": "Join Class with Code",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "join-invite-code",
+      "title": "Modal Dialog",
+      "fields": [
+        "join-invite-code"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-join",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeJoinModal()"
+    },
+    {
+      "id": "student-stream-modal",
+      "title": "Class Stream",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "stream-posts-container",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "complete-profile-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "pop-submit-btn",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeCompleteProfileModal()"
+    }
+  ],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/dashboard/dashboard.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadStudentDashboard",
+    "loadEnrolledClasses",
+    "renderGoogleClassCards",
+    "renderDrawerClasses",
+    "toggleDrawer",
+    "toggleAppsLauncher",
+    "toggleUserProfile",
+    "toggleTheme",
+    "openSelfAttendanceModal",
+    "closeSelfAttendanceModal",
+    "toggleSelfMethod",
+    "toggleStudentFabMenu",
+    "openStudentJoinModal",
+    "closeJoinModal",
+    "openStudentStreamModal",
+    "closeStudentStreamModal"
+  ]
+}

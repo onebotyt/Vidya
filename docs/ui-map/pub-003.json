@@ -1,0 +1,334 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "PUB-003",
+  "role": "Public",
+  "route": "/login/register/",
+  "source_file": "frontend/login/register/index.html",
+  "content_hash": "c2e41635739c",
+  "last_scanned": "2026-11-17T17:56:40.645Z",
+  "title": "Register — VidyaOS Campus Management",
+  "purpose": "Student self-registration with branch/year onboarding",
+  "shell": "Auth Shell (`register.css`)",
+  "states": "Desktop: guided 3-step card wizard; Mobile: full-screen step flow with sticky next button",
+  "url_parameters": [
+    "mock",
+    "role",
+    "google_email",
+    "google_name",
+    "google_sub"
+  ],
+  "api_contracts": [
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/departments",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/departments",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/student/registration/status",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/google/url",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/student/register",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/faculty/register",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "stu-pw-bar",
+        "class": "pw-bar"
+      }
+    ],
+    "tables": [],
+    "modals": [
+      {
+        "id": "google-signin-modal",
+        "title": "Register with Google",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "theme-toggle-btn",
+        "label": "Toggle dark mode",
+        "action": "toggleTheme()",
+        "class": "btn-theme",
+        "data_ui": null,
+        "title": "Toggle dark mode"
+      },
+      {
+        "id": "tab-student",
+        "label": "Student",
+        "action": "switchRole(",
+        "class": "rs-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-faculty",
+        "label": "Faculty &amp; HOD",
+        "action": "switchRole(",
+        "class": "rs-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "google-signup-btn",
+        "label": "Sign up with Google (Auto-Fill)",
+        "action": "initiateGoogleSignUp()",
+        "class": "btn-google",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "togglePwVisibility(",
+        "class": "pw-eye",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "stu-submit-btn",
+        "label": "Submit Registration →",
+        "action": null,
+        "class": "btn-submit",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "fac-btn-role-teacher",
+        "label": "Faculty Member Department or Common Faculty",
+        "action": "setFacultyType(",
+        "class": "type-card active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "fac-btn-role-hod",
+        "label": "Head of Department Department Leadership",
+        "action": "setFacultyType(",
+        "class": "type-card",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "fac-submit-btn",
+        "label": "Submit Application →",
+        "action": null,
+        "class": "btn-submit",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeGoogleCard()",
+        "class": "google-card-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back",
+        "action": "showGoogleAccountList()",
+        "class": "google-btn-text",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "google-submit-manual-btn",
+        "label": "Next",
+        "action": "submitGoogleEmail()",
+        "class": "google-btn-blue",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "stu-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Aarav Sharma",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "stu-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 2024IT001",
+        "handler": null,
+        "class": "inp mono"
+      },
+      {
+        "id": "stu-ubter",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. R230104001",
+        "handler": null,
+        "class": "inp mono"
+      },
+      {
+        "id": "stu-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@gmail.com",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "stu-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "10-digit mobile",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "stu-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Min. 8 characters",
+        "handler": "checkStrength(",
+        "class": "inp"
+      },
+      {
+        "id": "stu-confirm",
+        "type": "password",
+        "name": null,
+        "placeholder": "Re-enter password",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "fac-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Dr. Ramesh Joshi",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "fac-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "ramesh.joshi@gmail.com",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "fac-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "10-digit mobile",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "fac-empid",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. FAC-2026-042",
+        "handler": null,
+        "class": "inp mono"
+      },
+      {
+        "id": "fac-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Min. 8 characters",
+        "handler": null,
+        "class": "inp"
+      },
+      {
+        "id": "google-manual-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "Email or phone",
+        "handler": null,
+        "class": "google-input-field"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "stu-dept",
+        "title": null,
+        "onchange": "handleStudentDeptChange()",
+        "class": "inp",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Loading branches…"
+          }
+        ]
+      },
+      {
+        "id": "stu-sem",
+        "title": null,
+        "onchange": "handleStudentSemChange()",
+        "class": "inp",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select branch first —"
+          }
+        ]
+      },
+      {
+        "id": "fac-dept",
+        "title": null,
+        "onchange": "handleFacultyDeptChange()",
+        "class": "inp",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Loading departments…"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "google-signin-modal",
+      "title": "Register with Google",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "login/register/register.js"
+  ],
+  "exported_functions": [
+    "toggleTheme",
+    "togglePwVisibility",
+    "switchRole",
+    "loadDepartments",
+    "openGoogleCardForRegistration",
+    "closeGoogleCard"
+  ]
+}

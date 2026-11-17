@@ -1,0 +1,1169 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-005",
+  "role": "Faculty",
+  "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
+  "source_file": "frontend/faculty/sheets/index.html",
+  "content_hash": "522113dd4439",
+  "last_scanned": "2026-11-17T17:56:40.519Z",
+  "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
+  "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: high-density Excel-style grid with auto-fit, zoom, and multi-tier sticky headers; Mobile: responsive table with touch pinch zoom & sliding bottom tools drawer",
+  "url_parameters": [
+    "registerId",
+    "register_id",
+    "register",
+    "groupId",
+    "group_id",
+    "id",
+    "sheet"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student-records/filters",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/members",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/assignments",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/tests",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/faculty/registers/:id/internal-evaluation",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/tests/:id/scores",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/teaching-groups/:id/tests/:id/scores",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "studio-bar-1",
+        "class": "studio-bar studio-bar-1 sheets-top-command-bar"
+      },
+      {
+        "id": "",
+        "class": "studio-bar-left"
+      },
+      {
+        "id": "",
+        "class": "studio-bar-right"
+      },
+      {
+        "id": "studio-bar-2",
+        "class": "studio-bar studio-bar-2"
+      },
+      {
+        "id": "",
+        "class": "studio-bar-left"
+      },
+      {
+        "id": "",
+        "class": "studio-bar-right"
+      },
+      {
+        "id": "pc-screen-toolbar",
+        "class": "pc-screen-toolbar"
+      },
+      {
+        "id": "studio-bar-3",
+        "class": "studio-bar studio-bar-3 eval-filter-toolbar"
+      },
+      {
+        "id": "floating-bottom-bar",
+        "class": "floating-bottom-drawer"
+      }
+    ],
+    "tables": [],
+    "modals": [
+      {
+        "id": "modal-add-column",
+        "title": "+ Add Spreadsheet Column",
+        "field_count": 0
+      },
+      {
+        "id": "add-col-sheet-target",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-remove-column",
+        "title": "− Remove Spreadsheet Column",
+        "field_count": 0
+      },
+      {
+        "id": "remove-col-select",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-add-row",
+        "title": "+ Add Student Row",
+        "field_count": 0
+      },
+      {
+        "id": "add-row-roll",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-edit-row",
+        "title": "Edit / Remove Student",
+        "field_count": 0
+      },
+      {
+        "id": "edit-row-select",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "sheet-filter-modal",
+        "title": "Filters",
+        "field_count": 0
+      },
+      {
+        "id": "tab-btn-sort",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "filter-modal-status-text",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-total-marks",
+        "title": "Edit Total Marks &amp; Scheme",
+        "field_count": 0
+      },
+      {
+        "id": "modal-custom-cols-container",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-scheme-total-display",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-student-roster",
+        "title": "Edit Student Row Data",
+        "field_count": 0
+      },
+      {
+        "id": "modal-roster-student-select",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "btn-back-bar1",
+        "label": "Back to Classroom / Registers",
+        "action": "navigateBackFromSheets()",
+        "class": "btn-icon-minimal",
+        "data_ui": null,
+        "title": "Back to Classroom / Registers"
+      },
+      {
+        "id": "btn-export-dropdown",
+        "label": "Export ▼",
+        "action": "toggleExportMenu(event)",
+        "class": "btn btn-secondary btn-sm studio-export-btn",
+        "data_ui": null,
+        "title": "Export active spreadsheet"
+      },
+      {
+        "id": null,
+        "label": ".XLSX Excel Spreadsheet Native institutional workbook (.xlsx)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".PDF Printable Document PDF format for print &amp; signing",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".DOC Word Document Editable formatted table (.doc)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".CSV Raw Data Values Comma-separated tabular data",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-edit-save-toggle",
+        "label": "Edit",
+        "action": "toggleEditSaveMode()",
+        "class": "btn-edit-save-toggle",
+        "data_ui": null,
+        "title": "Toggle Edit / Save Mode"
+      },
+      {
+        "id": null,
+        "label": "−",
+        "action": "zoomOut()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Zoom Out (−)"
+      },
+      {
+        "id": null,
+        "label": "+",
+        "action": "zoomIn()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Zoom In (+)"
+      },
+      {
+        "id": null,
+        "label": "100%",
+        "action": "resetZoom()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Reset to 100%"
+      },
+      {
+        "id": "btn-desktop-autofit",
+        "label": "⇲ Auto-Fit",
+        "action": "toggleAutoFit()",
+        "class": "screen-ctrl-btn active",
+        "data_ui": null,
+        "title": "Continuous Auto-Fit"
+      },
+      {
+        "id": null,
+        "label": "+ Student",
+        "action": "openAddRowModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Add Student Row"
+      },
+      {
+        "id": null,
+        "label": "+ Column",
+        "action": "openAddColumnModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Add Column"
+      },
+      {
+        "id": null,
+        "label": "− Column",
+        "action": "openRemoveColumnModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Remove Column"
+      },
+      {
+        "id": null,
+        "label": "Edit Scores Form",
+        "action": "openEditStudentRosterModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Open Scores Form (Vertical Modal Entry)"
+      },
+      {
+        "id": "btn-open-filter-modal",
+        "label": "Filters 1",
+        "action": "openSheetFilterModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Filters, Sorting &amp; Visibility"
+      },
+      {
+        "id": "btn-mode-dynamic",
+        "label": "Dynamic",
+        "action": null,
+        "class": "btn-mode-toggle active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-mode-overview",
+        "label": "⇲ Overview",
+        "action": null,
+        "class": "btn-mode-toggle",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeModal(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Add Column",
+        "action": "confirmAddColumn()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Delete Column",
+        "action": "confirmRemoveColumn()",
+        "class": "btn btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Add Student",
+        "action": "confirmAddStudentRow()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Delete Student",
+        "action": "confirmDeleteStudentRow()",
+        "class": "btn btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Details",
+        "action": "confirmUpdateStudentRow()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back / Close",
+        "action": "closeSheetFilterModal()",
+        "class": null,
+        "data_ui": null,
+        "title": "Back / Close"
+      },
+      {
+        "id": "btn-filter-clear-all",
+        "label": "Clear All Filters",
+        "action": "clearAllSheetFilters()",
+        "class": "filter-btn-clear",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-sort",
+        "label": "Sort",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-students",
+        "label": "Students",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-visibility",
+        "label": "Visibility",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-focus",
+        "label": "Focus",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Show All",
+        "action": "resetFilterModalColumnsVisible()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeSheetFilterModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-filter-apply",
+        "label": "Apply Filters",
+        "action": "applyAndCloseFilterModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-floating-tools",
+        "label": "Adjust Scale &amp; Spreadsheet Columns",
+        "action": "toggleFloatingToolsDrawer()",
+        "class": "floating-tools-fab",
+        "data_ui": null,
+        "title": "Adjust Scale &amp; Spreadsheet Columns"
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "toggleFloatingToolsDrawer(false)",
+        "class": "drawer-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-autofit",
+        "label": "⇲ Auto-Fit",
+        "action": "toggleAutoFit()",
+        "class": "screen-ctrl-btn active",
+        "data_ui": null,
+        "title": "Continuous Auto-Fit"
+      },
+      {
+        "id": "drawer-btn-mode-dynamic",
+        "label": "Dynamic Mode",
+        "action": "setSheetViewMode(",
+        "class": "btn-mode-toggle active",
+        "data_ui": null,
+        "title": "Dynamic Mode: Freeze Roll &amp; Name, scroll other columns at 100% scale"
+      },
+      {
+        "id": "drawer-btn-mode-overview",
+        "label": "⇲ Overview Mode",
+        "action": "setSheetViewMode(",
+        "class": "btn-mode-toggle",
+        "data_ui": null,
+        "title": "Overview Mode: Full sheet scaled to screen, pinch-to-zoom"
+      },
+      {
+        "id": "btn-edit-student-row",
+        "label": "Edit Scores Form Scores",
+        "action": "openEditStudentRosterModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "View and edit all row data for a student inside modal"
+      },
+      {
+        "id": null,
+        "label": "+ Student",
+        "action": "openAddRowModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Column",
+        "action": "openAddColumnModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "− Column",
+        "action": "openRemoveColumnModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Columns Visibility",
+        "action": "toggleFloatingToolsDrawer(false); toggleColumnVisibilityMenu();",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeEditMarksModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeEditMarksModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Apply Scheme",
+        "action": "applyAndCloseEditMarksModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Student Data",
+        "action": "confirmSaveStudentRosterModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "sheet-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search student name, roll...",
+        "handler": "onSheetSearch(this.value)",
+        "class": "eval-search-input"
+      },
+      {
+        "id": "add-col-sheet-target",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-col-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Practical Exam, Viva, Mini Project, Q5",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-col-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Vikas Chauhan",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 2024IT011",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 24101054011",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-name",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": "scheme-assign-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "onSchemeMarksChange(",
+        "class": "form-input-field"
+      },
+      {
+        "id": "scheme-exam-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "onSchemeMarksChange(",
+        "class": "form-input-field"
+      },
+      {
+        "id": "scheme-att-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "onSchemeMarksChange(",
+        "class": "form-input-field"
+      },
+      {
+        "id": "roster-modal-name",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "roster-modal-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "group-switcher-select",
+        "title": "Switch Teaching Group / Class",
+        "onchange": "onSwitchGroup(this.value)",
+        "class": "group-selector-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading classes..."
+          }
+        ]
+      },
+      {
+        "id": "sheet-selector-dropdown",
+        "title": "Choose Active Spreadsheet",
+        "onchange": "switchSheetDropdown(this.value)",
+        "class": "sheet-select-dropdown",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "evaluation",
+            "text": "1. Master Evaluation Sheet"
+          },
+          {
+            "value": "tests",
+            "text": "2. Class Test Marksheet"
+          },
+          {
+            "value": "assignments",
+            "text": "3. Assignment Marksheet"
+          },
+          {
+            "value": "practicals",
+            "text": "4. Practical &amp; Lab Work Marksheet"
+          }
+        ]
+      },
+      {
+        "id": "desktop-density-selector",
+        "title": "Display Density",
+        "onchange": "setDensity(this.value)",
+        "class": "density-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "normal",
+            "text": "Normal"
+          },
+          {
+            "value": "compact",
+            "text": "Compact"
+          },
+          {
+            "value": "comfortable",
+            "text": "Comfortable"
+          }
+        ]
+      },
+      {
+        "id": "sheet-column-focus-select",
+        "title": "Jump directly to column",
+        "onchange": "onFocusColumnChange(this.value)",
+        "class": "eval-filter-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Column Focus ▾"
+          }
+        ]
+      },
+      {
+        "id": "add-col-category",
+        "title": null,
+        "onchange": "onAddColCategoryChange(this.value)",
+        "class": "form-input-field",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "custom",
+            "text": "Continuous Assessment (Lab, Viva, Project, Seminar)"
+          },
+          {
+            "value": "assign",
+            "text": "Coursework Assignment (A1, A2, ...)"
+          },
+          {
+            "value": "exam",
+            "text": "Unit Test / Periodic Exam (UT1, UT2, ...)"
+          }
+        ]
+      },
+      {
+        "id": "remove-col-select",
+        "title": null,
+        "onchange": null,
+        "class": "form-input-field",
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "edit-row-select",
+        "title": null,
+        "onchange": "onSelectStudentToEdit(this.value)",
+        "class": "form-input-field",
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "density-selector",
+        "title": "Display Density",
+        "onchange": "setDensity(this.value)",
+        "class": "density-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "normal",
+            "text": "Normal Density"
+          },
+          {
+            "value": "compact",
+            "text": "Compact (Fit More)"
+          },
+          {
+            "value": "comfortable",
+            "text": "Comfortable (Large)"
+          }
+        ]
+      },
+      {
+        "id": "modal-roster-student-select",
+        "title": null,
+        "onchange": "onSelectStudentInRosterModal(this.value)",
+        "class": "form-input-field",
+        "options_count": 0,
+        "sample_options": []
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "modal-add-column",
+      "title": "+ Add Spreadsheet Column",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-col-sheet-target",
+      "title": "Modal Dialog",
+      "fields": [
+        "add-col-sheet-target"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-remove-column",
+      "title": "− Remove Spreadsheet Column",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "remove-col-select",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-add-row",
+      "title": "+ Add Student Row",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-row-roll",
+      "title": "Modal Dialog",
+      "fields": [
+        "add-row-roll"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-row",
+      "title": "Edit / Remove Student",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "edit-row-select",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "sheet-filter-modal",
+      "title": "Filters",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "tab-btn-sort",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "filter-modal-status-text",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-total-marks",
+      "title": "Edit Total Marks &amp; Scheme",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-custom-cols-container",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-scheme-total-display",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-student-roster",
+      "title": "Edit Student Row Data",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-roster-student-select",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/core/exceljs.min.js",
+    "faculty/sheets/sheets.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "loadTeacherGroupsList",
+    "renderGroupSwitcherOptions",
+    "renderSheetSelectorDropdownOptions",
+    "loadGroupMetadata",
+    "switchSheetTab",
+    "loadSheetData",
+    "openSheetFilterModal",
+    "closeSheetFilterModal",
+    "switchFilterCategory",
+    "renderFilterModalColumns",
+    "toggleAutoFit",
+    "toggleSheetViewMode",
+    "toggleFullscreen"
+  ]
+}

@@ -38,6 +38,134 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 446: ESP32 Biometric Hardware Node & Secure Attendance Terminal (AS608 Optical, 4 Dedicated LEDs, Touch-Wake Light Sleep & Dual-Layer Security)
+- **Hardware Architecture & Pin-by-Pin Wiring Specification (`config.h` & `HARDWARE_WIRING_AND_PROTOCOL.md`)**:
+  - Integrated AS608 optical fingerprint sensor over UART2 (GPIO 16 RX2, GPIO 17 TX2 @ 57600 baud) with active-HIGH optical prism Touch Wake on GPIO 33.
+  - Integrated 0.96" SSD1306 I2C OLED display (GPIO 21 SDA, GPIO 22 SCL @ 0x3C).
+  - Integrated W25Qxx SPI NOR Flash module over VSPI (GPIO 5 CS, GPIO 18 SCK, GPIO 19 MISO, GPIO 23 MOSI).
+  - Integrated 5V passive piezo buzzer driven via 2N2222 NPN transistor on GPIO 14 with LEDC PWM tone generation.
+  - Integrated 4 dedicated status LEDs:
+    - Wi-Fi LED (Blue - GPIO 27): Solid = Wi-Fi Connected, Blinking = Reconnecting/Offline.
+    - Success LED (Green - GPIO 25): 2.5-second hold on successful attendance.
+    - Failed LED (Red - GPIO 26): Flashes 3x on failed attendance / solid on unregistered finger.
+    - Low Battery LED (Amber - GPIO 4): Turns ON / slow pulse when battery < 20% (< 6.80V).
+  - Integrated 2S 3.7V battery pack telemetry (6.4V-8.4V) via 100kΩ/33kΩ voltage divider on GPIO 34 (Ratio: 4.0303).
+- **Behavioral Conditions & Operational Feedback Modes (`oled_buzzer_ui.h`)**:
+  - **1. Successful Attendance**: 2-second continuous long beep (2400 Hz for 2000 ms), Green LED solid ON for 2.5s, OLED shows "SUCCESSFULLY MARKED", Enrollment No, Full Name, Time.
+  - **2. Failed Attendance**: 3 continuous short beeps (3 × [150ms Beep + 100ms Silence]), Red LED flashes 3 times, OLED shows "ATTENDANCE FAILED", Class/Register Error, Time.
+  - **3. Finger Not Registered**: Continuous rapid tone (< 2s) (800 Hz pulsed for 1800 ms), Red LED solid ON for 2.0s, OLED shows "NOT REGISTERED", Finger Not Found, Slot Unassigned, Contact HOD.
+  - **4. Low Battery Condition**: 5 beeps in 5 seconds (5 × [200ms Beep + 800ms Silence]), Amber LED solid/pulse, OLED shows "⚠️ LOW BATTERY", Gauge [█░░░] 14% (6.68V), Charger prompt.
+  - **5. Idle / Standby State**: Silent, Blue Wi-Fi LED ON (Blinks if offline), OLED shows RSSI, Battery %, Institutional Clock (10:45 AM), "👉 Place Finger to Scan".
+  - **6. 2-Minute Sleep Mode with Touch-Wake**: Inactivity watchdog triggers light sleep after 120s (`esp_sleep_enable_ext0_wakeup(AS608_TOUCH_WAKE_PIN, 1)`), powers off OLED, turns off sensor LED and status LEDs, wakes instantly upon finger touch on prism.
+- **Dual-Layer Biometric Slot Allocation & Verification Protocol (`w25q32_storage.h`, `as608_driver.h`, `deviceService.js`)**:
+  - Implemented `findFirstAvailableSlot` in `as608_driver.h` and `getNextFreeSlot` / `recordSlotAssignment` in `w25q32_storage.h`.
+  - ESP32 constructs authenticated AES-256-GCM attendance payload with dual keys `{ student_id, slot_id, enrollment_no }`.
+  - Server `/api/v1/devices/esp32/attendance` decrypts envelope and cross-verifies that `slot_id` matches registered slot for `student_id` in `fingerprint_slots` and `student_biometric_templates`.
+  - On match: records attendance in `esp32_presence`, `iot_attendance_events`, marks open registers PRESENT, and returns `{ success: true, status: 'ATTENDANCE_MARKED', student_id, full_name, enrollment_no, time }`.
+  - On mismatch: rejects with 403 `SLOT_SECURITY_MISMATCH`.
+- **HOD Device Simulation & Remote Queue (`deviceController.js`)**:
+  - Updated `/api/v1/devices/hod/simulate-esp32` supporting `MARK_ATTENDANCE`, `FAILED_ATTENDANCE`, `UNREGISTERED_FINGER`, `LOW_BATTERY`, `IDLE_STANDBY`, and `SLEEP_MODE` with full audio, LED, and OLED screen preview.
+  - Updated `ENROLL_STUDENT` command queue to bundle `student_id`, `full_name`, `official_enrollment_no`, `department_id`, and `department_name`.
+- **Automated Verification Suite**:
+  - `test-esp32-secure-terminal.js`: 23/23 Passed (100% hardware pinout, AES-256-GCM crypto, slot allocation, dual-layer security, 6 feedback modes).
+  - `test-ui-manifest-sync.js`: 208/208 Passed.
+  - `test-theme-support.js`: 88/88 Passed.
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+
+### ✅ Milestone 446: Classroom Trash Bin & Recovery Studio, Uniform 6-Module Class Cards & Title Clamping Parity
+- **Classroom Trash Bin & Recovery Studio (`/faculty/classes/trash.html` & `trash.js`)**:
+  - Built dedicated Trash Bin page (`FAC-016`) for recovering and managing soft-deleted classrooms.
+  - Implemented 30-Day Auto-Purge Policy Alert informing users of automatic expiration and restoration capabilities.
+  - Added live retention countdown badge on each trashed card (`⏳ X days left`, dynamically styling urgent when $\le 5$ days).
+  - Implemented **Restore Class** action (`POST /api/v1/teaching-groups/:id/restore`) with immediate toast feedback and re-render.
+  - Implemented **Delete Permanently** action (`DELETE /api/v1/teaching-groups/:id/permanent`) gated by a safety confirmation modal requiring the user to type `DELETE` to confirm permanent eradication.
+  - Built friendly Empty State with return link to `/faculty/classes/index.html`.
+- **Top Action Bar Trash Button with Dynamic Counter Badge (`index.html` & `classes.js`)**:
+  - Added `Trash Bin` action button in `.classes-action-buttons-row`.
+  - Added live badge (`#classes-trash-count`) that automatically queries `GET /api/v1/teaching-groups?status=TRASH` and updates count.
+- **Class Card UI & Symmetry Overhaul (`classes.js` & `classes.css`)**:
+  - **Uniform 6-Module Action Grid**: Eliminated layout holes and missing tile defects in Practical-only classes by uniformly rendering all 6 academic pillars across all cards:
+    1. Theory Classes (`/faculty/theory-classes/index.html?groupId=id`)
+    2. Laboratory (`/faculty/lab-classes/index.html?groupId=id`)
+    3. NBA (`/faculty/course-file/index.html?groupId=id`)
+    4. Student Performance (`/faculty/student-performance/index.html?groupId=id`)
+    5. Direct Assessment (`/faculty/direct-assessment/index.html?groupId=id`)
+    6. Indirect Assessment (`/faculty/indirect-assessment/index.html?groupId=id`)
+    Every card now has a balanced 2x3 grid and identical height.
+  - **Multi-Line Title Clamping**: Replaced single-line nowrap ellipsis with 2-line vertical clamping (`-webkit-line-clamp: 2`, `word-break: break-word`), preventing awkward clipping (such as `Database Management Systems L...`).
+  - **Component Text Normalization**: Cleanly formatted component badges (`Theory + Practical`, `Theory`, `Practical`).
+- **Automated Verification & Parity**:
+  - `test-ui-manifest-sync.js`: 208/208 Passed (100% manifest parity for 32 pages).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+  - Mirrored all changes to `VidyaOS` workspace.
+
+### ✅ Milestone 445: Mobile Viewport Zero-Overflow, Classroom Card 3-Dot Actions (Edit & 30-Day Trash), Type-to-Confirm & Cohort Broadcast
+- **Mobile Viewport & Zero-Overflow Architecture (`classes.css`)**:
+  - Replaced horizontal scroll overflow with modern responsive flex/grid layouts:
+    - 3-in-1 KPI stat cards (`My Classes`, `Total Students`, `Subjects`) fit 100% edge-to-edge without clipping (`grid-template-columns: repeat(3, 1fr)`).
+    - Top action buttons row (`+ Create Class`, `Students Roster`, `Broadcast Notice`) dynamically stack into an ergonomic thumb-friendly layout: prominent full-width `Create Class` button, paired with `Students Roster` and `Broadcast Notice` in a clean 2-column grid.
+    - Zero horizontal scrolling, zero text truncation, zero clipping across all screen sizes (320px–1440px).
+- **Classroom Card Kebab (3-Dot) Menu & Workflow Enhancements (`classes.js` & `index.html`)**:
+  - Attached custom styled dropdown menu to the 3-dot kebab button on each classroom card:
+    - **Edit Class**: Opens `#edit-class-modal` allowing editing of subject name, short name, code/room, components, academic session, and semester.
+    - **Move to Trash**: Opens a dedicated styled dialog box (`#delete-class-modal`).
+- **30-Day Trash Policy & Type-to-Confirm Dialog (`#delete-class-modal`)**:
+  - Implemented 30-day recoverable trash retention in backend (`status = 'TRASH'`, `deleted_at = NOW()`).
+  - Implemented background auto-purge (`purgeExpiredTrash()`) permanently deleting classrooms in Trash older than 30 days.
+  - Built custom styled confirmation dialog box featuring a red warning shield, 30-day notice badge, and a safety text input requiring the user to type `DELETE` to enable the confirmation button.
+- **Targeted Broadcast Notice with Cohort Selector & Media Upload (`#broadcast-notice-modal`)**:
+  - Added Target Cohort / Year selector (`All Enrolled Years`, `1st Year`, `2nd Year`, `3rd Year`) allowing faculty/HOD to deliver announcements specifically to chosen class cohorts.
+  - Added media attachment support with interactive file dropzone, file preview chip (displaying file name and formatted size), and clear/remove action.
+  - Enhanced backend `/broadcast-notice` route with multipart multer upload handling, delivering attachments and notifying enrolled students.
+- **Automated Verification Suite**:
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% parity).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+  - End-to-end API flows tested and verified.
+
+### ✅ Milestone 444: Obsolete File Elimination, Unified Styled Dialogs & 1,228-Line Code Reduction
+- **Obsolete File Elimination (`leave-approvals.html`)**:
+  - Deleted legacy orphan file `frontend/faculty/leave-approvals/leave-approvals.html` that contained outdated hero banner markup.
+  - Centralized single source of truth at `frontend/faculty/leave-approvals/index.html` (UIMS registered as `FAC-011`), seamlessly mapped via server rewrites.
+- **Unified Styled Dialog Box Architecture**:
+  - Upgraded `#leave-rejection-modal` to the exact same premium styled dialog system as `#leave-alert-modal`:
+    - Top amber halo circle with warning icon.
+    - Clean header and description typography.
+    - Styled auto-focus textarea with tokenized focus ring.
+    - Styled action buttons (`.btn-secondary` Cancel and `.btn-danger` Reject Application).
+  - Maintained `showLeaveAlert` async Promise engine with confirmation on Approve and success toasts.
+- **Massive Code Line Reduction (1,228 Lines Eliminated without Design Loss)**:
+  - `leave-approvals.css`: Cut from **1,303 lines to 354 lines** (**949 lines reduced / -73%**) by removing redundant declarations, deduplicating repetitive rules, and condensing the mobile card media query while preserving 100% design fidelity, colors, and responsive layout.
+  - `leave-approvals.js`: Cut from **525 lines to 246 lines** (**279 lines reduced / -53%**) using concise status maps, inline SVGs, and efficient handlers.
+- **Automated Verification Suite**:
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% parity).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+
+### ✅ Milestone 443: Styled Dialog Box Engine, Desktop Single-Line Date Formatting & Row Slimming
+- **Styled Dialog Box Engine (`#leave-alert-modal`)**:
+  - Completely eliminated all raw browser `alert()` and `confirm()` popups.
+  - Created a responsive, accessible dialog modal matching VidyaOS design tokens:
+    - Soft circular halo badge for `success`, `error`, `warning`, and `info` status variants.
+    - Title, message, and flexible action buttons (`Confirm`, `Cancel`, `Dismiss`, `OK`).
+    - Asynchronous Promise-based helper: `window.showLeaveAlert({ title, message, type, confirmText, cancelText })`.
+    - Integrated ESC key and backdrop click listeners for dismissal.
+    - Integrated confirmation prompt before approving leave and elegant error/success feedback.
+- **Desktop Single-Line Date Formatting & Row Slimming ("Reduce Line Without Loss of UI Design")**:
+  - Condensed desktop date range (`FROM - TO`) to a clean single line: `15 Nov 2026 – 17 Nov 2026` via `.date-range-wrap` (`display: inline-flex; align-items: center; white-space: nowrap; gap: 0.35rem;`).
+  - Hid duplicate `.date-days-pill` on desktop (`display: none;`), eliminating redundant vertical 3-line stacking right next to the dedicated `DAYS` column.
+  - Preserved mobile card view behavior: `.date-days-pill` remains visible (`display: inline-flex !important;`) inside the mobile duration callout banner where the separate days column is hidden.
+  - Slimmed table vertical padding (`padding: 0.65rem 0.9rem`), student avatar (32px), and tight line-heights, reducing table row height by 50% while maintaining aesthetic balance.
+- **Backend Adjudication & Database Parity**:
+  - Synchronized `updateDecision()` in `leaveModel.js` across both backend trees (`VidyaOS_BackEnd-main` and `Attendance-System-Simplified/backend`).
+  - Added schema columns `review_note`, `leave_type`, and `updated_at` to MySQL tables across both `vdiyaos` and `college_attendance` databases.
+  - Re-seeded 19 leave application test records to ensure parity.
+- **Automated Verification Suite**:
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% manifest and DOM parity).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% theme tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+
 ### ✅ Milestone 442: Academic Dossier Assignment Ledger Streamlining & In-Browser Document Previewer
 - **Coursework & Assignment Ledger Column Redesign**:
   - Replaced legacy 10-column table (`#`, `Semester`, `Subject Code`, `Subject Name`, `Assignment Title`, `Max Marks`, `Marks Scored`, `Score %`, `Status`, `Submission Date`) with exactly 7 streamlined columns:

@@ -1,0 +1,1312 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-003",
+  "role": "Faculty",
+  "route": "/faculty/groups.html",
+  "source_file": "frontend/faculty/groups/index.html",
+  "content_hash": "9a02d7d355d9",
+  "last_scanned": "2026-11-17T17:56:40.433Z",
+  "title": "Faculty Classroom Dashboard — VidyaOS",
+  "purpose": "Assigned cohorts, academic sections, batch management",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: Google Classroom style tile grid; Mobile: vertical card list with overflow menu",
+  "url_parameters": [
+    "action",
+    "id",
+    "create",
+    "tab"
+  ],
+  "api_contracts": [
+    {
+      "method": "GET",
+      "endpoint": "/course-files",
+      "type": "INTERNAL"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "hod-view-switcher-bar",
+        "class": "hod-switcher-container"
+      },
+      {
+        "id": "att-chart-bars",
+        "class": ""
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "checklist-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Enrollment No"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "roster-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Enrollment No",
+          "UBTER Reg No",
+          "Action"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "roster-table",
+        "headers": [
+          "Roll",
+          "Student",
+          "Status",
+          "File / Link",
+          "Marks",
+          "Feedback",
+          "Action"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "roster-table",
+        "headers": [
+          "Roll",
+          "Student",
+          "Enrollment No",
+          "Marks Obtained",
+          "Absent?",
+          "Remarks"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "checklist-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Enrollment No"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "checklist-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Enrollment No",
+          "Action"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "trash-table",
+        "headers": [
+          "Class / Subject",
+          "Semester",
+          "Time Left",
+          "Action"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "create-group-modal",
+        "title": "Create New Teaching Group",
+        "field_count": 0
+      },
+      {
+        "id": "create-group-form",
+        "title": "Modal Dialog",
+        "field_count": 2
+      },
+      {
+        "id": "enroll-dept-students-modal",
+        "title": "Enroll Department Students",
+        "field_count": 0
+      },
+      {
+        "id": "search-enroll-dept-input",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "classroom-hub-modal",
+        "title": "Group Name",
+        "field_count": 0
+      },
+      {
+        "id": "hub-stream-pane",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "archive-group-modal",
+        "title": "Archive Teaching Group",
+        "field_count": 0
+      },
+      {
+        "id": "archive-step-1",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "create-group-assignment-modal",
+        "title": "Create Coursework Assignment",
+        "field_count": 0
+      },
+      {
+        "id": "create-group-assignment-form",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "assignment-submissions-modal",
+        "title": "Assignment Submissions",
+        "field_count": 0
+      },
+      {
+        "id": "assign-submissions-tbody",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "create-group-test-modal",
+        "title": "Schedule Class Test",
+        "field_count": 0
+      },
+      {
+        "id": "create-group-test-form",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "exam-scores-modal",
+        "title": "Test Marksheet Roster",
+        "field_count": 0
+      },
+      {
+        "id": "exam-scores-tbody",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "broadcast-notice-modal",
+        "title": "Broadcast Cohort Notice",
+        "field_count": 0
+      },
+      {
+        "id": "broadcast-notice-form",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "promote-cohort-modal",
+        "title": "Promote Cohort to Next Semester",
+        "field_count": 0
+      },
+      {
+        "id": "add-unenrolled-modal",
+        "title": "Add Students from Cohort",
+        "field_count": 0
+      },
+      {
+        "id": "search-unenrolled-input",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-delete-group",
+        "title": "Delete Class (Step 1 of 2)",
+        "field_count": 0
+      },
+      {
+        "id": "delete-step2-name",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-confirm-delete-group",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-confirm-remove-member",
+        "title": "Remove Student (Step 1 of 2)",
+        "field_count": 0
+      },
+      {
+        "id": "remove-member-step1-name",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "remove-member-step2-name",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-confirm-remove-member",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-trash-bin",
+        "title": "Trash Bin (7-Day Recoverable Classes)",
+        "field_count": 0
+      },
+      {
+        "id": "trash-bin-tbody",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-group",
+        "title": "Edit Class Settings",
+        "field_count": 0
+      },
+      {
+        "id": "edit-group-form",
+        "title": "Modal Dialog",
+        "field_count": 2
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "theme-toggle-btn",
+        "label": "Toggle Dark/Light Mode",
+        "action": "toggleAppTheme()",
+        "class": "header-icon-btn header-theme-toggle",
+        "data_ui": null,
+        "title": "Toggle Dark/Light Mode"
+      },
+      {
+        "id": "header-user-profile",
+        "label": "FA",
+        "action": "toggleUserProfile(event)",
+        "class": "header-profile-round-btn",
+        "data_ui": null,
+        "title": "Account Profile"
+      },
+      {
+        "id": null,
+        "label": "Sign Out",
+        "action": "logout()",
+        "class": "profile-dropdown-item dropdown-logout-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-tab-classes",
+        "label": "My Teaching Classes 0",
+        "action": "switchDashboardTab(",
+        "class": "hod-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-tab-dept",
+        "label": "Department Command Center",
+        "action": "switchDashboardTab(",
+        "class": "hod-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Refresh Metrics",
+        "action": "loadHodDashboardData()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Refresh live telemetry"
+      },
+      {
+        "id": null,
+        "label": "Broadcast Dept Notice Dispatches to all enrolled departmental groups",
+        "action": "openBroadcastNoticeModal()",
+        "class": "hod-action-tile",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-create-group",
+        "label": "&#43; Create Class",
+        "action": "openModal(",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": "Create a new class"
+      },
+      {
+        "id": "btn-broadcast-notice",
+        "label": "Broadcast Notice",
+        "action": "openBroadcastNoticeModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Post notice to all classes"
+      },
+      {
+        "id": "filter-active",
+        "label": "Active (0)",
+        "action": "setGroupFilter(",
+        "class": "active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "filter-archived",
+        "label": "Archived (0)",
+        "action": "setGroupFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "filter-trash",
+        "label": "Trash (0)",
+        "action": "openTrashBinModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-auto-archive-check",
+        "label": "Auto-Archive",
+        "action": "triggerAutoArchiveCheck()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Auto-Archive Expired Sessions"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeModal(",
+        "class": "btn-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-create-group",
+        "label": "Create Teaching Group",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeEnrollDeptModal()",
+        "class": "btn-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Skip (Invite Code Only)",
+        "action": "closeEnrollDeptModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-enroll-dept",
+        "label": "+ Enroll Selected (0)",
+        "action": "submitEnrollDeptStudents()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-hub-promote",
+        "label": "Promote Cohort",
+        "action": "openPromoteCohortModal(state.activeGroupId)",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "hub-tab-stream-btn",
+        "label": "Stream",
+        "action": "switchHubTab(",
+        "class": "active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "hub-tab-classwork-btn",
+        "label": "Classwork",
+        "action": "switchHubTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "hub-tab-tests-btn",
+        "label": "Tests & Marks",
+        "action": "switchHubTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "hub-tab-attendance-btn",
+        "label": "Attendance",
+        "action": "switchHubTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "hub-tab-roster-btn",
+        "label": "Students (0)",
+        "action": "switchHubTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-post-announcement",
+        "label": "Post to Classroom",
+        "action": "submitAnnouncement()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Create Assignment",
+        "action": "openCreateGroupAssignmentModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Schedule Test",
+        "action": "openCreateGroupTestModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Open Official Register",
+        "action": "openLinkedRegister()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Copy Invite Link",
+        "action": "copyHubInviteCode()",
+        "class": "copy-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add Students from Cohort",
+        "action": "openAddUnenrolledModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Add",
+        "action": "addStudentByEnrollment()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Proceed to Confirm &rarr;",
+        "action": "proceedArchiveStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&larr; Back",
+        "action": "backArchiveStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-archive",
+        "label": "Confirm & Archive Group",
+        "action": "executeArchiveGroup()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-group-assign",
+        "label": "Publish Assignment",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-group-test",
+        "label": "Schedule Test",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-exam-scores",
+        "label": "Save All Marks",
+        "action": "submitSaveExamScores()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-broadcast-notice",
+        "label": "Send Cohort Notice",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-promote-cohort",
+        "label": "Confirm &amp; Promote Cohort",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-batch-enroll-unenrolled",
+        "label": "+ Enroll Selected (0)",
+        "action": "submitBatchEnrollUnenrolled()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Proceed to Step 2 &rarr;",
+        "action": "proceedDeleteStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "← Back",
+        "action": "backDeleteStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Delete Permanently",
+        "action": "confirmPermanentDeleteFromModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": "Purge class immediately without 7-day trash recovery"
+      },
+      {
+        "id": "btn-confirm-delete-group",
+        "label": "Confirm Move to Trash Bin",
+        "action": "confirmMoveToTrash()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Proceed to Step 2 &rarr;",
+        "action": "proceedRemoveMemberStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "← Back",
+        "action": "backRemoveMemberStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-remove-member",
+        "label": "Confirm &amp; Remove",
+        "action": "executeConfirmedRemoveMember()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeModal(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-edit-group",
+        "label": "Save Changes",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "fab-action-create-class",
+        "label": "Create Class",
+        "action": "openModal(",
+        "class": "gc-fab-menu-action",
+        "data_ui": null,
+        "title": "Create a new teaching group / class"
+      },
+      {
+        "id": "fab-action-broadcast-notice",
+        "label": "Broadcast Notice",
+        "action": "openBroadcastNoticeModal(); toggleFabMenu(false);",
+        "class": "gc-fab-menu-action",
+        "data_ui": null,
+        "title": "Broadcast notice to cohorts or teaching groups"
+      },
+      {
+        "id": "gc-fab-trigger",
+        "label": "Quick Actions",
+        "action": "toggleFabMenu()",
+        "class": "gc-fab-trigger",
+        "data_ui": null,
+        "title": "Quick Actions"
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "search-groups",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search subject or class...",
+        "handler": "filterGroupsLocally()",
+        "class": null
+      },
+      {
+        "id": "group-name",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-subject",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Database Management Systems",
+        "handler": "if(document.getElementById(",
+        "class": null
+      },
+      {
+        "id": "group-subject-code",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. DBMS or CS-501",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-total-units",
+        "type": "number",
+        "name": null,
+        "placeholder": "e.g. 5",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "search-enroll-dept-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by name, roll, or enrollment no...",
+        "handler": "filterEnrollDeptStudents()",
+        "class": null
+      },
+      {
+        "id": "enroll-dept-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleEnrollDeptSelectAll(this.checked)",
+        "class": null
+      },
+      {
+        "id": "add-student-enrollment",
+        "type": "text",
+        "name": null,
+        "placeholder": "Or enter enrollment no (e.g. 2024IT001)",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-assign-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Assignment 1: SQL Normalization & Schema Design",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-assign-due",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-assign-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-test-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Unit Test 1 (Modules 1 & 2)",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-test-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "group-test-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "notice-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Schedule Change: Practical Lab Session",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "promote-new-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. DBMS - Theory (Sem 6)",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "promote-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "togglePromoteSelectAll(this.checked)",
+        "class": null
+      },
+      {
+        "id": "search-unenrolled-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by name, roll, or enrollment no...",
+        "handler": "filterUnenrolledStudents()",
+        "class": null
+      },
+      {
+        "id": "unenrolled-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleUnenrolledSelectAll(this.checked)",
+        "class": null
+      },
+      {
+        "id": "remove-member-checkbox",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "document.getElementById(",
+        "class": null
+      },
+      {
+        "id": "edit-group-id",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-name",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-subject",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-subject-code",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. DBMS or CS-501",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-total-units",
+        "type": "number",
+        "name": null,
+        "placeholder": "e.g. 5",
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "group-component",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "THEORY",
+            "text": "THEORY"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "PRACTICAL"
+          },
+          {
+            "value": "THEORY + PRACTICAL",
+            "text": "THEORY + PRACTICAL"
+          }
+        ]
+      },
+      {
+        "id": "group-semester",
+        "title": null,
+        "onchange": "updateDerivedYear()",
+        "class": null,
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Semester 1"
+          },
+          {
+            "value": "2",
+            "text": "Semester 2"
+          },
+          {
+            "value": "3",
+            "text": "Semester 3"
+          },
+          {
+            "value": "4",
+            "text": "Semester 4"
+          },
+          {
+            "value": "5",
+            "text": "Semester 5"
+          },
+          {
+            "value": "6",
+            "text": "Semester 6"
+          }
+        ]
+      },
+      {
+        "id": "notice-target-cohort",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 10,
+        "sample_options": [
+          {
+            "value": "ALL",
+            "text": "All Active Groups"
+          },
+          {
+            "value": "Y1",
+            "text": "1st Year (Semester 1 &amp; 2)"
+          },
+          {
+            "value": "Y2",
+            "text": "2nd Year (Semester 3 &amp; 4)"
+          },
+          {
+            "value": "Y3",
+            "text": "3rd Year (Semester 5 &amp; 6)"
+          },
+          {
+            "value": "S1",
+            "text": "Semester 1"
+          },
+          {
+            "value": "S2",
+            "text": "Semester 2"
+          },
+          {
+            "value": "S3",
+            "text": "Semester 3"
+          },
+          {
+            "value": "S4",
+            "text": "Semester 4"
+          }
+        ]
+      },
+      {
+        "id": "notice-department",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "ALL",
+            "text": "All Departments"
+          }
+        ]
+      },
+      {
+        "id": "promote-new-semester",
+        "title": null,
+        "onchange": "updatePromoteDerivedYear()",
+        "class": null,
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "2",
+            "text": "Semester 2"
+          },
+          {
+            "value": "3",
+            "text": "Semester 3"
+          },
+          {
+            "value": "4",
+            "text": "Semester 4"
+          },
+          {
+            "value": "5",
+            "text": "Semester 5"
+          },
+          {
+            "value": "6",
+            "text": "Semester 6"
+          }
+        ]
+      },
+      {
+        "id": "edit-group-component",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "THEORY",
+            "text": "THEORY (Lecture Register)"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "PRACTICAL (Lab Work)"
+          },
+          {
+            "value": "THEORY + PRACTICAL",
+            "text": "THEORY + PRACTICAL (Both)"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "create-group-modal",
+      "title": "Create New Teaching Group",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "create-group-form",
+      "title": "Modal Dialog",
+      "fields": [
+        "group-name",
+        "group-subject"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "enroll-dept-students-modal",
+      "title": "Enroll Department Students",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "search-enroll-dept-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "search-enroll-dept-input"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "classroom-hub-modal",
+      "title": "Group Name",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "hub-stream-pane",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "archive-group-modal",
+      "title": "Archive Teaching Group",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "archive-step-1",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "create-group-assignment-modal",
+      "title": "Create Coursework Assignment",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "create-group-assignment-form",
+      "title": "Modal Dialog",
+      "fields": [
+        "group-assign-title"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "assignment-submissions-modal",
+      "title": "Assignment Submissions",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "assign-submissions-tbody",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "create-group-test-modal",
+      "title": "Schedule Class Test",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "create-group-test-form",
+      "title": "Modal Dialog",
+      "fields": [
+        "group-test-name"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "exam-scores-modal",
+      "title": "Test Marksheet Roster",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "exam-scores-tbody",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "broadcast-notice-modal",
+      "title": "Broadcast Cohort Notice",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "broadcast-notice-form",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "promote-cohort-modal",
+      "title": "Promote Cohort to Next Semester",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-unenrolled-modal",
+      "title": "Add Students from Cohort",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "search-unenrolled-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "search-unenrolled-input"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-delete-group",
+      "title": "Delete Class (Step 1 of 2)",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "delete-step2-name",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-delete-group",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "backDeleteStep1()"
+    },
+    {
+      "id": "modal-confirm-remove-member",
+      "title": "Remove Student (Step 1 of 2)",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "remove-member-step1-name",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "remove-member-step2-name",
+      "title": "Modal Dialog",
+      "fields": [
+        "remove-member-checkbox"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-remove-member",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "backRemoveMemberStep1()"
+    },
+    {
+      "id": "modal-trash-bin",
+      "title": "Trash Bin (7-Day Recoverable Classes)",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "trash-bin-tbody",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-group",
+      "title": "Edit Class Settings",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "edit-group-form",
+      "title": "Modal Dialog",
+      "fields": [
+        "edit-group-id",
+        "edit-group-name"
+      ],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "js/api.js",
+    "js/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/groups/groups.js"
+  ],
+  "exported_functions": [
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleAppTheme",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "renderCfDocCards",
+    "switchDashboardTab",
+    "loadHodDashboardData",
+    "loadDepartments",
+    "loadTeachingGroups",
+    "loadDashboardOverview",
+    "renderGroups",
+    "toggleCfPanel",
+    "loadLiveCfStatus",
+    "toggleDrawer",
+    "closeDrawer",
+    "toggleCardMenu",
+    "openDeleteGroupModal"
+  ]
+}

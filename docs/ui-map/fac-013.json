@@ -1,0 +1,380 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-013",
+  "role": "Faculty",
+  "route": "/faculty/media.html",
+  "source_file": "frontend/faculty/media/index.html",
+  "content_hash": "476641f6995b",
+  "last_scanned": "2026-11-17T17:56:40.555Z",
+  "title": "Faculty Drive &amp; Media Vault — VidyaOS",
+  "purpose": "Lecture notes, syllabus PDFs, lab manual file repository",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: responsive thumbnail grid; Mobile: list view with tap-to-download",
+  "url_parameters": [
+    "action"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/media:id",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/media/:id",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/media/search/omni",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/media/:id",
+      "type": "INTERNAL"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "drive-toolbar-card"
+      },
+      {
+        "id": "",
+        "class": "toolbar-left"
+      },
+      {
+        "id": "",
+        "class": "toolbar-search-wrap"
+      },
+      {
+        "id": "",
+        "class": "toolbar-subject-wrap"
+      },
+      {
+        "id": "",
+        "class": "toolbar-right"
+      }
+    ],
+    "tables": [
+      {
+        "id": "media-table",
+        "class": "table media-table",
+        "headers": [
+          "Name &amp; Details",
+          "Course / Subject",
+          "Category",
+          "Size",
+          "Uploaded",
+          "Actions"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "upload-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-submit-upload",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "preview-modal",
+        "title": "File Preview",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Refresh",
+        "action": "loadMediaAssets()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Reload Asset List"
+      },
+      {
+        "id": null,
+        "label": "Upload File",
+        "action": "openUploadModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "All Files 0",
+        "action": "selectCategory(",
+        "class": "chip-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Documents &amp; Slides 0",
+        "action": "selectCategory(",
+        "class": "chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Videos &amp; Demos 0",
+        "action": "selectCategory(",
+        "class": "chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Images &amp; Whiteboards 0",
+        "action": "selectCategory(",
+        "class": "chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Student Documents 0",
+        "action": "selectCategory(",
+        "class": "chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-view-grid",
+        "label": "Grid View",
+        "action": "setViewMode(",
+        "class": "view-toggle-btn active",
+        "data_ui": null,
+        "title": "Grid View"
+      },
+      {
+        "id": "btn-view-list",
+        "label": "List View",
+        "action": "setViewMode(",
+        "class": "view-toggle-btn",
+        "data_ui": null,
+        "title": "List View"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeUploadModal()",
+        "class": "btn-close-simple",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeUploadModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-upload",
+        "label": "Upload File",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closePreviewModal()",
+        "class": "btn-close-simple",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "drive-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by title, tag, or topic...",
+        "handler": "debounceFilter()",
+        "class": "toolbar-search-input"
+      },
+      {
+        "id": "file-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "onFileSelected(this)",
+        "class": null
+      },
+      {
+        "id": "upload-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Unit 2 Normalization Slides",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "upload-tags",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. unit2, midterm, lab5",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "upload-public",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "omnisearch-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type to search media, documents, students, or registers...",
+        "handler": "debounceOmnisearch(this.value)",
+        "class": "omnisearch-input"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "drive-subject-select",
+        "title": null,
+        "onchange": "onSubjectFilterChange()",
+        "class": "form-select toolbar-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Courses &amp; Subjects"
+          }
+        ]
+      },
+      {
+        "id": "upload-category",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "LECTURE_NOTES",
+            "text": "Lecture Notes &amp; Slides"
+          },
+          {
+            "value": "LAB_DEMO",
+            "text": "Lab Video / Demonstration"
+          },
+          {
+            "value": "QUESTION_PAPER",
+            "text": "Question Paper &amp; Solutions"
+          },
+          {
+            "value": "STUDENT_DOC",
+            "text": "Student Record / Answer Sheet"
+          },
+          {
+            "value": "SYLLABUS",
+            "text": "Syllabus &amp; Regulations"
+          },
+          {
+            "value": "GENERAL",
+            "text": "General Academic Asset"
+          }
+        ]
+      },
+      {
+        "id": "upload-subject",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "-- General / Departmental --"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "upload-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-upload",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeUploadModal()"
+    },
+    {
+      "id": "preview-modal",
+      "title": "File Preview",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/media/media.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "loadUserSubjects",
+    "loadMediaAssets",
+    "renderAssets",
+    "renderAssetCard",
+    "renderAssetTableRow"
+  ]
+}

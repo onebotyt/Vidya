@@ -1,0 +1,665 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-001",
+  "role": "Faculty",
+  "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
+  "source_file": "frontend/faculty/student-records/index.html",
+  "content_hash": "b234c83c5950",
+  "last_scanned": "2026-11-17T17:56:40.416Z",
+  "title": "Student Academic Records & Dossiers — VidyaOS",
+  "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: tabular academic roster with attendance %; Mobile: compact cards with zero overflow (Roll, Name, Att %, 3-dot menu)",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/student-records/filters",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/student-records",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/student-records/:id/dossier",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/student-records/export",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [
+      {
+        "id": "rec-students-table",
+        "class": "rec-table",
+        "headers": [
+          "Roll #",
+          "Enrollment No",
+          "Student Name",
+          "Cohort",
+          "Batch",
+          "Attendance",
+          "Actions"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "rec-excel-table",
+        "headers": [
+          "S.NO",
+          "Semester",
+          "Subject Short Name",
+          "Assignment NO.",
+          "Marks",
+          "Submission Date",
+          "Document"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "rec-excel-table",
+        "headers": [
+          "#",
+          "Semester",
+          "Subject Code",
+          "Subject Name",
+          "Assessment / Exam Title",
+          "Component",
+          "Max Marks",
+          "Marks Scored",
+          "Score %",
+          "Performance Grade"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "rec-excel-table",
+        "headers": [
+          "#",
+          "Semester",
+          "Subject Code",
+          "Lab Subject Name",
+          "Experiment / Practical Title",
+          "Component",
+          "Max Marks",
+          "Marks Scored",
+          "Score %",
+          "Record Status"
+        ]
+      },
+      {
+        "id": "rec-matrix-table",
+        "class": "rec-matrix-table",
+        "headers": [
+          "Month / Session",
+          "Subject Name",
+          "Code",
+          "Held",
+          "Attended",
+          "Absent",
+          "Att %",
+          "Status"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "rec-subtable",
+        "headers": [
+          "Document Title",
+          "Category",
+          "File Name",
+          "Size",
+          "Uploaded Date",
+          "Action"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "modal-student-dossier",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "export-inc-tests",
+        "title": "Modal Dialog",
+        "field_count": 5
+      },
+      {
+        "id": "modal-document-preview",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-cohort-export",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Export All Records",
+        "action": "openCohortExportModal()",
+        "class": "btn-rec-export-all",
+        "data_ui": null,
+        "title": "Export all student records matching active filters"
+      },
+      {
+        "id": null,
+        "label": "Reset Filters",
+        "action": "resetFilters()",
+        "class": "btn-rec-clear",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-profile-export",
+        "label": "Personal Details",
+        "action": "toggleProfileExportMenu(event)",
+        "class": "btn-rec-export-profile",
+        "data_ui": null,
+        "title": "Export Student Bio-Data & Personal Details"
+      },
+      {
+        "id": null,
+        "label": "Bio-Data Sheet (PDF)",
+        "action": "exportStudentPersonalDetails(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Demographics (.xlsx)",
+        "action": "exportStudentPersonalDetails(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Bio-Data Word (.doc)",
+        "action": "exportStudentPersonalDetails(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeDossierModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "View Sheet",
+        "action": "event.stopPropagation(); selectDossierSection(",
+        "class": "btn-rec-card-view",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "View Matrix",
+        "action": "event.stopPropagation(); selectDossierSection(",
+        "class": "btn-rec-card-view",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "View Files",
+        "action": "event.stopPropagation(); selectDossierSection(",
+        "class": "btn-rec-card-view",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeDossierModal()",
+        "class": "btn-rec-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Export Selected Dossier",
+        "action": "executeSingleStudentExport()",
+        "class": "btn-rec-solid",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕",
+        "action": "closeDocumentPreview()",
+        "class": "btn-rec-modal-close",
+        "data_ui": null,
+        "title": "Close Preview"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeCohortExportModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeCohortExportModal()",
+        "class": "btn-rec-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Download Cohort Records",
+        "action": null,
+        "class": "btn-rec-solid",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "rec-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by student name, roll #, enrollment #, or email...",
+        "handler": "onSearchInput(this.value)",
+        "class": null
+      },
+      {
+        "id": "check-sem-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleSelectAllSemesters(this.checked)",
+        "class": null
+      },
+      {
+        "id": "export-inc-tests",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-inc-assignments",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-inc-labs",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-inc-attendance",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-inc-documents",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-single-pdf",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-single-doc",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-single-excel",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "cohort-fmt-excel",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "cohort-fmt-pdf",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "cohort-fmt-doc",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "filter-session",
+        "title": null,
+        "onchange": "onFilterChange()",
+        "class": null,
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading Sessions..."
+          }
+        ]
+      },
+      {
+        "id": "filter-year",
+        "title": null,
+        "onchange": "onYearFilterChange()",
+        "class": null,
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Years"
+          },
+          {
+            "value": "1",
+            "text": "1st Year"
+          },
+          {
+            "value": "2",
+            "text": "2nd Year"
+          },
+          {
+            "value": "3",
+            "text": "3rd Year"
+          }
+        ]
+      },
+      {
+        "id": "filter-semester",
+        "title": null,
+        "onchange": "onFilterChange()",
+        "class": null,
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Semesters"
+          },
+          {
+            "value": "1",
+            "text": "Sem 1"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6"
+          }
+        ]
+      },
+      {
+        "id": "filter-batch",
+        "title": null,
+        "onchange": "onFilterChange()",
+        "class": null,
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Batches"
+          }
+        ]
+      },
+      {
+        "id": "filter-status",
+        "title": null,
+        "onchange": "onFilterChange()",
+        "class": null,
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "active",
+            "text": "Active Enrolled"
+          },
+          {
+            "value": "all",
+            "text": "All (Active &amp; Archived)"
+          },
+          {
+            "value": "transferred",
+            "text": "Transferred"
+          },
+          {
+            "value": "withdrawn",
+            "text": "Withdrawn"
+          },
+          {
+            "value": "inactive",
+            "text": "Inactive"
+          }
+        ]
+      },
+      {
+        "id": "export-cohort-session",
+        "title": null,
+        "onchange": "onExportSessionChange(this.value)",
+        "class": null,
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "export-cohort-batch",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "export-cohort-year",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Years"
+          },
+          {
+            "value": "1",
+            "text": "1st Year"
+          },
+          {
+            "value": "2",
+            "text": "2nd Year"
+          },
+          {
+            "value": "3",
+            "text": "3rd Year"
+          }
+        ]
+      },
+      {
+        "id": "export-cohort-semester",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Semesters"
+          },
+          {
+            "value": "1",
+            "text": "Sem 1"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "modal-student-dossier",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "export-inc-tests",
+      "title": "Modal Dialog",
+      "fields": [
+        "export-inc-tests",
+        "export-inc-assignments",
+        "export-inc-labs",
+        "export-inc-attendance",
+        "export-inc-documents"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-document-preview",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-cohort-export",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/exceljs.min.js",
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/student-records/records.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "loadFilterOptions",
+    "renderFilterDropdowns",
+    "loadStudentRecords",
+    "renderStudentRecords",
+    "renderActiveDossierStudio",
+    "renderAssignmentsStudio",
+    "renderTestsStudio",
+    "renderLabsStudio",
+    "renderAttendanceMatrixStudio",
+    "renderOtherDocumentsStudio",
+    "exportPersonalDetailsExcel",
+    "exportPersonalDetailsDoc",
+    "exportPersonalDetailsPdf",
+    "exportSingleStudentExcel",
+    "exportSingleStudentDoc"
+  ]
+}

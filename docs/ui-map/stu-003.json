@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-003",
+  "role": "Student",
+  "route": "/student/assignments.html",
+  "source_file": "frontend/student/assignments/index.html",
+  "content_hash": "6a4b53c8ede6",
+  "last_scanned": "2026-11-17T17:56:40.594Z",
+  "title": "To-do — Student Portal | VidyaOS Classroom",
+  "purpose": "To-do assignments, submitted tasks, graded coursework",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: 3-column Kanban/tab view; Mobile: segmented control list",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      }
+    ],
+    "tables": [],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "tab-btn-assigned",
+        "label": "Assigned 0",
+        "action": "switchTodoTab(",
+        "class": "todo-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-missing",
+        "label": "Missing 0",
+        "action": "switchTodoTab(",
+        "class": "todo-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-done",
+        "label": "Done 0",
+        "action": "switchTodoTab(",
+        "class": "todo-tab-btn",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [],
+    "dropdown_selectors": [
+      {
+        "id": "todo-class-filter",
+        "title": null,
+        "onchange": "handleClassFilterChange(this.value)",
+        "class": "todo-class-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "ALL",
+            "text": "All classes"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/assignments/assignments.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadEnrolledClasses",
+    "renderDrawerClasses",
+    "loadStudentWorkData",
+    "renderTodoHub",
+    "renderAssignedPane",
+    "renderAssignedRow",
+    "renderMissingPane",
+    "renderMissingRow",
+    "renderDonePane",
+    "renderDoneRow",
+    "renderSection",
+    "toggleSectionAccordion",
+    "switchTodoTab",
+    "toggleAppsLauncher",
+    "toggleUserProfile",
+    "toggleTheme"
+  ]
+}

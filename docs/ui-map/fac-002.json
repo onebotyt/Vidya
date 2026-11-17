@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-002",
+  "role": "Faculty",
+  "route": "/faculty/dashboard.html",
+  "source_file": "frontend/faculty/dashboard/index.html",
+  "content_hash": "c90c223e7bf6",
+  "last_scanned": "2026-11-17T17:56:40.420Z",
+  "title": "Faculty Dashboard — VidyaOS",
+  "purpose": "Faculty home console, class groups, today's schedule, pending tasks",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: 3-column responsive card grid; Mobile: 1-column cards with quick jump buttons",
+  "url_parameters": [
+    "tab"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1:id",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "dash-toolbar"
+      }
+    ],
+    "tables": [],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [],
+    "input_controls": [],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/dashboard/dashboard.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "loadInstitutionBranding",
+    "loadUserAndDepartment",
+    "loadTeachingClassesCount",
+    "loadDashboardKpis",
+    "switchDashboardTab"
+  ]
+}

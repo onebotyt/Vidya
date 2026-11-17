@@ -1,0 +1,625 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-015",
+  "role": "Faculty",
+  "route": "/faculty/classes/index.html",
+  "source_file": "frontend/faculty/classes/index.html",
+  "content_hash": "eef9ad8abbf8",
+  "last_scanned": "2026-11-17T17:56:40.568Z",
+  "title": "My Teaching Classes — VidyaOS",
+  "purpose": "Teaching Classes Overview: 3 KPI status cards, classroom cards with uniform 6-module action grid (Theory Classes, Laboratory, NBA, Student Performance, Direct Assessment, Indirect Assessment), 3-dot kebab menu (Edit Class, Move to Trash), Create Class modal, Broadcast Notice modal with Year cohort filter and media upload, and Trash Bin navigation with live count badge",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: 3-column responsive card grid with uniform module tiles; Mobile: compact grid with zero overflow",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/teaching-groups",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/student-records/filters",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/teaching-groups/:id",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/trash",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/broadcast-notice",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": [
+      {
+        "id": "create-class-modal",
+        "title": "+ Create New Class",
+        "field_count": 0
+      },
+      {
+        "id": "input-class-name",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "edit-class-modal",
+        "title": "Edit Classroom Details",
+        "field_count": 0
+      },
+      {
+        "id": "input-edit-class-name",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "delete-class-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-confirm-delete-class",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "broadcast-notice-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "broadcast-title-input",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-submit-broadcast",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Create Class",
+        "action": "openCreateGroupModal()",
+        "class": "btn-create-class-solid",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Broadcast Notice",
+        "action": "openBroadcastNoticeModal()",
+        "class": "btn-action-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeCreateGroupModal()",
+        "class": "modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeCreateGroupModal()",
+        "class": "btn-dialog-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Create Class",
+        "action": null,
+        "class": "btn-dialog-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeEditClassModal()",
+        "class": "modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeEditClassModal()",
+        "class": "btn-dialog-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Changes",
+        "action": null,
+        "class": "btn-dialog-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeDeleteClassModal()",
+        "class": "modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeDeleteClassModal()",
+        "class": "btn-dialog-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-delete-class",
+        "label": "Move to Trash",
+        "action": "executeDeleteClass()",
+        "class": "btn-dialog-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeBroadcastNoticeModal()",
+        "class": "modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "clearBroadcastFile(event)",
+        "class": "file-chip-remove-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeBroadcastNoticeModal()",
+        "class": "btn-dialog-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-broadcast",
+        "label": "Send Broadcast",
+        "action": null,
+        "class": "btn-dialog-primary",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "search-classes-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search class, code or subject...",
+        "handler": "handleSearchClasses(this.value)",
+        "class": null
+      },
+      {
+        "id": "input-class-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Database Management Systems",
+        "handler": "autoSuggestShortName(this.value)",
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-class-short-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. DBMS",
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-class-code",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. IT501",
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-class-year",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "edit-class-id",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "input-edit-class-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Database Management Systems",
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-edit-class-short-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. DBMS",
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-edit-class-code",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. IT501",
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-edit-class-year",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-confirm-delete",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type DELETE to confirm",
+        "handler": "handleDeleteInputChange(this.value)",
+        "class": "form-control-input"
+      },
+      {
+        "id": "broadcast-title-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Schedule Change, Exam Guidelines, Project Submission",
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "broadcast-file-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleBroadcastFileSelect(event)",
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "filter-semester-select",
+        "title": null,
+        "onchange": "handleSemesterFilter(this.value)",
+        "class": null,
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "ALL",
+            "text": "All Semesters"
+          },
+          {
+            "value": "1",
+            "text": "Semester 1"
+          },
+          {
+            "value": "2",
+            "text": "Semester 2"
+          },
+          {
+            "value": "3",
+            "text": "Semester 3"
+          },
+          {
+            "value": "4",
+            "text": "Semester 4"
+          },
+          {
+            "value": "5",
+            "text": "Semester 5"
+          },
+          {
+            "value": "6",
+            "text": "Semester 6"
+          }
+        ]
+      },
+      {
+        "id": "select-class-comp",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "THEORY",
+            "text": "THEORY"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "PRACTICAL"
+          },
+          {
+            "value": "THEORY+PRACTICAL",
+            "text": "THEORY + PRACTICAL"
+          }
+        ]
+      },
+      {
+        "id": "select-class-session",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading session..."
+          }
+        ]
+      },
+      {
+        "id": "select-class-sem",
+        "title": null,
+        "onchange": "autoUpdateYear(this.value)",
+        "class": "form-control-select",
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Sem 1"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6"
+          }
+        ]
+      },
+      {
+        "id": "select-edit-class-comp",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "THEORY",
+            "text": "THEORY"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "PRACTICAL"
+          },
+          {
+            "value": "THEORY+PRACTICAL",
+            "text": "THEORY + PRACTICAL"
+          }
+        ]
+      },
+      {
+        "id": "select-edit-class-session",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading session..."
+          }
+        ]
+      },
+      {
+        "id": "select-edit-class-sem",
+        "title": null,
+        "onchange": "autoUpdateEditYear(this.value)",
+        "class": "form-control-select",
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Sem 1"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6"
+          }
+        ]
+      },
+      {
+        "id": "broadcast-target-year-select",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "ALL",
+            "text": "All Enrolled Years (Entire Cohort)"
+          },
+          {
+            "value": "1",
+            "text": "1st Year Students (Semesters 1 & 2)"
+          },
+          {
+            "value": "2",
+            "text": "2nd Year Students (Semesters 3 & 4)"
+          },
+          {
+            "value": "3",
+            "text": "3rd Year Students (Semesters 5 & 6)"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "create-class-modal",
+      "title": "+ Create New Class",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "input-class-name",
+      "title": "Modal Dialog",
+      "fields": [
+        "input-class-name"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "edit-class-modal",
+      "title": "Edit Classroom Details",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "input-edit-class-name",
+      "title": "Modal Dialog",
+      "fields": [
+        "input-edit-class-name"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "delete-class-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-delete-class",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeDeleteClassModal()"
+    },
+    {
+      "id": "broadcast-notice-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "broadcast-title-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "broadcast-title-input"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-broadcast",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeBroadcastNoticeModal()"
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/classes/classes.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "loadClasses",
+    "renderCards",
+    "loadSessionsForModal"
+  ]
+}

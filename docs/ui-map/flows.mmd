@@ -1,0 +1,91 @@
+flowchart TD
+  %% Entry & Authentication Flow
+  subgraph AUTH["Authentication & Entry"]
+    LND["PUB-001: Landing Page (/)"] --> LGI["PUB-002: Login Portal (/login/)"]
+    LGI --> REG["PUB-003: Student Self-Registration (/login/register/)"]
+    LGI -->|Role: Admin| ADM_ROOT["Admin Console"]
+    LGI -->|Role: HOD| HOD_ROOT["HOD Console"]
+    LGI -->|Role: Faculty| FAC_ROOT["Faculty Portal"]
+    LGI -->|Role: Student| STU_ROOT["Student Portal"]
+  end
+
+  %% Admin Workflow
+  subgraph ADMIN["Admin Role Scope"]
+    ADM_ROOT --> ADM_DASH["ADM-003: Dashboard"]
+    ADM_ROOT --> ADM_STRUC["ADM-001: Academic Structure"]
+    ADM_ROOT --> ADM_FAC["ADM-002: Faculty Directory"]
+    ADM_ROOT --> ADM_LOGS["ADM-004: Audit Logs"]
+    ADM_ROOT --> ADM_REP["ADM-005: Institutional Reports"]
+    ADM_ROOT --> ADM_SET["ADM-006: System Settings"]
+    ADM_ROOT --> ADM_PROF["ADM-007: Admin Profile"]
+
+    ADM_STRUC -. triggers .-> UI_FORM["UI-002: DynamicFormDialog (Add/Edit Dept)"]
+    ADM_STRUC -. triggers .-> UI_CONFIRM["UI-001: ConfirmDialog (Delete Dept)"]
+    ADM_FAC -. triggers .-> UI_FORM
+    ADM_FAC -. triggers .-> UI_CONFIRM
+    ADM_FAC -. renders .-> UI_TABLE["UI-004: DataTable (Search, Filter, Sort)"]
+  end
+
+  %% HOD Workflow
+  subgraph HOD["HOD Role Scope"]
+    HOD_ROOT --> HOD_TCH["HOD-001: Department Teachers"]
+    HOD_ROOT --> HOD_SET["HOD-002: Department Policies"]
+    HOD_ROOT --> HOD_COM["HOD-003: Common Shared Teachers"]
+
+    HOD_TCH -. triggers .-> UI_FORM
+    HOD_TCH -. triggers .-> UI_CONFIRM
+  end
+
+  %% Faculty Workflow
+  subgraph FACULTY["Faculty Role Scope"]
+    FAC_ROOT --> FAC_DASH["FAC-002: Faculty Dashboard"]
+    FAC_ROOT --> FAC_REG["FAC-001: Consolidated Registers"]
+    FAC_ROOT --> FAC_GRP["FAC-003: Class Groups"]
+    FAC_ROOT --> FAC_GDT["FAC-004: Group Detail (Stream/Work/People)"]
+    FAC_ROOT --> FAC_SHT["FAC-005: Continuous Sheets & Gradebook"]
+    FAC_ROOT --> FAC_EVL["FAC-006: Submission Evaluation"]
+    FAC_ROOT --> FAC_STU["FAC-007: Student Approvals & Roster"]
+    FAC_ROOT --> FAC_TST["FAC-008: Class Tests"]
+    FAC_ROOT --> FAC_LEV["FAC-011: Leave Approvals"]
+    FAC_ROOT --> FAC_FIL["FAC-012: NBA Course File"]
+    FAC_ROOT --> FAC_MED["FAC-013: Lecture Media Repository"]
+    FAC_ROOT --> FAC_PRF["FAC-014: Faculty Profile"]
+
+    FAC_REG -->|Tab 1| FAC_MAT["Attendance Matrix (Day 1-31)"]
+    FAC_REG -->|Tab 2| FAC_CW["Coursework & Assignments"]
+    FAC_REG -->|Tab 3| FAC_MK["Class Tests & Marks"]
+    FAC_MAT -. triggers .-> FAC_RC["Live Roll-Call Studio (QR + PIN + Log)"]
+
+    FAC_GRP -. triggers .-> UI_FORM
+    FAC_GRP -. triggers .-> UI_CONFIRM
+    FAC_STU -. triggers .-> UI_CONFIRM
+  end
+
+  %% Student Workflow
+  subgraph STUDENT["Student Role Scope"]
+    STU_ROOT --> STU_DASH["STU-001: Student Dashboard"]
+    STU_ROOT --> STU_ATT["STU-002: Monthly Attendance Ledger"]
+    STU_ROOT --> STU_ASN["STU-003: Assignments To-Do & Submissions"]
+    STU_ROOT --> STU_GDT["STU-004: Class Stream & Announcements"]
+    STU_ROOT --> STU_SCR["STU-005: Exam Scores & Performance"]
+    STU_ROOT --> STU_TT["STU-006: Weekly Timetable"]
+    STU_ROOT --> STU_LEV["STU-007: Leave Applications"]
+    STU_ROOT --> STU_PRF["STU-008: Student Profile"]
+
+    STU_LEV -. triggers .-> UI_FORM
+  end
+
+  %% Shared Primitives Layer
+  subgraph SHARED["Unified Reactive Component Primitives"]
+    UI_CONFIRM["UI-001: ConfirmDialog (Destructive Action Confirmation)"]
+    UI_FORM["UI-002: DynamicFormDialog (Schema-Driven 2-10 Field Forms)"]
+    UI_TOAST["UI-003: ToastNotification (Non-blocking status alerts)"]
+    UI_TABLE["UI-004: DataTable (Sort, Search, Pagination, Mobile Cards)"]
+    UI_SHELL["UI-006: AppShell (Zero-flash Nav, Drawer, Profile Popover)"]
+  end
+
+  AUTH -. monitored by .-> UI_TOAST
+  ADMIN -. uses .-> UI_SHELL
+  HOD -. uses .-> UI_SHELL
+  FACULTY -. uses .-> UI_SHELL
+  STUDENT -. uses .-> UI_SHELL

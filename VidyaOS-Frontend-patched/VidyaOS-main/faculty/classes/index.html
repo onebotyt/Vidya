@@ -88,7 +88,7 @@
           </article>
         </section>
 
-        <!-- 4. Action Buttons Row (+ Create Class, Students Roster, Broadcast Notice) -->
+        <!-- 4. Action Buttons Row (+ Create Class, Students Roster, Broadcast Notice, Trash Bin) -->
         <div class="classes-action-buttons-row">
           <button type="button" class="btn-create-class-solid" onclick="openCreateGroupModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -112,6 +112,14 @@
             </svg>
             <span>Broadcast Notice</span>
           </button>
+          <a href="/faculty/classes/trash.html" class="btn-action-outline btn-trash-action" id="btn-classes-trash" title="Open Classroom Trash Bin (30-day recovery)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Trash Bin</span>
+            <span class="trash-count-badge" id="classes-trash-count" style="display:none;">0</span>
+          </a>
         </div>
 
         <!-- 5. Search Bar & Semester Dropdown Filter -->
