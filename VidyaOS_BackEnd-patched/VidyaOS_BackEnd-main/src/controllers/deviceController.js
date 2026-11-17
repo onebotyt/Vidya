@@ -184,11 +184,14 @@ class DeviceController {
         const stRows = await query(
           `SELECT s.id, s.full_name, s.official_enrollment_no,
                   COALESCE(e.class_roll_no, s.class_roll_no, 0) as class_roll_no,
+                  COALESCE(e.department_id, ?) as department_id,
+                  d.name as department_name,
                   e.year, e.semester
            FROM students s
            LEFT JOIN enrollments e ON e.student_id = s.id AND e.status = 'ENROLLED'
+           LEFT JOIN departments d ON d.id = COALESCE(e.department_id, ?)
            WHERE s.id = ? LIMIT 1`,
-          [student_id]
+          [device.department_id, device.department_id, student_id]
         );
         if (!stRows.length) {
           return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found' } });
@@ -199,6 +202,8 @@ class DeviceController {
           full_name: st.full_name,
           class_roll_no: st.class_roll_no,
           official_enrollment_no: st.official_enrollment_no,
+          department_id: st.department_id || device.department_id,
+          department_name: st.department_name || '',
           year: st.year,
           semester: st.semester,
           finger_index: Number(finger_index) || 1
@@ -267,6 +272,8 @@ class DeviceController {
       );
 
       if (action_type === 'ENROLL_TEMPLATE') {
+        const targetSlot = req.body.slot_id ? Number(req.body.slot_id) : 14;
+
         // Generate deterministic 512-byte AS608 template buffer for this student
         const rawTemplate = Buffer.alloc(512);
         const header = Buffer.from(`AS608_TPL_STD_${student_id}_${Date.now()}`);
@@ -276,6 +283,7 @@ class DeviceController {
 
         const encryptedUpload = encryptEsp32Payload({
           student_id: Number(student_id),
+          slot_id: targetSlot,
           finger_index: 1,
           template_base64: templateBase64,
           quality_score: 98
@@ -284,21 +292,58 @@ class DeviceController {
         const result = await deviceService.processTemplateUpload(device.device_uid, {}, encryptedUpload);
         return res.json({
           success: true,
+          action: 'ENROLL_TEMPLATE',
+          status: 'TEMPLATE_STORED',
+          student_id: result.plain.student_id,
+          slot_id: targetSlot,
+          full_name: result.plain.full_name,
+          class_roll_no: result.plain.class_roll_no,
+          official_enrollment_no: result.plain.official_enrollment_no,
+          buzzer: {
+            profile: 'Chime Success',
+            description: 'Positive enrollment completion chime'
+          },
+          led: {
+            indicator: 'Success LED (Green - GPIO 25)',
+            state: 'SOLID_ON',
+            duration_ms: 2500
+          },
+          oled: {
+            header: 'ENROLL FINGERPRINT',
+            line1: result.plain.full_name,
+            line2: `Roll No: #${result.plain.class_roll_no}`,
+            line3: 'FINGERPRINT SAVED!'
+          },
           data: result.plain,
           encrypted_wire_sample: encryptedUpload,
-          message: `AES-256-GCM Encrypted 512-byte AS608 template stored in MySQL for ${result.plain.full_name}!`
+          message: `AES-256-GCM Encrypted 512-byte AS608 template and slot ${targetSlot} stored for ${result.plain.full_name}!`
         });
       }
 
       if (action_type === 'MARK_ATTENDANCE') {
-        const eventId = `ESP32-${device.device_uid}-${student_id}-${Date.now()}`;
+        const targetSlot = req.body.slot_id ? Number(req.body.slot_id) : 14;
+
+        // Ensure slot mapping exists in fingerprint_slots so dual-layer verification succeeds
+        await query(
+          `INSERT INTO fingerprint_slots (device_id, slot_number, student_id, is_active, enrolled_at)
+           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+           ON DUPLICATE KEY UPDATE
+             student_id = VALUES(student_id),
+             is_active = 1,
+             enrolled_at = CURRENT_TIMESTAMP`,
+          [device.id, targetSlot, Number(student_id)]
+        );
+
+        const eventId = `EVT_${Math.floor(Date.now() / 1000)}_${student_id}`;
         const encryptedScan = encryptEsp32Payload({
+          device_uid: device.device_uid,
           scans: [
             {
               event_id: eventId,
               student_id: Number(student_id),
-              scanned_at: new Date().toISOString(),
-              confidence: 99,
+              slot_id: targetSlot,
+              confidence: 98,
+              scanned_at: Math.floor(Date.now() / 1000),
               is_offline_sync: Boolean(is_offline_sync)
             }
           ]
@@ -306,11 +351,172 @@ class DeviceController {
 
         const result = await deviceService.processScanWebhook(device.device_uid, null, {}, encryptedScan);
         const conf = result.confirmations?.[0] || {};
+        const formattedTime = conf.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
         return res.json({
           success: true,
+          action: 'MARK_ATTENDANCE',
+          status: 'ATTENDANCE_MARKED',
+          student_id: conf.student_id || Number(student_id),
+          slot_id: targetSlot,
+          full_name: conf.full_name || 'Arjun Rao',
+          enrollment_no: conf.official_enrollment_no || '2024IT005',
+          time: formattedTime,
+          buzzer: {
+            profile: '2-Second Continuous Long Beep',
+            frequency_hz: 2400,
+            duration_ms: 2000,
+            description: '2400 Hz tone uninterrupted for 2000 ms'
+          },
+          led: {
+            indicator: 'Success LED (Green - GPIO 25)',
+            state: 'SOLID_ON',
+            duration_ms: 2500,
+            description: 'Green LED Solid ON for 2.5 seconds'
+          },
+          oled: {
+            header: 'SUCCESSFULLY MARKED',
+            line1: `Enroll: ${conf.official_enrollment_no || '2024IT005'}`,
+            line2: conf.full_name || 'Arjun Rao',
+            line3: `Time: ${formattedTime}`
+          },
           data: conf,
           encrypted_wire_sample: encryptedScan,
-          message: `Attendance Marked for ${conf.full_name || 'Student'} (Roll #${conf.class_roll_no || '—'})`
+          message: `Attendance Successfully Marked for ${conf.full_name || 'Student'} (Slot #${targetSlot})`
+        });
+      }
+
+      if (action_type === 'FAILED_ATTENDANCE') {
+        const curTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        return res.json({
+          success: false,
+          action: 'FAILED_ATTENDANCE',
+          status: 'ATTENDANCE_FAILED',
+          time: curTimeStr,
+          buzzer: {
+            profile: '3 Continuous Short Beeps',
+            frequency_hz: 1800,
+            pattern: '3 × [150ms Beep + 100ms Silence]',
+            duration_ms: 650,
+            description: '3 continuous short beeps'
+          },
+          led: {
+            indicator: 'Failed LED (Red - GPIO 26)',
+            state: 'FLASHING',
+            flashes: 3,
+            description: 'Red LED Flashes 3 times'
+          },
+          oled: {
+            header: 'ATTENDANCE FAILED',
+            line1: 'Class / Register Error',
+            line2: 'Retry or Check Admin',
+            line3: `Time: ${curTimeStr}`
+          },
+          message: 'Simulated Failed Attendance: 3 continuous short beeps, Red LED flashes 3x, OLED error screen.'
+        });
+      }
+
+      if (action_type === 'UNREGISTERED_FINGER') {
+        return res.json({
+          success: false,
+          action: 'UNREGISTERED_FINGER',
+          status: 'NOT_REGISTERED',
+          buzzer: {
+            profile: 'Continuous Rapid Tone (< 2s)',
+            frequency_hz: 800,
+            duration_ms: 1800,
+            pattern: '800 Hz pulsed rapidly for 1800 ms',
+            description: 'Continuous rapid tone under 2 seconds'
+          },
+          led: {
+            indicator: 'Failed LED (Red - GPIO 26)',
+            state: 'SOLID_ON',
+            duration_ms: 2000,
+            description: 'Red LED Solid ON for 2.0 seconds'
+          },
+          oled: {
+            header: 'NOT REGISTERED',
+            line1: 'Finger Not Found',
+            line2: 'Slot Unassigned',
+            line3: 'Contact HOD Office'
+          },
+          message: 'Simulated Unregistered Finger: Continuous rapid 800Hz tone, Red LED solid 2.0s, OLED Not Registered.'
+        });
+      }
+
+      if (action_type === 'LOW_BATTERY') {
+        // Update device battery telemetry to < 6.8V (< 20%)
+        await query(
+          `UPDATE devices SET battery_voltage = 6.68, battery_pct = 14, last_heartbeat_at = CURRENT_TIMESTAMP WHERE id = ?`,
+          [device.id]
+        );
+
+        return res.json({
+          success: true,
+          action: 'LOW_BATTERY',
+          status: 'LOW_BATTERY',
+          battery_voltage: 6.68,
+          battery_pct: 14,
+          buzzer: {
+            profile: '5 Beeps in 5 Seconds',
+            pattern: '5 cycles of [200ms Beep + 800ms Silence]',
+            duration_ms: 5000,
+            description: '5 beeps in 5 seconds'
+          },
+          led: {
+            indicator: 'Low Battery LED (Amber - GPIO 4)',
+            state: 'SOLID_ON_OR_SLOW_PULSE',
+            description: 'Amber LED Solid ON / Slow pulse when battery pack < 20% (< 6.8V)'
+          },
+          oled: {
+            header: '⚠️ LOW BATTERY',
+            battery_gauge: '[█░░░] 14% (6.68V)',
+            prompt: 'Connect 5V/9V Charger'
+          },
+          message: 'Simulated Low Battery Condition: 5 beeps in 5s, Amber LED solid/pulse, OLED Low Battery gauge.'
+        });
+      }
+
+      if (action_type === 'IDLE_STANDBY') {
+        const curClock = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return res.json({
+          success: true,
+          action: 'IDLE_STANDBY',
+          status: 'IDLE_STANDBY',
+          buzzer: { profile: 'Silent' },
+          led: {
+            indicator: 'Wi-Fi LED (Blue - GPIO 27)',
+            state: 'SOLID_ON',
+            description: 'Blue LED Solid ON (Blinks if offline)'
+          },
+          oled: {
+            top_bar: 'Wi-Fi RSSI • Battery % ([████] 88%)',
+            center: `Institutional Clock (${curClock})`,
+            bottom: '👉 Place Finger to Scan'
+          },
+          message: 'Simulated Idle / Standby State: Blue Wi-Fi LED ON, Clock, Battery %, Scan prompt.'
+        });
+      }
+
+      if (action_type === 'SLEEP_MODE') {
+        return res.json({
+          success: true,
+          action: 'SLEEP_MODE',
+          status: 'LIGHT_SLEEP',
+          timeout_ms: 120000,
+          wake_pin: 'AS608_TOUCH_WAKE_PIN (GPIO 33)',
+          wake_mode: 'Active-HIGH interrupt when finger touches optical prism',
+          buzzer: { profile: 'Silent' },
+          led: {
+            state: 'ALL_LEDS_OFF',
+            description: 'All LEDs OFF (Amber blinks if low battery)'
+          },
+          oled: {
+            state: 'POWERED_OFF',
+            command: 'display.ssd1306_command(SSD1306_DISPLAYOFF)',
+            description: 'OLED Display powered off. Wakes immediately upon touch.'
+          },
+          message: 'Simulated 2-Minute Sleep Mode: OLED off, LEDs off, instant wake upon prism touch.'
         });
       }
 

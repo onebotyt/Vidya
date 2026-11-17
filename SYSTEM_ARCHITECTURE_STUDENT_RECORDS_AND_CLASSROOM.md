@@ -38,6 +38,24 @@
 - All student academic documents, test marks, assignment submissions, and attendance logs remain permanently coupled to the student's ID in `student_documents` and `assessment_submissions`.
 - Faculty can access these documents and records at any time via the Student Records / Dossier modal.
 
+### F. Student Portal Comprehensive Upgrade & Complete Dead/Duplicate Code Elimination
+- **Dead & Duplicate Code Cleanup (267.2 KB / ~6,500 lines pruned)**:
+  - Pruned 8 legacy duplicate flat `.html` files in `frontend/student/` (`assignments/assignments.html`, `attendance/attendance.html`, `dashboard/dashboard.html`, `group-detail/group-detail.html`, `leave/leave.html`, `profile/profile.html`, `scores/scores.html`, and `timetable/timetable.html`).
+  - Pruned 5 orphaned components in `frontend/student/components/`: `components/dossier/` (`dossier.js`, `dossier.css`) and `components/delete-modal/` (`delete-modal.js`, `delete-modal.css`, `delete-modal.html`).
+  - Pruned dead NBA accreditation links (`/student/nba/index.html`) across student navigation, headers, and drawers.
+  - Standardized all navigation links and redirects across all student modules to canonical `/student/.../index.html` structure.
+- **Student Dashboard (`/student/dashboard/index.html`)**:
+  - Upgraded classroom cards to render `subject_short_name` (e.g. `DBMS`), `subject_code`, `component` (`THEORY`, `PRACTICAL`, `THEORY+PRACTICAL`), semester, and academic year.
+- **Student Scores Module (`/student/scores/index.html`)**:
+  - Multi-semester filter pills (`All Semesters`, `Sem 1` through `Sem 6`) with horizontal smooth scrolling container.
+  - Assessment type filter pills (`All Assessments`, `Exams & Tests`, `Assignments`) with live counts and search input.
+  - Decoupled marks model: queries `/api/v1/students/me/dossier` to fetch and render persistent assessment scores even after classrooms are deleted at semester end.
+  - Mobile compact layout with responsive cards (<= 412px, zero horizontal overflow).
+- **Student Profile & Self-Service Academic Dossier (`/student/profile/index.html`)**:
+  - Full demographic dossier: Official Enrollment No, UBTER Reg No, Class Roll No, Father's Name, Mother's Name, Aadhar Number, DOB, Gender, Category, Mobile Phone, Residential Address, and dynamic Academic Batch (`Batch 2024 - 2027`).
+  - Self-Service Academic Dossier Export Toolbar: Print/PDF (formal transcript), Excel .csv (demographics + attendance summary + assessment ledger), and Word .doc (formatted institutional document).
+  - Verified Student Certificates & Documents section: queries `/api/v1/students/me/documents` to display verified certificates on file with download/view links.
+
 ### F. Classroom Creation Schema Enhancements (Database Migration 011)
 - Added `subject_short_name VARCHAR(50)` to `teaching_groups` (e.g., `DBMS`, `OS`, `CN`).
 - Added `year INT` to `teaching_groups` (auto-derived as `Math.ceil(semester / 2)`).
@@ -120,6 +138,10 @@ The following files represent obsolete, monolithic, or duplicate code that is sa
 | `assignments.html` (legacy roots) | Varies | Replaced by classroom coursework tab and faculty drive | Ensure redirect to `/faculty/classes/index.html` |
 | `marks.html` (legacy roots) | Varies | Replaced by student records dossier & assessments | Ensure redirect to `/faculty/student-records/index.html` |
 | `quick.html` (legacy roots) | Varies | Replaced by Live QR & Roll Call Modal | Redirect to `/faculty/student-records/index.html` |
+| `frontend/student/*/*.html` (duplicate files) | ~170 KB | 8 duplicate legacy flat files matching directory names (e.g. `assignments.html` inside `assignments/`) | Pruned completely; canonical `index.html` retained |
+| `frontend/student/components/dossier/` | ~34 KB | Orphaned experimental dossier files (`dossier.js`, `dossier.css`) | Removed completely |
+| `frontend/student/components/delete-modal/` | ~39 KB | Orphaned modal duplicate in student components | Removed completely |
+| `frontend/student/nba/index.html` (dead link) | - | 404 dead link in navigation | Removed from sidebar and headers |
 
 ---
 
