@@ -5,7 +5,7 @@
   "route": "/faculty/media.html",
   "source_file": "frontend/faculty/media/index.html",
   "content_hash": "476641f6995b",
-  "last_scanned": "2026-11-17T17:35:10.722Z",
+  "last_scanned": "2026-11-17T17:56:40.555Z",
   "title": "Faculty Drive &amp; Media Vault — VidyaOS",
   "purpose": "Lecture notes, syllabus PDFs, lab manual file repository",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",

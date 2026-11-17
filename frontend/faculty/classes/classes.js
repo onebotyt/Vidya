@@ -120,6 +120,27 @@
 
     updateStats();
     renderCards();
+    fetchTrashCount();
+  }
+
+  // ── Fetch Trash Count for Action Button Badge ──
+  async function fetchTrashCount() {
+    try {
+      const res = await api.get('/teaching-groups?status=TRASH');
+      const data = res.data || res;
+      const trashed = Array.isArray(data) ? data : (data.groups || data.classes || []);
+      const badge = document.getElementById('classes-trash-count');
+      if (badge) {
+        if (trashed.length > 0) {
+          badge.textContent = trashed.length;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    } catch (_) {
+      // Non-critical badge update
+    }
   }
 
   // ── 3. Update Stat Cards (My Classes, Total Students, Subjects) ──
@@ -179,10 +200,17 @@
       const subjectTitle = g.subject_name || g.name || 'Cloud Computing & DevOps';
       const roomCode = g.subject_code || g.room_no || '101';
       const semester = g.semester || 6;
-      const component = (g.component || 'THEORY').toUpperCase();
-      const compStr = String(component || '').toUpperCase();
-      const hasTheory = compStr.includes('THEORY') || !compStr.includes('PRACTICAL');
-      const hasPractical = compStr.includes('PRACTICAL');
+      const compRaw = String(g.component || 'THEORY').toUpperCase();
+      let formattedComp = 'Theory';
+      if (compRaw.includes('THEORY') && compRaw.includes('PRACTICAL')) {
+        formattedComp = 'Theory + Practical';
+      } else if (compRaw.includes('PRACTICAL')) {
+        formattedComp = 'Practical';
+      } else if (compRaw.includes('THEORY')) {
+        formattedComp = 'Theory';
+      } else {
+        formattedComp = g.component || 'Theory';
+      }
       const ayLabel = g.academic_year_label || 'AY 2026–27';
 
       return `
@@ -224,7 +252,7 @@
               </div>
             </div>
             <div class="class-card-sub">
-              Sem ${semester} &bull; ${escapeHtml(component)} &bull; ${escapeHtml(ayLabel)}
+              Sem ${semester} &bull; ${escapeHtml(formattedComp)} &bull; ${escapeHtml(ayLabel)}
             </div>
           </div>
 
@@ -250,9 +278,8 @@
             </a>
           </div>
 
-          <!-- Dedicated Module Action Tiles -->
+          <!-- Dedicated Module Action Tiles (All 6 Standard Core Pillars) -->
           <div class="class-module-tiles-grid">
-            ${hasTheory ? `
             <a href="/faculty/theory-classes/index.html?groupId=${g.id}" class="module-action-tile" title="Theory Classes, Syllabus & Lesson Plans">
               <span class="module-tile-icon icon-theory">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -263,9 +290,8 @@
                 </svg>
               </span>
               <span class="module-tile-label">Theory Classes</span>
-            </a>` : ''}
+            </a>
 
-            ${hasPractical ? `
             <a href="/faculty/lab-classes/index.html?groupId=${g.id}" class="module-action-tile" title="Laboratory Classes & Practicals">
               <span class="module-tile-icon icon-lab">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -275,7 +301,7 @@
                 </svg>
               </span>
               <span class="module-tile-label">Laboratory</span>
-            </a>` : ''}
+            </a>
 
             <a href="/faculty/course-file/index.html?groupId=${g.id}" class="module-action-tile" title="NBA Academic Dossier & CO-PO Mapping">
               <span class="module-tile-icon icon-nba">

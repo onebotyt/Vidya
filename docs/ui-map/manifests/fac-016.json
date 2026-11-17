@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-016",
+  "role": "Faculty",
+  "route": "/faculty/classes/trash.html",
+  "source_file": "frontend/faculty/classes/trash.html",
+  "content_hash": "8231dfdf1c35",
+  "last_scanned": "2026-11-17T17:56:40.576Z",
+  "title": "Classroom Trash Bin — VidyaOS",
+  "purpose": "Classroom Trash Bin & Recovery Studio: 30-day retention countdown, auto-purge policy banner, Restore Class back to active teaching, and Permanent Deletion dialog with TYPE-TO-CONFIRM safety check",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: responsive deleted cards with remaining days badge; Mobile: single-column card list",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/restore",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/v1/teaching-groups/:id/permanent",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": [
+      {
+        "id": "permanent-delete-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-confirm-perm-delete",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closePermanentDeleteModal()",
+        "class": "modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closePermanentDeleteModal()",
+        "class": "btn-dialog-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-perm-delete",
+        "label": "Delete Permanently",
+        "action": "executePermanentDelete()",
+        "class": "btn-dialog-danger",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "search-trash-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search deleted classes by name, code or teacher...",
+        "handler": "handleSearchTrash(this.value)",
+        "class": null
+      },
+      {
+        "id": "input-confirm-perm-delete",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type DELETE to confirm",
+        "handler": "handlePermDeleteInputChange(this.value)",
+        "class": "form-control-input"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "filter-trash-semester-select",
+        "title": null,
+        "onchange": "handleTrashSemesterFilter(this.value)",
+        "class": null,
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "ALL",
+            "text": "All Semesters"
+          },
+          {
+            "value": "1",
+            "text": "Semester 1"
+          },
+          {
+            "value": "2",
+            "text": "Semester 2"
+          },
+          {
+            "value": "3",
+            "text": "Semester 3"
+          },
+          {
+            "value": "4",
+            "text": "Semester 4"
+          },
+          {
+            "value": "5",
+            "text": "Semester 5"
+          },
+          {
+            "value": "6",
+            "text": "Semester 6"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "permanent-delete-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-perm-delete",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closePermanentDeleteModal()"
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/classes/trash.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "loadTrash",
+    "renderTrashCards"
+  ]
+}

@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-17T17:35:10.803Z",
-  "total_pages": 30,
+  "generated_at": "2026-11-17T17:56:40.646Z",
+  "total_pages": 32,
   "totals": {
-    "buttons": 592,
-    "modals": 178,
-    "inputs": 349,
-    "apis": 166
+    "buttons": 610,
+    "modals": 189,
+    "inputs": 373,
+    "apis": 180
   },
   "pages": [
     {
@@ -255,6 +255,32 @@
         "modals": 1,
         "inputs": 7,
         "apis": 4
+      }
+    },
+    {
+      "page_id": "FAC-015",
+      "route": "/faculty/classes/index.html",
+      "title": "My Teaching Classes — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-015.json",
+      "content_hash": "eef9ad8abbf8",
+      "counts": {
+        "buttons": 15,
+        "modals": 9,
+        "inputs": 21,
+        "apis": 9
+      }
+    },
+    {
+      "page_id": "FAC-016",
+      "route": "/faculty/classes/trash.html",
+      "title": "Classroom Trash Bin — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-016.json",
+      "content_hash": "8231dfdf1c35",
+      "counts": {
+        "buttons": 3,
+        "modals": 2,
+        "inputs": 3,
+        "apis": 5
       }
     },
     {

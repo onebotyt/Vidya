@@ -5,7 +5,7 @@
   "route": "/faculty/groups.html",
   "source_file": "frontend/faculty/groups/index.html",
   "content_hash": "9a02d7d355d9",
-  "last_scanned": "2026-11-17T17:35:10.614Z",
+  "last_scanned": "2026-11-17T17:56:40.433Z",
   "title": "Faculty Classroom Dashboard — VidyaOS",
   "purpose": "Assigned cohorts, academic sections, batch management",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
