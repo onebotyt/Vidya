@@ -373,7 +373,6 @@
     const compInput = document.getElementById('select-class-comp');
     const sessionInput = document.getElementById('select-class-session');
     const semInput = document.getElementById('select-class-sem');
-    const roomInput = document.getElementById('input-class-room');
 
     const subjectName = nameInput?.value?.trim() || 'New Class';
     const sem = parseInt(semInput?.value || '1', 10);
@@ -390,7 +389,7 @@
       academic_year_id: sessionInput?.value ? parseInt(sessionInput.value, 10) : undefined,
       semester: sem,
       year: yr,
-      room_no: roomInput?.value || code || '101'
+      room_no: code || '101'
     };
 
     try {
