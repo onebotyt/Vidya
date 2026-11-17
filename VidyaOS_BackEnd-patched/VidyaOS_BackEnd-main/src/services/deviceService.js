@@ -680,6 +680,174 @@ class DeviceService {
       message: 'Fingerprint correlation saved.'
     };
   }
+
+  // ─── 5. Dynamic Device Wi-Fi Connectivity & Multi-Network Management ─────
+
+  async getDeviceWifiNetworks(deviceId) {
+    return await query(
+      `SELECT id, device_id, ssid, is_default, is_active, priority, last_connected_at, created_at, updated_at
+       FROM device_wifi_networks
+       WHERE device_id = ?
+       ORDER BY is_default DESC, priority DESC, id ASC`,
+      [deviceId]
+    );
+  }
+
+  async addDeviceWifiNetwork(deviceId, { ssid, password = '', is_default = 0, switch_now = false }, userId = null) {
+    if (!ssid || !ssid.trim()) {
+      throw { status: 400, code: 'VALIDATION_ERROR', message: 'Wi-Fi SSID is required' };
+    }
+    const trimmedSsid = ssid.trim();
+    const cleanPassword = password ? String(password) : '';
+    const isDef = is_default ? 1 : 0;
+
+    if (isDef) {
+      await query(`UPDATE device_wifi_networks SET is_default = 0 WHERE device_id = ?`, [deviceId]);
+    }
+
+    await query(
+      `INSERT INTO device_wifi_networks (device_id, ssid, password, is_default, is_active)
+       VALUES (?, ?, ?, ?, 1)
+       ON DUPLICATE KEY UPDATE
+         password = VALUES(password),
+         is_default = VALUES(is_default),
+         is_active = 1,
+         updated_at = CURRENT_TIMESTAMP`,
+      [deviceId, trimmedSsid, cleanPassword, isDef]
+    );
+
+    const devices = await query(`SELECT id, device_uid, department_id FROM devices WHERE id = ? LIMIT 1`, [deviceId]);
+    if (devices && devices.length > 0) {
+      const dev = devices[0];
+      await query(
+        `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+         VALUES (?, ?, 'ADD_WIFI', ?, 'PENDING', ?)`,
+        [
+          dev.id,
+          dev.department_id,
+          JSON.stringify({ ssid: trimmedSsid, password: cleanPassword, is_default: Boolean(isDef), switch_now: Boolean(switch_now) }),
+          userId
+        ]
+      );
+      if (switch_now) {
+        await query(
+          `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+           VALUES (?, ?, 'SWITCH_WIFI', ?, 'PENDING', ?)`,
+          [dev.id, dev.department_id, JSON.stringify({ ssid: trimmedSsid }), userId]
+        );
+      }
+    }
+
+    return {
+      success: true,
+      ssid: trimmedSsid,
+      is_default: Boolean(isDef),
+      switch_now: Boolean(switch_now),
+      message: `Wi-Fi network '${trimmedSsid}' saved and queued to ESP32.`
+    };
+  }
+
+  async setDefaultWifiNetwork(deviceId, wifiId, userId = null) {
+    await query(`UPDATE device_wifi_networks SET is_default = 0 WHERE device_id = ?`, [deviceId]);
+    await query(`UPDATE device_wifi_networks SET is_default = 1 WHERE device_id = ? AND id = ?`, [deviceId, wifiId]);
+    const rows = await query(`SELECT ssid FROM device_wifi_networks WHERE id = ? LIMIT 1`, [wifiId]);
+    const targetSsid = rows[0]?.ssid || '';
+
+    const devices = await query(`SELECT id, department_id FROM devices WHERE id = ? LIMIT 1`, [deviceId]);
+    if (devices && devices.length > 0) {
+      await query(
+        `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+         VALUES (?, ?, 'SET_DEFAULT_WIFI', ?, 'PENDING', ?)`,
+        [deviceId, devices[0].department_id, JSON.stringify({ wifi_id: wifiId, ssid: targetSsid }), userId]
+      );
+    }
+    return { success: true, ssid: targetSsid, message: `Wi-Fi '${targetSsid}' set as default.` };
+  }
+
+  async deleteDeviceWifiNetwork(deviceId, wifiId) {
+    const rows = await query(`SELECT ssid FROM device_wifi_networks WHERE id = ? AND device_id = ? LIMIT 1`, [wifiId, deviceId]);
+    const targetSsid = rows[0]?.ssid || '';
+    await query(`DELETE FROM device_wifi_networks WHERE id = ? AND device_id = ?`, [wifiId, deviceId]);
+    return { success: true, ssid: targetSsid, message: `Wi-Fi '${targetSsid}' removed.` };
+  }
+
+  async triggerWifiScan(deviceId, userId = null) {
+    const devices = await query(`SELECT id, device_uid, department_id FROM devices WHERE id = ? LIMIT 1`, [deviceId]);
+    if (!devices || devices.length === 0) {
+      throw { status: 404, code: 'NOT_FOUND', message: 'ESP32 device not found' };
+    }
+    const dev = devices[0];
+    await query(
+      `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+       VALUES (?, ?, 'SCAN_WIFI', '{}', 'PENDING', ?)`,
+      [dev.id, dev.department_id, userId]
+    );
+    return { success: true, message: `Wi-Fi scan command queued to ESP32 '${dev.device_uid}'.` };
+  }
+
+  async getLatestWifiScans(deviceId) {
+    return await query(
+      `SELECT id, device_id, ssid, rssi, auth_mode, channel, scanned_at
+       FROM device_wifi_scans
+       WHERE device_id = ?
+       ORDER BY rssi DESC, id DESC
+       LIMIT 25`,
+      [deviceId]
+    );
+  }
+
+  async recordWifiScanReport(deviceUid, reqHeaders, rawBody) {
+    const { device, decryptedPayload } = await this.resolveAuthenticatedDevice(deviceUid, reqHeaders, rawBody);
+    const networks = decryptedPayload.networks || decryptedPayload.scanned_networks || [];
+    if (Array.isArray(networks) && networks.length > 0) {
+      await query(`DELETE FROM device_wifi_scans WHERE device_id = ?`, [device.id]);
+      for (const net of networks) {
+        if (net.ssid) {
+          await query(
+            `INSERT INTO device_wifi_scans (device_id, ssid, rssi, auth_mode, channel, scanned_at)
+             VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+            [device.id, String(net.ssid), Number(net.rssi) || -70, net.auth_mode || 'WPA2_PSK', Number(net.channel) || 1]
+          );
+        }
+      }
+    }
+    return { success: true, recorded: networks.length };
+  }
+
+  async switchDeviceWifi(deviceId, ssid, userId = null) {
+    const devices = await query(`SELECT id, department_id FROM devices WHERE id = ? LIMIT 1`, [deviceId]);
+    if (!devices.length) throw { status: 404, code: 'NOT_FOUND', message: 'Device not found' };
+    await query(
+      `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+       VALUES (?, ?, 'SWITCH_WIFI', ?, 'PENDING', ?)`,
+      [deviceId, devices[0].department_id, JSON.stringify({ ssid }), userId]
+    );
+    return { success: true, ssid, message: `Command to switch to '${ssid}' queued.` };
+  }
+
+  async triggerWifiFallback(deviceId, userId = null) {
+    const devices = await query(`SELECT id, department_id FROM devices WHERE id = ? LIMIT 1`, [deviceId]);
+    if (!devices.length) throw { status: 404, code: 'NOT_FOUND', message: 'Device not found' };
+    const defNet = await query(`SELECT ssid FROM device_wifi_networks WHERE device_id = ? AND is_default = 1 LIMIT 1`, [deviceId]);
+    const fallbackSsid = defNet[0]?.ssid || 'DEFAULT_CAMPUS_WIFI';
+    await query(
+      `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+       VALUES (?, ?, 'FALLBACK_WIFI', ?, 'PENDING', ?)`,
+      [deviceId, devices[0].department_id, JSON.stringify({ fallback_ssid: fallbackSsid }), userId]
+    );
+    return { success: true, fallback_ssid: fallbackSsid, message: `Command to fallback to default Wi-Fi '${fallbackSsid}' queued.` };
+  }
+
+  async triggerWifiReset(deviceId, userId = null) {
+    const devices = await query(`SELECT id, department_id FROM devices WHERE id = ? LIMIT 1`, [deviceId]);
+    if (!devices.length) throw { status: 404, code: 'NOT_FOUND', message: 'Device not found' };
+    await query(
+      `INSERT INTO esp32_command_queue (device_id, department_id, command_type, payload_json, status, created_by)
+       VALUES (?, ?, 'RESET_WIFI', '{}', 'PENDING', ?)`,
+      [deviceId, devices[0].department_id, userId]
+    );
+    return { success: true, message: 'Wi-Fi reset command queued. ESP32 will clear secondary credentials and reconnect to default Wi-Fi.' };
+  }
 }
 
 module.exports = new DeviceService();

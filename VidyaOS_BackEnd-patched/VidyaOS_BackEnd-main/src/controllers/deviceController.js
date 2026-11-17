@@ -520,6 +520,55 @@ class DeviceController {
         });
       }
 
+      if (action_type === 'SCAN_WIFI') {
+        // Seed realistic nearby Wi-Fi scan results for this terminal
+        const mockNetworks = [
+          { ssid: 'GP_NAINITAL_CAMPUS_WIFI', rssi: -48, auth_mode: 'WPA2_PSK', channel: 6 },
+          { ssid: 'IT_DEPT_SMART_CLASS_5G', rssi: -55, auth_mode: 'WPA2_PSK', channel: 36 },
+          { ssid: 'CENTRAL_LIBRARY_WIFI', rssi: -68, auth_mode: 'WPA2_PSK', channel: 11 },
+          { ssid: 'FACULTY_LOUNGE_GUEST', rssi: -78, auth_mode: 'OPEN', channel: 1 }
+        ];
+
+        await query(`DELETE FROM device_wifi_scans WHERE device_id = ?`, [device.id]);
+        for (const net of mockNetworks) {
+          await query(
+            `INSERT INTO device_wifi_scans (device_id, ssid, rssi, auth_mode, channel, scanned_at)
+             VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+            [device.id, net.ssid, net.rssi, net.auth_mode, net.channel]
+          );
+        }
+
+        return res.json({
+          success: true,
+          action: 'SCAN_WIFI',
+          status: 'SCAN_COMPLETED',
+          networks: mockNetworks,
+          count: mockNetworks.length,
+          message: `ESP32 discovered ${mockNetworks.length} nearby Wi-Fi network(s).`
+        });
+      }
+
+      if (action_type === 'FALLBACK_WIFI') {
+        const defNet = await query(`SELECT ssid FROM device_wifi_networks WHERE device_id = ? AND is_default = 1 LIMIT 1`, [device.id]);
+        const fallbackSsid = defNet[0]?.ssid || 'GP_NAINITAL_CAMPUS_WIFI';
+        return res.json({
+          success: true,
+          action: 'FALLBACK_WIFI',
+          status: 'FALLBACK_TRIGGERED',
+          fallback_ssid: fallbackSsid,
+          message: `ESP32 reconnected to default institutional Wi-Fi '${fallbackSsid}'.`
+        });
+      }
+
+      if (action_type === 'RESET_WIFI') {
+        return res.json({
+          success: true,
+          action: 'RESET_WIFI',
+          status: 'RESET_COMPLETED',
+          message: 'ESP32 cleared all custom networks and restored factory default Wi-Fi.'
+        });
+      }
+
       return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Unsupported action_type' } });
     } catch (err) {
       logger.error('[DeviceController] simulateEsp32Action error:', { error: err.message });
@@ -687,6 +736,112 @@ class DeviceController {
       return res.status(200).json({ success: true, data: events, count: events.length });
     } catch (err) {
       return res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  // ─── 9. Dynamic Wi-Fi Management Handlers ─────────────────────────────────
+
+  async getDeviceWifiNetworks(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const networks = await deviceService.getDeviceWifiNetworks(deviceId);
+      return res.json({ success: true, data: networks });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async addDeviceWifiNetwork(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const { ssid, password, is_default = false, switch_now = false } = req.body;
+      const result = await deviceService.addDeviceWifiNetwork(deviceId, { ssid, password, is_default, switch_now }, req.user?.id);
+      return res.status(201).json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async setDefaultWifiNetwork(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const wifiId = parseInt(req.params.wifi_id, 10);
+      const result = await deviceService.setDefaultWifiNetwork(deviceId, wifiId, req.user?.id);
+      return res.json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async deleteDeviceWifiNetwork(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const wifiId = parseInt(req.params.wifi_id, 10);
+      const result = await deviceService.deleteDeviceWifiNetwork(deviceId, wifiId);
+      return res.json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async triggerWifiScan(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const result = await deviceService.triggerWifiScan(deviceId, req.user?.id);
+      return res.json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async getLatestWifiScans(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const scans = await deviceService.getLatestWifiScans(deviceId);
+      return res.json({ success: true, data: scans });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async switchDeviceWifi(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const { ssid } = req.body;
+      const result = await deviceService.switchDeviceWifi(deviceId, ssid, req.user?.id);
+      return res.json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async triggerWifiFallback(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const result = await deviceService.triggerWifiFallback(deviceId, req.user?.id);
+      return res.json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async triggerWifiReset(req, res) {
+    try {
+      const deviceId = parseInt(req.params.device_id, 10);
+      const result = await deviceService.triggerWifiReset(deviceId, req.user?.id);
+      return res.json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  async handleWifiScanReport(req, res) {
+    const device_uid = req.body.device_uid || req.headers['x-device-uid'];
+    try {
+      const result = await deviceService.recordWifiScanReport(device_uid, req.headers, req.body);
+      return res.json({ success: true, data: result, message: `Recorded ${result.recorded} scanned Wi-Fi network(s).` });
+    } catch (err) {
+      return res.status(err.status || 500).json({ success: false, error: { code: err.code || 'INTERNAL_SERVER_ERROR', message: err.message } });
     }
   }
 }
