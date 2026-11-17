@@ -1,0 +1,520 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-007",
+  "role": "Faculty",
+  "route": "/faculty/students/index.html",
+  "source_file": "frontend/faculty/students/index.html",
+  "content_hash": "2cbb536b3191",
+  "last_scanned": "2026-11-17T16:35:32.227Z",
+  "title": "Students Management — VidyaOS",
+  "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and permanent teacher document dossier access",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: 4-column minimal table (Roll #, Enrollment, Student Name with status chip, 3-dot menu with View/Transfer/Withdraw/Reactivate/Reset/Remove); Mobile: 3-column compact table (Roll #, Student Name, 3-dot menu) with zero overflow",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1:id",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/hod/students/:id/documents",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "stu-toolbar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "stu-table",
+        "headers": [
+          "Roll #",
+          "Enrollment",
+          "Student Name",
+          "Retention",
+          "Actions"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "modal-student-details",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "detail-stu-enroll",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-add-student",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-bulk-csv",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Trash Bin 0",
+        "action": "switchToTrashTab()",
+        "class": "btn-trash-header",
+        "data_ui": null,
+        "title": "Students Trash Bin (30-day recovery)"
+      },
+      {
+        "id": null,
+        "label": "All Years 0",
+        "action": null,
+        "class": "stu-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "1st Year 0",
+        "action": null,
+        "class": "stu-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "2nd Year 0",
+        "action": null,
+        "class": "stu-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "3rd Year 0",
+        "action": null,
+        "class": "stu-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pill-inactive",
+        "label": "Inactive 0",
+        "action": null,
+        "class": "stu-pill",
+        "data_ui": null,
+        "title": "Transferred & Withdrawn Students (Records permanently accessible)"
+      },
+      {
+        "id": "pill-pending",
+        "label": "Pending 0",
+        "action": null,
+        "class": "stu-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pill-trash",
+        "label": "Trash 0",
+        "action": null,
+        "class": "stu-pill pill-trash",
+        "data_ui": null,
+        "title": "Students in Trash Bin (30-day recovery)"
+      },
+      {
+        "id": null,
+        "label": "Add Student",
+        "action": "openAddStudentModal()",
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": "Enroll New Student"
+      },
+      {
+        "id": null,
+        "label": "Bulk CSV",
+        "action": "openBulkModal()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": "Bulk Import via CSV"
+      },
+      {
+        "id": null,
+        "label": "Re-Index",
+        "action": "reindexRoll()",
+        "class": "btn-stu-outline btn-reindex",
+        "data_ui": null,
+        "title": "Re-index Roll Numbers"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeStudentDetailsModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Attach Doc",
+        "action": "toggleUploadDocBox()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "toggleUploadDocBox()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Upload",
+        "action": "submitStudentDocument()",
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeStudentDetailsModal()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "detail-btn-transfer",
+        "label": "Transfer",
+        "action": "detailTransferStudent()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "detail-btn-withdraw",
+        "label": "Withdraw",
+        "action": "detailWithdrawStudent()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "detail-btn-reactivate",
+        "label": "Re-Activate",
+        "action": "detailReactivateStudent()",
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Reset Password",
+        "action": "detailResetPassword()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "detail-btn-delete",
+        "label": "Remove Student",
+        "action": "detailDeleteStudent()",
+        "class": "btn-stu-compact danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAddStudentModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeAddStudentModal()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Enroll Student",
+        "action": null,
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeBulkModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeBulkModal()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Import Students",
+        "action": null,
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "toggle-student-reg",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "student-search",
+        "type": "search",
+        "name": null,
+        "placeholder": "Search by name, roll, enrollment...",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "doc-upload-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "Document Title (e.g. Transfer Certificate, Marksheet)",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "doc-upload-file",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-stu-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Aarav Sharma",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-stu-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": "1",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-stu-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": "2024IT001",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-stu-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": "24101054001",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-stu-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@college.edu",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-stu-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "9876543210",
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "doc-upload-type",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "ACADEMIC_RECORD",
+            "text": "Academic Record"
+          },
+          {
+            "value": "TRANSFER_CERTIFICATE",
+            "text": "Transfer Certificate (TC)"
+          },
+          {
+            "value": "WITHDRAWAL_FORM",
+            "text": "Withdrawal Form"
+          },
+          {
+            "value": "ADMISSION_PROOF",
+            "text": "Admission Proof"
+          },
+          {
+            "value": "ID_PROOF",
+            "text": "ID Proof / Aadhaar"
+          },
+          {
+            "value": "MEDICAL_CERTIFICATE",
+            "text": "Medical Certificate"
+          },
+          {
+            "value": "OTHER",
+            "text": "Other Document"
+          }
+        ]
+      },
+      {
+        "id": "add-stu-sem",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Sem 1 (Year 1)"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2 (Year 1)"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3 (Year 2)"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4 (Year 2)"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5 (Year 3)"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6 (Year 3)"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "modal-student-details",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "detail-stu-enroll",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-add-student",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-bulk-csv",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/components/delete-modal/delete-modal.js",
+    "faculty/students/students.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "closeDeleteModal",
+    "openDeleteModal",
+    "loadStudentsRoster",
+    "loadPendingStudents",
+    "loadTrashStudents",
+    "loadRegistrationStatus",
+    "renderToggleState",
+    "toggleRegistration",
+    "switchToPendingTab",
+    "switchToTrashTab",
+    "renderTable",
+    "renderTrashTable",
+    "renderPendingTable",
+    "toggleStudentMenu",
+    "closeAllMenus"
+  ]
+}

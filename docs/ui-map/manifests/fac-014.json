@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-014",
+  "role": "Faculty",
+  "route": "/faculty/profile.html",
+  "source_file": "frontend/faculty/profile/index.html",
+  "content_hash": "eeb7fa2da618",
+  "last_scanned": "2026-11-17T16:35:32.261Z",
+  "title": "Faculty Profile — VidyaOS",
+  "purpose": "Faculty profile, qualifications, active devices, password management",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: 2-column profile layout; Mobile: stacked card form",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1:id",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": [
+      {
+        "id": "google-signin-modal",
+        "title": "Link Google Account",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "tab-btn-overview",
+        "label": "Overview",
+        "action": null,
+        "class": "prof-tab active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-edit",
+        "label": "Edit Profile",
+        "action": null,
+        "class": "prof-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-security",
+        "label": "Security",
+        "action": null,
+        "class": "prof-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-google-action",
+        "label": "Re-link",
+        "action": "handleGoogleLinkAction()",
+        "class": "btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-profile",
+        "label": "Save Changes",
+        "action": null,
+        "class": "btn-solid",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-password",
+        "label": "Update Password",
+        "action": null,
+        "class": "btn-solid",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeGoogleCard()",
+        "class": "google-modal-close",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "prof-input-empid",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "mono"
+      },
+      {
+        "id": "prof-input-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "Prof. Amit Verma",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "prof-input-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "faculty@college.edu",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "prof-input-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "+91 98765 43210",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "pass-current",
+        "type": "password",
+        "name": null,
+        "placeholder": "••••••••",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "pass-new",
+        "type": "password",
+        "name": null,
+        "placeholder": "••••••••",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "pass-confirm",
+        "type": "password",
+        "name": null,
+        "placeholder": "••••••••",
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "google-signin-modal",
+      "title": "Link Google Account",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/profile/profile.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "loadProfile",
+    "renderFullProfile",
+    "switchTab",
+    "openProfileGoogleCard",
+    "closeGoogleCard"
+  ]
+}

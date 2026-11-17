@@ -1,0 +1,242 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-011",
+  "role": "Faculty",
+  "route": "/faculty/leave-approvals.html",
+  "source_file": "frontend/faculty/leave-approvals/index.html",
+  "content_hash": "42d7e7461a2c",
+  "last_scanned": "2026-11-17T16:35:32.241Z",
+  "title": "Leave Requests — Faculty Portal",
+  "purpose": "Student medical and duty leave approval workflow",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: side-by-side pending/approved tabs; Mobile: card feed with action buttons",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [
+      {
+        "id": "leave-data-table",
+        "class": "leave-data-table",
+        "headers": [
+          "Student",
+          "Class / Semester",
+          "Type",
+          "From – To",
+          "Days",
+          "Reason",
+          "Status",
+          "Actions"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "leave-rejection-modal",
+        "title": "Reject Leave Application",
+        "field_count": 0
+      },
+      {
+        "id": "rejection-note-input",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "confirm-reject-btn",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "leave-alert-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Pending 3",
+        "action": "filterByStatus(",
+        "class": "leave-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Approved 12",
+        "action": "filterByStatus(",
+        "class": "leave-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Rejected 4",
+        "action": "filterByStatus(",
+        "class": "leave-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "All",
+        "action": "filterByStatus(",
+        "class": "leave-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Filter",
+        "action": "toggleAdvancedFilter()",
+        "class": "leave-filter-action-btn",
+        "data_ui": null,
+        "title": "Filter options"
+      },
+      {
+        "id": "page-prev-btn",
+        "label": "‹",
+        "action": "prevPage()",
+        "class": "leave-page-nav-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "page-num-btn",
+        "label": "1",
+        "action": null,
+        "class": "leave-page-num-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "page-next-btn",
+        "label": "›",
+        "action": "nextPage()",
+        "class": "leave-page-nav-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeRejectModal()",
+        "class": "leave-modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeRejectModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "confirm-reject-btn",
+        "label": "Confirm Rejection",
+        "action": "confirmReject()",
+        "class": "btn btn-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "leave-alert-ok-btn",
+        "label": "OK",
+        "action": "closeLeaveAlert(true)",
+        "class": "btn btn-primary leave-alert-btn",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "leave-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by student name, roll no...",
+        "handler": "handleSearch(this.value)",
+        "class": "leave-search-input"
+      },
+      {
+        "id": "leave-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleSelectAll(this)",
+        "class": null
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "leave-rejection-modal",
+      "title": "Reject Leave Application",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "rejection-note-input",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "confirm-reject-btn",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeRejectModal()"
+    },
+    {
+      "id": "leave-alert-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/leave-approvals/leave-approvals.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "loadLeaves",
+    "renderTableRows"
+  ]
+}

@@ -38,52 +38,162 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 436: Remake Students Page to Compact Minimal Layout with 3-Dot Actions & 30-Day Trash Bin
+### ✅ Milestone 443: Styled Dialog Box Engine, Desktop Single-Line Date Formatting & Row Slimming
+- **Styled Dialog Box Engine (`#leave-alert-modal`)**:
+  - Completely eliminated all raw browser `alert()` and `confirm()` popups.
+  - Created a responsive, accessible dialog modal matching VidyaOS design tokens:
+    - Soft circular halo badge for `success`, `error`, `warning`, and `info` status variants.
+    - Title, message, and flexible action buttons (`Confirm`, `Cancel`, `Dismiss`, `OK`).
+    - Asynchronous Promise-based helper: `window.showLeaveAlert({ title, message, type, confirmText, cancelText })`.
+    - Integrated ESC key and backdrop click listeners for dismissal.
+    - Integrated confirmation prompt before approving leave and elegant error/success feedback.
+- **Desktop Single-Line Date Formatting & Row Slimming ("Reduce Line Without Loss of UI Design")**:
+  - Condensed desktop date range (`FROM - TO`) to a clean single line: `15 Nov 2026 – 17 Nov 2026` via `.date-range-wrap` (`display: inline-flex; align-items: center; white-space: nowrap; gap: 0.35rem;`).
+  - Hid duplicate `.date-days-pill` on desktop (`display: none;`), eliminating redundant vertical 3-line stacking right next to the dedicated `DAYS` column.
+  - Preserved mobile card view behavior: `.date-days-pill` remains visible (`display: inline-flex !important;`) inside the mobile duration callout banner where the separate days column is hidden.
+  - Slimmed table vertical padding (`padding: 0.65rem 0.9rem`), student avatar (32px), and tight line-heights, reducing table row height by 50% while maintaining aesthetic balance.
+- **Backend Adjudication & Database Parity**:
+  - Synchronized `updateDecision()` in `leaveModel.js` across both backend trees (`VidyaOS_BackEnd-main` and `Attendance-System-Simplified/backend`).
+  - Added schema columns `review_note`, `leave_type`, and `updated_at` to MySQL tables across both `vdiyaos` and `college_attendance` databases.
+  - Re-seeded 19 leave application test records to ensure parity.
+- **Automated Verification Suite**:
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% manifest and DOM parity).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% theme tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
 
-- **Compact Minimal Column Structure**:
-  - **Desktop (PC)**: displays only 4 essential columns: `Roll #`, `Enrollment`, `Student Name`, and `Actions` (suppressed secondary columns `UBTER Reg. #`, `Cohort`, and `Attendance` into the detailed dossier modal).
-  - **Mobile (Screens <= 768px)**: displays only 3 columns: `Roll #`, `Student Name` (with subtitle enrollment / retention tag), and `Actions` with zero horizontal overflow.
-  - Fixed double plus icon on `+ Add Student` button.
-- **3-Dot (Kebab) Dropdown Action Menu**:
-  - Integrated smart `.btn-kebab` 3-dot action menu with automatic **Drop-Up Flipping** when bottom screen clearance is under 175px.
-  - Actions include: `👁 View Details` (comprehensive Student Dossier Modal), `🔑 Reset Password`, and `🗑 Remove Student`.
-- **Student Dossier Details Modal (`#modal-student-details`)**:
-  - Full student profile view: Avatar initials, Full Name, Class Roll #, Year & Semester Cohort, Official Enrollment #, UBTER Reg #, Attendance standing, Department, Email, and Phone.
-  - Actionable direct buttons: Close, Reset Password, Remove Student.
-- **30-Day Trash Bin & Safe Student Recovery System**:
-  - **Backend Endpoints**:
-    - `GET /api/v1/hod/trash/students`: department-scoped retrieval of soft-deleted students with 30-day auto-purge query (`deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`).
-    - `POST /api/v1/hod/trash/students/:id/restore`: safely restores student account and enrollments (`deleted_at = NULL`, `status = 'ACTIVE'`).
-  - **Frontend UI**:
-    - Quick Access **Trash Bin button** in the page action title row with real-time count badge.
-    - Native **Trash filter pill** (`[Trash (X)]`) with trash icon and count badge.
-    - Dedicated Trash table view showing student info, days remaining before purge (`X days left`), and prominent `↺ Restore` button.
-    - Componentized type-to-confirm modal: integrated `/faculty/components/delete-modal/` requiring user to type `"remove"` before moving to Trash Bin.
-- **Theme & Architecture Compliance**:
-  - 100% Theme Token compliant (zero raw `#hex` or `rgb()` color values in stylesheets).
-  - Verified with `test-theme-support.js` (88/88 tests passing).
+### ✅ Milestone 442: Academic Dossier Assignment Ledger Streamlining & In-Browser Document Previewer
+- **Coursework & Assignment Ledger Column Redesign**:
+  - Replaced legacy 10-column table (`#`, `Semester`, `Subject Code`, `Subject Name`, `Assignment Title`, `Max Marks`, `Marks Scored`, `Score %`, `Status`, `Submission Date`) with exactly 7 streamlined columns:
+    1. `S.NO`: Serial numbering (`1`, `2`, `3`...).
+    2. `Semester`: e.g. `Sem 5`.
+    3. `Subject Short Name`: `DBMS`, `OS`, `CN`, `WT`, etc. (dynamically joined via `teaching_groups.subject_short_name`).
+    4. `Assignment NO.`: Parsed `Assignment X` title with topic subtitle tooltip.
+    5. `Marks (9/9)`: Formatted as `${marks_obtained} / ${max_marks}` (e.g. `23 / 25`, `AB / 20`, `-- / 25`).
+    6. `Submission Date`: Formatted locale date or `--`.
+    7. `Document`: Integrated action cell with interactive **View** button (`.btn-rec-table-view`).
+- **Dead UI & Redundant Section Purge**:
+  - Completely purged `.rec-uploads-container` ("Student Assignment Uploads & Submitted Digital Files") from `#section-studio-assignments`, eliminating duplicate UI since submission files and preview buttons are now unified directly within each assignment row.
+  - Removed `Student Profile` checkbox (`#export-inc-profile`) from the `Include in Dossier:` footer options, as student profile/bio-data is now exported exclusively via the dedicated profile card export engine.
+- **In-Browser Document Preview Modal (`#modal-document-preview`)**:
+  - Created a responsive in-browser preview modal embedding documents without downloading:
+    - PDFs rendered via embedded `<iframe src="...">` with toolbar disabled.
+    - Images rendered via contained `<img src="..." />` with responsive aspect ratio.
+    - Added global handlers `window.previewDossierDocument(url, title)` and `window.closeDocumentPreview()`.
+    - Integrated multi-tiered ESC key listener closing the document preview first or the dossier modal.
+- **Backend Model & Multi-Format Export Parity**:
+  - Updated `StudentRecordModel.getStudentFullDossier()` to join `teaching_groups tg ON a.group_id = tg.id`, selecting `tg.subject_short_name`, `sub.file_path`, and `sub.original_filename`.
+  - Updated Excel (`exportSingleStudentExcel`), Word (`exportSingleStudentDoc`), and PDF (`exportSingleStudentPdf`) export builders to match the new 7-column layout and respect profile exclusion.
+- **Verification & Parity Enforcement**:
+  - `test-dossier-refactor.js`: 7/7 Passed.
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% DOM parity, action buttons, modals, and content hashes).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
 
-### ✅ Milestone 435: Mobile Viewport Horizontal Fit Optimization & 30-Day Trash Recovery Engine for Faculty Management
+### ✅ Milestone 441: Realistic Multi-Component Seeding & Classroom Component-Based Feature Visibility Governance
+- **Realistic Test Data Populated in MySQL (`vdiyaos`)**:
+  - Populated 6 distinct teaching groups across all component types:
+    - Group 1: `Database Management Systems [IT501]` (`THEORY + PRACTICAL`)
+    - Group 2: `Operating Systems [IT502]` (`THEORY`)
+    - Group 3: `Computer Networks [IT503]` (`THEORY`)
+    - Group 4: `Web Technology & Full Stack [IT504]` (`THEORY + PRACTICAL`)
+    - Group 5: `Linux Administration & Shell Scripting Lab [IT505P]` (`PRACTICAL`)
+    - Group 6: `Database Management Systems Lab [IT501P]` (`PRACTICAL`)
+  - Enrolled all 20 IT students into each teaching group.
+  - Seeded 27 total assessments (5 assignments, 12 exams/tests, 9 practical labs, 1 final docs request).
+  - Populated 350 graded student submissions with realistic marks and status across all student cohorts.
+- **Strict Classroom Component-Based Feature Visibility Governance**:
+  - **THEORY-Only Classrooms**:
+    - Completely hides Practical filter pill (`#cwcat-practicals`), Practical Create dropdown item (`#cw-dd-practical-item`), Mobile FAB Practical item (`#cw-fab-practical-item`), Marks Practical filter (`#btn-marks-cat-practicals`), Marks Create Practical item (`#marks-dd-practical-item`), and Practical Marks section (`#marks-practicals-section`).
+    - Sheet Studio dropdown strictly shows only Theory sheets: `1. Master Evaluation Sheet`, `2. Class Test Marksheet`, `3. Assignment Marksheet` (omits Practical sheet; redirects if user arrives via `?sheet=practicals`).
+    - Class card strictly displays `Theory Classes` tile and omits `Laboratory` tile.
+  - **PRACTICAL-Only Classrooms**:
+    - Completely hides Theory Assignment & Test filter pills (`#cwcat-assignments`, `#cwcat-tests`), Create menu items (`#cw-dd-assignment-item`, `#cw-dd-test-item`), Mobile FAB items (`#cw-fab-assignment-item`, `#cw-fab-test-item`), Stream quick actions, Marks Category filters (`#btn-marks-cat-tests`, `#btn-marks-cat-assignments`), and Marks sections (`#marks-tests-section`, `#marks-assignments-section`).
+    - Sheet Studio dropdown strictly shows only Practical sheets: `1. Continuous Lab Evaluation Sheet`, `2. Practical & Lab Work Marksheet` (omits Test & Assignment sheets; redirects if user arrives via `?sheet=tests` or `?sheet=assignments`).
+    - Class card strictly displays `Laboratory` tile and omits `Theory Classes` tile.
+  - **Combined (`THEORY + PRACTICAL` / `THEORY_PRACTICAL`) Classrooms**:
+    - Seamlessly displays both Theory (Assignments, Class Tests) and Practical (Lab experiments, journals) tabs, menus, action tiles, and all 4 spreadsheet marksheet modes in Sheet Studio.
+- **Create Class Modal Cleanup**:
+  - Re-organized the form into a clean 2-column balanced grid layout:
+    - Row 1: `Subject Name *` (Full-width)
+    - Row 2: `Subject Short Name` | `Subject Code` (2 columns)
+    - Row 3: `Components *` | `Academic Session` (2 columns)
+    - Row 4: `Semester` | `Year (Auto-Derived)` (2 columns)
+  - Completely removed redundant `Room / Batch Code` field.
+- **Automated Verification**:
+  - `verify_classroom_component_logic.js`: 16/16 Passed (DB seed, component scope helper, DOM visibility simulation for Theory, Practical, and Both, modal field schema).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% theme tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
 
-- **Zero-Overflow Mobile Viewport Optimization (`faculty.css`, `index.html`)**:
-  - Eliminated horizontal grid blowouts on mobile viewports (<= 768px, tested on 360px-412px) by converting rigid column tracks to `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);`.
-  - Added strict `min-width: 0`, `overflow: hidden`, and text truncation ellipsis to `.fac-kpi-card`, `.fac-kpi-meta`, `.fac-toggle-card`, and `.fac-member-cell`.
-  - Fixed double plus icon issue on "+ + Add Faculty" button by decoupling SVG icon from inner button text.
-  - Responsive column suppression for mobile screens: hides `Employee ID`, `Role`, and `Retention Period` columns while keeping full member details accessible via View Details modal.
+### ✅ Milestone 440: Sheet Studio Audit, Bug Fixes (Assignments & Practicals Persistence), Dead Code Purge & Navigation Repair
+- **Critical Bug Fixes (Zero Data Loss)**:
+  - **Assignment Marksheet Persistence**: Fixed bug where typing scores in `input[data-type="assign-standalone"]` only updated DOM without saving to model. Added `S.assignmentScores` state, cached restoration in `loadAssignmentsSheetData()`, automated row recalculation, and `persistAssignmentsLocal()` invoked on input and on "Save" toggle.
+  - **Practicals Marksheet Mock Elimination**: Removed hardcoded mock formula `max - ((idx * 2 + pIdx) % 4)`. Added `S.practicalScores` state, cached restoration in `loadPracticalsSheetData()`, and updated `persistPracticalsLocal()` to preserve student practical marks alongside column schemas.
+  - **Safe Division & NaN Elimination**: Added `safeDiv(num, den, fallback)` helper across `updateEvalClassAverages()`, `updateAssignmentClassAverages()`, `updatePracticalClassAverages()`, and `recalculateEvalRowItem()` preventing `NaN` and `Infinity%` when rosters or possible marks are zero.
+  - **URL Parameter Normalization**: Standardized `initSheetsStudio()` to parse both camelCase and snake_case parameters (`groupId`, `group_id`, `id`, `registerId`, `register_id`, `register`), preventing fallback to wrong register data.
+- **Dead Code & Legacy UI Purged (Over 450 Lines)**:
+  - **Attendance Matrix Ledger Purged**: Completely removed dead `#pane-attendance`, `loadAttendanceSheetData()`, `renderAttendanceSheetTable()`, hardcoded 10-student mock arrays, and month picker handlers. Attendance is now permanently centralized in Registers and Student Records.
+  - **Hidden Legacy Tabs & Badges Removed**: Removed `#legacy-sheet-tabs-container` (5 hidden button tags), `.bar-tools-badge`, hidden duplicate column filter dropdown `#col-filter-dropdown-menu`, and hidden status bar `#sheets-bottom-status-bar`.
+  - **Legacy Stubs Removed**: Purged orphaned `toggleAndroidProfileDrawer` and `updateDrawerThemeLabel` stubs.
+- **Navigation & Inter-Page Link Repair**:
+  - **Bar 1 Back Button**: Replaced hardcoded dead links to `/faculty/group-detail.html` with intelligent `navigateBackFromSheets()` that returns to originating register or class.
+  - **Registers Studio Link**: Implemented `openInternalEvaluationStudio()` in `registers.html` linking directly to `/faculty/sheets/index.html?registerId=${regId}&groupId=${grpId}`.
+  - **Test Scheduler Empty State**: Replaced obsolete `/faculty/group-detail.html` link with `/faculty/registers.html?id=${regId}&tab=marks`.
+- **UI Clarification**:
+  - Differentiated the two student modals: "Edit Student Info" (identity metadata & row removal) vs "Edit Scores Form" (vertical score entry on mobile).
 
-- **30-Day Trash Bin & Recovery Architecture**:
-  - **Backend Endpoints**:
-    - `GET /api/v1/hod/trash/faculty`: department-scoped retrieval of soft-deleted faculty with automatic 30-day purge query (`deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`).
-    - `POST /api/v1/hod/trash/faculty/:id/restore`: safely restores soft-deleted faculty (`deleted_at = NULL`, `status = 'ACTIVE'`) preserving teaching records and user credentials.
-  - **Frontend UI & Actions**:
-    - Quick Access **Trash Bin button** in the page header with live badge counter.
-    - Dedicated **Trash filter pill** (`[Trash (X)]`) with trash icon and real-time count.
-    - Dedicated Trash Roster view displaying member details, days remaining until auto-purge (e.g. `29 days left`), and prominent `↺ Restore` action button.
-    - Soft-delete confirmation via `window.openDeleteModal` requiring explicit confirmation text typing (`remove`).
+### ✅ Milestone 438: Academic Dossier Modal Refinement & Dedicated Student Personal Details Export Engine
 
-- **Theme & Verification**:
-  - 100% Theme Token compliant (zero raw `#hex` or `rgb()` color values in stylesheets).
-  - Verified with `node scripts/test-theme-support.js` (88/88 tests passing).
+- **Dedicated Export Button for Student Personal Details (Bio-Data)**:
+  - Added dedicated header on the Student Personal Profile card (`.rec-profile-card-header`) with a styled **`Export Personal Details`** button and dropdown menu in `/faculty/student-records/index.html`.
+  - Independent export triggers for:
+    - **Bio-Data Sheet (PDF)**: Printable institutional bio-data sheet with verification stamp and signatures (Student, Faculty In-Charge, HOD Seal).
+    - **Demographics Spreadsheet (.xlsx)**: Clean formatted Excel workbook with 19 personal KYC profile fields.
+    - **Bio-Data Document (.doc)**: Word document with full demographics table and signature lines.
+  - Added quick **Export Personal Details (Bio-Data)** directly inside the 3-dot kebab action menu on the main student list table, allowing 1-click personal profile exports without opening the modal.
+- **Academic Dossier Modal Upgrades**:
+  - Fixed subtitle text bullet entity bug: replaced literal `&bull;` with Unicode bullet `•` (`Roll #... • Enrollment: ... • Batch: ...`).
+  - Added dedicated **`Coursework & Assignments`** tab with live badge count alongside `Tests & Exams`, `Attendance Matrix`, and `Official Documents`.
+  - Added intelligent assessment classifier separating tests/exams from assignments/coursework/lab projects.
+  - **Selective Data Section Inclusion**: Added checkboxes in modal footer allowing faculty to choose exactly what to export:
+    - `[x] Student Profile Details`
+    - `[x] Tests & Exams`
+    - `[x] Coursework & Assignments`
+    - `[x] Attendance Matrix`
+    - `[x] Official Documents`
+  - Selective semester filtering applies across all exported sections (only checked semesters are included).
+  - Multi-format support: PDF, Word (.doc), and Excel (.xlsx) generated with only the selected sections.
+- **Verification & Theme Integrity**:
+  - 100% Theme Token compliant (0 hardcoded colors, verified with `test-theme-support.js` - 88/88 passed).
+  - Responsive on mobile (<= 412px viewports) with full dropdown menu containment and zero horizontal overflow.
+  - Synced across `VidyaOS` and `Attendance-System-Simplified`.
+  - Committed and pushed to `onebotyt/Vidya.git` (commit `7be5b0a`).
+
+### ✅ Milestone 435: Student Transfer & Withdrawal Workflow with Zero Data Loss and Permanent Document Access
+
+- **Student 3-Dot (Kebab) Dropdown Action Menu Upgrades**:
+  - Added dedicated **Transfer Student** (`⇄ Transfer Student`) and **Withdraw Student** (`⊘ Withdraw Student`) options to the actions menu in `/faculty/students/index.html`.
+  - Added **Re-Activate Enrollment** (`↺ Re-Activate`) action for inactive students (transferred/withdrawn) to seamlessly restore them back into active cohort enrollment.
+- **Explicit Type-to-Confirm Confirmation Dialog Boxes**:
+  - **Transfer Confirmation**: Integrated with `window.openDeleteModal`, requiring the user to explicitly type `transfer` to unlock the action. Explanatory message informs the user that student data is NOT deleted, but placed in inactive status.
+  - **Withdraw Confirmation**: Integrated with `window.openDeleteModal`, requiring the user to explicitly type `withdraw` to unlock the action. Explanatory message informs the user that academic history, exam marks, and uploaded documents remain permanently accessible.
+- **Zero Data Loss & Inactive State Governance**:
+  - Transferred and withdrawn students are NEVER deleted or purged from the database.
+  - `enrollments.status` is updated to `'TRANSFERRED'` or `'WITHDRAWN'`.
+  - Student user credentials are suspended (`users.status = 'SUSPENDED'`) and live sessions cleared to prevent active attendance taking.
+  - Backend endpoints implemented: `POST /api/v1/hod/students/:id/transfer`, `POST /api/v1/hod/students/:id/withdraw`, `POST /api/v1/hod/students/:id/reactivate`.
+- **Permanent Teacher Access to Student Documents & Records**:
+  - Added **`Inactive`** filter pill on `/faculty/students/index.html` displaying live counts of all transferred and withdrawn students.
+  - Created `student_documents` table in MySQL (`id`, `student_id`, `department_id`, `title`, `document_type`, `file_path`, `file_name`, `file_size`, `uploaded_by`, `uploader_name`, `notes`, `created_at`) with migration `010_add_student_documents_table.sql`.
+  - In View Details Modal (`#modal-student-details`), integrated an **Academic Records & Documents** dossier displaying:
+    - Uploaded official certificates (Transfer Certificates, Withdrawal Slips, Admission Proofs, Medicals, ID Proofs).
+    - Academic assessment submissions with grades and filenames.
+    - Leave application records and approvals.
+    - An inline document upload tool allowing teachers and faculty to upload and attach documents to any student record at any time.
+  - Added REST endpoints: `GET /api/v1/hod/students/:id/documents`, `POST /api/v1/hod/students/:id/documents` (with `multer`), `DELETE /api/v1/hod/students/:id/documents/:docId`.
+- **Verification & Theme Token Compliance**:
+  - 100% Theme Token compliant (0 hardcoded hex colors, strict use of CSS variables from `variables.css`).
+  - Automated API verification passed (Login, Transfer, Status Check, Documents Retrieval, Withdraw, Reactivate).
+  - All regression tests passing (88/88 theme tokens).
 
 ### ✅ Milestone 434: Decouple Faculty and Students Pages into Clean Compact UI/UX with 58% Code Reduction
 
@@ -9963,6 +10073,105 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `node backend/scripts/test-theme-support.js`: **93/93 PASS**.
      - `node backend/scripts/test-rbac-and-structure.js`: **30/30 PASS**.
      - `node backend/scripts/test-api-flows.js`: **25/25 PASS**.
+
+### ✅ Milestone 198: Sheets Studio Initialization, Assessment Schema Migration & Viewport Layout Recovery
+- **User Requirement**: Resolve Sheets Studio (`faculty/sheets/index.html?sheet=evaluation&id=1`) loading crash:
+  1. `Failed to load resource: /api/v1/teaching-groups/1/assignments -> 500 (Internal Server Error)`
+  2. `Fatal initialization error in Sheets Studio: ReferenceError: renderColumnFilterMenu is not defined`
+  3. `Failed to load resource: /api/v1/teaching-groups/1/tests -> 500 (Internal Server Error)`
+  4. Attached screenshot showing `0 0` bare numbers and blank white spreadsheet body.
+- **Root Cause & Diagnosis**:
+  1. **MySQL 8.x Schema Gap in `assessments`**:
+     - `teachingGroupModel.getGroupAssignments` and `getGroupTests` queried `a.questions`, `a.instructions`, and `a.unit_name`.
+     - In MySQL, the `assessments` table was missing these columns, causing `ER_BAD_FIELD_ERROR (1054)` and HTTP 500.
+  2. **Orphaned `renderColumnFilterMenu()` Call**:
+     - Line 161 in `sheets.js` called `renderColumnFilterMenu()`, which was removed when the legacy dropdown was purged in favor of the Flipkart-style 2-pane filter modal.
+     - Caused `initSheetsStudio()` to throw `ReferenceError` and abort before completing sheet data loading.
+  3. **Broken DOM / Stray Closing `</div>` & Bare Spans**:
+     - In `index.html` lines 167-170, remnants `<div id="subtoolbar-right-content"></div><span id="badge-tests-count">0</span><span id="badge-assignments-count">0</span></div>` existed.
+     - The extra unclosed `</div>` prematurely closed `<main class="sheets-studio-layout">`, causing `0 0` to print directly on screen and kicking `#sheets-viewport` outside the flex container, breaking layout.
+- **Key Fixes & Implemented Changes**:
+  1. **Database Schema Healing**:
+     - Added `questions` (`LONGTEXT NULL`), `instructions` (`LONGTEXT NULL`), and `unit_name` (`VARCHAR(150) NULL`) to `assessments` table across MySQL databases.
+     - Verified `getGroupAssignments(1)` (9 assignments) and `getGroupTests(1)` (6 tests) return HTTP 200 OK.
+  2. **Purged `renderColumnFilterMenu()`**:
+     - Removed line 161 in `faculty/sheets/sheets.js` across `VidyaOS` and `Attendance-System-Simplified`.
+  3. **Cleaned `index.html` DOM**:
+     - Removed orphaned `subtoolbar-right-content`, `badge-tests-count`, `badge-assignments-count`, and stray `</div>` from `faculty/sheets/index.html`.
+     - Cleanly nested `studio-bar-3`, `sheet-institutional-banner`, and `sheets-viewport-wrap` as direct flex children of `<main class="sheets-studio-layout">`.
+  4. **Automated Verification**:
+     - `GET /api/v1/teaching-groups/1/assignments`: **200 OK**
+     - `GET /api/v1/teaching-groups/1/tests`: **200 OK**
+     - `GET /api/v1/faculty/registers/1/internal-evaluation`: **200 OK**
+     - `node backend/scripts/test-theme-support.js`: **88/88 PASS**
+     - `node backend/scripts/test-rbac-and-structure.js`: **38/38 PASS**
+     - `node backend/scripts/test-api-flows.js`: **25/25 PASS**
+     - `node backend/scripts/test-student-self-registration.js`: **30/30 PASS**
+     - `node backend/scripts/test-register-consolidation.js`: **46/46 PASS**
+     - `node backend/scripts/test-roll-call-upgrade.js`: **PASS**
+     - `node backend/scripts/test-live-log-checkin.js`: **PASS**
+
+### ✅ Milestone 199: Automated UI Manifest Architecture (UIMS) & Continuous Synchronization Governance
+- **User Requirement**: *"Paradigm B: Static Code-Extracted JSON Manifest (The "OpenAPI for UI") ok look good but set rules this also need update when we update or make changes in ui"*
+- **Key Architectural & Code Changes**:
+  1. **Automated Static Code Extractor (`backend/scripts/extract-ui-manifest.js`)**:
+     - Built a high-speed, zero-dependency Node.js scanner that parses HTML DOM and companion JavaScript AST across all portal pages in <2 seconds.
+     - Maps Page ID, route, role scope, command bars/toolbars, tables, viewports, and URL search parameters.
+     - Catalogs every interactive `<button>` (ID, class, onclick action, title), `<input>`, and `<select>` dropdown.
+     - Documents every modal container (`.modal`, `.studio-modal-backdrop`, `[role="dialog"]`) with its title, input fields, and submission action.
+     - Traces every backend API contract (`apiFetch`, `fetch`, `axios`) with exact HTTP method and normalized endpoint (`:id`).
+     - Generated 30 page manifests under `docs/ui-map/manifests/<page-id>.json` and a master index `docs/ui-map/manifests/manifest-index.json`.
+     - Initial scan cataloged **598 Action Buttons**, **178 Modals & Forms**, **352 Input & Select Controls**, and **167 Backend API Contracts**.
+  2. **Automated Synchronization Test Suite (`backend/scripts/test-ui-manifest-sync.js`)**:
+     - Enforces strict parity between source code and manifests across **195/195 automated checks**.
+     - Computes SHA256 content hashes of each HTML file and compares with manifest `content_hash`.
+     - Validates that every button and modal ID in the manifest physically exists in the source HTML.
+     - Fails in CI / local test runner if any UI file is edited without re-generating manifests.
+  3. **Strict Governance Rules Established**:
+     - Updated `.agents/rules/ui-memory-map.md`: Mandates reading `docs/ui-map/manifests/<page-id>.json` first before designing or editing UI, and running `npm run ui:scan` + `npm run ui:verify` upon any UI edit.
+     - Updated `AGENTS.md`: Added Invariant 7 (UI Manifest Synchronization) and added `test-ui-manifest-sync.js` to the core regression test suite.
+     - Added npm commands `"ui:scan"` and `"ui:verify"` to `package.json`.
+
+### ✅ Milestone 200: Academic Session Nomenclature Overhaul, Sheet Studio Self-Healing Registers & Academic Dossier Clean-up
+- **Date**: November 17, 2026
+- **Scope & Objectives**:
+  1. **Academic Session Nomenclature Transformation**: Changed legacy semester terminology from "Odd" / "Even" to standard collegiate sessions: "Winter Session" (July - Dec) and "Summer Session" (Jan - June). Dynamically populated across `sessionService.js`, MySQL `academic_years`, controller fallbacks, and all internal evaluation banners.
+  2. **Automated Dynamic Session Fetching in Sheet Studio**: Added `getDynamicSessionHeader()` to dynamically inject the active academic session (e.g., `2026-27 (Winter Session)`) in the institutional banner rather than hardcoded `2026 Session`. Implemented automated sanitizer for legacy cached strings in `localStorage`.
+  3. **Classroom Embedded Sheets Tab Removal**: Purged duplicate `#tab-btn-sheets`, `#tab-sheets` markup, and script references from `faculty/group-detail/index.html` and `group-detail-core.js`, ensuring all spreadsheet access routes exclusively through the dedicated Sheet Studio (`/faculty/sheets.html`).
+  4. **Self-Healing Attendance Register Auto-Provisioning**: Resolved missing register bug where Teaching Groups 4, 5, 6, etc. caused 0-student roster views in Sheet Studio. Implemented atomic auto-provisioning in `teachingGroupModel.getById()` and backfilled registers across `vdiyaos` and `college_attendance`.
+  5. **Academic Dossier Modal Precision Formatting**: Refined table column schema to exact specification (`S.NO`, `Semester`, `Subject short name`, `Assignment NO.`, `Marks (9/9)`, `Submission Date`, and in-line modal `Document View`). Removed `Student Profile` from export dossier choices and ensured non-assignment document segregation.
+  6. **Purged Dead Code & Manifest Verification**: Removed unused `renderSheetSubToolbar()` (75 lines) from `sheets.js`. Re-ran automated UI manifest extraction (`npm run ui:scan`) and validated 100% parity across 195/195 tests (`npm run ui:verify`). Verified theme token compliance (88/88 tests) and RBAC security gates (38/38 tests).
+
+### ✅ Milestone 201: Leave Approvals Resolution, Mobile Compact Redesign & Database Normalization
+- **Date**: November 17, 2026
+- **Scope & Objectives**:
+  1. **500 Internal Server Error & Database Schema Normalization**:
+     - Diagnosed and resolved backend 500 error on `GET /api/v1/leave` (`Unknown column 'la.leave_type' in 'SELECT'`).
+     - Added column `leave_type VARCHAR(50) NOT NULL DEFAULT 'Medical'` to `leave_applications` table across both MySQL databases (`vdiyaos` and `college_attendance`).
+     - Normalized query columns in `backend/src/models/leaveModel.js` across both workspaces to `la.start_date as from_date`, `la.end_date as to_date`, and `COALESCE(la.leave_type, 'Medical') as leave_type`.
+     - Seeded valid date ranges (`2026-11-15` to `2026-11-17`) for seed rows with `0000-00-00` timestamps.
+     - Verified `GET /api/v1/leave` returns 200 OK with correct status counts (19 requests: 3 pending, 12 approved, 4 rejected).
+  2. **Hero Banner Removal (`faculty/leave-approvals/index.html`)**:
+     - Purged `<section class="leave-hero-banner">` containing oversized "LEAVE MANAGEMENT / Leave Requests" badge, heading, SVG illustration graphic, and large floating department card.
+     - Implemented sleek, compact header bar (`.leave-compact-header`) with `.leave-title`, `.leave-subtitle`, and `.leave-dept-pill` (`id="leave-dept-name"`, `id="leave-dept-meta"`), preserving all script bindings with minimal vertical footprint.
+  3. **Mobile-First Compact UI Redesign (`leave-approvals.css` & `leave-approvals.js`)**:
+     - Created `@media (max-width: 768px)` table-to-card transformation: table headers hide cleanly, rows convert into stacked card elements with student metadata, status badge pinned top-right, date pill, styled reason callout box, and full-width thumb-friendly "Approve" (green) and "Reject" (red) buttons.
+     - Eliminated horizontal table overflow on mobile viewports.
+     - Added smooth horizontal scroll pills for filter status tabs (`.leave-tabs-cluster`) and full-width compact search input.
+     - Updated `formatDisplayDate()` and `calculateDays()` in `leave-approvals.js` to handle invalid/zero dates and both `from_date`/`start_date` and `to_date`/`end_date`.
+  4. **Strict Verification & Parity**:
+     - Verified 100% parity across **195/195 UI manifest tests** (`npm run ui:verify`).
+     - Verified **88/88 theme token tests** (zero hardcoded `#hex` or `rgb()` color values in leave-approvals stylesheets).
+     - Verified **38/38 RBAC & route guard tests**.
+
+### ✅ Milestone 202: Mobile Screen Zero-Overflow & Zero-Collision Layout Refinement
+- **Date**: November 17, 2026
+- **Scope & Objectives**:
+  1. **Zero Badge/Name Overlap**: Fixed mobile card header collision where `.td-status` was stretched to 100% width by table cell rules. Explicitly scoped `td.td-status` to `width: auto !important; max-width: 6.2rem !important; position: absolute !important; right: 0.85rem !important; top: 0.85rem !important;` and enforced `padding-right: 6.8rem !important` on `td.td-student`, guaranteeing student avatar and name are completely unobstructed.
+  2. **Eliminated Stray Days Number**: Hidden duplicate `<td class="td-days">` on mobile screens (`display: none !important`) and renamed inner inline span to `.date-days-pill`, removing the isolated centered number `3` and displaying clean duration badges (`3 Days`) within the date container.
+  3. **4-Column Segmented Tab Grid (Zero Horizontal Overflow)**: Replaced horizontally scrolling `.leave-tabs-cluster` with a responsive 4-column CSS grid (`grid-template-columns: repeat(4, 1fr)`). All 4 tabs (`Pending 3`, `Approved 12`, `Rejected 4`, `All`) fit on screen without cutoffs or horizontal scrolling on all phone viewports (320px–428px).
+  4. **Consolidated Mobile Media Queries**: Removed fragmented `@media` queries throughout `leave-approvals.css` and unified all mobile responsive rules into Section 8.
+  5. **Verification & Regression Suites**: Verified 100% passing across **88/88 theme token tests** (zero hex colors) and **195/195 UI manifest tests** (`npm run ui:verify`).
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.

@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-006",
+  "role": "Student",
+  "route": "/student/timetable.html",
+  "source_file": "frontend/student/timetable/index.html",
+  "content_hash": "c72e486f5291",
+  "last_scanned": "2026-11-17T16:35:32.293Z",
+  "title": "Academic Timetable (PDF) — Student Portal",
+  "purpose": "Weekly class timetable, classroom locations, faculty names",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: 6-day timetable grid; Mobile: single-day view with horizontal day tabs",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      }
+    ],
+    "tables": [],
+    "modals": [
+      {
+        "id": "tt-preview-modal",
+        "title": "Timetable Preview",
+        "field_count": 0
+      },
+      {
+        "id": "tt-modal-iframe",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "My Year Timetable",
+        "action": "switchYearFilter(",
+        "class": "tt-year-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "All Department Timetables",
+        "action": "switchYearFilter(",
+        "class": "tt-year-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "1st Year",
+        "action": "switchYearFilter(1)",
+        "class": "tt-year-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "2nd Year",
+        "action": "switchYearFilter(2)",
+        "class": "tt-year-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "3rd Year",
+        "action": "switchYearFilter(3)",
+        "class": "tt-year-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Close",
+        "action": "closePreviewModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "tt-preview-modal",
+      "title": "Timetable Preview",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "tt-modal-iframe",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/timetable/timetable.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadStudentProfile",
+    "loadPdfTimetables",
+    "switchYearFilter",
+    "renderTimetables",
+    "openPreviewModal",
+    "closePreviewModal"
+  ]
+}

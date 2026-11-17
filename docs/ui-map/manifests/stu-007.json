@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-007",
+  "role": "Student",
+  "route": "/student/leave.html",
+  "source_file": "frontend/student/leave/index.html",
+  "content_hash": "a808ae715df7",
+  "last_scanned": "2026-11-17T16:35:32.297Z",
+  "title": "Leave Applications — Student Portal",
+  "purpose": "Apply for medical / duty leave, track application approval",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: side-by-side apply form + history table; Mobile: apply modal + history cards",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      }
+    ],
+    "tables": [],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Medical / Sick Leave",
+        "action": "setLeaveReason(",
+        "class": "reason-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Family Function",
+        "action": "setLeaveReason(",
+        "class": "reason-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Official Event",
+        "action": "setLeaveReason(",
+        "class": "reason-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Personal Work",
+        "action": "setLeaveReason(",
+        "class": "reason-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Submit Leave Application",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "f-from",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "updateLeaveDuration()",
+        "class": "form-control"
+      },
+      {
+        "id": "f-to",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "updateLeaveDuration()",
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/leave/leave.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadLeaves"
+  ]
+}

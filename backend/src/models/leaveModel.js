@@ -70,6 +70,8 @@ class LeaveModel {
 
     return await query(
       `SELECT la.*,
+              la.start_date as from_date,
+              la.end_date as to_date,
               COALESCE(la.leave_type, 'Medical') as leave_type,
               s.official_enrollment_no,
               s.full_name as student_name,
@@ -99,11 +101,12 @@ class LeaveModel {
    * @returns {Promise<boolean>} True if record was updated
    */
   async updateDecision({ id, decision, reviewNote, reviewedBy }) {
+    const note = reviewNote || null;
     const result = await query(
       `UPDATE leave_applications
-       SET status = ?, review_note = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+       SET status = ?, review_note = ?, review_notes = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
-      [decision, reviewNote || null, reviewedBy, id]
+      [decision, note, note, reviewedBy, id]
     );
     return result.affectedRows > 0 || result.changes > 0;
   }

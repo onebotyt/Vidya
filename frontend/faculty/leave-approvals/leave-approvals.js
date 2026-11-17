@@ -52,7 +52,7 @@
 
   // 3. Date Formatting Helpers
   function formatDisplayDate(dateStr) {
-    if (!dateStr) return '';
+    if (!dateStr || dateStr.startsWith('0000')) return '--';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -60,7 +60,7 @@
   }
 
   function calculateDays(fromDateStr, toDateStr) {
-    if (!fromDateStr || !toDateStr) return 1;
+    if (!fromDateStr || !toDateStr || fromDateStr.startsWith('0000') || toDateStr.startsWith('0000')) return 1;
     const d1 = new Date(fromDateStr);
     const d2 = new Date(toDateStr);
     if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return 1;
@@ -188,9 +188,11 @@
     tbody.innerHTML = rows.map((l, index) => {
       const avatarColor = getAvatarColorClass(index);
       const initials = getInitials(l.student_name);
-      const daysCount = calculateDays(l.from_date, l.to_date);
-      const formattedFrom = formatDisplayDate(l.from_date);
-      const formattedTo = formatDisplayDate(l.to_date);
+      const fromDate = l.from_date || l.start_date;
+      const toDate = l.to_date || l.end_date;
+      const daysCount = calculateDays(fromDate, toDate);
+      const formattedFrom = formatDisplayDate(fromDate);
+      const formattedTo = formatDisplayDate(toDate);
 
       // Category Pill type
       const lType = (l.leave_type || 'Medical').toLowerCase();
@@ -239,15 +241,17 @@
         actionsHtml = `
           <div class="leave-action-buttons">
             <button type="button" class="leave-btn-approve" onclick="decideLeave(${l.id}, 'APPROVED')" title="Approve Leave Application" aria-label="Approve">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
+              <span>Approve</span>
             </button>
             <button type="button" class="leave-btn-reject" onclick="openRejectModal(${l.id})" title="Reject Leave Application" aria-label="Reject">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
+              <span>Reject</span>
             </button>
           </div>
         `;
@@ -285,10 +289,12 @@
           <td class="td-dates">
             <div class="date-range-wrap">
               <span class="date-from-text">${formattedFrom}</span>
-              <span class="date-to-text">– ${formattedTo}</span>
+              <span class="date-sep">–</span>
+              <span class="date-to-text">${formattedTo}</span>
             </div>
+            <span class="date-days-pill">${daysCount} ${daysCount === 1 ? 'Day' : 'Days'}</span>
           </td>
-          <td class="td-days">${daysCount}</td>
+          <td class="td-days desktop-only-col">${daysCount}</td>
           <td class="td-reason">
             <div class="reason-text" title="${escapeHtml(l.reason || '')}">${escapeHtml(l.reason || 'Leave requested')}</div>
           </td>
@@ -316,8 +322,81 @@
     renderTableRows();
   };
 
-  // 9. Adjudication (Approve)
+  // 9. Styled Dialog Box Engine
+  let alertResolve = null;
+
+  window.showLeaveAlert = function ({ title = 'Notice', message = '', type = 'info', confirmText = 'OK', cancelText = null }) {
+    return new Promise((resolve) => {
+      alertResolve = resolve;
+      const modal = document.getElementById('leave-alert-modal');
+      const titleEl = document.getElementById('alert-modal-title');
+      const msgEl = document.getElementById('alert-modal-message');
+      const iconBox = document.getElementById('leave-alert-icon-box');
+      const actionsEl = document.getElementById('leave-alert-actions');
+
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+
+      if (iconBox) {
+        iconBox.className = 'leave-alert-icon-box alert-icon-' + type;
+        let iconSvg = '';
+        if (type === 'success') {
+          iconSvg = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+        } else if (type === 'error') {
+          iconSvg = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        } else if (type === 'warning') {
+          iconSvg = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        } else {
+          iconSvg = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+        }
+        iconBox.innerHTML = iconSvg;
+      }
+
+      if (actionsEl) {
+        if (cancelText) {
+          actionsEl.innerHTML = `
+            <button type="button" class="btn btn-secondary leave-alert-btn" id="leave-alert-cancel-btn" onclick="closeLeaveAlert(false)">${escapeHtml(cancelText)}</button>
+            <button type="button" class="btn btn-primary leave-alert-btn" id="leave-alert-ok-btn" onclick="closeLeaveAlert(true)">${escapeHtml(confirmText)}</button>
+          `;
+        } else {
+          actionsEl.innerHTML = `
+            <button type="button" class="btn btn-primary leave-alert-btn" id="leave-alert-ok-btn" onclick="closeLeaveAlert(true)">${escapeHtml(confirmText)}</button>
+          `;
+        }
+      }
+
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+      }
+    });
+  };
+
+  window.closeLeaveAlert = function (result = false) {
+    const modal = document.getElementById('leave-alert-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    if (alertResolve) {
+      alertResolve(result);
+      alertResolve = null;
+    }
+  };
+
+  // 10. Adjudication (Approve / Reject)
   window.decideLeave = async function (id, decision, reviewNote = '') {
+    if (decision === 'APPROVED') {
+      const confirmed = await showLeaveAlert({
+        title: 'Approve Leave Request',
+        message: 'Are you sure you want to approve this student leave application?',
+        type: 'info',
+        confirmText: 'Approve',
+        cancelText: 'Cancel'
+      });
+      if (!confirmed) return;
+    }
+
     try {
       const res = await fetchApi(`/leave/${id}/decision`, {
         method: 'PUT',
@@ -330,15 +409,25 @@
         }
         await loadLeaves();
       } else {
-        alert(res?.error?.message || 'Could not update leave decision.');
+        await showLeaveAlert({
+          title: 'Action Failed',
+          message: res?.error?.message || 'Could not update leave decision. Please try again.',
+          type: 'error',
+          confirmText: 'Dismiss'
+        });
       }
     } catch (err) {
       console.error('[LeaveApprovals] Error updating decision:', err);
-      alert('Error updating leave decision. Please try again.');
+      await showLeaveAlert({
+        title: 'Network / System Error',
+        message: err?.message || 'Error updating leave decision. Please check your network and try again.',
+        type: 'error',
+        confirmText: 'OK'
+      });
     }
   };
 
-  // 10. Rejection Modal
+  // 11. Rejection Modal
   window.openRejectModal = function (id) {
     pendingRejectId = id;
     const modal = document.getElementById('leave-rejection-modal');
@@ -367,7 +456,7 @@
     await decideLeave(id, 'REJECTED', note);
   };
 
-  // 11. Select All Checkbox
+  // 12. Select All Checkbox
   window.toggleSelectAll = function (masterEl) {
     const checked = masterEl.checked;
     document.querySelectorAll('.leave-row-checkbox').forEach(cb => {
@@ -386,7 +475,32 @@
   window.prevPage = function () { };
   window.nextPage = function () { };
 
-  // 12. Helper escaping
+  // 13. ESC key & Backdrop Click Handlers
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const alertModal = document.getElementById('leave-alert-modal');
+      if (alertModal && alertModal.style.display !== 'none') {
+        closeLeaveAlert(false);
+        return;
+      }
+      const rejectModal = document.getElementById('leave-rejection-modal');
+      if (rejectModal && rejectModal.style.display !== 'none') {
+        closeRejectModal();
+      }
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.classList && e.target.classList.contains('leave-modal-backdrop')) {
+      if (e.target.id === 'leave-alert-modal') {
+        closeLeaveAlert(false);
+      } else if (e.target.id === 'leave-rejection-modal') {
+        closeRejectModal();
+      }
+    }
+  });
+
+  // 14. Helper escaping
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -397,7 +511,7 @@
       .replace(/'/g, '&#39;');
   }
 
-  // 13. Initialize on DOM ready
+  // 15. Initialize on DOM ready
   document.addEventListener('DOMContentLoaded', () => {
     initHeroDeptInfo();
     loadLeaves();

@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-005",
+  "role": "Student",
+  "route": "/student/scores.html",
+  "source_file": "frontend/student/scores/index.html",
+  "content_hash": "2264d042ac21",
+  "last_scanned": "2026-11-17T16:35:32.288Z",
+  "title": "My Test Scores &amp; Marks — Student Portal",
+  "purpose": "Class test scores, mid-term results, faculty feedback",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: subject-wise score table; Mobile: collapsible test cards",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      },
+      {
+        "id": "",
+        "class": "scores-secondary-toolbar"
+      }
+    ],
+    "tables": [],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "All Semesters",
+        "action": "setSemesterFilter(",
+        "class": "active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 1",
+        "action": "setSemesterFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 2",
+        "action": "setSemesterFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 3",
+        "action": "setSemesterFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 4",
+        "action": "setSemesterFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 5",
+        "action": "setSemesterFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 6",
+        "action": "setSemesterFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "All (0)",
+        "action": "setTypeFilter(",
+        "class": "active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Exams &amp; Tests (0)",
+        "action": "setTypeFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Assignments (0)",
+        "action": "setTypeFilter(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "scores-search-input",
+        "type": "search",
+        "name": null,
+        "placeholder": "Search assessments, subjects...",
+        "handler": "filterScoresView()",
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/scores/scores.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadProfileHeader",
+    "loadScores",
+    "renderScoresList"
+  ]
+}
