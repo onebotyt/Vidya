@@ -182,9 +182,9 @@ class DeviceService {
   }
 
   /**
-   * 2. Portable Fingerprint Template Upload from ESP32 -> MySQL (Slot-Agnostic!)
-   * Stores the 512-byte AS608 template under student_id so replacing an ESP32
-   * never requires students to re-register their fingerprints.
+   * 2. Portable Fingerprint Template Upload from ESP32 -> MySQL (With Slot Mapping & Cloud Vault)
+   * Stores the 512-byte AS608 template and slot_id in both fingerprint_slots and
+   * student_biometric_templates.
    */
   async processTemplateUpload(deviceUid, reqHeaders, rawBody) {
     const { device, effectiveSecret, decryptedPayload } = await this.resolveAuthenticatedDevice(
@@ -196,6 +196,7 @@ class DeviceService {
     const {
       command_id = null,
       student_id,
+      slot_id = null,
       finger_index = 1,
       template_base64,
       quality_score = 96
@@ -224,14 +225,29 @@ class DeviceService {
 
     const student = studentRows[0];
     const templateSha256 = computeTemplateSha256(template_base64);
+    const resolvedSlotId = slot_id ? Number(slot_id) : null;
 
-    // Upsert portable template under student_id (Zero slot_id coupling on server!)
+    // Record slot mapping in fingerprint_slots for this device
+    if (resolvedSlotId) {
+      await query(
+        `INSERT INTO fingerprint_slots (device_id, slot_number, student_id, is_active, enrolled_at)
+         VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+         ON DUPLICATE KEY UPDATE
+           student_id = VALUES(student_id),
+           is_active = 1,
+           enrolled_at = CURRENT_TIMESTAMP`,
+        [device.id, resolvedSlotId, student.id]
+      );
+    }
+
+    // Upsert portable template under student_id with slot_id
     await query(
       `INSERT INTO student_biometric_templates
-        (student_id, department_id, finger_index, template_base64, template_sha256, quality_score, captured_by_device_uid, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        (student_id, department_id, finger_index, slot_id, template_base64, template_sha256, quality_score, captured_by_device_uid, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE
          department_id = VALUES(department_id),
+         slot_id = VALUES(slot_id),
          template_base64 = VALUES(template_base64),
          template_sha256 = VALUES(template_sha256),
          quality_score = VALUES(quality_score),
@@ -242,6 +258,7 @@ class DeviceService {
         student.id,
         student.department_id || device.department_id,
         Number(finger_index) || 1,
+        resolvedSlotId,
         template_base64,
         templateSha256,
         Number(quality_score) || 95,
@@ -275,6 +292,7 @@ class DeviceService {
     const responseObj = {
       status: 'TEMPLATE_STORED',
       student_id: student.id,
+      slot_id: resolvedSlotId,
       full_name: student.full_name,
       class_roll_no: student.class_roll_no || 0,
       official_enrollment_no: student.official_enrollment_no || '',
@@ -394,12 +412,13 @@ class DeviceService {
     for (const scan of (scans || [])) {
       const { event_id, scanned_at, is_offline_sync = false, confidence = 100 } = scan;
       let studentId = scan.student_id ? Number(scan.student_id) : null;
+      const slotId = scan.slot_id ? Number(scan.slot_id) : null;
 
       // Legacy fallback: only if an older payload sent slot_id without student_id
-      if (!studentId && scan.slot_id) {
+      if (!studentId && slotId) {
         const slots = await query(
-          `SELECT student_id FROM fingerprint_slots WHERE device_id = ? AND slot_id = ? AND is_active = 1 LIMIT 1`,
-          [device.id, scan.slot_id]
+          `SELECT student_id FROM fingerprint_slots WHERE device_id = ? AND (slot_number = ? OR slot_id = ?) AND is_active = 1 LIMIT 1`,
+          [device.id, slotId, slotId]
         );
         if (slots && slots.length > 0) {
           studentId = slots[0].student_id;
@@ -409,6 +428,42 @@ class DeviceService {
       if (!event_id || !studentId) {
         unmapped++;
         continue;
+      }
+
+      // Cross-verify slot_id against fingerprint_slots for this device
+      if (slotId) {
+        const existingSlots = await query(
+          `SELECT student_id FROM fingerprint_slots
+           WHERE device_id = ? AND (slot_number = ? OR slot_id = ?) AND is_active = 1
+           LIMIT 1`,
+          [device.id, slotId, slotId]
+        );
+        if (existingSlots && existingSlots.length > 0) {
+          if (existingSlots[0].student_id !== studentId) {
+            throw {
+              status: 403,
+              code: 'SLOT_SECURITY_MISMATCH',
+              message: `Security validation failed: slot_id ${slotId} is assigned to student ID ${existingSlots[0].student_id}, not student ID ${studentId}`
+            };
+          }
+        }
+
+        // Also cross-verify against student_biometric_templates if slot_id is recorded for this student
+        const tmplRows = await query(
+          `SELECT slot_id FROM student_biometric_templates
+           WHERE student_id = ? AND is_active = 1 AND slot_id IS NOT NULL
+           LIMIT 1`,
+          [studentId]
+        );
+        if (tmplRows && tmplRows.length > 0 && tmplRows[0].slot_id) {
+          if (tmplRows[0].slot_id !== slotId) {
+            throw {
+              status: 403,
+              code: 'SLOT_SECURITY_MISMATCH',
+              message: `Security validation failed: slot_id ${slotId} does not match student template registered slot ${tmplRows[0].slot_id}`
+            };
+          }
+        }
       }
 
       // Fetch Student Full Name, Roll Number & Cohort for OLED Display + Auto Session Marking
@@ -436,6 +491,12 @@ class DeviceService {
       const validDate = isNaN(scanDateObj.getTime()) ? new Date() : scanDateObj;
       const scanTimeStr = validDate.toISOString().replace('T', ' ').slice(0, 19);
       const scanDateStr = scanTimeStr.slice(0, 10);
+      const formattedTime12h = validDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
 
       try {
         await query(
@@ -447,7 +508,7 @@ class DeviceService {
         try {
           await query(
             `INSERT INTO iot_attendance_events
-              (student_id, device_id, department_id, scan_time, scan_date, verification_status, event_type, payload_json)
+              (student_id, device_id, department_id, scan_time, scan_date, verification_status, event_type, raw_payload)
              VALUES (?, ?, ?, ?, ?, 'VERIFIED', ?, ?)`,
             [
               student.id,
@@ -503,19 +564,29 @@ class DeviceService {
       confirmations.push({
         event_id,
         student_id: student.id,
+        slot_id: slotId,
         full_name: student.full_name,
         class_roll_no: student.class_roll_no,
         official_enrollment_no: student.official_enrollment_no,
+        time: formattedTime12h,
         status: 'ATTENDANCE_MARKED',
-        oled_title: 'ATTENDANCE MARKED',
-        oled_line1: student.full_name,
-        oled_line2: `Roll No: #${student.class_roll_no || '—'}`,
-        oled_line3: `${student.official_enrollment_no || ''} • Verified`
+        oled_title: 'SUCCESSFULLY MARKED',
+        oled_line1: `Enroll: ${student.official_enrollment_no || ''}`,
+        oled_line2: student.full_name,
+        oled_line3: `Time: ${formattedTime12h}`
       });
     }
 
+    const firstConf = confirmations[0] || {};
+    const defaultTimeStr = (new Date()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     const resultPayload = {
+      success: true,
+      status: 'ATTENDANCE_MARKED',
       device_uid: deviceUid,
+      student_id: firstConf.student_id || null,
+      full_name: firstConf.full_name || null,
+      enrollment_no: firstConf.official_enrollment_no || '',
+      time: firstConf.time || defaultTimeStr,
       processed: (scans || []).length,
       inserted,
       duplicates,

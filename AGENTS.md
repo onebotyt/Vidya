@@ -76,11 +76,17 @@ To prevent accidentally overwriting or breaking Dev 2's ongoing frontend work:
    - Test scripts (`scripts/test-*.js`, `scripts/verify-*.js`, `scripts/simulate-*.js`, etc.) and test screenshots (`*.png`, `*.jpg`) are strictly local development tools and must NEVER be tracked in Git or pushed to GitHub.
    - Enforced by `.gitignore` and Git hooks (`pre-commit`, `pre-push`). All test files remain on local disk to run regression test suites, but must never be committed or pushed to remote repositories.
 
+7. **UI Manifest & Contract Synchronization (UIMS)**:
+   - Every page has a machine-readable JSON manifest at `docs/ui-map/manifests/<page-id>.json`.
+   - Before working on a UI page, read its manifest to understand all buttons, modals, and APIs without grepping code.
+   - Whenever updating or creating any page in `frontend/`, run `npm run ui:scan` (`node backend/scripts/extract-ui-manifest.js`) and enforce parity via `node backend/scripts/test-ui-manifest-sync.js`. Never commit UI changes with drifted manifests.
+
 ---
 
 ## 🧪 Verification & Regression Test Suite
 Run these verification scripts from `d:/uiap/Attendance-System-Simplified/backend/` before declaring any task complete:
 ```powershell
+node scripts/test-ui-manifest-sync.js         # 195/195 tests (UI Manifest, DOM parity, SHA256 content hashes, API contracts)
 node scripts/test-register-consolidation.js   # 48/48 tests (Tabs, deep-linking, modals, drawer, studio)
 node scripts/test-roll-call-upgrade.js        # Dynamic QR & PIN Roll Call studio tests
 node scripts/test-live-log-checkin.js         # Real-time student check-in feed tests
