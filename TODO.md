@@ -38,6 +38,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 442: Academic Dossier Assignment Ledger Streamlining & In-Browser Document Previewer
+- **Coursework & Assignment Ledger Column Redesign**:
+  - Replaced legacy 10-column table (`#`, `Semester`, `Subject Code`, `Subject Name`, `Assignment Title`, `Max Marks`, `Marks Scored`, `Score %`, `Status`, `Submission Date`) with exactly 7 streamlined columns:
+    1. `S.NO`: Serial numbering (`1`, `2`, `3`...).
+    2. `Semester`: e.g. `Sem 5`.
+    3. `Subject Short Name`: `DBMS`, `OS`, `CN`, `WT`, etc. (dynamically joined via `teaching_groups.subject_short_name`).
+    4. `Assignment NO.`: Parsed `Assignment X` title with topic subtitle tooltip.
+    5. `Marks (9/9)`: Formatted as `${marks_obtained} / ${max_marks}` (e.g. `23 / 25`, `AB / 20`, `-- / 25`).
+    6. `Submission Date`: Formatted locale date or `--`.
+    7. `Document`: Integrated action cell with interactive **View** button (`.btn-rec-table-view`).
+- **Dead UI & Redundant Section Purge**:
+  - Completely purged `.rec-uploads-container` ("Student Assignment Uploads & Submitted Digital Files") from `#section-studio-assignments`, eliminating duplicate UI since submission files and preview buttons are now unified directly within each assignment row.
+  - Removed `Student Profile` checkbox (`#export-inc-profile`) from the `Include in Dossier:` footer options, as student profile/bio-data is now exported exclusively via the dedicated profile card export engine.
+- **In-Browser Document Preview Modal (`#modal-document-preview`)**:
+  - Created a responsive in-browser preview modal embedding documents without downloading:
+    - PDFs rendered via embedded `<iframe src="...">` with toolbar disabled.
+    - Images rendered via contained `<img src="..." />` with responsive aspect ratio.
+    - Added global handlers `window.previewDossierDocument(url, title)` and `window.closeDocumentPreview()`.
+    - Integrated multi-tiered ESC key listener closing the document preview first or the dossier modal.
+- **Backend Model & Multi-Format Export Parity**:
+  - Updated `StudentRecordModel.getStudentFullDossier()` to join `teaching_groups tg ON a.group_id = tg.id`, selecting `tg.subject_short_name`, `sub.file_path`, and `sub.original_filename`.
+  - Updated Excel (`exportSingleStudentExcel`), Word (`exportSingleStudentDoc`), and PDF (`exportSingleStudentPdf`) export builders to match the new 7-column layout and respect profile exclusion.
+- **Verification & Parity Enforcement**:
+  - `test-dossier-refactor.js`: 7/7 Passed.
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% DOM parity, action buttons, modals, and content hashes).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+
 ### ✅ Milestone 441: Realistic Multi-Component Seeding & Classroom Component-Based Feature Visibility Governance
 - **Realistic Test Data Populated in MySQL (`vdiyaos`)**:
   - Populated 6 distinct teaching groups across all component types:
@@ -10112,6 +10140,15 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Verified 100% parity across **195/195 UI manifest tests** (`npm run ui:verify`).
      - Verified **88/88 theme token tests** (zero hardcoded `#hex` or `rgb()` color values in leave-approvals stylesheets).
      - Verified **38/38 RBAC & route guard tests**.
+
+### ✅ Milestone 202: Mobile Screen Zero-Overflow & Zero-Collision Layout Refinement
+- **Date**: November 17, 2026
+- **Scope & Objectives**:
+  1. **Zero Badge/Name Overlap**: Fixed mobile card header collision where `.td-status` was stretched to 100% width by table cell rules. Explicitly scoped `td.td-status` to `width: auto !important; max-width: 6.2rem !important; position: absolute !important; right: 0.85rem !important; top: 0.85rem !important;` and enforced `padding-right: 6.8rem !important` on `td.td-student`, guaranteeing student avatar and name are completely unobstructed.
+  2. **Eliminated Stray Days Number**: Hidden duplicate `<td class="td-days">` on mobile screens (`display: none !important`) and renamed inner inline span to `.date-days-pill`, removing the isolated centered number `3` and displaying clean duration badges (`3 Days`) within the date container.
+  3. **4-Column Segmented Tab Grid (Zero Horizontal Overflow)**: Replaced horizontally scrolling `.leave-tabs-cluster` with a responsive 4-column CSS grid (`grid-template-columns: repeat(4, 1fr)`). All 4 tabs (`Pending 3`, `Approved 12`, `Rejected 4`, `All`) fit on screen without cutoffs or horizontal scrolling on all phone viewports (320px–428px).
+  4. **Consolidated Mobile Media Queries**: Removed fragmented `@media` queries throughout `leave-approvals.css` and unified all mobile responsive rules into Section 8.
+  5. **Verification & Regression Suites**: Verified 100% passing across **88/88 theme token tests** (zero hex colors) and **195/195 UI manifest tests** (`npm run ui:verify`).
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.
