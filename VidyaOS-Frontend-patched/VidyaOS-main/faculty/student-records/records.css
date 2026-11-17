@@ -439,6 +439,101 @@
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rec-profile-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.rec-profile-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.rec-profile-card-title svg {
+  color: var(--color-primary);
+}
+
+.rec-profile-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rec-export-btn-group {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-rec-export-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-rec-export-profile:hover {
+  background: var(--bg-surface);
+  border-color: var(--color-primary);
+}
+
+.rec-profile-export-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
+  z-index: 100;
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rec-profile-export-dropdown button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  transition: all 0.15s ease;
+}
+
+.rec-profile-export-dropdown button:hover {
+  background: var(--bg-surface);
+  color: var(--color-primary);
 }
 
 .rec-profile-grid {
@@ -599,11 +694,73 @@
   padding: 1rem 1.35rem;
   border-top: 1px solid var(--border-color);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
   background: var(--bg-surface);
+}
+
+.rec-export-settings-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+  min-width: 280px;
+}
+
+.rec-export-section-row,
+.rec-export-format-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rec-export-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 140px;
+}
+
+.rec-export-label svg {
+  color: var(--color-primary);
+}
+
+.rec-export-checks-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem 1.15rem;
+  flex-wrap: wrap;
+}
+
+.rec-status-pill {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rec-status-pill.submitted {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--color-primary);
+}
+
+.rec-status-pill.evaluated {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-success);
+}
+
+.rec-status-pill.pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning);
 }
 
 .rec-export-formats {
@@ -758,8 +915,48 @@
     gap: 0.65rem;
   }
 
+  .rec-profile-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .rec-profile-card-actions {
+    width: 100%;
+  }
+
+  .rec-export-btn-group {
+    width: 100%;
+  }
+
+  .btn-rec-export-profile {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rec-profile-export-dropdown {
+    width: 100%;
+    min-width: unset;
+  }
+
   .rec-checkboxes-list {
     gap: 0.5rem 0.85rem;
+  }
+
+  .rec-export-settings-wrap {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .rec-export-section-row,
+  .rec-export-format-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .rec-export-checks-group {
+    gap: 0.45rem 0.85rem;
   }
 
   .rec-export-formats {

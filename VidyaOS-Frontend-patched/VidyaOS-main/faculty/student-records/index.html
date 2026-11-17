@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/faculty/components/header/header.css?v=20261117">
   <link rel="stylesheet" href="/faculty/components/sidebar/sidebar.css?v=20261117">
   <link rel="stylesheet" href="/faculty/components/delete-modal/delete-modal.css?v=20261117">
-  <link rel="stylesheet" href="/faculty/student-records/records.css?v=20261117">
+  <link rel="stylesheet" href="/faculty/student-records/records.css?v=20261117_biodata">
   <script>
     (function () {
       try {
@@ -167,13 +167,14 @@
   </div>
 
   <!-- Modal: Single Student Full Dossier & Export -->
+  <!-- Modal: Single Student Comprehensive Academic Dossier -->
   <div id="modal-student-dossier" class="rec-modal-backdrop" style="display:none;"
     onclick="if(event.target===this)closeDossierModal()">
     <div class="rec-modal-card">
       <div class="rec-modal-header">
         <div class="rec-modal-header-titles">
           <strong id="dossier-modal-name">Student Academic Dossier</strong>
-          <span id="dossier-modal-sub" class="rec-dossier-sub">Roll # -- &bull; Enrollment --</span>
+          <span id="dossier-modal-sub" class="rec-dossier-sub">Roll # -- • Enrollment --</span>
         </div>
         <button type="button" class="btn-modal-close" onclick="closeDossierModal()">&times;</button>
       </div>
@@ -181,6 +182,46 @@
       <div class="rec-dossier-body">
         <!-- Student Profile Demographic Summary -->
         <div class="rec-dossier-profile-card">
+          <div class="rec-profile-card-header">
+            <div class="rec-profile-card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>Student Personal Profile &amp; KYC Demographics</span>
+            </div>
+            <div class="rec-profile-card-actions">
+              <!-- Dedicated Export Personal Details Button & Dropdown -->
+              <div class="rec-export-btn-group">
+                <button type="button" class="btn-rec-export-profile" id="btn-profile-export" onclick="toggleProfileExportMenu(event)" title="Export Student Bio-Data & Personal Details">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Export Personal Details</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+                <div id="profile-export-menu" class="rec-profile-export-dropdown" style="display:none;">
+                  <button type="button" onclick="exportStudentPersonalDetails('pdf')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    <span>Bio-Data Sheet (PDF)</span>
+                  </button>
+                  <button type="button" onclick="exportStudentPersonalDetails('excel')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <span>Demographics (.xlsx)</span>
+                  </button>
+                  <button type="button" onclick="exportStudentPersonalDetails('doc')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Bio-Data Word (.doc)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="rec-profile-grid">
             <div class="rec-info-item">
               <span class="rec-info-label">Full Name</span>
@@ -279,6 +320,10 @@
             <span>Tests &amp; Exams</span>
             <span class="rec-tab-badge" id="dossier-tests-count">0</span>
           </button>
+          <button type="button" class="rec-dossier-tab" data-tab="assignments" onclick="switchDossierTab('assignments')">
+            <span>Coursework &amp; Assignments</span>
+            <span class="rec-tab-badge" id="dossier-assignments-count">0</span>
+          </button>
           <button type="button" class="rec-dossier-tab" data-tab="attendance" onclick="switchDossierTab('attendance')">
             <span>Attendance Matrix</span>
             <span class="rec-tab-badge" id="dossier-att-count">0</span>
@@ -313,7 +358,32 @@
           </div>
         </div>
 
-        <!-- Tab 2: Attendance Content -->
+        <!-- Tab 2: Coursework & Assignments Content -->
+        <div id="dossier-content-assignments" class="rec-tab-content">
+          <div class="rec-subtable-wrap">
+            <table class="rec-subtable">
+              <thead>
+                <tr>
+                  <th>Semester</th>
+                  <th>Subject</th>
+                  <th>Assignment Title</th>
+                  <th>Component</th>
+                  <th>Max Marks</th>
+                  <th>Marks Scored</th>
+                  <th>Status</th>
+                  <th>Submission Date</th>
+                </tr>
+              </thead>
+              <tbody id="dossier-assignments-body">
+                <tr>
+                  <td colspan="8" class="rec-empty-cell">No assignment records found for selected semesters.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 3: Attendance Content -->
         <div id="dossier-content-attendance" class="rec-tab-content">
           <div class="rec-subtable-wrap">
             <table class="rec-subtable">
@@ -337,7 +407,7 @@
           </div>
         </div>
 
-        <!-- Tab 3: Official Documents Content -->
+        <!-- Tab 4: Official Documents Content -->
         <div id="dossier-content-documents" class="rec-tab-content">
           <div class="rec-subtable-wrap">
             <table class="rec-subtable">
@@ -361,23 +431,68 @@
         </div>
       </div>
 
-      <!-- Dossier Modal Footer (Multi-Format Export) -->
+      <!-- Dossier Modal Footer (Multi-Format & Data Section Export) -->
       <div class="rec-modal-footer">
-        <div class="rec-export-formats">
-          <span class="rec-export-format-label">Select Formats to Export:</span>
-          <label class="rec-format-label">
-            <input type="checkbox" id="export-single-pdf" checked>
-            <span>PDF Document</span>
-          </label>
-          <label class="rec-format-label">
-            <input type="checkbox" id="export-single-doc" checked>
-            <span>Word Document (.doc)</span>
-          </label>
-          <label class="rec-format-label">
-            <input type="checkbox" id="export-single-excel" checked>
-            <span>Excel (.xlsx)</span>
-          </label>
+        <div class="rec-export-settings-wrap">
+          <!-- Row 1: Data Sections to Include -->
+          <div class="rec-export-section-row">
+            <span class="rec-export-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              Include in Dossier:
+            </span>
+            <div class="rec-export-checks-group">
+              <label class="rec-check-label">
+                <input type="checkbox" id="export-inc-profile" checked>
+                <span>Student Profile</span>
+              </label>
+              <label class="rec-check-label">
+                <input type="checkbox" id="export-inc-tests" checked>
+                <span>Tests &amp; Exams</span>
+              </label>
+              <label class="rec-check-label">
+                <input type="checkbox" id="export-inc-assignments" checked>
+                <span>Assignments</span>
+              </label>
+              <label class="rec-check-label">
+                <input type="checkbox" id="export-inc-attendance" checked>
+                <span>Attendance Matrix</span>
+              </label>
+              <label class="rec-check-label">
+                <input type="checkbox" id="export-inc-documents" checked>
+                <span>Official Documents</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Row 2: Document Export Formats -->
+          <div class="rec-export-format-row">
+            <span class="rec-export-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              Select Formats:
+            </span>
+            <div class="rec-export-checks-group">
+              <label class="rec-format-label">
+                <input type="checkbox" id="export-single-pdf" checked>
+                <span>PDF Document</span>
+              </label>
+              <label class="rec-format-label">
+                <input type="checkbox" id="export-single-doc" checked>
+                <span>Word Document (.doc)</span>
+              </label>
+              <label class="rec-format-label">
+                <input type="checkbox" id="export-single-excel" checked>
+                <span>Excel (.xlsx)</span>
+              </label>
+            </div>
+          </div>
         </div>
+
         <div class="rec-footer-actions">
           <button type="button" class="btn-rec-outline" onclick="closeDossierModal()">Close</button>
           <button type="button" class="btn-rec-solid" onclick="executeSingleStudentExport()">
@@ -480,7 +595,7 @@
   <script src="/faculty/components/icons.js?v=20261117"></script>
   <script src="/faculty/components/sidebar/sidebar.js?v=20261117"></script>
   <script src="/faculty/components/header/header.js?v=20261117"></script>
-  <script src="/faculty/student-records/records.js?v=20261117"></script>
+  <script src="/faculty/student-records/records.js?v=20261117_biodata"></script>
 </body>
 
 </html>
