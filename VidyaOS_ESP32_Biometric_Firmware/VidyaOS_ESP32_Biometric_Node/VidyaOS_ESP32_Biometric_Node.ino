@@ -22,8 +22,11 @@
  */
 
 #include <WiFi.h>
+#include <WiFiMulti.h>
+#include <Preferences.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <PubSubClient.h>
 #include "time.h"
 #include "config.h"
 #include "crypto_aes_gcm.h"
@@ -35,11 +38,20 @@ VidyaCryptoEngine   cryptoEngine;
 W25Q32FlashManager  flashStorage;
 VidyaAS608Sensor    fingerprintSensor(&Serial2);
 VidyaPeripheralsUI  ui;
+WiFiMulti           wifiMulti;
+Preferences         wifiPrefs;
+WiFiClient          tcpClient;
+PubSubClient        mqttClient(tcpClient);
+
+String currentConnectedSsid = WIFI_SSID;
+String defaultWifiSsid      = DEFAULT_FACTORY_WIFI_SSID;
+String defaultWifiPass      = DEFAULT_FACTORY_WIFI_PASS;
 
 unsigned long lastHeartbeatMs    = 0;
 unsigned long lastActivityMs     = 0;
 unsigned long lastBatteryCheckMs = 0;
 unsigned long lastLowBattAlertMs = 0;
+unsigned long lastMqttRetryMs    = 0;
 
 static const char* activeEnrollName = "";
 static uint16_t    activeEnrollRoll = 0;
@@ -284,6 +296,207 @@ void syncOfflineQueueToServer() {
   }
 }
 
+/**
+ * Connects to a specific Wi-Fi SSID with timeout.
+ */
+bool connectToNetwork(const String& ssid, const String& pass, uint32_t timeoutMs) {
+  WiFi.disconnect();
+  delay(100);
+  WiFi.begin(ssid.c_str(), pass.c_str());
+  uint32_t t0 = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - t0 < timeoutMs)) {
+    ui.setWifiLed(!digitalRead(LED_WIFI_PIN));
+    delay(200);
+  }
+  bool connected = (WiFi.status() == WL_CONNECTED);
+  ui.setWifiLed(connected);
+  return connected;
+}
+
+/**
+ * Initializes persistent Wi-Fi storage (NVS) and attempts connection
+ * to the stored default network, with automatic fallback to factory credentials.
+ */
+void initWifiManager() {
+  wifiPrefs.begin(NVS_WIFI_NAMESPACE, false);
+  defaultWifiSsid = wifiPrefs.getString("def_ssid", DEFAULT_FACTORY_WIFI_SSID);
+  defaultWifiPass = wifiPrefs.getString("def_pass", DEFAULT_FACTORY_WIFI_PASS);
+
+  WiFi.mode(WIFI_STA);
+  wifiMulti.addAP(defaultWifiSsid.c_str(), defaultWifiPass.c_str());
+  if (defaultWifiSsid != DEFAULT_FACTORY_WIFI_SSID) {
+    wifiMulti.addAP(DEFAULT_FACTORY_WIFI_SSID, DEFAULT_FACTORY_WIFI_PASS);
+  }
+
+  bool ok = connectToNetwork(defaultWifiSsid, defaultWifiPass, WIFI_CONNECT_TIMEOUT_MS);
+  if (!ok && defaultWifiSsid != DEFAULT_FACTORY_WIFI_SSID) {
+    ok = connectToNetwork(DEFAULT_FACTORY_WIFI_SSID, DEFAULT_FACTORY_WIFI_PASS, WIFI_FALLBACK_TIMEOUT_MS);
+    if (ok) currentConnectedSsid = DEFAULT_FACTORY_WIFI_SSID;
+  } else if (ok) {
+    currentConnectedSsid = defaultWifiSsid;
+  }
+}
+
+/**
+ * Scans nearby Wi-Fi networks in real-time, compiles RSSI, channel,
+ * encryption type, and transmits the report encrypted to the server.
+ */
+void scanNearbyWifiNetworksAndReport() {
+  ui.setWifiLed(true);
+  int n = WiFi.scanNetworks();
+  if (n < 0) n = 0;
+
+  String reportJson = "{\"networks\":[";
+  for (int i = 0; i < n; i++) {
+    if (i > 0) reportJson += ",";
+    String encType = "OPEN";
+    wifi_auth_mode_t auth = WiFi.encryptionType(i);
+    if (auth == WIFI_AUTH_WPA_PSK) encType = "WPA_PSK";
+    else if (auth == WIFI_AUTH_WPA2_PSK) encType = "WPA2_PSK";
+    else if (auth == WIFI_AUTH_WPA_WPA2_PSK) encType = "WPA_WPA2_PSK";
+    else if (auth == WIFI_AUTH_WPA2_ENTERPRISE) encType = "WPA2_ENTERPRISE";
+    else if (auth == WIFI_AUTH_WPA3_PSK) encType = "WPA3_PSK";
+
+    reportJson += "{";
+    reportJson += "\"ssid\":\"" + WiFi.SSID(i) + "\",";
+    reportJson += "\"bssid\":\"" + WiFi.BSSIDstr(i) + "\",";
+    reportJson += "\"rssi\":" + String(WiFi.RSSI(i)) + ",";
+    reportJson += "\"channel\":" + String(WiFi.channel(i)) + ",";
+    reportJson += "\"encryption_type\":\"" + encType + "\"";
+    reportJson += "}";
+  }
+  reportJson += "]}";
+
+  String decryptedResp;
+  postEncryptedToServer("/wifi-scan-report", reportJson, decryptedResp);
+
+  if (ENABLE_MQTT_TELEMETRY && mqttClient.connected()) {
+    mqttClient.publish(MQTT_TOPIC_WIFI_REPORT, reportJson.c_str());
+  }
+}
+
+/**
+ * Handles incoming SCAN_WIFI remote command.
+ */
+void handleScanWifiCommand(JsonObject cmd) {
+  scanNearbyWifiNetworksAndReport();
+}
+
+/**
+ * Handles incoming SWITCH_WIFI or ADD_WIFI remote command.
+ */
+void handleSwitchWifiCommand(JsonObject cmd) {
+  JsonObject payload = cmd["payload"].is<JsonObject>() ? cmd["payload"].as<JsonObject>() : cmd;
+  String ssid = payload["ssid"] | "";
+  String pass = payload["password"] | "";
+  bool isDef  = payload["is_default"] | false;
+
+  if (ssid.length() == 0) return;
+
+  if (isDef) {
+    wifiPrefs.putString("def_ssid", ssid);
+    wifiPrefs.putString("def_pass", pass);
+    defaultWifiSsid = ssid;
+    defaultWifiPass = pass;
+  }
+
+  bool ok = connectToNetwork(ssid, pass, WIFI_CONNECT_TIMEOUT_MS);
+  if (ok) {
+    currentConnectedSsid = ssid;
+    wifiMulti.addAP(ssid.c_str(), pass.c_str());
+    ui.setSuccessLed(true);
+    ui.playTone(2000, 300);
+    delay(500);
+    ui.setSuccessLed(false);
+  } else {
+    ui.beepAttendanceFailed();
+    connectToNetwork(defaultWifiSsid, defaultWifiPass, WIFI_FALLBACK_TIMEOUT_MS);
+    currentConnectedSsid = defaultWifiSsid;
+  }
+}
+
+/**
+ * Handles incoming FALLBACK_WIFI command.
+ */
+void handleFallbackWifiCommand(JsonObject cmd) {
+  bool ok = connectToNetwork(defaultWifiSsid, defaultWifiPass, WIFI_FALLBACK_TIMEOUT_MS);
+  if (ok) {
+    currentConnectedSsid = defaultWifiSsid;
+    ui.setSuccessLed(true);
+    ui.playTone(1800, 200);
+    delay(300);
+    ui.setSuccessLed(false);
+  } else {
+    connectToNetwork(DEFAULT_FACTORY_WIFI_SSID, DEFAULT_FACTORY_WIFI_PASS, WIFI_FALLBACK_TIMEOUT_MS);
+    currentConnectedSsid = DEFAULT_FACTORY_WIFI_SSID;
+  }
+}
+
+/**
+ * Handles incoming RESET_WIFI command (Emergency factory reset).
+ */
+void handleResetWifiCommand(JsonObject cmd) {
+  wifiPrefs.clear();
+  defaultWifiSsid = DEFAULT_FACTORY_WIFI_SSID;
+  defaultWifiPass = DEFAULT_FACTORY_WIFI_PASS;
+  connectToNetwork(DEFAULT_FACTORY_WIFI_SSID, DEFAULT_FACTORY_WIFI_PASS, WIFI_FALLBACK_TIMEOUT_MS);
+  currentConnectedSsid = DEFAULT_FACTORY_WIFI_SSID;
+  ui.setFailLed(true);
+  ui.playTone(1000, 500);
+  delay(500);
+  ui.setFailLed(false);
+}
+
+/**
+ * MQTT Message Callback for dual-stack remote commands.
+ */
+void onMqttMessage(char* topic, byte* payload, unsigned int length) {
+  DynamicJsonDocument doc(2048);
+  if (deserializeJson(doc, payload, length) == DeserializationError::Ok) {
+    JsonObject cmd = doc.as<JsonObject>();
+    String cmdType = cmd["command_type"] | "";
+    if (cmdType == "SCAN_WIFI") handleScanWifiCommand(cmd);
+    else if (cmdType == "SWITCH_WIFI") handleSwitchWifiCommand(cmd);
+    else if (cmdType == "FALLBACK_WIFI") handleFallbackWifiCommand(cmd);
+    else if (cmdType == "RESET_WIFI") handleResetWifiCommand(cmd);
+  }
+}
+
+/**
+ * Initializes and maintains dual-stack MQTT client when enabled.
+ */
+void initMqtt() {
+  if (!ENABLE_MQTT_TELEMETRY) return;
+  mqttClient.setServer(MQTT_BROKER_HOST, MQTT_BROKER_PORT);
+  mqttClient.setCallback(onMqttMessage);
+}
+
+void maintainMqtt() {
+  if (!ENABLE_MQTT_TELEMETRY || WiFi.status() != WL_CONNECTED) return;
+  if (!mqttClient.connected()) {
+    if (millis() - lastMqttRetryMs >= 10000UL) {
+      lastMqttRetryMs = millis();
+      if (mqttClient.connect(MQTT_CLIENT_ID)) {
+        mqttClient.subscribe(MQTT_TOPIC_COMMANDS);
+      }
+    }
+  } else {
+    mqttClient.loop();
+  }
+}
+
+void publishMqttTelemetry(float battVolts, int battPct) {
+  if (!ENABLE_MQTT_TELEMETRY || !mqttClient.connected()) return;
+  String p = "{";
+  p += "\"device_uid\":\"" + String(DEVICE_UID) + "\",";
+  p += "\"battery_voltage\":" + String(battVolts, 2) + ",";
+  p += "\"battery_pct\":" + String(battPct) + ",";
+  p += "\"wifi_rssi\":" + String(WiFi.RSSI()) + ",";
+  p += "\"connected_ssid\":\"" + currentConnectedSsid + "\"";
+  p += "}";
+  mqttClient.publish(MQTT_TOPIC_TELEMETRY, p.c_str());
+}
+
 void setup() {
   Serial.begin(115200);
   ui.begin();
@@ -291,13 +504,8 @@ void setup() {
   flashStorage.begin();
   fingerprintSensor.begin();
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  uint32_t t0 = millis();
-  while (WiFi.status() != WL_CONNECTED && (millis() - t0 < 8000)) {
-    ui.setWifiLed(!digitalRead(LED_WIFI_PIN));
-    delay(200);
-  }
+  initWifiManager();
+  initMqtt();
 
   if (WiFi.status() == WL_CONNECTED) {
     ui.setWifiLed(true);
@@ -315,7 +523,8 @@ void loop() {
   int   battPct   = ui.readBatteryPercentage(battVolts);
   bool  isOnline  = (WiFi.status() == WL_CONNECTED);
 
-  // 1. Wi-Fi Status LED Management (Blue)
+  // 1. Wi-Fi Status LED & Dual-Stack MQTT Maintenance
+  maintainMqtt();
   if (isOnline) {
     ui.setWifiLed(true);
   } else {
@@ -485,8 +694,11 @@ void loop() {
       hbJson += "\"w25q32_used_kb\":" + String(flashStorage.getUsedFlashKb()) + ",";
       hbJson += "\"as608_enrolled_count\":" + String(flashStorage.getEnrolledStudentCount()) + ",";
       hbJson += "\"wifi_rssi\":" + String(WiFi.RSSI()) + ",";
+      hbJson += "\"connected_ssid\":\"" + currentConnectedSsid + "\",";
       hbJson += "\"firmware_version\":\"" + String(FIRMWARE_VERSION) + "\"";
       hbJson += "}";
+
+      publishMqttTelemetry(battVolts, battPct);
 
       String hbResp;
       if (postEncryptedToServer("/heartbeat", hbJson, hbResp)) {
@@ -507,6 +719,14 @@ void loop() {
               syncDepartmentTemplatesFromServer();
             } else if (cmdType == "BUZZER_CHIME") {
               ui.beepAttendanceSuccess();
+            } else if (cmdType == "SCAN_WIFI") {
+              handleScanWifiCommand(cmd);
+            } else if (cmdType == "SWITCH_WIFI" || cmdType == "ADD_WIFI") {
+              handleSwitchWifiCommand(cmd);
+            } else if (cmdType == "FALLBACK_WIFI") {
+              handleFallbackWifiCommand(cmd);
+            } else if (cmdType == "RESET_WIFI") {
+              handleResetWifiCommand(cmd);
             }
           }
         }

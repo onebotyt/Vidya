@@ -38,6 +38,29 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 447: Production Self-Healing Schema Migrations, Student Roster Restoration, Vercel Zero-404 Clean Routing & Mobile Responsive Hardening
+- **Automated Startup Migration & Schema Self-Healing (`teachingGroupModel.js`, `server.js`)**:
+  - Implemented `TeachingGroupModel.ensureColumns()` executing automated schema migrations on startup and before queries for `subject_short_name` and `deleted_at`.
+  - Upgraded `status` column definition to `VARCHAR(50) NOT NULL DEFAULT 'ACTIVE'` to safely support 30-day classroom trash retention (`'TRASH'`).
+  - Fixed MySQL error 1054 (`Unknown column 'tg.subject_short_name' in 'field list'`) on production Render deployment.
+  - Resolved classroom deletion failure: `setTrashStatus` now cleanly timestamps `deleted_at = CURRENT_TIMESTAMP` and sets `status = 'TRASH'`.
+- **Department & Campus Student Roster Access Restoration (`hodModel.js`)**:
+  - Fixed `HodModel.getStudentsRoster(deptId)`: When `deptId` is null (Admin or campus faculty), dynamically queries all active students without evaluating `e.department_id = NULL`.
+  - Migrated `JOIN enrollments` to `LEFT JOIN enrollments` and `LEFT JOIN departments` so newly approved and unassigned students remain 100% visible on `/faculty/students/index.html`.
+- **Accurate Student Counts & Mock Fallback Elimination (`classes.js`, `teachingGroupModel.js`)**:
+  - Updated member counting subquery to check `(tgm.status IN ('ENROLLED', 'ACTIVE') OR tgm.status IS NULL)`, accurately counting all active student enrollments.
+  - Completely excised obsolete hardcoded demo mock data (`Cloud Computing & DevOps [IT601]`, 62 students) from `classes.js`. Classes strictly reflect authentic database state.
+- **Vercel Zero-404 Clean Routing Engine (`vercel.json`, `register.html`)**:
+  - Fixed Vercel 404 on `/register`: Updated destination paths in `vercel.json` from `/login/register/index.html` to clean directory URL `/login/register/` (bypassing Vercel cleanUrls 308 redirect loops).
+  - Created standalone meta & JS redirect landing file `register.html` ensuring immediate redirection to `/login/register/` from any legacy bookmark.
+- **Mobile Responsive Hardening (<768px)**:
+  - Extended 2x2 grid layout on `.classes-action-buttons-row` to 768px with full-width primary button and zero horizontal overflow.
+  - Enforced unconditional mobile hiding on `.td-days` in `leave-approvals.css`.
+- **Regression Verification**:
+  - `test-ui-manifest-sync.js`: 208/208 tests passed.
+  - `test-theme-support.js`: 88/88 tests passed.
+  - `test-rbac-and-structure.js`: 38/38 tests passed.
+
 ### ✅ Milestone 446: ESP32 Biometric Hardware Node & Secure Attendance Terminal (AS608 Optical, 4 Dedicated LEDs, Touch-Wake Light Sleep & Dual-Layer Security)
 - **Hardware Architecture & Pin-by-Pin Wiring Specification (`config.h` & `HARDWARE_WIRING_AND_PROTOCOL.md`)**:
   - Integrated AS608 optical fingerprint sensor over UART2 (GPIO 16 RX2, GPIO 17 TX2 @ 57600 baud) with active-HIGH optical prism Touch Wake on GPIO 33.

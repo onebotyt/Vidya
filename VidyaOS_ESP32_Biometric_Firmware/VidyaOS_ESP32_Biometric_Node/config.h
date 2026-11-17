@@ -92,4 +92,24 @@
 #define OFFLINE_SYNC_BATCH_SIZE     20       // Upload 20 offline records per batch
 #define OLED_BANNER_HOLD_MS         2500UL   // Hold confirmation banner on OLED
 
+// ─── 4. Dual-Stack Telemetry: MQTT Broker Configuration (Optional) ───────────
+// While HTTPS REST on port 443 is universal and campus firewall-proof,
+// MQTT can be enabled for ultra-low latency telemetry on open/IoT networks.
+#define ENABLE_MQTT_TELEMETRY       false    // Set true to enable dual-stack MQTT alongside HTTPS
+#define MQTT_BROKER_HOST            "broker.emqx.io" // Campus MQTT broker IP or public broker
+#define MQTT_BROKER_PORT            1883
+#define MQTT_CLIENT_ID              "VIDYAOS-" DEVICE_UID
+#define MQTT_TOPIC_TELEMETRY        "vidyaos/" DEVICE_UID "/telemetry"
+#define MQTT_TOPIC_COMMANDS         "vidyaos/" DEVICE_UID "/commands"
+#define MQTT_TOPIC_ATTENDANCE       "vidyaos/" DEVICE_UID "/attendance"
+#define MQTT_TOPIC_WIFI_REPORT      "vidyaos/" DEVICE_UID "/wifi_scans"
+
+// ─── 5. Multi-WiFi & Dynamic Network Management ─────────────────────────────
+#define MAX_STORED_WIFI_NETWORKS    8
+#define WIFI_CONNECT_TIMEOUT_MS     12000UL  // Max time to attempt connection to a network
+#define WIFI_FALLBACK_TIMEOUT_MS    15000UL  // Fallback to default network if connection fails
+#define DEFAULT_FACTORY_WIFI_SSID   WIFI_SSID
+#define DEFAULT_FACTORY_WIFI_PASS   WIFI_PASSWORD
+#define NVS_WIFI_NAMESPACE          "vidya_wifi"
+
 #endif // VIDYAOS_ESP32_CONFIG_H
