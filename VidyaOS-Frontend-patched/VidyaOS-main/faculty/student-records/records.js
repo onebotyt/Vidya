@@ -555,16 +555,14 @@
     }
   }
 
-  // 1. Assignments Studio & Uploads Renderer
+  // 1. Assignments Studio & In-Line Document Preview Renderer
   function renderAssignmentsStudio(assignments) {
     const tbody = document.getElementById('dossier-assignments-body');
     const tfoot = document.getElementById('dossier-assignments-foot');
-    const uploadsGrid = document.getElementById('student-assignment-uploads-grid');
-    const uploadsCount = document.getElementById('student-assignment-uploads-count');
 
     if (tbody) {
       if (assignments.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="rec-empty-cell">No assignments recorded for selected semesters.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="rec-empty-cell">No assignments recorded for selected semesters.</td></tr>`;
         if (tfoot) tfoot.innerHTML = '';
       } else {
         let totalMax = 0;
@@ -580,98 +578,67 @@
             totalScored += scored;
             scoredCount++;
           }
-          const pct = hasScore ? Math.round((scored / max) * 100) : null;
-          const status = a.submission_status || (hasScore ? 'GRADED' : 'PENDING');
-          const statusClass = status === 'GRADED' ? 'evaluated' : (status === 'SUBMITTED' ? 'submitted' : 'pending');
+          const isAbsent = String(a.submission_status || '').toUpperCase() === 'ABSENT' || String(a.marks_obtained || '').toUpperCase() === 'AB';
+
+          // Assignment No. extraction
+          const match = (a.title || '').match(/(?:Assignment|Assign|Task|HW|A)\s*#?\s*(\d+)/i);
+          const assignNo = match ? `Assignment ${match[1]}` : (a.assignment_number ? `Assignment ${a.assignment_number}` : `Assignment ${idx + 1}`);
+
+          // Subject Short Name
+          const shortName = a.subject_short_name || a.short_name || a.subject_code || a.subject_name || 'DBMS';
+
+          // Marks formatted as Marks (9/9)
+          let marksDisplay = '';
+          if (isAbsent) {
+            marksDisplay = `<span class="rec-status-pill absent" style="padding:2px 6px; font-size:0.75rem;">AB</span> <span style="color:var(--text-muted); font-size:0.8rem;">/ ${max}</span>`;
+          } else if (hasScore) {
+            marksDisplay = `<strong>${scored}</strong> <span style="color:var(--text-muted); font-size:0.8rem;">/ ${max}</span>`;
+          } else {
+            marksDisplay = `<span style="color:var(--text-muted);">--</span> <span style="color:var(--text-muted); font-size:0.8rem;">/ ${max}</span>`;
+          }
+
           const dateStr = a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : '--';
+          const hasDoc = !!(a.file_path || a.original_filename);
+          const filePath = a.file_path || '/uploads/submissions/sample_sql.pdf';
+          const docTitle = a.original_filename || `${shortName} — ${assignNo}`;
 
           return `
             <tr>
               <td class="td-num">${idx + 1}</td>
               <td><strong>Sem ${a.semester || '--'}</strong></td>
-              <td><code>${escapeHtml(a.subject_code || '--')}</code></td>
-              <td>${escapeHtml(a.subject_name || '--')}</td>
-              <td><strong>${escapeHtml(a.title || '--')}</strong></td>
-              <td class="td-num">${max}</td>
-              <td class="td-num">${hasScore ? scored : '--'}</td>
-              <td class="td-num">${hasScore ? `${pct}%` : '--'}</td>
-              <td><span class="rec-status-pill ${statusClass}">${escapeHtml(status)}</span></td>
+              <td><span class="rec-meta-badge" style="font-weight:700;">${escapeHtml(shortName)}</span></td>
+              <td>
+                <div style="font-weight:700; color:var(--text-main);">${escapeHtml(assignNo)}</div>
+                ${a.title && a.title.toLowerCase() !== assignNo.toLowerCase() ? `<div style="font-size:0.75rem; color:var(--text-muted); max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(a.title)}">${escapeHtml(a.title)}</div>` : ''}
+              </td>
+              <td class="td-num">${marksDisplay}</td>
               <td>${dateStr}</td>
+              <td style="text-align:center;">
+                ${hasDoc ? `
+                  <button type="button" class="btn-rec-table-view" onclick="previewDossierDocument('${escapeHtml(filePath)}', '${escapeHtml(docTitle)}')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>View</span>
+                  </button>
+                ` : `
+                  <span style="color:var(--text-muted); font-size:0.78rem; font-style:italic;">No Document</span>
+                `}
+              </td>
             </tr>
           `;
         }).join('');
 
         if (tfoot) {
-          const avgPct = scoredCount > 0 ? Math.round((totalScored / (scoredCount * (totalMax / assignments.length))) * 100) : '--';
           tfoot.innerHTML = `
             <tr>
-              <td colspan="5" style="text-align:right;"><strong>Total / Evaluation Summary:</strong></td>
-              <td class="td-num">${totalMax}</td>
-              <td class="td-num">${totalScored}</td>
-              <td class="td-num">${avgPct !== '--' ? `${avgPct}%` : '--'}</td>
+              <td colspan="4" style="text-align:right;"><strong>Total / Evaluation Summary:</strong></td>
+              <td class="td-num"><strong>${totalScored}</strong> <span style="color:var(--text-muted); font-size:0.8rem;">/ ${totalMax}</span></td>
               <td colspan="2"><strong>${scoredCount} of ${assignments.length} Evaluated</strong></td>
             </tr>
           `;
         }
-      }
-    }
-
-    // Uploaded Assignment Submissions Grid (Below Excel Sheet)
-    if (uploadsGrid) {
-      const uploadedAssignments = assignments.filter(a => a.file_path || a.original_filename || a.submission_status === 'SUBMITTED' || a.submission_status === 'GRADED');
-      if (uploadsCount) uploadsCount.textContent = `${uploadedAssignments.length} Uploads`;
-
-      if (uploadedAssignments.length === 0) {
-        uploadsGrid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align:center; padding: 2rem; color:var(--text-muted); font-style:italic;">
-            No digital assignment files or submission documents uploaded for selected semesters.
-          </div>
-        `;
-      } else {
-        uploadsGrid.innerHTML = uploadedAssignments.map(a => {
-          let feedbackObj = null;
-          if (a.feedback) {
-            try {
-              feedbackObj = typeof a.feedback === 'string' ? JSON.parse(a.feedback) : a.feedback;
-            } catch (e) {
-              feedbackObj = { remarks: a.feedback };
-            }
-          }
-          const remarks = feedbackObj?.remarks || (typeof a.feedback === 'string' && !a.feedback.startsWith('{') ? a.feedback : null);
-          const fileName = a.original_filename || (a.file_path ? a.file_path.split(/[\/\\]/).pop() : 'Assignment_Submission.pdf');
-          const status = a.submission_status || 'SUBMITTED';
-
-          return `
-            <div class="rec-upload-card">
-              <div class="rec-upload-card-top">
-                <div class="rec-upload-file-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                  </svg>
-                </div>
-                <div class="rec-upload-details">
-                  <div class="rec-upload-title" title="${escapeHtml(a.title || 'Assignment')}">${escapeHtml(a.title || 'Assignment')}</div>
-                  <div class="rec-upload-meta">
-                    <span>${escapeHtml(a.subject_code || '')} • Sem ${a.semester}</span>
-                    <span>• ${a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : 'Uploaded'}</span>
-                  </div>
-                </div>
-                <span class="rec-status-pill ${status.toLowerCase()}">${escapeHtml(status)}</span>
-              </div>
-              ${remarks ? `<div class="rec-upload-feedback"><strong>Teacher Remarks:</strong> ${escapeHtml(remarks)}</div>` : ''}
-              <div class="rec-upload-actions">
-                <span style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-family-mono, monospace);">
-                  Marks: <strong>${a.marks_obtained !== null && a.marks_obtained !== undefined ? a.marks_obtained : '--'}</strong> / ${a.max_marks || 100}
-                </span>
-                <a href="${escapeHtml(a.file_path || '#')}" target="_blank" download="${escapeHtml(fileName)}" class="btn-rec-download-file">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  <span>${escapeHtml(fileName)}</span>
-                </a>
-              </div>
-            </div>
-          `;
-        }).join('');
       }
     }
   }
@@ -992,6 +959,58 @@
     if (menu) menu.style.display = 'none';
   };
 
+  // In-Browser Document Preview Handlers
+  window.previewDossierDocument = function (filePath, docTitle) {
+    const modal = document.getElementById('modal-document-preview');
+    const titleEl = document.getElementById('preview-doc-title');
+    const bodyEl = document.getElementById('preview-doc-body');
+    if (!modal || !bodyEl) return;
+
+    if (titleEl) titleEl.textContent = docTitle || 'Document Preview';
+
+    const isPdf = /\.pdf($|\?)/i.test(filePath);
+    const isImage = /\.(jpg|jpeg|png|webp|svg|gif)($|\?)/i.test(filePath);
+
+    if (isPdf) {
+      bodyEl.innerHTML = `
+        <iframe src="${filePath}#toolbar=0" style="width:100%; height:100%; border:none; background:var(--bg-surface);" title="${escapeHtml(docTitle || 'Document')}"></iframe>
+      `;
+    } else if (isImage) {
+      bodyEl.innerHTML = `
+        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:1.5rem; overflow:auto;">
+          <img src="${filePath}" alt="${escapeHtml(docTitle || 'Submission Image')}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; box-shadow:var(--shadow-md);" />
+        </div>
+      `;
+    } else {
+      bodyEl.innerHTML = `
+        <iframe src="${filePath}" style="width:100%; height:100%; border:none; background:var(--bg-surface);" title="${escapeHtml(docTitle || 'Document')}"></iframe>
+      `;
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  window.closeDocumentPreview = function () {
+    const modal = document.getElementById('modal-document-preview');
+    const bodyEl = document.getElementById('preview-doc-body');
+    if (bodyEl) bodyEl.innerHTML = '';
+    if (modal) modal.style.display = 'none';
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const docPreview = document.getElementById('modal-document-preview');
+      if (docPreview && docPreview.style.display !== 'none') {
+        closeDocumentPreview();
+        return;
+      }
+      const dossierModal = document.getElementById('modal-student-dossier');
+      if (dossierModal && dossierModal.style.display !== 'none') {
+        closeDossierModal();
+      }
+    }
+  });
+
   // Profile Export Dropdown Menu Toggle
   window.toggleProfileExportMenu = function (e) {
     if (e) e.stopPropagation();
@@ -1243,7 +1262,7 @@
       return;
     }
 
-    const incProfile = document.getElementById('export-inc-profile')?.checked ?? true;
+    const incProfile = document.getElementById('export-inc-profile')?.checked ?? false;
     const incTests = document.getElementById('export-inc-tests')?.checked ?? true;
     const incAssignments = document.getElementById('export-inc-assignments')?.checked ?? true;
     const incLabs = document.getElementById('export-inc-labs')?.checked ?? true;
@@ -1374,26 +1393,30 @@
     if (options.incAssignments !== false) {
       const wsAssignments = workbook.addWorksheet('Assignments');
       wsAssignments.columns = [
+        { header: 'S.NO', key: 'sno', width: 8 },
         { header: 'Semester', key: 'sem', width: 14 },
-        { header: 'Subject Code', key: 'code', width: 16 },
-        { header: 'Subject Name', key: 'sub', width: 30 },
-        { header: 'Assignment Title', key: 'title', width: 35 },
-        { header: 'Max Marks', key: 'max', width: 14 },
-        { header: 'Marks Scored', key: 'scored', width: 16 },
-        { header: 'Status', key: 'status', width: 16 },
-        { header: 'Submission File', key: 'file', width: 30 }
+        { header: 'Subject Short Name', key: 'shortName', width: 20 },
+        { header: 'Assignment NO.', key: 'assignNo', width: 20 },
+        { header: 'Marks (Obt / Max)', key: 'marks', width: 18 },
+        { header: 'Submission Date', key: 'date', width: 18 },
+        { header: 'Document / File', key: 'file', width: 30 }
       ];
       allAssessments
         .filter(a => classifyAssessment(a) === 'ASSIGNMENT' && selectedSems.includes(Number(a.semester)))
-        .forEach(a => {
+        .forEach((a, idx) => {
+          const max = a.max_marks || 100;
+          const scored = a.marks_obtained !== null && a.marks_obtained !== undefined ? a.marks_obtained : '--';
+          const match = (a.title || '').match(/(?:Assignment|Assign|Task|HW|A)\s*#?\s*(\d+)/i);
+          const assignNo = match ? `Assignment ${match[1]}` : (a.assignment_number ? `Assignment ${a.assignment_number}` : `Assignment ${idx + 1}`);
+          const shortName = a.subject_short_name || a.short_name || a.subject_code || a.subject_name || 'DBMS';
+          const dateStr = a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : '--';
           wsAssignments.addRow({
+            sno: idx + 1,
             sem: `Sem ${a.semester || ''}`,
-            code: a.subject_code || '',
-            sub: a.subject_name || '',
-            title: a.title || '',
-            max: a.max_marks || 100,
-            scored: a.marks_obtained !== null ? a.marks_obtained : '--',
-            status: a.submission_status || 'PENDING',
+            shortName: shortName,
+            assignNo: assignNo,
+            marks: `${scored} / ${max}`,
+            date: dateStr,
             file: a.original_filename || (a.file_path ? a.file_path.split(/[\/\\]/).pop() : '--')
           });
         });
@@ -1561,17 +1584,27 @@
       html += `
         <h2>3. Coursework &amp; Assignment Evaluation Ledger</h2>
         <table>
-          <tr><th>Semester</th><th>Subject</th><th>Assignment Title</th><th>Max Marks</th><th>Scored Marks</th><th>Status</th></tr>
-          ${assignments.map(a => `
-            <tr>
-              <td>Sem ${a.semester || ''}</td>
-              <td>${escapeHtml(a.subject_name || '')}</td>
-              <td>${escapeHtml(a.title || '')}</td>
-              <td>${a.max_marks || 0}</td>
-              <td><b>${a.marks_obtained !== null ? a.marks_obtained : '--'}</b></td>
-              <td>${escapeHtml(a.submission_status || 'SUBMITTED')}</td>
-            </tr>
-          `).join('')}
+          <tr><th>S.NO</th><th>Semester</th><th>Subject Short Name</th><th>Assignment NO.</th><th>Marks</th><th>Submission Date</th><th>Document</th></tr>
+          ${assignments.map((a, idx) => {
+            const max = a.max_marks || 100;
+            const scored = a.marks_obtained !== null && a.marks_obtained !== undefined ? a.marks_obtained : '--';
+            const match = (a.title || '').match(/(?:Assignment|Assign|Task|HW|A)\s*#?\s*(\d+)/i);
+            const assignNo = match ? `Assignment ${match[1]}` : (a.assignment_number ? `Assignment ${a.assignment_number}` : `Assignment ${idx + 1}`);
+            const shortName = a.subject_short_name || a.short_name || a.subject_code || a.subject_name || 'DBMS';
+            const dateStr = a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : '--';
+            const fileName = a.original_filename || (a.file_path ? a.file_path.split(/[\/\\]/).pop() : '--');
+            return `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>Sem ${a.semester || ''}</td>
+                <td>${escapeHtml(shortName)}</td>
+                <td><b>${escapeHtml(assignNo)}</b></td>
+                <td><b>${scored}</b> / ${max}</td>
+                <td>${dateStr}</td>
+                <td>${escapeHtml(fileName)}</td>
+              </tr>
+            `;
+          }).join('')}
         </table>
       `;
     }
@@ -1687,17 +1720,27 @@
       sectionsHtml += `
         <h2>Coursework &amp; Assignments</h2>
         <table>
-          <tr><th>Semester</th><th>Subject</th><th>Title</th><th>Max</th><th>Scored</th><th>Status</th></tr>
-          ${assignments.map(a => `
-            <tr>
-              <td>Sem ${a.semester || ''}</td>
-              <td>${escapeHtml(a.subject_name || '')}</td>
-              <td>${escapeHtml(a.title || '')}</td>
-              <td>${a.max_marks || 0}</td>
-              <td><b>${a.marks_obtained !== null ? a.marks_obtained : '--'}</b></td>
-              <td>${escapeHtml(a.submission_status || 'SUBMITTED')}</td>
-            </tr>
-          `).join('')}
+          <tr><th>S.NO</th><th>Semester</th><th>Subject Short Name</th><th>Assignment NO.</th><th>Marks</th><th>Submission Date</th><th>Document</th></tr>
+          ${assignments.map((a, idx) => {
+            const max = a.max_marks || 100;
+            const scored = a.marks_obtained !== null && a.marks_obtained !== undefined ? a.marks_obtained : '--';
+            const match = (a.title || '').match(/(?:Assignment|Assign|Task|HW|A)\s*#?\s*(\d+)/i);
+            const assignNo = match ? `Assignment ${match[1]}` : (a.assignment_number ? `Assignment ${a.assignment_number}` : `Assignment ${idx + 1}`);
+            const shortName = a.subject_short_name || a.short_name || a.subject_code || a.subject_name || 'DBMS';
+            const dateStr = a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : '--';
+            const fileName = a.original_filename || (a.file_path ? a.file_path.split(/[\/\\]/).pop() : '--');
+            return `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>Sem ${a.semester || ''}</td>
+                <td>${escapeHtml(shortName)}</td>
+                <td><b>${escapeHtml(assignNo)}</b></td>
+                <td><b>${scored}</b> / ${max}</td>
+                <td>${dateStr}</td>
+                <td>${escapeHtml(fileName)}</td>
+              </tr>
+            `;
+          }).join('')}
         </table>
       `;
     }

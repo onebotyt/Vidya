@@ -389,41 +389,20 @@
             <table class="rec-excel-table">
               <thead>
                 <tr>
-                  <th class="th-num">#</th>
+                  <th class="th-num">S.NO</th>
                   <th>Semester</th>
-                  <th>Subject Code</th>
-                  <th>Subject Name</th>
-                  <th>Assignment Title</th>
-                  <th class="th-num">Max Marks</th>
-                  <th class="th-num">Marks Scored</th>
-                  <th class="th-num">Score %</th>
-                  <th>Status</th>
+                  <th>Subject Short Name</th>
+                  <th>Assignment NO.</th>
+                  <th class="th-num">Marks</th>
                   <th>Submission Date</th>
+                  <th style="text-align:center;">Document</th>
                 </tr>
               </thead>
               <tbody id="dossier-assignments-body">
-                <tr><td colspan="10" class="rec-empty-cell">No assignments recorded for selected semesters.</td></tr>
+                <tr><td colspan="7" class="rec-empty-cell">No assignments recorded for selected semesters.</td></tr>
               </tbody>
               <tfoot id="dossier-assignments-foot"></tfoot>
             </table>
-          </div>
-
-          <!-- Below Excel Sheet: Student Uploaded Assignment Documents & Submissions -->
-          <div class="rec-uploads-container">
-            <div class="rec-uploads-header">
-              <div class="rec-uploads-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <span>Student Assignment Uploads &amp; Submitted Digital Files</span>
-              </div>
-              <span class="rec-uploads-count" id="student-assignment-uploads-count">0 Uploads</span>
-            </div>
-            <div class="rec-uploads-grid" id="student-assignment-uploads-grid">
-              <!-- Uploaded assignment submission cards populated dynamically -->
-            </div>
           </div>
         </div>
 
@@ -582,10 +561,6 @@
             </span>
             <div class="rec-export-checks-group">
               <label class="rec-check-label">
-                <input type="checkbox" id="export-inc-profile" checked>
-                <span>Student Profile</span>
-              </label>
-              <label class="rec-check-label">
                 <input type="checkbox" id="export-inc-tests" checked>
                 <span>Tests &amp; Exams</span>
               </label>
@@ -645,6 +620,30 @@
             <span>Export Selected Dossier</span>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Document In-Browser Preview Modal (Preview without Downloading) -->
+  <div id="modal-document-preview" class="rec-modal-backdrop" style="display:none;" onclick="if(event.target===this)closeDocumentPreview()">
+    <div class="rec-modal-card" style="max-width:900px; width:95%; height:88vh; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+      <div class="rec-modal-header" style="padding:0.75rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:0.5rem; min-width:0;">
+          <div class="rec-modal-header-icon" style="width:32px; height:32px; border-radius:8px; background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+          </div>
+          <div style="min-width:0;">
+            <h3 id="preview-doc-title" style="margin:0; font-size:0.95rem; font-weight:800; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Document Preview</h3>
+            <span id="preview-doc-meta" style="font-size:0.75rem; color:var(--text-muted);">In-Browser Inspection • Read Only</span>
+          </div>
+        </div>
+        <button type="button" class="btn-rec-modal-close" onclick="closeDocumentPreview()" title="Close Preview">✕</button>
+      </div>
+      <div id="preview-doc-body" style="flex:1; width:100%; height:100%; background:var(--bg-surface-secondary); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
+        <!-- Populated dynamically: iframe for PDF, img for images, or preview container -->
       </div>
     </div>
   </div>

@@ -159,6 +159,9 @@
       const roomCode = g.room_no || '101';
       const semester = g.semester || 6;
       const component = (g.component || 'THEORY').toUpperCase();
+      const compStr = String(component || '').toUpperCase();
+      const hasTheory = compStr.includes('THEORY') || !compStr.includes('PRACTICAL');
+      const hasPractical = compStr.includes('PRACTICAL');
 
       return `
         <div class="class-card" id="class-card-${g.id}">
@@ -206,6 +209,7 @@
 
           <!-- Dedicated Module Action Tiles (Each with dedicated standalone page) -->
           <div class="class-module-tiles-grid">
+            ${hasTheory ? `
             <!-- 1. Theory Classes -->
             <a href="/faculty/theory-classes/index.html?groupId=${g.id}" class="module-action-tile" title="Theory Classes, Syllabus & Lesson Plans">
               <span class="module-tile-icon icon-theory">
@@ -217,8 +221,9 @@
                 </svg>
               </span>
               <span class="module-tile-label">Theory Classes</span>
-            </a>
+            </a>` : ''}
 
+            ${hasPractical ? `
             <!-- 2. Laboratory -->
             <a href="/faculty/lab-classes/index.html?groupId=${g.id}" class="module-action-tile" title="Laboratory Classes & Practicals">
               <span class="module-tile-icon icon-lab">
@@ -229,7 +234,7 @@
                 </svg>
               </span>
               <span class="module-tile-label">Laboratory</span>
-            </a>
+            </a>` : ''}
 
             <!-- 3. NBA -->
             <a href="/faculty/course-file/index.html?groupId=${g.id}" class="module-action-tile" title="NBA Academic Dossier & CO-PO Mapping">

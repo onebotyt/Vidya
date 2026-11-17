@@ -349,12 +349,57 @@ class TeachingGroupModel {
     );
     if (!rows[0]) return null;
     const group = rows[0];
-    const linkedRegisters = await query(
+    let linkedRegisters = await query(
       `SELECT id, name, session_type_scope, is_official FROM attendance_registers WHERE group_id = ? ORDER BY id ASC`,
       [groupId]
     );
-    group.registers = linkedRegisters;
-    group.register_id = linkedRegisters[0]?.id || null;
+
+    // Self-healing: Auto-provision missing attendance_registers if not yet created for this group
+    if (!linkedRegisters || linkedRegisters.length === 0) {
+      try {
+        const isDual = (group.component === 'THEORY_PRACTICAL' || group.component === 'THEORY + PRACTICAL' || group.component === 'BOTH');
+        const year = group.year || Math.ceil(group.semester / 2) || 1;
+        const ayId = group.academic_year_id || 1;
+        const deptId = group.department_id || 4;
+        const teacherId = group.teacher_id || 2;
+        let subId = null;
+        if (group.subject_name) {
+          const subs = await query('SELECT id FROM subjects WHERE name = ? OR code = ? LIMIT 1', [group.subject_name, group.subject_code]);
+          if (subs && subs.length > 0) subId = subs[0].id;
+        }
+
+        if (isDual) {
+          await query(
+            `INSERT INTO attendance_registers 
+              (teacher_id, name, subject_id, department_id, year, semester, academic_year_id, session_type_scope, is_official, is_active, group_id, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'THEORY', 1, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            [teacherId, `${group.subject_name || group.name} (Theory)`, subId, deptId, year, group.semester, ayId, groupId]
+          );
+          await query(
+            `INSERT INTO attendance_registers 
+              (teacher_id, name, subject_id, department_id, year, semester, academic_year_id, session_type_scope, is_official, is_active, group_id, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'PRACTICAL', 1, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            [teacherId, `${group.subject_name || group.name} (Practical)`, subId, deptId, year, group.semester, ayId, groupId]
+          );
+        } else {
+          await query(
+            `INSERT INTO attendance_registers 
+              (teacher_id, name, subject_id, department_id, year, semester, academic_year_id, session_type_scope, is_official, is_active, group_id, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            [teacherId, group.name, subId, deptId, year, group.semester, ayId, group.component || 'THEORY', groupId]
+          );
+        }
+        linkedRegisters = await query(
+          `SELECT id, name, session_type_scope, is_official FROM attendance_registers WHERE group_id = ? ORDER BY id ASC`,
+          [groupId]
+        );
+      } catch (err) {
+        logger.error(`Error auto-provisioning register for group ${groupId}:`, err);
+      }
+    }
+
+    group.registers = linkedRegisters || [];
+    group.register_id = linkedRegisters?.[0]?.id || null;
     return group;
   }
 

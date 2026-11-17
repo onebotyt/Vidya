@@ -264,11 +264,13 @@ class StudentRecordModel {
         sub.file_path,
         sub.original_filename,
         sub.feedback,
-        COALESCE(s.name, 'Department Subject') as subject_name,
-        COALESCE(s.code, 'IT500') as subject_code
+        COALESCE(tg.subject_name, s.name, 'Department Subject') as subject_name,
+        COALESCE(tg.subject_code, s.code, 'IT500') as subject_code,
+        COALESCE(tg.subject_short_name, s.code, s.name, 'DBMS') as subject_short_name
       FROM assessments a
       LEFT JOIN assessment_submissions sub ON a.id = sub.assessment_id AND sub.student_id = ?
       LEFT JOIN subjects s ON a.subject_id = s.id
+      LEFT JOIN teaching_groups tg ON a.group_id = tg.id
       WHERE (sub.student_id = ? OR (a.department_id = ? AND a.semester = ?))
       ORDER BY a.semester ASC, a.created_at DESC`,
       [studentId, studentId, profile.department_id || deptId || 2, profile.current_semester || 5]
