@@ -203,10 +203,9 @@ class StudentRecordModel {
    * @param {number} deptId Department ID
    * @returns {Promise<Object>} Full dossier
    */
-  static async getStudentFullDossier(studentId, deptId) {
+  static async getStudentFullDossier(studentId, deptId = null) {
     // 1. Demographic profile
-    const studentRows = await query(
-      `SELECT 
+    let sql = `SELECT 
         st.id,
         st.user_id,
         st.full_name,
@@ -236,10 +235,14 @@ class StudentRecordModel {
       JOIN users u ON st.user_id = u.id
       JOIN enrollments e ON e.student_id = st.id
       JOIN departments d ON e.department_id = d.id
-      WHERE st.id = ? AND e.department_id = ?
-      LIMIT 1`,
-      [studentId, deptId]
-    );
+      WHERE st.id = ?`;
+    const params = [studentId];
+    if (deptId) {
+      sql += ` AND e.department_id = ?`;
+      params.push(deptId);
+    }
+    sql += ` LIMIT 1`;
+    const studentRows = await query(sql, params);
 
     if (!studentRows || studentRows.length === 0) {
       return null;
