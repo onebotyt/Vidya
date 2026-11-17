@@ -1800,6 +1800,15 @@
   </div>
 
   <script src="/faculty/registers/registers.js?v=20261028"></script>
+  <script>
+    function openInternalEvaluationStudio() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const regId = urlParams.get('id') || (typeof currentRegisterId !== 'undefined' ? currentRegisterId : null) || (typeof state !== 'undefined' && state.currentRegisterId) || 1;
+      const grpId = (typeof state !== 'undefined' && state.currentRegister?.teaching_group_id) || (typeof currentGroupId !== 'undefined' ? currentGroupId : '') || '';
+      window.location.href = `/faculty/sheets/index.html?registerId=${encodeURIComponent(regId)}&groupId=${encodeURIComponent(grpId)}`;
+    }
+    window.openInternalEvaluationStudio = openInternalEvaluationStudio;
+  </script>
 </body>
 
 </html>

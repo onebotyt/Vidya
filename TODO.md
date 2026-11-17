@@ -38,6 +38,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 445: Mobile Viewport Zero-Overflow, Classroom Card 3-Dot Actions (Edit & 30-Day Trash), Type-to-Confirm & Cohort Broadcast
+- **Mobile Viewport & Zero-Overflow Architecture (`classes.css`)**:
+  - Replaced horizontal scroll overflow with modern responsive flex/grid layouts:
+    - 3-in-1 KPI stat cards (`My Classes`, `Total Students`, `Subjects`) fit 100% edge-to-edge without clipping (`grid-template-columns: repeat(3, 1fr)`).
+    - Top action buttons row (`+ Create Class`, `Students Roster`, `Broadcast Notice`) dynamically stack into an ergonomic thumb-friendly layout: prominent full-width `Create Class` button, paired with `Students Roster` and `Broadcast Notice` in a clean 2-column grid.
+    - Zero horizontal scrolling, zero text truncation, zero clipping across all screen sizes (320px–1440px).
+- **Classroom Card Kebab (3-Dot) Menu & Workflow Enhancements (`classes.js` & `index.html`)**:
+  - Attached custom styled dropdown menu to the 3-dot kebab button on each classroom card:
+    - **Edit Class**: Opens `#edit-class-modal` allowing editing of subject name, short name, code/room, components, academic session, and semester.
+    - **Move to Trash**: Opens a dedicated styled dialog box (`#delete-class-modal`).
+- **30-Day Trash Policy & Type-to-Confirm Dialog (`#delete-class-modal`)**:
+  - Implemented 30-day recoverable trash retention in backend (`status = 'TRASH'`, `deleted_at = NOW()`).
+  - Implemented background auto-purge (`purgeExpiredTrash()`) permanently deleting classrooms in Trash older than 30 days.
+  - Built custom styled confirmation dialog box featuring a red warning shield, 30-day notice badge, and a safety text input requiring the user to type `DELETE` to enable the confirmation button.
+- **Targeted Broadcast Notice with Cohort Selector & Media Upload (`#broadcast-notice-modal`)**:
+  - Added Target Cohort / Year selector (`All Enrolled Years`, `1st Year`, `2nd Year`, `3rd Year`) allowing faculty/HOD to deliver announcements specifically to chosen class cohorts.
+  - Added media attachment support with interactive file dropzone, file preview chip (displaying file name and formatted size), and clear/remove action.
+  - Enhanced backend `/broadcast-notice` route with multipart multer upload handling, delivering attachments and notifying enrolled students.
+- **Automated Verification Suite**:
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% parity).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+  - End-to-end API flows tested and verified.
+
 ### ✅ Milestone 444: Obsolete File Elimination, Unified Styled Dialogs & 1,228-Line Code Reduction
 - **Obsolete File Elimination (`leave-approvals.html`)**:
   - Deleted legacy orphan file `frontend/faculty/leave-approvals/leave-approvals.html` that contained outdated hero banner markup.

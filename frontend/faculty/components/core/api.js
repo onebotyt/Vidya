@@ -88,9 +88,13 @@
       headers
     };
 
+    let normPath = endpoint;
+    if (normPath.startsWith(API_BASE)) {
+      normPath = normPath.slice(API_BASE.length);
+    }
     const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
       ? endpoint
-      : `${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+      : `${API_BASE}${normPath.startsWith('/') ? normPath : '/' + normPath}`;
 
     try {
       const response = await fetch(url, config);

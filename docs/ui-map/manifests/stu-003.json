@@ -5,7 +5,7 @@
   "route": "/student/assignments.html",
   "source_file": "frontend/student/assignments/index.html",
   "content_hash": "6a4b53c8ede6",
-  "last_scanned": "2026-11-17T17:01:23.616Z",
+  "last_scanned": "2026-11-17T17:35:10.757Z",
   "title": "To-do — Student Portal | VidyaOS Classroom",
   "purpose": "To-do assignments, submitted tasks, graded coursework",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",

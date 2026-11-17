@@ -15,6 +15,8 @@
     "collab:preview": "node scripts/collab/preview-server.js",
     "push:safe": "node scripts/collab/safe-push.js",
     "push:backend": "node scripts/collab/safe-push.js",
+    "ui:scan": "node backend/scripts/extract-ui-manifest.js",
+    "ui:verify": "node backend/scripts/test-ui-manifest-sync.js",
     "test:theme": "node backend/scripts/test-theme-support.js",
     "test:rbac": "node backend/scripts/test-rbac-and-structure.js"
   },

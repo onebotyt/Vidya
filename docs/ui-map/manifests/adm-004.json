@@ -5,7 +5,7 @@
   "route": "/admin/audit-logs.html",
   "source_file": "frontend/admin/audit-logs/index.html",
   "content_hash": "a9bf7afdfd5c",
-  "last_scanned": "2026-11-17T17:01:23.434Z",
+  "last_scanned": "2026-11-17T17:35:10.559Z",
   "title": "Institutional Audit Trail — Admin Console",
   "purpose": "Compliance audit trail, login attempts, grade changes, ledger edits",
   "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",

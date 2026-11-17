@@ -5,7 +5,7 @@
   "route": "/admin/academic-structure.html",
   "source_file": "frontend/admin/academic-structure/index.html",
   "content_hash": "e53c1a589b5b",
-  "last_scanned": "2026-11-17T17:01:23.413Z",
+  "last_scanned": "2026-11-17T17:35:10.536Z",
   "title": "Academic Departments &amp; Branches — Admin Console",
   "purpose": "Department, course, semester, section and room structure management",
   "shell": "Admin Shell (`nav.css`, `nav.js`)",

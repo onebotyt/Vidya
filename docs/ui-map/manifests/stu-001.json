@@ -5,7 +5,7 @@
   "route": "/student/dashboard.html",
   "source_file": "frontend/student/dashboard/index.html",
   "content_hash": "0cbf5b9fce1e",
-  "last_scanned": "2026-11-17T17:01:23.605Z",
+  "last_scanned": "2026-11-17T17:35:10.743Z",
   "title": "Student Classroom Dashboard — VidyaOS",
   "purpose": "Student classroom dashboard, enrolled courses, attendance progress",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",

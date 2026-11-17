@@ -73,8 +73,33 @@
     </div>
 
     <!-- Search & Filter Toolbar -->
-    <div class="scores-toolbar">
-      <input type="search" id="scores-search-input" class="form-control" placeholder="Search by exam name, subject, or code..." oninput="filterScoresView()">
+    <div class="scores-filter-container">
+      <!-- Semester Filter Pills -->
+      <div class="segmented-filter-scroll-wrap">
+        <div class="segmented-filter" id="semester-filters">
+          <button type="button" class="active" data-sem="ALL" onclick="setSemesterFilter('ALL')">All Semesters</button>
+          <button type="button" data-sem="1" onclick="setSemesterFilter('1')">Sem 1</button>
+          <button type="button" data-sem="2" onclick="setSemesterFilter('2')">Sem 2</button>
+          <button type="button" data-sem="3" onclick="setSemesterFilter('3')">Sem 3</button>
+          <button type="button" data-sem="4" onclick="setSemesterFilter('4')">Sem 4</button>
+          <button type="button" data-sem="5" onclick="setSemesterFilter('5')">Sem 5</button>
+          <button type="button" data-sem="6" onclick="setSemesterFilter('6')">Sem 6</button>
+        </div>
+      </div>
+
+      <!-- Type Filter & Search Bar Row -->
+      <div class="scores-secondary-toolbar">
+        <div class="segmented-filter" id="type-filters">
+          <button type="button" class="active" data-type="ALL" onclick="setTypeFilter('ALL')">All (<span id="count-all">0</span>)</button>
+          <button type="button" data-type="EXAM" onclick="setTypeFilter('EXAM')">Exams &amp; Tests (<span id="count-exams">0</span>)</button>
+          <button type="button" data-type="ASSIGNMENT" onclick="setTypeFilter('ASSIGNMENT')">Assignments (<span id="count-assignments">0</span>)</button>
+        </div>
+
+        <div class="scores-search-wrap">
+          <svg class="scores-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="search" id="scores-search-input" class="form-control" placeholder="Search assessments, subjects..." oninput="filterScoresView()">
+        </div>
+      </div>
     </div>
 
     <div id="scores-wrap">

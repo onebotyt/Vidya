@@ -913,6 +913,125 @@ class HodController {
   }
 
   /**
+   * Transfer student to another institution/branch (preserves records & documents)
+   * @route POST /api/v1/hod/students/:id/transfer
+   */
+  static async transferStudent(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const { reason } = req.body || {};
+      const result = await HodModel.transferStudent(req.params.id, deptId, reason, req.user?.id);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found in your department' } });
+      }
+      res.json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Mark student as withdrawn (preserves records & documents)
+   * @route POST /api/v1/hod/students/:id/withdraw
+   */
+  static async withdrawStudent(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const { reason } = req.body || {};
+      const result = await HodModel.withdrawStudent(req.params.id, deptId, reason, req.user?.id);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found in your department' } });
+      }
+      res.json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Re-activate a transferred or withdrawn student back into active enrollment
+   * @route POST /api/v1/hod/students/:id/reactivate
+   */
+  static async reactivateStudent(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const result = await HodModel.reactivateStudent(req.params.id, deptId, req.user?.id);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found in your department' } });
+      }
+      res.json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Retrieve all archived academic records and documents for a student (accessible anytime)
+   * @route GET /api/v1/hod/students/:id/documents
+   */
+  static async getStudentDocuments(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      const data = await HodModel.getStudentDocuments(req.params.id, deptId);
+      if (!data) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found in your department' } });
+      }
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Upload an archived document or official record for a student
+   * @route POST /api/v1/hod/students/:id/documents
+   */
+  static async uploadStudentDocument(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Document file is required' } });
+      }
+
+      const deptId = req.hod_department_id;
+      const studentId = parseInt(req.params.id, 10);
+      const { title, document_type, notes } = req.body || {};
+
+      const filePath = `/uploads/student-documents/${req.file.filename}`;
+      const doc = await HodModel.addStudentDocument({
+        student_id: studentId,
+        department_id: deptId,
+        title: title || req.file.originalname,
+        document_type: document_type || 'ACADEMIC_RECORD',
+        file_path: filePath,
+        file_name: req.file.originalname,
+        file_size: req.file.size,
+        mime_type: req.file.mimetype,
+        uploaded_by: req.user?.id || 1,
+        uploader_name: req.user?.full_name || 'Faculty Member',
+        notes: notes || null
+      });
+
+      res.status(201).json({ success: true, data: doc, message: 'Student document archived successfully' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
+   * Delete an archived student document
+   * @route DELETE /api/v1/hod/students/:id/documents/:docId
+   */
+  static async deleteStudentDocument(req, res) {
+    try {
+      const deptId = req.hod_department_id;
+      await HodModel.deleteStudentDocument(req.params.docId, req.params.id, deptId);
+      res.json({ success: true, message: 'Document removed successfully' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
+    }
+  }
+
+  /**
    * Re-index class roll numbers alphabetically by student name for a cohort
    * @route POST /api/v1/hod/students/reindex-roll (routes/hod.js)
    * @access Protected (HOD, SYSTEM_ADMIN)

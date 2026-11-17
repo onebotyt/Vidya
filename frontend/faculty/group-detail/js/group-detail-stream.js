@@ -11,7 +11,7 @@
 
   async function loadStream() {
   try {
-    const r = await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream');
+    const r = await apiFetch('/teaching-groups/' + S.groupId + '/stream');
     S.posts = r.data || [];
     renderStream(S.posts);
   } catch {
@@ -185,7 +185,7 @@ async function loadDetailComments(postId) {
   const listEl = ById('detail-comments-list');
   if (!listEl) return;
   try {
-    const r = await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream/' + postId + '/comments');
+    const r = await apiFetch('/teaching-groups/' + S.groupId + '/stream/' + postId + '/comments');
     const comments = r.data || [];
     if (!comments.length) {
       listEl.innerHTML = '<div class="detail-no-comments">No comments</div>';
@@ -218,7 +218,7 @@ async function submitDetailComment() {
   if (btn) btn.disabled = true;
 
   try {
-    await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream/' + S.currentDetailPostId + '/comments', {
+    await apiFetch('/teaching-groups/' + S.groupId + '/stream/' + S.currentDetailPostId + '/comments', {
       method: 'POST',
       body: JSON.stringify({ content: text })
     });
@@ -478,12 +478,12 @@ async function submitModalAnnouncement() {
       const fd = new FormData();
       fd.append('content', contentToSend || _modalAnnouncementFile.name);
       fd.append('attachment', _modalAnnouncementFile);
-      await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream', {
+      await apiFetch('/teaching-groups/' + S.groupId + '/stream', {
         method: 'POST',
         body: fd
       });
     } else {
-      await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream', {
+      await apiFetch('/teaching-groups/' + S.groupId + '/stream', {
         method: 'POST',
         body: JSON.stringify({ content: contentToSend })
       });
@@ -603,12 +603,12 @@ async function submitMobileAnnouncement() {
       const fd = new FormData();
       fd.append('content', text || _mobileAnnouncementFile.name);
       fd.append('attachment', _mobileAnnouncementFile);
-      await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream', {
+      await apiFetch('/teaching-groups/' + S.groupId + '/stream', {
         method: 'POST',
         body: fd
       });
     } else {
-      await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream', {
+      await apiFetch('/teaching-groups/' + S.groupId + '/stream', {
         method: 'POST',
         body: JSON.stringify({ content: text })
       });
@@ -689,7 +689,7 @@ function copyPostLink(pid) {
 async function deleteAnnouncement(pid) {
   if (!confirm('Delete this announcement?')) return;
   try {
-    await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream/' + pid, { method: 'DELETE' });
+    await apiFetch('/teaching-groups/' + S.groupId + '/stream/' + pid, { method: 'DELETE' });
     toast('Announcement deleted');
     if (S.currentDetailPostId === pid) closeAnnouncementDetail();
     await loadStream();
@@ -749,12 +749,12 @@ async function postAnnouncement() {
       const fd = new FormData();
       fd.append('content', text || _composeStreamFile.name);
       fd.append('attachment', _composeStreamFile);
-      await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream', {
+      await apiFetch('/teaching-groups/' + S.groupId + '/stream', {
         method: 'POST',
         body: fd
       });
     } else {
-      await apiFetch('/api/v1/teaching-groups/' + S.groupId + '/stream', {
+      await apiFetch('/teaching-groups/' + S.groupId + '/stream', {
         method: 'POST',
         body: JSON.stringify({ content: text })
       });
