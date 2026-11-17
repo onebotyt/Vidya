@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/leave-approvals.html",
   "source_file": "frontend/faculty/leave-approvals/index.html",
-  "content_hash": "42d7e7461a2c",
-  "last_scanned": "2026-11-17T16:35:32.241Z",
+  "content_hash": "a7cef7d4ec62",
+  "last_scanned": "2026-11-17T17:01:23.572Z",
   "title": "Leave Requests — Faculty Portal",
   "purpose": "Student medical and duty leave approval workflow",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -49,16 +49,6 @@
     "modals": [
       {
         "id": "leave-rejection-modal",
-        "title": "Reject Leave Application",
-        "field_count": 0
-      },
-      {
-        "id": "rejection-note-input",
-        "title": "Modal Dialog",
-        "field_count": 0
-      },
-      {
-        "id": "confirm-reject-btn",
         "title": "Modal Dialog",
         "field_count": 0
       },
@@ -137,25 +127,17 @@
       },
       {
         "id": null,
-        "label": "&times;",
-        "action": "closeRejectModal()",
-        "class": "leave-modal-close-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
         "label": "Cancel",
         "action": "closeRejectModal()",
-        "class": "btn btn-secondary",
+        "class": "btn btn-secondary leave-alert-btn",
         "data_ui": null,
         "title": null
       },
       {
         "id": "confirm-reject-btn",
-        "label": "Confirm Rejection",
+        "label": "Reject Application",
         "action": "confirmReject()",
-        "class": "btn btn-danger",
+        "class": "btn btn-danger leave-alert-btn",
         "data_ui": null,
         "title": null
       },
@@ -191,21 +173,9 @@
   "modals_catalog": [
     {
       "id": "leave-rejection-modal",
-      "title": "Reject Leave Application",
-      "fields": [],
-      "submit_action": null
-    },
-    {
-      "id": "rejection-note-input",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
-    },
-    {
-      "id": "confirm-reject-btn",
-      "title": "Modal Dialog",
-      "fields": [],
-      "submit_action": "closeRejectModal()"
     },
     {
       "id": "leave-alert-modal",

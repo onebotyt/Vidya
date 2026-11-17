@@ -38,6 +38,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 444: Obsolete File Elimination, Unified Styled Dialogs & 1,228-Line Code Reduction
+- **Obsolete File Elimination (`leave-approvals.html`)**:
+  - Deleted legacy orphan file `frontend/faculty/leave-approvals/leave-approvals.html` that contained outdated hero banner markup.
+  - Centralized single source of truth at `frontend/faculty/leave-approvals/index.html` (UIMS registered as `FAC-011`), seamlessly mapped via server rewrites.
+- **Unified Styled Dialog Box Architecture**:
+  - Upgraded `#leave-rejection-modal` to the exact same premium styled dialog system as `#leave-alert-modal`:
+    - Top amber halo circle with warning icon.
+    - Clean header and description typography.
+    - Styled auto-focus textarea with tokenized focus ring.
+    - Styled action buttons (`.btn-secondary` Cancel and `.btn-danger` Reject Application).
+  - Maintained `showLeaveAlert` async Promise engine with confirmation on Approve and success toasts.
+- **Massive Code Line Reduction (1,228 Lines Eliminated without Design Loss)**:
+  - `leave-approvals.css`: Cut from **1,303 lines to 354 lines** (**949 lines reduced / -73%**) by removing redundant declarations, deduplicating repetitive rules, and condensing the mobile card media query while preserving 100% design fidelity, colors, and responsive layout.
+  - `leave-approvals.js`: Cut from **525 lines to 246 lines** (**279 lines reduced / -53%**) using concise status maps, inline SVGs, and efficient handlers.
+- **Automated Verification Suite**:
+  - `test-ui-manifest-sync.js`: 195/195 Passed (100% parity).
+  - `test-theme-support.js`: 88/88 Passed (Zero hardcoded hex colors, 100% tokenized).
+  - `test-rbac-and-structure.js`: 38/38 Passed.
+
 ### ✅ Milestone 443: Styled Dialog Box Engine, Desktop Single-Line Date Formatting & Row Slimming
 - **Styled Dialog Box Engine (`#leave-alert-modal`)**:
   - Completely eliminated all raw browser `alert()` and `confirm()` popups.

@@ -1,11 +1,11 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-17T16:35:32.311Z",
+  "generated_at": "2026-11-17T17:01:23.653Z",
   "total_pages": 30,
   "totals": {
-    "buttons": 593,
-    "modals": 180,
+    "buttons": 592,
+    "modals": 178,
     "inputs": 349,
     "apis": 166
   },
@@ -210,10 +210,10 @@
       "route": "/faculty/leave-approvals.html",
       "title": "Leave Requests — Faculty Portal",
       "manifest_file": "docs/ui-map/manifests/fac-011.json",
-      "content_hash": "42d7e7461a2c",
+      "content_hash": "a7cef7d4ec62",
       "counts": {
-        "buttons": 12,
-        "modals": 4,
+        "buttons": 11,
+        "modals": 2,
         "inputs": 2,
         "apis": 3
       }
