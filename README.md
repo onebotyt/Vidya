@@ -8,20 +8,18 @@ VidyaOS is a complete, production-ready institutional operating system for colle
 
 ```
 VidyaOS/
-├── VidyaOS-Frontend-patched/
-│   └── VidyaOS-main/                      # Modern Vanilla JS / HTML5 / CSS3 Responsive UI
-│       ├── admin/                         # Administrative consoles (Academic structure, faculty, audit)
-│       ├── faculty/                       # Faculty suite (Consolidated registers, NBA, assessments)
-│       ├── student/                       # Student portal (Attendance, scores, timetable, leave)
-│       ├── login/                         # Unified authentication & onboarding
-│       └── server.js                      # Express frontend reverse-proxy & static server
+├── frontend/                              # Modern Vanilla JS / HTML5 / CSS3 Responsive UI
+│   ├── admin/                             # Administrative consoles (Academic structure, faculty, audit)
+│   ├── faculty/                           # Faculty suite (Consolidated registers, NBA, assessments)
+│   ├── student/                           # Student portal (Attendance, scores, timetable, leave)
+│   ├── login/                             # Unified authentication & onboarding
+│   └── server.js                          # Express frontend reverse-proxy & static server
 │
-├── VidyaOS_BackEnd-patched/
-│   └── VidyaOS_BackEnd-main/              # High-Performance Node.js / Express / MySQL 8.x Engine
-│       ├── src/                           # Controllers, models, services, RBAC middlewares, routes
-│       ├── database/                      # Production cPanel MySQL schemas & migrations (001-008)
-│       ├── uploads/                       # Document storage & syllabus archives
-│       └── server.js                      # Production API server (Port 3000)
+├── backend/                               # High-Performance Node.js / Express / MySQL 8.x Engine
+│   ├── src/                               # Controllers, models, services, RBAC middlewares, routes
+│   ├── database/                          # Production cPanel MySQL schemas & migrations (001-008)
+│   ├── uploads/                           # Document storage & syllabus archives
+│   └── server.js                          # Production API server (Port 3000)
 │
 └── VidyaOS_ESP32_Biometric_Firmware/
     └── VidyaOS_ESP32_Biometric_Node/      # ESP32 AS608 Biometric Node & Presence Engine
@@ -37,17 +35,17 @@ VidyaOS/
 
 ### 1. Backend Server
 ```bash
-cd VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main
+cd backend
 npm install
-npm start
+node server.js
 ```
 *API runs on `http://localhost:3000`.*
 
 ### 2. Frontend Server
 ```bash
-cd VidyaOS-Frontend-patched/VidyaOS-main
+cd frontend
 npm install
-npm start
+node server.js
 ```
 *Frontend runs on `http://localhost:5000` (reverse proxies `/api` to port 3000).*
 

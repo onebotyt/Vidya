@@ -18,7 +18,7 @@ Write-Host "==========================================" -ForegroundColor Cyan
 # 1. Frontend Standalone (VidyaOS.git)
 Write-Host "`n[1/3] Pulling Frontend (onebotyt/VidyaOS)..." -ForegroundColor Yellow
 $frontendGit = "$RootDir\.git_standalone\frontend.git"
-$frontendWorkTree = "$RootDir\VidyaOS-Frontend-patched\VidyaOS-main"
+$frontendWorkTree = "$RootDir\frontend"
 if (Test-Path $frontendGit) {
     if ($Token) {
         git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" pull --rebase "https://$($Token)@github.com/onebotyt/VidyaOS.git" main
@@ -31,7 +31,7 @@ if (Test-Path $frontendGit) {
 # 2. Backend Standalone (VidyaOS_BackEnd.git)
 Write-Host "`n[2/3] Pulling Backend (onebotyt/VidyaOS_BackEnd)..." -ForegroundColor Yellow
 $backendGit = "$RootDir\.git_standalone\backend.git"
-$backendWorkTree = "$RootDir\VidyaOS_BackEnd-patched\VidyaOS_BackEnd-main"
+$backendWorkTree = "$RootDir\backend"
 if (Test-Path $backendGit) {
     if ($Token) {
         git --git-dir="$backendGit" --work-tree="$backendWorkTree" pull --rebase "https://$($Token)@github.com/onebotyt/VidyaOS_BackEnd.git" main

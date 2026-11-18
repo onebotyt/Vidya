@@ -19,7 +19,7 @@ Write-Host "==========================================" -ForegroundColor Cyan
 # 1. Frontend Standalone (VidyaOS.git)
 Write-Host "`n[1/3] Pushing Frontend (onebotyt/VidyaOS)..." -ForegroundColor Yellow
 $frontendGit = "$RootDir\.git_standalone\frontend.git"
-$frontendWorkTree = "$RootDir\VidyaOS-Frontend-patched\VidyaOS-main"
+$frontendWorkTree = "$RootDir\frontend"
 if (Test-Path $frontendGit) {
     git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" add -A
     $st = git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" status --porcelain
@@ -39,7 +39,7 @@ if (Test-Path $frontendGit) {
 # 2. Backend Standalone (VidyaOS_BackEnd.git)
 Write-Host "`n[2/3] Pushing Backend (onebotyt/VidyaOS_BackEnd)..." -ForegroundColor Yellow
 $backendGit = "$RootDir\.git_standalone\backend.git"
-$backendWorkTree = "$RootDir\VidyaOS_BackEnd-patched\VidyaOS_BackEnd-main"
+$backendWorkTree = "$RootDir\backend"
 if (Test-Path $backendGit) {
     git --git-dir="$backendGit" --work-tree="$backendWorkTree" add -A
     $st = git --git-dir="$backendGit" --work-tree="$backendWorkTree" status --porcelain

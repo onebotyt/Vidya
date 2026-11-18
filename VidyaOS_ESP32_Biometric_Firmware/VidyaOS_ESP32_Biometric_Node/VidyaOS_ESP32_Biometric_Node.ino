@@ -79,40 +79,70 @@ void onEnrollStageUpdate(const char* stageMsg) {
 
 /**
  * Posts an AES-256-GCM encrypted JSON payload to the VidyaOS backend and decrypts the response.
- * Features strict timeouts (4s max) to guarantee the ESP32 never freezes on network calls.
+ * Features automatic HTTPS (WiFiClientSecure with setInsecure()) & HTTP (WiFiClient) resolution,
+ * 25-second timeout for Render cold-starts, and 32KB JSON parsing buffer for template bundles.
  */
 bool postEncryptedToServer(const String& endpointPath, const String& plainJson, String& outDecryptedJson) {
-  if (WiFi.status() != WL_CONNECTED) return false;
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("[HTTP] Skipped: Wi-Fi not connected");
+    return false;
+  }
 
   HTTPClient http;
+  WiFiClientSecure secureClient;
+  WiFiClient plainClient;
   String url = String(VIDYAOS_SERVER_BASE_URL) + endpointPath;
-  http.begin(url);
-  http.setTimeout(4000);        // 4s request timeout
-  http.setConnectTimeout(3000); // 3s connection timeout
+
+  http.setTimeout(25000); // 25s timeout for Render cold start
+  bool began = false;
+  if (url.startsWith("https://")) {
+    secureClient.setInsecure(); // Allow HTTPS to Render without embedding CA cert
+    began = http.begin(secureClient, url);
+  } else {
+    began = http.begin(plainClient, url);
+  }
+
+  if (!began) {
+    Serial.println("[HTTP] http.begin() failed for: " + url);
+    return false;
+  }
+
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-UID", DEVICE_UID);
 
   String encryptedBody = cryptoEngine.encryptJsonEnvelope(DEVICE_UID, plainJson);
   int httpCode = http.POST(encryptedBody);
-  if (httpCode < 200 || httpCode >= 300) {
-    http.end();
-    return false;
-  }
-
   String respStr = http.getString();
   http.end();
 
-  StaticJsonDocument<4096> doc;
-  if (deserializeJson(doc, respStr) != DeserializationError::Ok) return false;
+  if (httpCode < 200 || httpCode >= 300) {
+    Serial.printf("[HTTP] POST %s FAILED -> code=%d, body=%s\n",
+                  endpointPath.c_str(), httpCode, respStr.c_str());
+    return false;
+  }
+
+#if defined(ARDUINOJSON_VERSION_MAJOR) && (ARDUINOJSON_VERSION_MAJOR >= 7)
+  JsonDocument doc;
+#else
+  DynamicJsonDocument doc(32768);
+#endif
+
+  DeserializationError err = deserializeJson(doc, respStr);
+  if (err) {
+    Serial.printf("[JSON] Parse error on %s: %s\n", endpointPath.c_str(), err.c_str());
+    return false;
+  }
 
   JsonObject enc = doc["encrypted_response"];
   if (!enc.isNull() && enc["encrypted"] == true) {
-    return cryptoEngine.decryptEnvelope(
+    bool ok = cryptoEngine.decryptEnvelope(
       enc["iv"] | "",
       enc["tag"] | "",
       String((const char*)(enc["ciphertext"] | "")),
       outDecryptedJson
     );
+    if (!ok) Serial.println("[CRYPTO] Response AES-256-GCM decrypt failed");
+    return ok;
   }
   outDecryptedJson = respStr;
   return true;

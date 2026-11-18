@@ -25,7 +25,7 @@ Write-Host "==========================================" -ForegroundColor Cyan
 # 1. Frontend
 Write-Host "`n[1/3] Frontend: Switching to $BranchName..." -ForegroundColor Yellow
 $frontendGit = "$RootDir\.git_standalone\frontend.git"
-$frontendWorkTree = "$RootDir\VidyaOS-Frontend-patched\VidyaOS-main"
+$frontendWorkTree = "$RootDir\frontend"
 if (Test-Path $frontendGit) {
     git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" checkout -b "$BranchName" 2>$null
     if ($LASTEXITCODE -ne 0) {
@@ -37,7 +37,7 @@ if (Test-Path $frontendGit) {
 # 2. Backend
 Write-Host "`n[2/3] Backend: Switching to $BranchName..." -ForegroundColor Yellow
 $backendGit = "$RootDir\.git_standalone\backend.git"
-$backendWorkTree = "$RootDir\VidyaOS_BackEnd-patched\VidyaOS_BackEnd-main"
+$backendWorkTree = "$RootDir\backend"
 if (Test-Path $backendGit) {
     git --git-dir="$backendGit" --work-tree="$backendWorkTree" checkout -b "$BranchName" 2>$null
     if ($LASTEXITCODE -ne 0) {

@@ -9,8 +9,8 @@ This guide describes how **multiple full-stack developers (Dev 1, Dev 2, Dev 3)*
 | Component | Directory | GitHub Repository |
 | :--- | :--- | :--- |
 | **Monorepo (Root)** | `VidyaOS/` | [https://github.com/onebotyt/Vidya.git](https://github.com/onebotyt/Vidya.git) |
-| **Frontend UI** | `VidyaOS/VidyaOS-Frontend-patched/VidyaOS-main/` | [https://github.com/onebotyt/VidyaOS.git](https://github.com/onebotyt/VidyaOS.git) |
-| **Backend API** | `VidyaOS/VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main/` | [https://github.com/onebotyt/VidyaOS_BackEnd.git](https://github.com/onebotyt/VidyaOS_BackEnd.git) |
+| **Frontend UI** | `VidyaOS/frontend/` | [https://github.com/onebotyt/VidyaOS.git](https://github.com/onebotyt/VidyaOS.git) |
+| **Backend API** | `VidyaOS/backend/` | [https://github.com/onebotyt/VidyaOS_BackEnd.git](https://github.com/onebotyt/VidyaOS_BackEnd.git) |
 
 ---
 
@@ -40,11 +40,11 @@ $env:GITHUB_PAT = "your_pat_token_here"
 ### 4. Install Dependencies
 ```bash
 # Backend dependencies
-cd VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main
+cd backend
 npm install
 
 # Frontend dependencies
-cd ../../VidyaOS-Frontend-patched/VidyaOS-main
+cd ../frontend
 npm install
 ```
 
@@ -76,13 +76,13 @@ This automatically branches frontend, backend, and the root monorepo.
 Run the backend and frontend locally:
 - **Backend (Port 3000)**:
   ```powershell
-  cd VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main
-  npm start
+  cd backend
+  node server.js
   ```
 - **Frontend (Port 5000)**:
   ```powershell
-  cd VidyaOS-Frontend-patched/VidyaOS-main
-  npm start
+  cd frontend
+  node server.js
   ```
 
 ---
@@ -90,7 +90,7 @@ Run the backend and frontend locally:
 ### Step 4: Verify Before Pushing
 Run automated tests in backend before committing:
 ```powershell
-cd VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main
+cd backend
 node scripts/test-ui-manifest-sync.js
 node scripts/test-theme-support.js
 ```
