@@ -16,6 +16,7 @@ const requireRole = require('../middleware/requireRole');
 const { requireDepartmentFaculty } = require('../middleware/requireScope');
 const validate = require('../middleware/validate');
 const StudentController = require('../controllers/studentController');
+const TeachingGroupController = require('../controllers/teachingGroupController');
 
 // ==========================================
 // Department Roster & Students Management
@@ -37,6 +38,22 @@ router.get('/', auth, requireRole('TEACHER', 'SYSTEM_ADMIN'), StudentController.
 // @handler StudentController.getProfile() -> StudentModel.getProfile(), StudentModel.getBiometricSlot()
 router.get('/me', auth, requireRole('STUDENT'), StudentController.getProfile);
 
+// @route   GET /api/v1/students/me/dossier
+// @desc    Retrieve logged-in student full academic dossier (Profile, Demographics, Tests, Attendance, Documents)
+// @access  Protected (STUDENT)
+router.get('/me/dossier', auth, requireRole('STUDENT'), StudentController.getMyDossier);
+
+// @route   GET /api/v1/students/me/documents
+// @desc    Retrieve official documents uploaded for this student
+// @access  Protected (STUDENT)
+router.get('/me/documents', auth, requireRole('STUDENT'), StudentController.getMyDocuments);
+
+// @route   GET /api/v1/students/teaching-groups | /courses | /classes
+// @desc    Retrieve enrolled teaching groups/courses for logged-in student
+// @access  Protected (STUDENT)
+router.get(['/teaching-groups', '/courses', '/classes'], auth, requireRole('STUDENT'), TeachingGroupController.getStudentGroups);
+
+
 // @route   PUT /api/v1/students/me
 // @desc    Update student profile email and/or password
 // @access  Protected (STUDENT)
@@ -49,6 +66,14 @@ router.put(
     body('email').optional().isEmail().withMessage('Valid email required'),
     body('current_password').optional().trim(),
     body('new_password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('address').optional().trim(),
+    body('aadhar_number').optional().trim(),
+    body('father_name').optional().trim(),
+    body('mother_name').optional().trim(),
+    body('dob').optional().trim(),
+    body('gender').optional().trim(),
+    body('category').optional().trim(),
+    body('phone').optional().trim(),
     validate
   ],
   StudentController.updateProfile
@@ -141,7 +166,7 @@ router.get('/registrations/count', auth, requireRole('TEACHER'), requireDepartme
 router.post(
   ['/registrations/:id/adjudicate', '/registrations/:id/approve', '/:id/approve'],
   auth,
-  requireRole('TEACHER'),
+  requireRole('TEACHER', 'SYSTEM_ADMIN', 'HOD', 'ADMIN'),
   requireDepartmentFaculty(),
   [
     body('action').optional().isIn(['APPROVE', 'REJECT']).withMessage("Action must be 'APPROVE' or 'REJECT'"),

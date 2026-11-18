@@ -12,6 +12,8 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const StudentModel = require('../models/studentModel');
+const StudentRecordModel = require('../models/studentRecordModel');
+const { query } = require('../config/db');
 const reportService = require('../services/reportService');
 const auditService = require('../services/auditService');
 const notificationService = require('../services/notificationService');
@@ -76,6 +78,55 @@ class StudentController {
   }
 
   /**
+   * Retrieves self student full academic dossier (Profile, Demographics, Tests, Attendance Matrix, Documents)
+   * @route GET /api/v1/students/me/dossier
+   * @access STUDENT
+   */
+  static async getMyDossier(req, res) {
+    try {
+      const studentId = req.user.student_id;
+      if (!studentId) {
+        return res.status(403).json({ success: false, error: { message: 'Student ID not resolved' } });
+      }
+      const studentProfile = await StudentModel.getProfile(studentId);
+      const deptId = studentProfile?.department_id || req.user.department_id || 2;
+      const dossier = await StudentRecordModel.getStudentFullDossier(studentId, deptId);
+      if (!dossier) {
+        return res.status(404).json({ success: false, error: { message: 'Academic dossier not found' } });
+      }
+      res.json({ success: true, data: dossier });
+    } catch (err) {
+      console.error('Error in getMyDossier:', err);
+      res.status(500).json({ success: false, error: { message: err.message } });
+    }
+  }
+
+  /**
+   * Retrieves self official documents uploaded for this student
+   * @route GET /api/v1/students/me/documents
+   * @access STUDENT
+   */
+  static async getMyDocuments(req, res) {
+    try {
+      const studentId = req.user.student_id;
+      if (!studentId) {
+        return res.status(403).json({ success: false, error: { message: 'Student ID not resolved' } });
+      }
+      const docs = await query(
+        `SELECT id, title, document_type, file_path, file_name, file_size, mime_type, uploader_name, created_at
+         FROM student_documents
+         WHERE student_id = ?
+         ORDER BY created_at DESC`,
+        [studentId]
+      );
+      res.json({ success: true, data: docs });
+    } catch (err) {
+      console.error('Error in getMyDocuments:', err);
+      res.status(500).json({ success: false, error: { message: err.message } });
+    }
+  }
+
+  /**
    * Updates student self profile email and/or password.
    * @route PUT /api/v1/students/me (routes/students.js)
    * @access STUDENT
@@ -84,7 +135,20 @@ class StudentController {
    * @usesModel StudentModel.updateUserPassword() (models/studentModel.js)
    */
   static async updateProfile(req, res) {
-    const { email, current_password, new_password } = req.body;
+    const {
+      email,
+      current_password,
+      new_password,
+      address,
+      aadhar_number,
+      father_name,
+      mother_name,
+      dob,
+      gender,
+      category,
+      phone
+    } = req.body;
+
     try {
       if (email !== undefined) {
         await StudentModel.updateUserEmail(req.user.id, email);
@@ -101,6 +165,36 @@ class StudentController {
         }
         const newHash = await bcrypt.hash(new_password, 12);
         await StudentModel.updateUserPassword(req.user.id, newHash);
+      }
+
+      // Demographic & KYC updates
+      const studentId = req.user.student_id || (await StudentModel.getStudentIdByUserId(req.user.id));
+      if (studentId) {
+        const details = {};
+        if (address !== undefined) details.address = (address || '').trim();
+        if (aadhar_number !== undefined) details.aadhar_number = (aadhar_number || '').trim();
+        if (father_name !== undefined) details.father_name = (father_name || '').trim();
+        if (mother_name !== undefined) details.mother_name = (mother_name || '').trim();
+        if (dob !== undefined) details.dob = (dob || '').trim();
+        if (gender !== undefined) details.gender = (gender || '').trim();
+        if (category !== undefined) details.category = (category || '').trim();
+        if (phone !== undefined) details.phone = (phone || '').trim();
+
+        if (Object.keys(details).length > 0) {
+          const existing = await StudentModel.getProfile(studentId);
+          const merged = { ...existing, ...details };
+          const isComplete = Boolean(
+            merged.address &&
+            merged.aadhar_number &&
+            merged.father_name &&
+            merged.mother_name &&
+            merged.dob &&
+            merged.gender &&
+            merged.category
+          );
+          details.profile_completed = isComplete ? 1 : 0;
+          await StudentModel.updateStudentDetails(studentId, details);
+        }
       }
 
       res.json({ success: true, message: 'Profile updated successfully' });
@@ -252,7 +346,7 @@ class StudentController {
 
       res.status(201).json({ success: true, data: provisioned });
     } catch (err) {
-      if (err.code === 'ER_DUP_ENTRY' || err.code === 'SQLITE_CONSTRAINT') {
+      if (err.code === 'ER_DUP_ENTRY') {
         return res.status(409).json({ success: false, error: { code: 'CONFLICT', message: 'Enrollment number already exists' } });
       }
       res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
@@ -365,7 +459,7 @@ class StudentController {
         } catch (subErr) {
           results.errors.push({
             enrollment_no: cleanEnroll,
-            reason: (subErr.code === 'ER_DUP_ENTRY' || subErr.code === 'SQLITE_CONSTRAINT') ? 'Enrollment number already exists' : subErr.message
+            reason: (subErr.code === 'ER_DUP_ENTRY') ? 'Enrollment number already exists' : subErr.message
           });
         }
       }
@@ -386,9 +480,12 @@ class StudentController {
    */
   static async listPendingRegistrations(req, res) {
     try {
-      let deptId = req.query.department_id || req.teacher_department_id;
-      if (!deptId && !req.user.roles.includes('SYSTEM_ADMIN')) {
-        deptId = await StudentModel.getTeacherDepartment(req.user.teacher_id);
+      let deptId = req.query.department_id || req.query.branch_id;
+      if (!deptId && !req.user.roles.includes('SYSTEM_ADMIN') && !req.user.roles.includes('ADMIN')) {
+        deptId = req.hod_department_id || req.teacher_department_id || req.user.hod_department_id || req.user.department_id;
+        if (!deptId) {
+          deptId = await StudentModel.getTeacherDepartment(req.user.teacher_id);
+        }
       }
 
       const ayId = req.query.academic_year_id || (await StudentModel.getCurrentAcademicYearId());
@@ -414,9 +511,12 @@ class StudentController {
    */
   static async countPendingRegistrations(req, res) {
     try {
-      let deptId = req.query.department_id || req.teacher_department_id;
-      if (!deptId && !req.user.roles.includes('SYSTEM_ADMIN')) {
-        deptId = await StudentModel.getTeacherDepartment(req.user.teacher_id);
+      let deptId = req.query.department_id || req.query.branch_id;
+      if (!deptId && !req.user.roles.includes('SYSTEM_ADMIN') && !req.user.roles.includes('ADMIN')) {
+        deptId = req.hod_department_id || req.teacher_department_id || req.user.hod_department_id || req.user.department_id;
+        if (!deptId) {
+          deptId = await StudentModel.getTeacherDepartment(req.user.teacher_id);
+        }
       }
 
       const ayId = req.query.academic_year_id || (await StudentModel.getCurrentAcademicYearId());
@@ -457,18 +557,18 @@ class StudentController {
         resolvedStudentId = await StudentModel.lookupPendingStudentId(lookupVal);
       }
 
-      if (!req.user.roles.includes('SYSTEM_ADMIN') && resolvedStudentId) {
+      // Check department authorization: System Admins, Admins, and HODs can adjudicate registrations
+      const isPrivileged = req.user.roles.includes('SYSTEM_ADMIN') || req.user.roles.includes('ADMIN') || req.is_hod || req.user.is_hod || req.user.roles.includes('HOD');
+      if (!isPrivileged && resolvedStudentId) {
         const studentDeptId = await StudentModel.getStudentDepartmentId(resolvedStudentId);
-        if (studentDeptId) {
-          const teacherDeptId = req.teacher_department_id || (await StudentModel.getTeacherDepartment(req.user.teacher_id));
-          if (teacherDeptId && Number(studentDeptId) !== Number(teacherDeptId)) {
-            const isHod = await StudentModel.isHodOfDepartment(studentDeptId, req.user.id);
-            if (!isHod) {
-              return res.status(403).json({
-                success: false,
-                error: { code: 'FORBIDDEN', message: 'You can only adjudicate registrations for students in your department.' }
-              });
-            }
+        const userDeptId = req.hod_department_id || req.teacher_department_id || req.user.hod_department_id || req.user.department_id || (req.user.teacher_id ? await StudentModel.getTeacherDepartment(req.user.teacher_id) : null);
+        if (studentDeptId && userDeptId && Number(studentDeptId) !== Number(userDeptId)) {
+          const isHod = await StudentModel.isHodOfDepartment(studentDeptId, req.user.id);
+          if (!isHod) {
+            return res.status(403).json({
+              success: false,
+              error: { code: 'FORBIDDEN', message: 'You can only adjudicate registrations for students in your department.' }
+            });
           }
         }
       }

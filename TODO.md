@@ -3,6 +3,30 @@
 
 
 
+### 🏛️ Milestone 333: Resolved Student Self-Registration Approval in Department Roster
+- **Status**: 🟢 Completed & Fully Verified
+- **User Issue**:
+  - *"student apprrove is not working"* with screenshot showing 15 pending student applications (`Saurabh Bhatt`, `Kanishk joshi`, etc.) under the Pending tab.
+- **Root Cause Analysis**:
+  1. **Cross-Department RBAC Bottleneck**: `StudentController.adjudicateRegistration` strictly enforced `studentDeptId === teacherDeptId` without checking `is_hod`, `req.hod_department_id`, or `req.user.is_hod`. When HODs reviewed students who registered across branches, it failed with `403 (FORBIDDEN)`.
+  2. **Strict User Username Conflict**: `adjudicateRegistrationTransaction` executed `UPDATE users SET status = 'ACTIVE', username = resolvedEnrollNo` without checking if `users` already contained that username, triggering unhandled MySQL unique constraint violations.
+  3. **Null Academic Year in Auto-Roll Calculation**: If `student.academic_year_id` was null, the max class roll calculation compared `= NULL` in MySQL (evaluating to false).
+  4. **Frontend Payload & State Handling**: `approveStudentRequest` in `students.js` only passed `id` in the URL without payload or button state feedback, and `rejectStudentRequest` lacked an interactive prompt for rejection reason.
+- **Key Solutions Implemented**:
+  1. **Privileged Adjudication RBAC (`controllers/studentController.js`)**:
+     - System Admins, Admins, and HODs (`isPrivileged`) can adjudicate pending student registrations across departments.
+     - Properly resolves `req.hod_department_id || req.teacher_department_id || req.user.department_id`.
+  2. **Bulletproof Transaction Engine (`models/studentModel.js`)**:
+     - Added `LEFT JOIN enrollments` and `LEFT JOIN users` fallback lookup by `official_enrollment_no`, `registration_no`, or `email`.
+     - Resolves active academic year fallback so roll calculation and enrollment updates never fail.
+     - Validates and handles `users.username` duplicate conflicts gracefully without crashing the transaction.
+     - Synchronizes both `enrollments` and `student_department_enrollments` (`ON DUPLICATE KEY UPDATE`).
+  3. **Enhanced Frontend UI (`deployfolder/VidyaOS/faculty/students/students.js`)**:
+     - `approveStudentRequest(id, officialEnrollmentNo, btnEl)` provides instant visual loading state (`Approving...`), sends enrollment number in payload, and awaits roster + pending list refresh.
+     - `rejectStudentRequest(id, btnEl)` provides prompt for optional reason and manages button state.
+- **Verification**:
+  - Tested registration & approval across departments on MariaDB: HTTP 200 OK with `status: ACTIVE` and assigned `class_roll_no`.
+
 ### 🏛️ Milestone 332: Deployed Bulk CSV Import Fixes to Vercel & Render Production
 - **Status**: 🟢 Deployed & Verified Live
 - **User Issue**:

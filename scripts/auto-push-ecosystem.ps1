@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Message = "fix(hod): resolve bulk student import 400 validation, MySQL NOCASE collation, and slot_id parity"
 )
 
