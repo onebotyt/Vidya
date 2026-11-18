@@ -67,7 +67,8 @@ function Push-Repo($repoPath, $remoteName, $branchName) {
     Write-Host "`n>>> Processing repository: $remoteName ($branchName) at $repoPath" -ForegroundColor Yellow
     Push-Location $repoPath
     try {
-        $status = (& $gitExe status --porcelain).Trim()
+        $statusRaw = & $gitExe status --porcelain
+        $status = if ($statusRaw) { $statusRaw.Trim() } else { "" }
         if ($status) {
             Write-Host "Staging and committing local changes in $repoPath..." -ForegroundColor Yellow
             & $gitExe add -A
