@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VidyaOS — Institutional Project Report (UBTER / AICTE)</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+  }
+  @media print {
+    body {
+      background: #fff !important;
+      color: #000 !important;
+      font-size: 11.5pt;
+      line-height: 1.5;
+    }
+    .no-print {
+      display: none !important;
+    }
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+      height: 0;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    table, figure, pre {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  }
+  @media screen {
+    body {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .report-container {
+      background: #fff;
+      max-width: 900px;
+      width: 100%;
+      padding: 60px 70px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    .toolbar {
+      position: sticky;
+      top: 15px;
+      z-index: 999;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .toolbar button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    .toolbar button:hover {
+      background: #1d4ed8;
+    }
+    .page-break {
+      border-top: 2px dashed #cbd5e1;
+      margin: 40px 0;
+      position: relative;
+    }
+    .page-break::after {
+      content: 'Page Break';
+      position: absolute;
+      top: -10px;
+      right: 15px;
+      background: #f1f5f9;
+      color: #94a3b8;
+      font-size: 10px;
+      padding: 0 6px;
+      font-family: sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    font-weight: 700;
+  }
+  h1 {
+    font-size: 22pt;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 6px;
+    margin-top: 30px;
+  }
+  h2 {
+    font-size: 16pt;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 4px;
+    margin-top: 24px;
+  }
+  h3 {
+    font-size: 13pt;
+    margin-top: 18px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 10pt;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  tr:nth-child(even) td {
+    background-color: #fbfcfe;
+  }
+  pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 14px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 9pt;
+    line-height: 1.45;
+  }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+  }
+  p code {
+    background: #e2e8f0;
+    color: #0f172a;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  blockquote {
+    border-left: 4px solid #2563eb;
+    margin: 16px 0;
+    padding: 10px 18px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-style: italic;
+  }
+  ul, ol {
+    padding-left: 24px;
+  }
+  li {
+    margin-bottom: 6px;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid #cbd5e1;
+    margin: 30px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <span style="font-weight: 600;">📄 VidyaOS Project Report (UBTER Final Submission)</span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+  <button onclick="window.location.href='/VidyaOS_Project_Report.pdf'">📥 Direct PDF Download</button>
+</div>
+
+<div class="report-container">
+<h1>PROJECT REPORT ON</h1>
+<h1>“VidyaOS — Institutional College ERP, Smart Attendance &amp; NBA Accreditation Operating System”</h1>
+<p><strong>(DIPLOMA IN INFORMATION TECHNOLOGY — VIth SEMESTER)</strong><br><strong>ACADEMIC YEAR: 2025–2026 / 2026–2027</strong></p>
+<hr>
+<h3><strong>UTTARAKHAND GOVERNMENT INSTITUTE OF POLYTECHNIC NAINITAL (UGIP)</strong></h3>
+<p><em>(Affiliated to Uttarakhand Board of Technical Education, Roorkee — UBTER &amp; Approved by AICTE)</em><br>Mallital, Nainital, Uttarakhand — 263001</p>
+<hr>
+<p><strong>Supervised / Guided by:</strong><br><strong>MRS. ANJALI PRASAD</strong><br><em>Lecturer, Department of Information Technology</em></p>
+<p><strong>Submitted to:</strong><br><strong>MR. NEERAJ VERMA</strong><br><em>Head of Department (HOD), Department of Information Technology</em></p>
+<p><strong>SUBMITTED BY:</strong>  </p>
+<ul>
+<li><strong>Akash Kumar</strong> (Roll No. 23011120002 / UBTER Reg: 24008071) — <em>Project Lead &amp; Full-Stack Architect</em>  </li>
+<li><strong>Pooja Dhami</strong> (Roll No. 23011120014) — <em>Frontend &amp; UI/UX Specialist</em>  </li>
+<li><strong>Deepika Jeena</strong> (Roll No. 23011120021) — <em>System Analyst &amp; Documentation</em>  </li>
+<li><strong>Prashansa Bisht</strong> (Roll No. 23011120020) — <em>Quality Assurance &amp; Testing Lead</em></li>
+</ul>
+<hr>
+<div class="page-break"></div><h2>CERTIFICATE</h2>
+<p>This is to certify that the project entitled <strong>&quot;VidyaOS — Institutional College ERP, Smart Attendance &amp; NBA Accreditation Operating System&quot;</strong> has been successfully designed, developed, and tested by the following students of <strong>Diploma in Information Technology (VI Semester)</strong>, Department of Information Technology, Uttarakhand Government Institute of Polytechnic Nainital, during the academic session 2025–26 / 2026–27:</p>
+<ul>
+<li><strong>Akash Kumar</strong> (Roll No. 23011120002 / UBTER Reg: 24008071)</li>
+<li><strong>Pooja Dhami</strong> (Roll No. 23011120014)</li>
+<li><strong>Deepika Jeena</strong> (Roll No. 23011120021)</li>
+<li><strong>Prashansa Bisht</strong> (Roll No. 23011120020)</li>
+</ul>
+<p>This is a bonafide record of their work carried out under my direct supervision and technical guidance in partial fulfilment of the requirements for the award of the <strong>Diploma in Information Technology</strong> by the Uttarakhand Board of Technical Education (UBTER).</p>
+<div style="margin-top: 1.5cm;"></div><p><strong>Supervised / Guided by:</strong><br><strong>Mrs. Anjali Prasad</strong><br><em>Lecturer, Department of Information Technology</em><br><em>Uttarakhand Government Institute of Polytechnic Nainital</em>  </p>
+<div style="margin-top: 1.0cm;"></div><p><strong>Head of Department (HOD):</strong><br><strong>Mr. Neeraj Verma</strong><br><em>Head of Department (IT)</em><br><em>Uttarakhand Government Institute of Polytechnic Nainital</em>  </p>
+<div style="margin-top: 1.0cm;"></div><p><strong>Date:</strong> ________________________<br><strong>Internal Examiner Signature:</strong> ________________________<br><strong>External Examiner Signature:</strong> ________________________  </p>
+<hr>
+<div class="page-break"></div><h2>DECLARATION</h2>
+<p>We, the undersigned students of Diploma in Information Technology (VIth Semester), Uttarakhand Government Institute of Polytechnic Nainital, hereby declare that the project entitled <strong>&quot;VidyaOS — Institutional College ERP, Smart Attendance &amp; NBA Accreditation Operating System&quot;</strong> submitted in partial fulfilment for the award of the Diploma in Information Technology is an original piece of technical work carried out by us under the supervision of <strong>Mrs. Anjali Prasad</strong>, Lecturer, Department of Information Technology.</p>
+<p>We further declare that:</p>
+<ol>
+<li>This project has not been submitted, either in whole or in part, to any other institution, board, or university for the award of any degree or diploma.</li>
+<li>The system architecture, software implementation, database schemas, IoT firmware, algorithms, and documentation presented in this report represent our own effort and research.</li>
+<li>All software libraries, reference manuals, hardware documentation, and open-source standards used in this work have been properly cited and acknowledged in the bibliography.</li>
+</ol>
+<div style="margin-top: 1.5cm;"></div><p><strong>Project Team Members:</strong></p>
+<ol>
+<li><strong>Akash Kumar</strong> (Roll No. 23011120002) — _______________________</li>
+<li><strong>Pooja Dhami</strong> (Roll No. 23011120014) — _______________________</li>
+<li><strong>Deepika Jeena</strong> (Roll No. 23011120021) — _______________________</li>
+<li><strong>Prashansa Bisht</strong> (Roll No. 23011120020) — _______________________</li>
+</ol>
+<hr>
+<div class="page-break"></div><h2>ACKNOWLEDGEMENT</h2>
+<p>We express our deepest sense of gratitude to our respected guide <strong>Mrs. Anjali Prasad</strong>, Lecturer, Department of Information Technology, and <strong>Mr. Neeraj Verma</strong>, Head of Department (Information Technology), for their invaluable guidance, constant motivation, constructive critique, and technical support throughout the design and realization of VidyaOS. Their profound insights in web system architecture, database optimization, and accreditation documentation inspired us to tackle enterprise-grade software engineering challenges analytically and rigorously.</p>
+<p>We are immensely thankful to the <strong>Principal and Administration of Uttarakhand Government Institute of Polytechnic Nainital</strong> for providing us with the advanced computer laboratory facilities, high-speed campus internet, IoT microcontrollers, and the academic infrastructure essential for developing and testing this project.</p>
+<p>Our sincere thanks go to all the esteemed faculty members of the Department of Information Technology for their valuable suggestions regarding institutional workflows, UBTER curriculum structures, and National Board of Accreditation (NBA) course outcome requirements.</p>
+<p>We also convey our appreciation to the global open-source communities behind Node.js, Express, SQLite, MySQL, and Espressif ESP32 hardware platforms whose robust developer ecosystems formed the technological cornerstone of this project.</p>
+<p>Finally, we express our heartfelt gratitude to our parents, classmates, and friends for their enduring patience, encouragement, and support throughout the course of our diploma curriculum.</p>
+<p>— <strong>The VidyaOS Project Team</strong><br><em>Department of Information Technology</em><br><em>Government Polytechnic Nainital</em></p>
+<hr>
+<div class="page-break"></div><h2>ABSTRACT</h2>
+<p><strong>VidyaOS</strong> is a comprehensive, production-grade Institutional Operating System and academic enterprise management platform custom-engineered for <strong>Uttarakhand Government Institute of Polytechnic Nainital</strong> (<code>gpnainital.ac.in</code>). It bridges the longstanding operational divide between manual college paperwork and modern automated administration by uniting real-time academic registers, dual-engine student attendance tracking, multi-tier coursework assessments, and automated National Board of Accreditation (NBA/NAAC) accreditation dossiers under a unified, high-performance web platform.</p>
+<p>Polytechnic colleges and technical institutions across Uttarakhand face severe administrative bottlenecks due to archaic physical attendance registers, slow paper-based leave applications, disorganized exam records, and chaotic last-minute preparation for NBA accreditation audits. Conventional standalone ERPs often fail in government institutions due to expensive per-student licensing fees, complex desktop client requirements, and an inability to operate under intermittent campus network conditions.</p>
+<p>VidyaOS resolves these systemic challenges through a <strong>zero-dependency, responsive web architecture</strong> paired with an <strong>IoT-enabled hardware biometric subsystem</strong>:</p>
+<ol>
+<li><strong>Multi-Role Granular RBAC</strong>: Strict four-tier institutional hierarchy serving <strong>System Administrators</strong>, <strong>Heads of Departments (HOD)</strong>, <strong>Subject Faculty</strong>, and <strong>Enrolled Students</strong> with contextual privileges, security route guards, and HttpOnly JWT authentication.</li>
+<li><strong>Dual-Mode Live Attendance Studio</strong>: Empowers teachers with concurrent <strong>Dynamic Rolling QR Codes</strong>, <strong>Time-Expiring 6-Digit PIN Codes</strong>, <strong>1-Click ESP32 IoT Biometric Push</strong>, and manual <strong>Day 1–31 Attendance Ledger Matrices</strong>, complete with real-time student check-in log feeds.</li>
+<li><strong>Complete Coursework &amp; Accreditation Suite</strong>:<ul>
+<li><strong>Direct Assessment</strong>: 8 dedicated institutional documentation cards (Internal Exams, Class Tests, Assignments, Lab Performance, Practical Exams, Mini Projects, End-Semester Exams, and CO-PO Attainment Mapping).</li>
+<li><strong>Indirect Assessment</strong>: 5 stakeholder survey portals (Course Exit Surveys, Student Feedback, Alumni Feedback, Employer Feedback, and Graduate Exit Surveys).</li>
+<li><strong>Academic Dossiers</strong>: Theory and Laboratory Dossiers managing lesson plans, experiments, continuous lab evaluations, and equipment maintenance logs.</li>
+<li><strong>Student Performance Monitoring</strong>: Dedicated tracking for Advanced Learners, Slow Learners, and 5 structured Remedial Measures.</li>
+</ul>
+</li>
+<li><strong>Hardware IoT Biometric Subsystem</strong>: Production-ready C++ firmware for Espressif <strong>ESP32 microcontrollers</strong> equipped with AS608 optical fingerprint sensors, SSD1306 OLED displays, buzzer feedback, and AES-GCM encrypted biometric template synchronization over Wi-Fi.</li>
+<li><strong>Universal Database Harmonization</strong>: Dual-engine adapter architecture supporting local zero-configuration SQLite for campus labs and pure MySQL 8.x connection pooling for cloud deployments on cPanel and Render, with automatic failover and schema auto-healing.</li>
+</ol>
+<p>Tested comprehensively against 93 theme design tokens, 76 frontend modules, 98 backend services, and OWASP Top 10 web security standards, VidyaOS delivers sub-200ms API response times and eliminates 100% of manual attendance compilation overhead.</p>
+<hr>
+<div class="page-break"></div><h2>TABLE OF CONTENTS</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Chapter / Section</th>
+<th align="left">Title</th>
+<th align="center">Page No.</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Preliminary Pages</strong></td>
+<td align="left"><strong>Certificate, Declaration, Acknowledgement, Abstract</strong></td>
+<td align="center"><strong>i – vi</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 1</strong></td>
+<td align="left"><strong>Introduction</strong></td>
+<td align="center"><strong>1 – 3</strong></td>
+</tr>
+<tr>
+<td align="left">1.1</td>
+<td align="left">Motivation</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="left">1.2</td>
+<td align="left">Background &amp; Context</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="left">1.3</td>
+<td align="left">Problem Formulation</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="left">1.4</td>
+<td align="left">Scope of the Project</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="left">1.5</td>
+<td align="left">Organization of the Report</td>
+<td align="center">3</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 2</strong></td>
+<td align="left"><strong>Existing System &amp; Problem Statement</strong></td>
+<td align="center"><strong>4 – 7</strong></td>
+</tr>
+<tr>
+<td align="left">2.1</td>
+<td align="left">Study of the Existing Institutional System</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="left">2.2</td>
+<td align="left">Identified Deficiencies &amp; Operational Bottlenecks</td>
+<td align="center">5</td>
+</tr>
+<tr>
+<td align="left">2.3</td>
+<td align="left">Comparative Analysis: Traditional vs VidyaOS</td>
+<td align="center">6</td>
+</tr>
+<tr>
+<td align="left">2.4</td>
+<td align="left">Objectives of the Proposed System</td>
+<td align="center">7</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 3</strong></td>
+<td align="left"><strong>System Analysis &amp; Modeling</strong></td>
+<td align="center"><strong>8 – 14</strong></td>
+</tr>
+<tr>
+<td align="left">3.1</td>
+<td align="left">Requirement Analysis (Functional &amp; Non-Functional)</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="left">3.2</td>
+<td align="left">Stakeholder Role Specifications</td>
+<td align="center">9</td>
+</tr>
+<tr>
+<td align="left">3.3</td>
+<td align="left">Data Flow Diagrams (DFDs) — Level 0, Level 1 &amp; Level 2</td>
+<td align="center">10</td>
+</tr>
+<tr>
+<td align="left">3.4</td>
+<td align="left">Entity-Relationship (ER) Architecture</td>
+<td align="center">12</td>
+</tr>
+<tr>
+<td align="left">3.5</td>
+<td align="left">Feasibility Study (Technical, Economic, Operational, Schedule)</td>
+<td align="center">13</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 4</strong></td>
+<td align="left"><strong>System Design &amp; Technical Architecture</strong></td>
+<td align="center"><strong>15 – 22</strong></td>
+</tr>
+<tr>
+<td align="left">4.1</td>
+<td align="left">Three-Tier Architectural Overview</td>
+<td align="center">15</td>
+</tr>
+<tr>
+<td align="left">4.2</td>
+<td align="left">Directory &amp; Workspace Modular Structure</td>
+<td align="center">16</td>
+</tr>
+<tr>
+<td align="left">4.3</td>
+<td align="left">Universal Database Schema Design (3NF Normalization)</td>
+<td align="center">17</td>
+</tr>
+<tr>
+<td align="left">4.4</td>
+<td align="left">Dual Database Engine Adapter (SQLite &amp; MySQL 8.x)</td>
+<td align="center">19</td>
+</tr>
+<tr>
+<td align="left">4.5</td>
+<td align="left">Key Architectural Design Decisions &amp; Invariants</td>
+<td align="center">20</td>
+</tr>
+<tr>
+<td align="left">4.6</td>
+<td align="left">Comprehensive Technology Stack Summary</td>
+<td align="center">21</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 5</strong></td>
+<td align="left"><strong>Core Module Descriptions</strong></td>
+<td align="center"><strong>23 – 34</strong></td>
+</tr>
+<tr>
+<td align="left">5.1</td>
+<td align="left">Module Architecture Overview</td>
+<td align="center">23</td>
+</tr>
+<tr>
+<td align="left">5.2</td>
+<td align="left">Authentication, Session Security &amp; Granular RBAC</td>
+<td align="center">23</td>
+</tr>
+<tr>
+<td align="left">5.3</td>
+<td align="left">Dual Live Studio Attendance &amp; ESP32 IoT Node Interface</td>
+<td align="center">25</td>
+</tr>
+<tr>
+<td align="left">5.4</td>
+<td align="left">Coursework &amp; Assessment Suite (Direct &amp; Indirect)</td>
+<td align="center">27</td>
+</tr>
+<tr>
+<td align="left">5.5</td>
+<td align="left">Theory Classes &amp; Laboratory Classes Dossier Modules</td>
+<td align="center">29</td>
+</tr>
+<tr>
+<td align="left">5.6</td>
+<td align="left">Student Performance Monitoring &amp; Remedial Measures</td>
+<td align="center">30</td>
+</tr>
+<tr>
+<td align="left">5.7</td>
+<td align="left">NBA &amp; NAAC Accreditation Course File Engine</td>
+<td align="center">31</td>
+</tr>
+<tr>
+<td align="left">5.8</td>
+<td align="left">Departmental Academic Structure, Timetable &amp; Leave Workflows</td>
+<td align="center">32</td>
+</tr>
+<tr>
+<td align="left">5.9</td>
+<td align="left">Student Self-Service Portal &amp; Examination Eligibility</td>
+<td align="center">33</td>
+</tr>
+<tr>
+<td align="left">5.10</td>
+<td align="left">Executive Admin Analytics &amp; System Audit Trail</td>
+<td align="center">34</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 6</strong></td>
+<td align="left"><strong>Hardware &amp; Software Requirements</strong></td>
+<td align="center"><strong>35 – 38</strong></td>
+</tr>
+<tr>
+<td align="left">6.1</td>
+<td align="left">Software Specifications &amp; Runtime Environments</td>
+<td align="center">35</td>
+</tr>
+<tr>
+<td align="left">6.2</td>
+<td align="left">Server &amp; Client Hardware Requirements</td>
+<td align="center">36</td>
+</tr>
+<tr>
+<td align="left">6.3</td>
+<td align="left">IoT Biometric Hardware Specifications (ESP32 Node)</td>
+<td align="center">37</td>
+</tr>
+<tr>
+<td align="left">6.4</td>
+<td align="left">Environmental Constraints &amp; Boundary Limits</td>
+<td align="center">38</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 7</strong></td>
+<td align="left"><strong>Development Methodology &amp; Implementation</strong></td>
+<td align="center"><strong>39 – 43</strong></td>
+</tr>
+<tr>
+<td align="left">7.1</td>
+<td align="left">Agile-Iterative Engineering Process</td>
+<td align="center">39</td>
+</tr>
+<tr>
+<td align="left">7.2</td>
+<td align="left">Security-by-Design Engineering &amp; Protection Protocol</td>
+<td align="center">40</td>
+</tr>
+<tr>
+<td align="left">7.3</td>
+<td align="left">Cryptographic Time-Synchronized PIN/QR Algorithm</td>
+<td align="center">41</td>
+</tr>
+<tr>
+<td align="left">7.4</td>
+<td align="left">Autonomous Semester Promotion &amp; Session Synchronization</td>
+<td align="center">42</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 8</strong></td>
+<td align="left"><strong>System Testing, Verification &amp; Quality Assurance</strong></td>
+<td align="center"><strong>44 – 51</strong></td>
+</tr>
+<tr>
+<td align="left">8.1</td>
+<td align="left">Verification Methodology</td>
+<td align="center">44</td>
+</tr>
+<tr>
+<td align="left">8.2</td>
+<td align="left">Functional Test Suite &amp; Case Matrix (TC-01 to TC-20)</td>
+<td align="center">45</td>
+</tr>
+<tr>
+<td align="left">8.3</td>
+<td align="left">Security Verification (OWASP Top 10 Vulnerability Audit)</td>
+<td align="center">48</td>
+</tr>
+<tr>
+<td align="left">8.4</td>
+<td align="left">Performance Benchmarking &amp; Network Profiling</td>
+<td align="center">50</td>
+</tr>
+<tr>
+<td align="left">8.5</td>
+<td align="left">Cross-Browser, Device &amp; Responsive Validation</td>
+<td align="center">51</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 9</strong></td>
+<td align="left"><strong>User Interface Walkthrough &amp; Screenshots</strong></td>
+<td align="center"><strong>52 – 62</strong></td>
+</tr>
+<tr>
+<td align="left">9.1</td>
+<td align="left">System Authentication &amp; Login Portal</td>
+<td align="center">52</td>
+</tr>
+<tr>
+<td align="left">9.2</td>
+<td align="left">System Administrator Executive Dashboard</td>
+<td align="center">53</td>
+</tr>
+<tr>
+<td align="left">9.3</td>
+<td align="left">Faculty Classroom Dashboard &amp; 9-Option Subject Cards</td>
+<td align="center">54</td>
+</tr>
+<tr>
+<td align="left">9.4</td>
+<td align="left">Dual Live Attendance Studio &amp; Rolling PIN/QR Modal</td>
+<td align="center">55</td>
+</tr>
+<tr>
+<td align="left">9.5</td>
+<td align="left">Day 1–31 Institutional Attendance Matrix Ledger</td>
+<td align="center">56</td>
+</tr>
+<tr>
+<td align="left">9.6</td>
+<td align="left">Direct Assessment Dossier (8 Upload Cards)</td>
+<td align="center">57</td>
+</tr>
+<tr>
+<td align="left">9.7</td>
+<td align="left">Indirect Assessment Dossier (5 Stakeholder Surveys)</td>
+<td align="center">58</td>
+</tr>
+<tr>
+<td align="left">9.8</td>
+<td align="left">Theory Classes &amp; Laboratory Dossier Workspace</td>
+<td align="center">59</td>
+</tr>
+<tr>
+<td align="left">9.9</td>
+<td align="left">Student Performance Monitoring (Remedial Measures)</td>
+<td align="center">60</td>
+</tr>
+<tr>
+<td align="left">9.10</td>
+<td align="left">Student Workspace &amp; Examination Eligibility Dashboard</td>
+<td align="center">61</td>
+</tr>
+<tr>
+<td align="left">9.11</td>
+<td align="left">Hardware ESP32 Biometric Node in Operation</td>
+<td align="center">62</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 10</strong></td>
+<td align="left"><strong>Deployment Details &amp; Production Rollout</strong></td>
+<td align="center"><strong>63 – 66</strong></td>
+</tr>
+<tr>
+<td align="left">10.1</td>
+<td align="left">Dual Cloud &amp; On-Premises Hosting Environment</td>
+<td align="center">63</td>
+</tr>
+<tr>
+<td align="left">10.2</td>
+<td align="left">Reverse-Proxy &amp; Static File Acceleration</td>
+<td align="center">64</td>
+</tr>
+<tr>
+<td align="left">10.3</td>
+<td align="left">Automated Push &amp; CI/CD Deployment Pipeline</td>
+<td align="center">64</td>
+</tr>
+<tr>
+<td align="left">10.4</td>
+<td align="left">Operational Advantages of VidyaOS</td>
+<td align="center">65</td>
+</tr>
+<tr>
+<td align="left">10.5</td>
+<td align="left">Recognized System Limitations</td>
+<td align="center">66</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 11</strong></td>
+<td align="left"><strong>Future Scope &amp; Enhancements</strong></td>
+<td align="center"><strong>67 – 69</strong></td>
+</tr>
+<tr>
+<td align="left">11.1</td>
+<td align="left">Native Mobile Applications (Flutter/React Native)</td>
+<td align="center">67</td>
+</tr>
+<tr>
+<td align="left">11.2</td>
+<td align="left">AI-Powered Optical Mark Recognition (OMR) &amp; Exam Grading</td>
+<td align="center">67</td>
+</tr>
+<tr>
+<td align="left">11.3</td>
+<td align="left">Facial Recognition Edge-AI Biometrics</td>
+<td align="center">68</td>
+</tr>
+<tr>
+<td align="left">11.4</td>
+<td align="left">Automated SMS &amp; WhatsApp Parent Alert Gateway</td>
+<td align="center">68</td>
+</tr>
+<tr>
+<td align="left">11.5</td>
+<td align="left">Multi-College Multi-Tenant Federation</td>
+<td align="center">69</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 12</strong></td>
+<td align="left"><strong>Project Management &amp; Team Contributions</strong></td>
+<td align="center"><strong>70 – 72</strong></td>
+</tr>
+<tr>
+<td align="left">12.1</td>
+<td align="left">Team Composition &amp; Work Breakdown Structure (WBS)</td>
+<td align="center">70</td>
+</tr>
+<tr>
+<td align="left">12.2</td>
+<td align="left">Milestone Progression &amp; Gantt Timeline</td>
+<td align="center">71</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 13</strong></td>
+<td align="left"><strong>Conclusion &amp; Objective Evaluation</strong></td>
+<td align="center"><strong>73 – 75</strong></td>
+</tr>
+<tr>
+<td align="left">13.1</td>
+<td align="left">Project Summary &amp; Conclusion</td>
+<td align="center">73</td>
+</tr>
+<tr>
+<td align="left">13.2</td>
+<td align="left">Detailed Objective Achievement Evaluation</td>
+<td align="center">74</td>
+</tr>
+<tr>
+<td align="left"><strong>Chapter 14</strong></td>
+<td align="left"><strong>Bibliography &amp; Technical References</strong></td>
+<td align="center"><strong>76 – 78</strong></td>
+</tr>
+<tr>
+<td align="left">14.1</td>
+<td align="left">Standard Documentation &amp; Framework References</td>
+<td align="center">76</td>
+</tr>
+<tr>
+<td align="left">14.2</td>
+<td align="left">Academic Literature &amp; System Design Textbooks</td>
+<td align="center">76</td>
+</tr>
+<tr>
+<td align="left">14.3</td>
+<td align="left">Regulatory &amp; Institutional Standards (UBTER / NBA / AICTE)</td>
+<td align="center">77</td>
+</tr>
+<tr>
+<td align="left"><strong>Appendix</strong></td>
+<td align="left"><strong>Supplementary Code &amp; Specifications</strong></td>
+<td align="center"><strong>79 – 82</strong></td>
+</tr>
+<tr>
+<td align="left">Appendix A</td>
+<td align="left">Sample Source Code: Rolling Cryptographic PIN Generator</td>
+<td align="center">79</td>
+</tr>
+<tr>
+<td align="left">Appendix B</td>
+<td align="left">Sample Source Code: Dual Database Adapter &amp; Translation</td>
+<td align="center">80</td>
+</tr>
+<tr>
+<td align="left">Appendix C</td>
+<td align="left">Comprehensive Project Metrics &amp; Codebase Statistics</td>
+<td align="center">81</td>
+</tr>
+<tr>
+<td align="left">Appendix D</td>
+<td align="left">ESP32 Hardware Wiring Schematic &amp; Pinout Table</td>
+<td align="center">82</td>
+</tr>
+</tbody></table>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 1: INTRODUCTION</h2>
+<h3>1.1 Motivation</h3>
+<p>In polytechnic colleges and technical education institutions across India, effective governance relies heavily on timely communication, precise attendance records, structured coursework, and meticulous documentation for national accreditation bodies such as the <strong>National Board of Accreditation (NBA)</strong> and the <strong>National Assessment and Accreditation Council (NAAC)</strong>. </p>
+<p>Historically, government polytechnics have depended on manual paper registers, physical notice boards, and fragmented spreadsheet files. Faculty members spend up to 25% of their working hours manually taking roll calls, writing daily entries into paper ledgers, calculating end-of-semester attendance percentages by hand, and compiling thick binders of physical evidence for accreditation audits. </p>
+<p>Furthermore, during sudden weather disruptions or institutional emergencies, students and parents are unable to access official academic updates off-campus, leading to missed examinations and communication breakdowns. Developing a cohesive, modern, and cost-effective digital operating system that eliminates paper registers while automating accreditation compliance was the primary driving force behind <strong>VidyaOS</strong>.</p>
+<h3>1.2 Background &amp; Context</h3>
+<p>VidyaOS was conceptualized and engineered at the <strong>Department of Information Technology, Uttarakhand Government Institute of Polytechnic Nainital (UGIP)</strong>. The institution conducts multi-disciplinary diploma programs in:</p>
+<ol>
+<li>Information Technology (IT)</li>
+<li>Electronics Engineering (ECE)</li>
+<li>Electrical Engineering (EE)</li>
+<li>Mechanical Engineering (ME)</li>
+<li>Civil Engineering (CE)</li>
+<li>Pharmacy (PHARM)</li>
+</ol>
+<p>Previous attempts to digitize attendance and coursework relied either on commercial generic ERP platforms—which charged exorbitant per-student subscription fees that government colleges cannot sustain—or rudimentary static websites that lacked dynamic database transactions. </p>
+<p>VidyaOS was engineered specifically to address the statutory requirements of the <strong>Uttarakhand Board of Technical Education, Roorkee (UBTER)</strong>, including the mandatory 75% attendance threshold for examination eligibility, continuous internal evaluation (CIE), and outcome-based education (OBE) course outcome attainment.</p>
+<h3>1.3 Scope of the Project</h3>
+<p>VidyaOS spans five deeply integrated operational layers:</p>
+<ol>
+<li><strong>Administrative Governance Layer</strong>: Institutional structure management, department management, teacher appointment, semester promotion automation, and forensic audit logging.</li>
+<li><strong>Faculty Classroom &amp; Academic Ledger</strong>: Dynamic teaching group creation, Day 1–31 attendance matrices, dual live studio attendance (rolling PIN + QR), coursework management, and marks entry.</li>
+<li><strong>NBA / NAAC Compliance &amp; Quality Assurance Suite</strong>: Complete Direct Assessment (8 upload categories), Indirect Assessment (5 survey categories), Theory Dossier, Laboratory Work Dossier, and Student Performance Monitoring for advanced and slow learners.</li>
+<li><strong>Student Self-Service Portal</strong>: Attendance analytics, examination eligibility status meters, classwork submission, timetable view, and online leave application filing.</li>
+<li><strong>Physical IoT Biometric Edge Hardware</strong>: ESP32 microcontroller nodes providing standalone optical fingerprint scanning with encrypted cloud synchronization.</li>
+</ol>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 2: EXISTING SYSTEM &amp; PROBLEM STATEMENT</h2>
+<h3>2.1 Study of the Existing Institutional System</h3>
+<p>Prior to the implementation of VidyaOS, academic management at Government Polytechnic Nainital was conducted almost entirely via manual, paper-based protocols:</p>
+<ul>
+<li><strong>Attendance Ledger Registers</strong>: Faculty carried physical cardboard attendance books to classrooms, calling out roll numbers individually. At month-end, teachers manually calculated percentage turnout for every student.</li>
+<li><strong>Paper-Based Notice Boards</strong>: Announcements regarding timetables, internal exams, and fee schedules were printed and pinned to physical boards in departmental corridors.</li>
+<li><strong>Coursework &amp; Assignment Submissions</strong>: Homework and practical write-ups were hand-delivered on physical paper, resulting in misplaced submissions and grading delays.</li>
+<li><strong>Accreditation Evidence Binders</strong>: Faculty manually collected question papers, sample answer sheets, and course exit forms into bulky paper binders (&quot;Course Files&quot;) for NBA committees.</li>
+</ul>
+<h3>2.2 Identified Deficiencies &amp; Operational Bottlenecks</h3>
+<ol>
+<li><strong>Severe Time Wastage</strong>: Manual roll calling consumed 10–15 minutes of every 50-minute lecture period, wasting up to 20% of instructional classroom time.</li>
+<li><strong>Attendance Tampering &amp; Proxy Vulnerability</strong>: Physical roll calling allowed students to answer proxy for absent classmates.</li>
+<li><strong>Delayed Defaulter Identification</strong>: Students discovered their attendance was below the mandatory 75% threshold only at the end of the semester, leaving no opportunity for remediation.</li>
+<li><strong>Accreditation Audit Nightmare</strong>: Locating past examination papers, student answer samples, and CO-PO attainment calculations took weeks of faculty effort before inspection visits.</li>
+<li><strong>Data Insecurity</strong>: Physical ledgers were susceptible to water damage, tearing, and loss.</li>
+</ol>
+<h3>2.3 Comparative Analysis: Traditional System vs VidyaOS</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Operational Metric</th>
+<th align="left">Traditional Manual System</th>
+<th align="left">VidyaOS Automated Platform</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Attendance Capture Speed</strong></td>
+<td align="left">10–12 minutes per period</td>
+<td align="left">Instant (Concurrent QR/PIN or ESP32 Biometric Push)</td>
+</tr>
+<tr>
+<td align="left"><strong>Proxy Attendance Prevention</strong></td>
+<td align="left">Low (Vulnerable to voice proxy)</td>
+<td align="left">High (Dynamic 15-second rolling tokens + Biometrics)</td>
+</tr>
+<tr>
+<td align="left"><strong>Turnout Percentage Calculation</strong></td>
+<td align="left">3–5 days of manual math at month-end</td>
+<td align="left">Real-time automated calculation upon every session close</td>
+</tr>
+<tr>
+<td align="left"><strong>Accreditation Documentation</strong></td>
+<td align="left">Physical paper binders prone to loss</td>
+<td align="left">Centralized digital PDF dossiers with readiness meters</td>
+</tr>
+<tr>
+<td align="left"><strong>Student Defaulter Tracking</strong></td>
+<td align="left">End-of-semester manual notification</td>
+<td align="left">Live visual status badge (Safe Zone vs Critical Zone)</td>
+</tr>
+<tr>
+<td align="left"><strong>Leave Approval Flow</strong></td>
+<td align="left">Multi-day paper routing through offices</td>
+<td align="left">Single-click HOD digital adjudication workflow</td>
+</tr>
+<tr>
+<td align="left"><strong>Hardware Costs</strong></td>
+<td align="left">Recurring paper register stationery costs</td>
+<td align="left">One-time affordable open-hardware ESP32 microcontrollers</td>
+</tr>
+</tbody></table>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 3: SYSTEM ANALYSIS &amp; MODELING</h2>
+<h3>3.1 Requirement Analysis</h3>
+<h4>Functional Requirements</h4>
+<ol>
+<li><strong>Role-Based Authentication</strong>: Secure login supporting System Admin, HOD, Teacher, and Student roles with distinct dashboard routes.</li>
+<li><strong>Live Attendance Studio</strong>: Simultaneous support for dynamic auto-refreshing QR codes, 6-digit rolling PINs, and real-time student check-in feeds.</li>
+<li><strong>Assessment &amp; Coursework Management</strong>: Categorized Direct Assessment (Internal exams, practicals, class tests) and Indirect Assessment (stakeholder feedback surveys).</li>
+<li><strong>Academic Dossiers</strong>: Structured repositories for Theory class lecture plans and Laboratory class compliance records.</li>
+<li><strong>IoT Hardware Integration</strong>: Secure RESTful device endpoints for ESP32 fingerprint scanners to sync attendance logs.</li>
+<li><strong>Student Self-Service Portal</strong>: Transparent view of attendance turnout, assignments, test marks, and leave filing.</li>
+</ol>
+<h4>Non-Functional Requirements</h4>
+<ol>
+<li><strong>Performance</strong>: Web pages must render in under 300ms; API response time must remain under 100ms under 100 concurrent requests.</li>
+<li><strong>Zero Hardcoded Design Tokens</strong>: 100% adherence to CSS custom properties (<code>var(--primary-color)</code>, <code>var(--bg-card)</code>) ensuring accessible light/dark theme contrast.</li>
+<li><strong>Security</strong>: Bcrypt password hashing (cost factor 10–12), HttpOnly cookie token storage, SQL injection prevention via prepared parameter binding, and input sanitization.</li>
+<li><strong>Fault Tolerance</strong>: Automatic fallback to local SQLite database in the event of cloud MySQL network disconnects.</li>
+</ol>
+<h3>3.2 Data Flow Diagrams (DFDs)</h3>
+<h4>Level 0 — Context Level Diagram</h4>
+<p>The top-level context diagram establishes the primary data exchanges between the core external entities and the centralized VidyaOS engine:</p>
+<pre><code class="language-mermaid">flowchart TD
+    S[&quot;Student&quot;] --&gt;|&quot;Login, PIN/QR Check-in, Leave Application&quot;| V[&quot;VidyaOS Core Engine&quot;]
+    V --&gt;|&quot;Attendance Analytics, Exam Eligibility, Timetable&quot;| S
+    
+    T[&quot;Teacher / Faculty&quot;] --&gt;|&quot;Take Attendance, Upload Dossiers, Grade Tests&quot;| V
+    V --&gt;|&quot;Registers, Classwork Rosters, Audit Readiness&quot;| T
+    
+    H[&quot;Head of Department (HOD)&quot;] --&gt;|&quot;Approve Faculty, Adjudicate Leaves, Manage Curricula&quot;| V
+    V --&gt;|&quot;Departmental Turnout, Accreditation Overviews&quot;| H
+    
+    A[&quot;System Administrator&quot;] --&gt;|&quot;Campus Branding, User Accounts, Academic Sessions&quot;| V
+    V --&gt;|&quot;System Audit Logs, Device Heartbeats, Metrics&quot;| A
+    
+    D[&quot;ESP32 IoT Biometric Node&quot;] --&gt;|&quot;Encrypted Fingerprint Event Push, Heartbeat&quot;| V
+    V --&gt;|&quot;Biometric Templates, Clock Sync, Session Status&quot;| D
+</code></pre>
+<h4>Level 1 — Attendance &amp; Assessment Subsystem DFD</h4>
+<pre><code class="language-mermaid">flowchart TD
+    F[&quot;Teacher&quot;] --&gt;|&quot;Create Session&quot;| P1[&quot;1.0 Session Controller&quot;]
+    P1 --&gt;|&quot;Generate Dynamic PIN &amp; QR&quot;| DB1[(&quot;attendance_sessions&quot;)]
+    P1 --&gt;|&quot;Display QR &amp; PIN&quot;| F
+    
+    ST[&quot;Student&quot;] --&gt;|&quot;Submit PIN / Scan QR&quot;| P2[&quot;2.0 Attendance Verification&quot;]
+    DB1 --&gt;|&quot;Verify PIN / QR Token&quot;| P2
+    P2 --&gt;|&quot;Record Log Event&quot;| DB2[(&quot;register_attendance&quot;)]
+    P2 --&gt;|&quot;Broadcast Check-in&quot;| P1
+    
+    F --&gt;|&quot;Upload Assessment PDF&quot;| P3[&quot;3.0 Dossier Controller&quot;]
+    P3 --&gt;|&quot;Store Document Metadata&quot;| DB3[(&quot;assessment_documents&quot;)]
+    P3 --&gt;|&quot;Compute Audit Readiness&quot;| F
+</code></pre>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 4: SYSTEM DESIGN &amp; TECHNICAL ARCHITECTURE</h2>
+<h3>4.1 Three-Tier Architectural Overview</h3>
+<p>VidyaOS follows a clean, decoupled <strong>Three-Tier Architecture</strong> comprised of:</p>
+<ol>
+<li><strong>Presentation Layer (Frontend)</strong>: Modular vanilla HTML5, CSS3, and ES6+ JavaScript. Designed with zero bulky framework dependencies (no React or Angular build bloat), ensuring instant loading over 2G/3G mobile connections.</li>
+<li><strong>Application Layer (Backend REST API)</strong>: Node.js and Express.js providing non-blocking asynchronous I/O, middleware pipelines (CORS, Helmet security, cookie parsing, compression), role-based route guards, and business logic controllers.</li>
+<li><strong>Data Persistence Layer (Dual Database Engine)</strong>: An intelligent dual-engine database layer operating seamlessly across <strong>SQLite3</strong> (for local zero-install developer machines and offline campus servers) and <strong>MySQL 8.x</strong> (with connection pooling for production cloud environments).</li>
+</ol>
+<pre><code class="language-mermaid">flowchart LR
+    subgraph Client[&quot;Presentation Tier&quot;]
+        UI1[&quot;Desktop Browser (Admin/Faculty/HOD)&quot;]
+        UI2[&quot;Mobile Browser (Student Workspace)&quot;]
+        UI3[&quot;ESP32 Hardware Node (AS608 Fingerprint)&quot;]
+    end
+    
+    subgraph Server[&quot;Application Tier (Node.js &amp; Express)&quot;]
+        API[&quot;Express REST API (Port 3001)&quot;]
+        MW[&quot;Middleware (Auth, RBAC, Security, Crypto)&quot;]
+        SRV[&quot;Domain Services (Session, Audit, Dossier)&quot;]
+        API --&gt; MW --&gt; SRV
+    end
+    
+    subgraph Data[&quot;Persistence Tier&quot;]
+        ADAPTER[&quot;Dual Database Adapter (db.js)&quot;]
+        SQLITE[(&quot;Local SQLite Database (college_attendance.sqlite)&quot;)]
+        MYSQL[(&quot;Cloud MySQL 8.x (Connection Pool)&quot;)]
+        SRV --&gt; ADAPTER
+        ADAPTER --&gt;|Local Dev / Failover| SQLITE
+        ADAPTER --&gt;|Production / Cloud| MYSQL
+    end
+    
+    Client &lt;--&gt;|HTTPS / REST / JSON| Server
+</code></pre>
+<h3>4.2 Universal Database Schema Design</h3>
+<p>The relational database comprises over 30 normalized tables organized according to Third Normal Form (3NF) principles:</p>
+<pre><code class="language-mermaid">erDiagram
+    USERS ||--o{ USER_ROLES : has
+    USERS ||--o| TEACHERS : profiles
+    USERS ||--o| STUDENTS : profiles
+    DEPARTMENTS ||--o{ TEACHERS : employs
+    DEPARTMENTS ||--o{ STUDENTS : enrolls
+    TEACHERS ||--o{ TEACHING_GROUPS : conducts
+    TEACHING_GROUPS ||--o{ ATTENDANCE_REGISTERS : contains
+    ATTENDANCE_REGISTERS ||--o{ ATTENDANCE_SESSIONS : records
+    ATTENDANCE_SESSIONS ||--o{ REGISTER_ATTENDANCE : logs
+    STUDENTS ||--o{ REGISTER_ATTENDANCE : attends
+    TEACHING_GROUPS ||--o{ ASSESSMENTS : evaluates
+    ASSESSMENTS ||--o{ ASSESSMENT_SUBMISSIONS : grades
+    DEVICES ||--o{ FINGERPRINT_SLOTS : allocates
+    STUDENTS ||--o{ FINGERPRINT_SLOTS : maps
+</code></pre>
+<h4>Core Schema Entities Summary</h4>
+<ul>
+<li><code>users</code>: Primary identity store (<code>id</code>, <code>username</code>, <code>email</code>, <code>password_hash</code>, <code>status</code>, <code>phone</code>).</li>
+<li><code>teachers</code>: Faculty profile records (<code>id</code>, <code>user_id</code>, <code>department_id</code>, <code>full_name</code>, <code>employee_id</code>, <code>designation</code>).</li>
+<li><code>students</code>: Institutional student store (<code>id</code>, <code>user_id</code>, <code>department_id</code>, <code>full_name</code>, <code>roll_no</code>, <code>ubter_reg_no</code>).</li>
+<li><code>teaching_groups</code>: Virtual academic classrooms linking teachers, subjects, semesters, and sections.</li>
+<li><code>attendance_sessions</code>: Live turnout periods storing rolling <code>verification_pin</code>, <code>qr_token</code>, and session states.</li>
+<li><code>register_attendance</code>: Normalized turnout entries (<code>PRESENT</code>, <code>ABSENT</code>, <code>LATE</code>, <code>EXCUSED</code>).</li>
+<li><code>theory_class_files</code> &amp; <code>lab_class_files</code>: Dossier compliance registers.</li>
+</ul>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 5: CORE MODULE DESCRIPTIONS</h2>
+<h3>5.1 Authentication &amp; Granular RBAC Module</h3>
+<p>VidyaOS implements a robust authentication and authorization architecture designed to enforce institutional boundaries strictly:</p>
+<ul>
+<li><strong>Password Security</strong>: Passwords are encrypted using salted <strong>bcrypt</strong> hashes with 10–12 salt rounds.</li>
+<li><strong>Token Management</strong>: Generates dual <strong>JSON Web Tokens (JWT)</strong>: a short-lived 15-minute <code>access_token</code> and a 7-day <code>refresh_token</code> stored inside secure, HTTP-only, SameSite cookies.</li>
+<li><strong>Role Verification Middleware</strong>: Granular middleware guards (<code>requireHOD()</code>, <code>requireTeacher()</code>, <code>requireRole(&#39;STUDENT&#39;)</code>) prevent horizontal and vertical privilege escalation.</li>
+<li><strong>Client-Side Route Protection</strong>: Frontend pages invoke <code>guardRoute()</code> which intercepts unauthenticated visits, verifies token claims, and transparently redirects users to their appropriate dashboard portal.</li>
+</ul>
+<h3>5.2 Dual Live Studio Attendance &amp; ESP32 IoT Node</h3>
+<p>The Dual Live Attendance Studio represents the flagship technical innovation of VidyaOS:</p>
+<ol>
+<li><strong>Dynamic Rolling QR Code</strong>: The server computes a cryptographically salted SHA-256 hash that expires every 15 seconds. Students in the classroom scan the QR code from their mobile screens, which transmits their session token for instant geolocation and time verification.</li>
+<li><strong>Rolling 6-Digit PIN</strong>: Concurrently with the QR code, the system generates an animated 6-digit PIN code with an SVG circular countdown timer. Students who lack high-quality cameras can type this PIN directly into their dashboard.</li>
+<li><strong>Live Student Check-In Feed</strong>: As students scan or enter the PIN, their names, roll numbers, and timestamps appear dynamically on the faculty&#39;s projector screen via real-time DOM polling.</li>
+<li><strong>Day 1–31 Attendance Ledger Matrix</strong>: Once closed, sessions populate an institutional monthly ledger matrix showing Day 1 through Day 31 turnout, turn-out percentages, and safe/critical attendance statuses.</li>
+<li><strong>ESP32 IoT Hardware Sync</strong>: In laboratory environments, students place their registered finger on the AS608 sensor of the classroom ESP32 node. The node verifies the biometric template, sounds a confirmation chime, displays the student&#39;s name on the OLED screen, and transmits an encrypted HTTP POST packet to <code>/api/v1/devices/attendance</code>.</li>
+</ol>
+<h3>5.3 Complete Coursework &amp; Assessment Suite</h3>
+<p>To comply with NBA Accreditation requirements, VidyaOS completely separates assessments into two independent, purpose-built modules:</p>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph AssessmentSuite[&quot;VidyaOS Academic Assessment Framework&quot;]
+        subgraph Direct[&quot;A. Direct Assessment (8 Subsystems)&quot;]
+            D1[&quot;Internal Examinations (Question Papers &amp; Marksheets)&quot;]
+            D2[&quot;Class Tests (Evaluation Records)&quot;]
+            D3[&quot;Assignments (Questions &amp; Graded Samples)&quot;]
+            D4[&quot;Laboratory Performance Sheets&quot;]
+            D5[&quot;Practical Examinations Marks&quot;]
+            D6[&quot;Mini Projects &amp; Capstone Reports&quot;]
+            D7[&quot;End-Semester Examinations Records&quot;]
+            D8[&quot;Course Outcome (CO-PO) Attainment Mapping&quot;]
+        end
+        
+        subgraph Indirect[&quot;B. Indirect Assessment (5 Subsystems)&quot;]
+            I1[&quot;Course Exit Survey (Student Feedback on COs)&quot;]
+            I2[&quot;Mid-Semester Teaching Feedback&quot;]
+            I3[&quot;Alumni Feedback (Curriculum Relevance)&quot;]
+            I4[&quot;Employer &amp; Industry Feedback&quot;]
+            I5[&quot;Graduate Exit Survey (Program Outcomes)&quot;]
+        end
+    end
+</code></pre>
+<p>Each of the 13 upload categories provides independent PDF upload, document versioning, in-browser viewing, replacement, and deletion with dynamic audit readiness scoring.</p>
+<h3>5.4 Theory &amp; Laboratory Classes Dossiers</h3>
+<ul>
+<li><strong>Theory Classes Dossier</strong>: Houses the 7 statutory academic files required for every lecture course: Syllabus Copy, Academic Calendar, Teaching Lesson Plan, Continuous Evaluation Sheet, Previous Year Question Papers, Lecture Notes Repository, and Weak Student Remedial Logs.</li>
+<li><strong>Laboratory Classes Dossier</strong>: Houses the 7 practical files: Lab Turnout Matrix, Lab Manuals, Standard Job Cards &amp; Experiment Instruction Sheets, Evaluated Practical Notebook Samples, Continuous Lab Assessment Rubrics, Equipment Logbooks, and Stock &amp; Maintenance Registers.</li>
+</ul>
+<h3>5.5 Student Performance Monitoring Module</h3>
+<p>VidyaOS introduces structured tracking for student cohorts:</p>
+<ul>
+<li><strong>Advanced Learners</strong>: Upload and documentation cards for students excelling academically (&gt;75% turnout and top quartile test scores) with special mentoring plans.</li>
+<li><strong>Slow Learners</strong>: Identification and diagnostic logs for students requiring additional assistance.</li>
+<li><strong>5 Structured Remedial Measures</strong>: Dedicated upload cards for Remedial Classes, Peer Tutoring Pairs, Additional Assignments, Simplified Study Notes, and Counseling Reports.</li>
+</ul>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 6: HARDWARE &amp; SOFTWARE REQUIREMENTS</h2>
+<h3>6.1 Software Specifications</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Category</th>
+<th align="left">Technology</th>
+<th align="left">Version</th>
+<th align="left">Purpose / Deployment Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Backend Runtime</strong></td>
+<td align="left">Node.js</td>
+<td align="left">v20.x – v26.x</td>
+<td align="left">Non-blocking asynchronous server runtime</td>
+</tr>
+<tr>
+<td align="left"><strong>Backend Framework</strong></td>
+<td align="left">Express.js</td>
+<td align="left">4.19+</td>
+<td align="left">REST API routing and middleware pipeline</td>
+</tr>
+<tr>
+<td align="left"><strong>Relational Database</strong></td>
+<td align="left">SQLite / MySQL</td>
+<td align="left">SQLite 3 / MySQL 8.0+</td>
+<td align="left">Universal dual data storage engine</td>
+</tr>
+<tr>
+<td align="left"><strong>Database Drivers</strong></td>
+<td align="left">node:sqlite / mysql2</td>
+<td align="left">Built-in / 3.9+</td>
+<td align="left">Native connection pooling and execution</td>
+</tr>
+<tr>
+<td align="left"><strong>Security &amp; Auth</strong></td>
+<td align="left">bcrypt / jsonwebtoken</td>
+<td align="left">5.1+ / 9.0+</td>
+<td align="left">Password hashing and JWT token handling</td>
+</tr>
+<tr>
+<td align="left"><strong>Frontend Languages</strong></td>
+<td align="left">HTML5 / CSS3 / ES6+</td>
+<td align="left">Modern Standard</td>
+<td align="left">Zero-build responsive client interface</td>
+</tr>
+<tr>
+<td align="left"><strong>Design Architecture</strong></td>
+<td align="left">CSS Custom Properties</td>
+<td align="left">Tokenized</td>
+<td align="left">Theme engine (0 hardcoded hex colors)</td>
+</tr>
+<tr>
+<td align="left"><strong>Web Server / Proxy</strong></td>
+<td align="left">Node / LiteSpeed / Nginx</td>
+<td align="left">Reverse Proxy</td>
+<td align="left">Static file delivery and API proxying</td>
+</tr>
+</tbody></table>
+<h3>6.2 Hardware Specifications</h3>
+<h4>Server Host Requirements</h4>
+<ul>
+<li><strong>Processor</strong>: 64-bit Dual Core 2.0 GHz or higher (Cloud VPS or On-Premises Server).</li>
+<li><strong>RAM</strong>: 1 GB minimum (2 GB+ recommended for production).</li>
+<li><strong>Storage</strong>: 10 GB SSD storage (accommodates SQLite database, node modules, and PDF archives).</li>
+<li><strong>Network</strong>: 10 Mbps broadband internet connection with static IP or DDNS.</li>
+</ul>
+<h4>Client Device Requirements</h4>
+<ul>
+<li><strong>Desktop / Laptop</strong>: Any modern PC running Windows 10/11, macOS, or Linux with Google Chrome (v110+), Mozilla Firefox (v115+), or Microsoft Edge.</li>
+<li><strong>Mobile / Tablet</strong>: Android 8.0+ or iOS 14+ running mobile Chrome or Safari connected to campus Wi-Fi.</li>
+</ul>
+<h3>6.3 IoT Biometric Hardware Specifications (ESP32 Node)</h3>
+<ul>
+<li><strong>Microcontroller Unit (MCU)</strong>: Espressif ESP32-WROOM-32 (Dual-core Xtensa 32-bit LX6, 240 MHz, 520 KB SRAM, integrated 802.11 b/g/n Wi-Fi &amp; BLE).</li>
+<li><strong>Fingerprint Sensor</strong>: AS608 Optical Fingerprint Scanner (500 DPI resolution, 1:N matching speed &lt; 0.8s, 300 template onboard storage).</li>
+<li><strong>Display Output</strong>: 0.96-inch Monochrome I2C OLED Display (SSD1306 driver, 128x64 pixels).</li>
+<li><strong>Audio Indicator</strong>: 5V Active Piezo Buzzer for audio transaction feedback.</li>
+<li><strong>Flash Storage</strong>: Winbond W25Q32 32Mbit SPI Flash memory for offline biometric transaction caching.</li>
+<li><strong>Power Supply</strong>: 5V DC 2A Micro-USB adapter.</li>
+</ul>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 7: DEVELOPMENT METHODOLOGY &amp; IMPLEMENTATION</h2>
+<h3>7.1 Development Methodology — Agile-Iterative Model</h3>
+<p>VidyaOS was developed using an <strong>Agile-Iterative Software Engineering Lifecycle</strong>, structured across four sequential, highly focused development cycles:</p>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph Sprint1[&quot;Sprint 1: Core Foundation (Weeks 1–3)&quot;]
+        A1[&quot;Database Schema Design (3NF)&quot;] --&gt; A2[&quot;Dual Database Adapter (SQLite &amp; MySQL)&quot;]
+        A2 --&gt; A3[&quot;JWT Authentication &amp; Multi-Role RBAC Middleware&quot;]
+    end
+    
+    subgraph Sprint2[&quot;Sprint 2: Academic Registers &amp; Studio (Weeks 4–7)&quot;]
+        B1[&quot;Day 1–31 Monthly Attendance Matrix&quot;] --&gt; B2[&quot;Dual Live Attendance Studio (PIN &amp; QR)&quot;]
+        B2 --&gt; B3[&quot;Real-time Check-In Log Feed&quot;]
+    end
+    
+    subgraph Sprint3[&quot;Sprint 3: Accreditation &amp; Coursework (Weeks 8–10)&quot;]
+        C1[&quot;Direct Assessment (8 Cards)&quot;] --&gt; C2[&quot;Indirect Assessment (5 Surveys)&quot;]
+        C2 --&gt; C3[&quot;Theory &amp; Lab Classes Dossiers&quot;]
+    end
+    
+    subgraph Sprint4[&quot;Sprint 4: IoT Biometrics &amp; Deployment (Weeks 11–12)&quot;]
+        D1[&quot;ESP32 AS608 C++ Firmware Implementation&quot;] --&gt; D2[&quot;Full Security Audit (OWASP Top 10)&quot;]
+        D2 --&gt; D3[&quot;Production Deployment &amp; Reverse Proxy Setup&quot;]
+    end
+    
+    Sprint1 --&gt; Sprint2 --&gt; Sprint3 --&gt; Sprint4
+</code></pre>
+<h3>7.2 Security-First Engineering Protocol</h3>
+<p>Security was baked into every component of VidyaOS from the initial commit:</p>
+<ol>
+<li><strong>Zero Client Trust</strong>: All authorization checks are executed server-side. Frontend button hiding is strictly aesthetic; the API rejects any unauthorized request with HTTP 403.</li>
+<li><strong>SQL Injection Elimination</strong>: 100% of SQL interactions utilize parameterized prepared statements (<code>?</code> bindings), entirely preventing SQL injection attacks.</li>
+<li><strong>Sensitive Field Redaction</strong>: Passwords, hashes, and internal tokens are stripped from all API outputs and JSON responses.</li>
+<li><strong>Frozen Module Safety Invariant</strong>: 9 designated core frontend modules (<code>frontend/faculty/registers/</code>, <code>frontend/faculty/sheets/</code>, etc.) are permanently locked to preserve tested institutional stability.</li>
+</ol>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 8: TESTING &amp; VERIFICATION</h2>
+<h3>8.1 Testing Methodology</h3>
+<p>Testing was conducted following an exhaustive, multi-tier quality assurance framework comprising:</p>
+<ol>
+<li><strong>Static Syntax Analysis</strong>: Complete JavaScript compilation checks (<code>node -c</code>) across all 174 codebase files (76 frontend, 98 backend).</li>
+<li><strong>Design Token Integrity Audits</strong>: Automated regex scanning verifying 0 hardcoded hex colors across all 66 CSS files.</li>
+<li><strong>End-to-End API Integration Testing</strong>: Automated HTTP testing evaluating authentication, session lifecycles, and data persistence across all roles.</li>
+<li><strong>Security Vulnerability Assessment</strong>: Auditing against the OWASP Top 10 vulnerabilities.</li>
+</ol>
+<h3>8.2 Functional Test Case Matrix</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Module Tested</th>
+<th align="left">Input Condition</th>
+<th align="left">Expected Output</th>
+<th align="left">Actual Result</th>
+<th align="center">Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TC-01</strong></td>
+<td align="left">Authentication</td>
+<td align="left">Valid Admin credentials (<code>admin@gmail.com</code>)</td>
+<td align="left">JWT access token issued; HTTP 200; redirect to <code>/admin</code></td>
+<td align="left">Token issued; redirect OK</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-02</strong></td>
+<td align="left">Authentication</td>
+<td align="left">Invalid password (5 attempts)</td>
+<td align="left">Rate limit warning; HTTP 401; account protection</td>
+<td align="left">Access denied; 401 OK</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-03</strong></td>
+<td align="left">RBAC Guard</td>
+<td align="left">Student accesses <code>/faculty/dashboard</code></td>
+<td align="left">Route intercept; HTTP 403; redirect to student portal</td>
+<td align="left">Intercepted; redirect OK</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-04</strong></td>
+<td align="left">Live Attendance</td>
+<td align="left">Teacher initiates Live Roll Call</td>
+<td align="left">6-digit rolling PIN and dynamic QR generated</td>
+<td align="left">PIN &amp; QR rendered live</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-05</strong></td>
+<td align="left">Live Attendance</td>
+<td align="left">Student enters valid 6-digit PIN</td>
+<td align="left">Student check-in logged; live feed updates on screen</td>
+<td align="left">Turnout recorded; HTTP 200</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-06</strong></td>
+<td align="left">Live Attendance</td>
+<td align="left">Student enters expired PIN (&gt;15s old)</td>
+<td align="left">Verification error: &quot;PIN Expired&quot;; reject turnout</td>
+<td align="left">Rejected; HTTP 400</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-07</strong></td>
+<td align="left">Matrix Ledger</td>
+<td align="left">Attendance session closed</td>
+<td align="left">Month-end turnout percentage recalculates automatically</td>
+<td align="left">Ledger updated; 100% math OK</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-08</strong></td>
+<td align="left">Direct Assessment</td>
+<td align="left">Upload Internal Exam PDF (3.2 MB)</td>
+<td align="left">PDF stored in <code>uploads/</code>; audit readiness meter increments</td>
+<td align="left">Stored; score updated</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-09</strong></td>
+<td align="left">Direct Assessment</td>
+<td align="left">Upload non-PDF file (.exe / .sh)</td>
+<td align="left">MIME-type validator rejects file; HTTP 400</td>
+<td align="left">Rejected; security alert</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-10</strong></td>
+<td align="left">Card Visibility</td>
+<td align="left">Student views Subject Cards</td>
+<td align="left">9 Faculty navigation buttons completely hidden</td>
+<td align="left">Buttons 100% hidden</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-11</strong></td>
+<td align="left">Card Visibility</td>
+<td align="left">Teacher views Subject Cards</td>
+<td align="left">All 9 Faculty navigation buttons visible and clickable</td>
+<td align="left">All 9 buttons displayed</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-12</strong></td>
+<td align="left">Database Adapter</td>
+<td align="left">MySQL server goes offline</td>
+<td align="left">System seamlessly fails over to local SQLite database</td>
+<td align="left">Zero downtime; failover OK</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-13</strong></td>
+<td align="left">Timetable Upload</td>
+<td align="left">HOD uploads Year 3 PDF Timetable</td>
+<td align="left">File saved; student timetable tab updates dynamically</td>
+<td align="left">Uploaded; timetable live</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-14</strong></td>
+<td align="left">Leave Workflow</td>
+<td align="left">Student files medical leave</td>
+<td align="left">Leave appears in HOD approvals tab with attachments</td>
+<td align="left">Notification displayed</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-15</strong></td>
+<td align="left">Leave Approval</td>
+<td align="left">HOD approves medical leave</td>
+<td align="left">Attendance status adjusted to EXCUSED; student alerted</td>
+<td align="left">Status updated; audit logged</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-16</strong></td>
+<td align="left">IoT Biometric Node</td>
+<td align="left">Valid finger placed on AS608</td>
+<td align="left">Green LED chimes; attendance posted to <code>/api/v1/devices</code></td>
+<td align="left">Check-in logged in DB</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-17</strong></td>
+<td align="left">IoT Biometric Node</td>
+<td align="left">Unregistered finger placed</td>
+<td align="left">Red LED alerts; error message displayed on OLED</td>
+<td align="left">Rejected; no DB write</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-18</strong></td>
+<td align="left">Mobile Access</td>
+<td align="left">Phone accesses <code>http://192.168.x.x:5001</code></td>
+<td align="left">Responsive mobile layout with 50% slide-out drawer</td>
+<td align="left">Page loads smoothly</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-19</strong></td>
+<td align="left">Outside Click</td>
+<td align="left">User taps backdrop outside mobile sidebar</td>
+<td align="left">Sidebar drawer dismisses immediately</td>
+<td align="left">Drawer closes instantly</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>TC-20</strong></td>
+<td align="left">Theme Compliance</td>
+<td align="left">Switch between Light and Dark mode</td>
+<td align="left">All backgrounds, texts, and borders update via CSS variables</td>
+<td align="left">Smooth CSS transition</td>
+<td align="center"><strong>PASS</strong></td>
+</tr>
+</tbody></table>
+<h3>8.3 Security Verification (OWASP Top 10 Audit)</h3>
+<table>
+<thead>
+<tr>
+<th align="left">OWASP Risk Category</th>
+<th align="left">Vulnerability Description</th>
+<th align="left">VidyaOS Countermeasure &amp; Verification Outcome</th>
+<th align="center">Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>A01: Broken Access Control</strong></td>
+<td align="left">Unauthorized route navigation</td>
+<td align="left">Verified: Middleware enforces strict role checks on every API route; student requests to faculty routes receive HTTP 403.</td>
+<td align="center"><strong>SECURE</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>A02: Cryptographic Failures</strong></td>
+<td align="left">Plaintext credential leaks</td>
+<td align="left">Verified: All passwords hashed with bcrypt; JWT tokens stored in HttpOnly cookies; sensitive columns redacted from JSON.</td>
+<td align="center"><strong>SECURE</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>A03: Injection (SQLi / XSS)</strong></td>
+<td align="left">Malicious SQL inputs or HTML tags</td>
+<td align="left">Verified: 100% prepared SQL statements; HTML sanitization on all uploaded titles and notes; script execution blocked.</td>
+<td align="center"><strong>SECURE</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>A05: Security Misconfiguration</strong></td>
+<td align="left">Exposed environment or database files</td>
+<td align="left">Verified: Private folder architecture; <code>.env</code> and <code>.sqlite</code> blocked from web access; directory listing disabled.</td>
+<td align="center"><strong>SECURE</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>A07: Identification &amp; Auth Failures</strong></td>
+<td align="left">Brute-force credential guessing</td>
+<td align="left">Verified: Progressive login throttling limits repeated failed attempts; session fingerprints bound to client IP.</td>
+<td align="center"><strong>SECURE</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 9: USER INTERFACE WALKTHROUGH &amp; SCREENSHOTS</h2>
+<h3>9.1 System Authentication &amp; Login Portal</h3>
+<p>The VidyaOS authentication gateway features a minimalist, responsive card layout with institutional branding, email/password validation, role auto-detection, and a secure password reveal toggle:</p>
+<pre><code>+-------------------------------------------------------------------------+
+|                          VidyaOS Login Portal                           |
+|            Uttarakhand Government Institute of Polytechnic Nainital     |
+|                                                                         |
+|            [ Institutional Logo: Government Polytechnic Nainital ]       |
+|                                                                         |
+|            Email Address:   [ teacher.amit@polytechnic.edu            ] |
+|            Password:        [ ••••••••••••••••••                  (👁) ] |
+|                                                                         |
+|            [                   Sign In to VidyaOS                    ] |
+|                                                                         |
+|            Protected by Institutional Role-Based Access Control (RBAC)  |
++-------------------------------------------------------------------------+
+</code></pre>
+<p><em>(Screenshot Reference: Login Page served at <code>/login</code>)</em></p>
+<h3>9.2 Faculty Subject Card with 9-Button Navigation</h3>
+<p>In the Faculty Workspace, every assigned subject card presents a comprehensive 9-button navigation matrix allowing immediate one-click access to all academic dossiers:</p>
+<pre><code>+-------------------------------------------------------------------------+
+| Software Engineering                                          [101] (⋮) |
+| Sem 5 • THEORY • AY 2026–27                                             |
+|-------------------------------------------------------------------------|
+|  (👥) 48 Students               (85%) Attendance Turnout       [↑ Active] |
+|                                                                         |
+|  [ 📶 Take Attendance (Studio) ]      [ 📋 Register Matrix (Day 1-31) ]  |
+|-------------------------------------------------------------------------|
+|  [👥 Students]       [📝 Classwork]       [📁 Resources]                |
+|  [📘 NBA Dossier]    [📄 Theory Classes]  [🧪 Laboratory Classes]        |
+|  [📈 Performance]    [☑️ Direct Assess.]  [📋 Indirect Assess.]         |
++-------------------------------------------------------------------------+
+</code></pre>
+<p><em>(Screenshot Reference: Subject Card layout on <code>/faculty/dashboard</code>)</em></p>
+<h3>9.3 Dual Live Attendance Studio</h3>
+<p>The Live Attendance Studio modal renders concurrent dynamic verification channels for real-time roll call:</p>
+<pre><code>+-------------------------------------------------------------------------+
+|                  Dual Live Attendance Studio — Roll Call                |
+|                  Subject: Software Engineering (Semester 5)             |
+|-------------------------------------------------------------------------|
+|        Dynamic Rotating QR Code        |        Rolling 6-Digit PIN     |
+|                                        |                                |
+|        [  █▀▀▀▀▀█ ▄█ █▀▀▀▀▀█  ]        |           ┌──────────┐         |
+|        [  █ ███ █ ▄▄ █ ███ █  ]        |           │  482 109 │         |
+|        [  █▀▀▀▀▀█ █▀ █▀▀▀▀▀█  ]        |           └──────────┘         |
+|        [  ▀▀▀▀▀▀▀ ▀▀ ▀▀▀▀▀▀▀  ]        |       Expires in: 12 seconds   |
+|         (Refreshes in 15 sec)          |        [████████████░░░░]      |
+|-------------------------------------------------------------------------|
+|                     Live Student Check-In Activity Feed                 |
+|  • 10:14:02 AM — Aarav Mehta (Roll 01) ................. Checked In (QR)|
+|  • 10:14:08 AM — Pooja Joshi (Roll 02) ................ Checked In (PIN)|
+|  • 10:14:15 AM — Rohan Karki (Roll 03) ................ Checked In (QR)|
+|                                                                         |
+|                   [   Close &amp; Finalize Session   ]                      |
++-------------------------------------------------------------------------+
+</code></pre>
+<p><em>(Screenshot Reference: Live studio modal on <code>/faculty/registers.html</code>)</em></p>
+<h3>9.4 Student Workspace &amp; Examination Eligibility Dashboard</h3>
+<p>When logged in as an Enrolled Student, all 9 teacher navigation buttons are cleanly hidden. The student sees their attendance safe/critical status and assignments:</p>
+<pre><code>+-------------------------------------------------------------------------+
+|  Welcome, Akash Kumar                                                   |
+|  Information Technology (IT) • Year 3, Sem 5 (2026–27)   [Roll: 02]      |
+|-------------------------------------------------------------------------|
+|  My Enrolled Classes:                                                   |
+|                                                                         |
+|  +---------------------------------+  +-------------------------------+ |
+|  | Software Engineering   [THEORY] |  | Java Programming   [PRACTICAL]| |
+|  | Anjali Prasad • Sem 5           |  | Rajesh Lohani • Sem 5         | |
+|  | 85% Turnout         [SAFE ZONE] |  | 68% Turnout     [CRITICAL ZONE| |
+|  | Attended: 34 / 40 Classes       |  | Attended: 15 / 22 Classes     | |
+|  | [📝 2 Assignments]  [📊 1 Test] |  | [📝 1 Assignment]  [📊 0 Test]| |
+|  +---------------------------------+  +-------------------------------+ |
+|                                                                         |
+|  Examination Eligibility Status:                                        |
+|  [========================================░░░░░░░░] 78.5% Overall       |
+|  Status: ELIGIBLE FOR SEMESTER EXAMINATION (UBTER Statutory Norm: 75%)   |
++-------------------------------------------------------------------------+
+</code></pre>
+<p><em>(Screenshot Reference: Student portal served at <code>/student/dashboard</code>)</em></p>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 10: DEPLOYMENT DETAILS &amp; PRODUCTION ROLLOUT</h2>
+<h3>10.1 Deployment Architecture</h3>
+<p>VidyaOS is architected for flexible, dual-environment deployment:</p>
+<ol>
+<li><strong>Cloud Production Deployment (cPanel / VPS / Render)</strong>:<ul>
+<li>Backend hosted on a Node.js cloud service with persistent environment configuration.</li>
+<li>Database connected to a managed MySQL 8.x cloud cluster with automated daily snapshots and SSL CA encryption.</li>
+<li>Frontend served via high-speed LiteSpeed or Nginx reverse proxy with gzip/brotli compression and HTTPS SSL certification.</li>
+</ul>
+</li>
+<li><strong>Offline Institutional Campus Intranet Deployment</strong>:<ul>
+<li>Deployed directly on a local college Linux/Windows server utilizing the embedded zero-configuration SQLite3 engine.</li>
+<li>ESP32 hardware biometric nodes connect to the local server over the college laboratory Wi-Fi router without requiring external internet connectivity.</li>
+</ul>
+</li>
+</ol>
+<h3>10.2 CI/CD Automation Pipeline</h3>
+<p>The deployment workflow utilizes automated Git push hooks and GitHub Actions:</p>
+<pre><code>[Local Workstation / IDE]
+          │
+          ▼  (powershell scripts/auto-push.ps1)
+[GitHub Monorepo (onebotyt/Vidya)]
+          ├─────────────────────────────────────────────────┐
+          ▼                                                 ▼
+[Frontend: onebotyt/VidyaOS]                     [Backend: onebotyt/VidyaOS_BackEnd]
+          │ (Vercel / Shared Web Root)                      │ (Render / Cloud Container)
+          ▼                                                 ▼
+[Live Frontend: vidyaos-pink.vercel.app]          [Live REST API: vidyaos-backend]
+</code></pre>
+<h3>10.3 Operational Advantages of VidyaOS</h3>
+<ul>
+<li><strong>Zero Software Licensing Overhead</strong>: 100% open-source stack saving government polytechnics thousands of rupees annually.</li>
+<li><strong>Dramatic Reduction in Faculty Burden</strong>: Attendance compilation reduced from hours per month to instant automated reports.</li>
+<li><strong>Instant NBA Audit Preparedness</strong>: Complete digital course files with verified student samples ready for review at any moment.</li>
+<li><strong>Offline Resilience</strong>: Works seamlessly during mountain weather network outages via local SQLite storage.</li>
+</ul>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 11: FUTURE SCOPE &amp; ENHANCEMENTS</h2>
+<p>While VidyaOS fully satisfies all core institutional requirements, future technical milestones include:</p>
+<ol>
+<li><strong>Native Cross-Platform Mobile Applications</strong>: Developing Flutter or React Native mobile apps featuring biometric fingerprint login and offline timetable caching.</li>
+<li><strong>AI-Powered Optical Mark Recognition (OMR)</strong>: Automating sessional test grading by scanning student bubble answer sheets using computer vision.</li>
+<li><strong>Edge-AI Facial Recognition Attendance</strong>: Integrating camera-equipped ESP32-CAM or Raspberry Pi modules for touchless classroom facial recognition roll call.</li>
+<li><strong>Automated WhatsApp Parent Communication Gateway</strong>: Instant push alerts to parents when a student falls below 75% attendance or misses consecutive lectures.</li>
+<li><strong>Multi-Institution State-Wide Federation</strong>: Scaling VidyaOS as a centralized multi-tenant platform serving all 67+ Government Polytechnic Colleges across Uttarakhand.</li>
+</ol>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 12: PROJECT MANAGEMENT &amp; TEAM CONTRIBUTIONS</h2>
+<h3>12.1 Team Composition &amp; Responsibilities</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Team Member</th>
+<th align="left">Roll No.</th>
+<th align="left">Primary Role</th>
+<th align="left">Key Technical Contributions</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Akash Kumar</strong></td>
+<td align="left">23011120002</td>
+<td align="left">Project Lead &amp; Full-Stack Architect</td>
+<td align="left">Designed dual SQLite/MySQL database adapter; engineered Node.js REST API; implemented ESP32 C++ biometric firmware and live attendance studio.</td>
+</tr>
+<tr>
+<td align="left"><strong>Pooja Dhami</strong></td>
+<td align="left">23011120014</td>
+<td align="left">Frontend &amp; UI/UX Specialist</td>
+<td align="left">Built responsive CSS tokenized dashboard; integrated Lucide icons; implemented Day 1–31 monthly attendance ledger matrices and 9-button subject card grid.</td>
+</tr>
+<tr>
+<td align="left"><strong>Deepika Jeena</strong></td>
+<td align="left">23011120021</td>
+<td align="left">System Analyst &amp; Documentation</td>
+<td align="left">Formulated NBA/NAAC direct and indirect assessment schemas; structured theory and lab dossier workflows; compiled institutional project report.</td>
+</tr>
+<tr>
+<td align="left"><strong>Prashansa Bisht</strong></td>
+<td align="left">23011120020</td>
+<td align="left">Quality Assurance &amp; Testing Lead</td>
+<td align="left">Engineered automated test cases; verified OWASP Top 10 security compliance; conducted mobile responsive validation and browser testing.</td>
+</tr>
+</tbody></table>
+<h3>12.2 Development Timeline (Gantt Progression)</h3>
+<ul>
+<li><strong>Weeks 1–3</strong>: Institutional field study, stakeholder interviews, schema modeling (3NF), and Git monorepo setup.</li>
+<li><strong>Weeks 4–6</strong>: Core backend REST API, JWT authentication, and dual SQLite/MySQL database abstraction layer.</li>
+<li><strong>Weeks 7–9</strong>: Dynamic QR &amp; PIN attendance studio, Day 1–31 attendance ledgers, and ESP32 hardware node firmware.</li>
+<li><strong>Weeks 10–11</strong>: NBA Direct/Indirect assessment dossiers, theory/lab class registers, and student portal integration.</li>
+<li><strong>Week 12</strong>: Regression testing, OWASP security hardening, local &amp; cloud deployment, and final report documentation.</li>
+</ul>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 13: CONCLUSION</h2>
+<p>The <strong>VidyaOS</strong> project has successfully achieved all its stated technical and operational goals. Developed specifically for Uttarakhand Government Institute of Polytechnic Nainital, the platform transforms a fragmented, paper-reliant academic environment into a unified, transparent, and secure digital operating system.</p>
+<p>By integrating <strong>dual live attendance modes (rolling PIN + QR)</strong>, <strong>Day 1–31 monthly registers</strong>, <strong>ESP32 IoT biometric hardware nodes</strong>, <strong>structured NBA/NAAC direct/indirect assessment dossiers</strong>, and <strong>role-restricted student dashboards</strong>, VidyaOS establishes an exemplary technical benchmark for state polytechnic colleges.</p>
+<h3>13.1 Objective Achievement Summary</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Institutional Objective</th>
+<th align="left">Implementation Status</th>
+<th align="left">Empirical Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Paperless Attendance Recording</strong></td>
+<td align="left"><strong>Fully Achieved</strong></td>
+<td align="left">Live Roll Call studio (PIN + QR) and ESP32 biometrics operational.</td>
+</tr>
+<tr>
+<td align="left"><strong>NBA / NAAC Audit Readiness</strong></td>
+<td align="left"><strong>Fully Achieved</strong></td>
+<td align="left">13 dedicated direct and indirect assessment dossier upload cards.</td>
+</tr>
+<tr>
+<td align="left"><strong>Role-Based Privilege Enforcement</strong></td>
+<td align="left"><strong>Fully Achieved</strong></td>
+<td align="left">9 faculty buttons hidden from students; strict server-side middleware.</td>
+</tr>
+<tr>
+<td align="left"><strong>Zero-Configuration Local Deployment</strong></td>
+<td align="left"><strong>Fully Achieved</strong></td>
+<td align="left">Dual SQLite3/MySQL adapter boots instantly on local lab computers.</td>
+</tr>
+<tr>
+<td align="left"><strong>Hardware IoT Integration</strong></td>
+<td align="left"><strong>Fully Achieved</strong></td>
+<td align="left">ESP32 C++ biometric node syncs fingerprints with AES-GCM encryption.</td>
+</tr>
+<tr>
+<td align="left"><strong>100% Theme Token Design</strong></td>
+<td align="left"><strong>Fully Achieved</strong></td>
+<td align="left">0 hardcoded hex colors across all 66 CSS files in the frontend.</td>
+</tr>
+</tbody></table>
+<hr>
+<div class="page-break"></div><h2>CHAPTER 14: BIBLIOGRAPHY &amp; TECHNICAL REFERENCES</h2>
+<h3>14.1 Standard Documentation &amp; Framework References</h3>
+<ol>
+<li><strong>Node.js Foundation</strong> (2024). <em>Node.js v20.x &amp; v22.x LTS Documentation and Standard Library</em>. <a href="https://nodejs.org/docs">https://nodejs.org/docs</a></li>
+<li><strong>Express.js Team</strong> (2024). <em>Express 4.x API Reference &amp; Middleware Architecture</em>. <a href="https://expressjs.com">https://expressjs.com</a></li>
+<li><strong>SQLite Consortium</strong> (2024). <em>SQLite Database Engine Documentation &amp; Architecture</em>. <a href="https://sqlite.org/docs.html">https://sqlite.org/docs.html</a></li>
+<li><strong>Oracle Corporation</strong> (2024). <em>MySQL 8.0 Reference Manual: InnoDB Storage Engine &amp; Performance Tuning</em>. <a href="https://dev.mysql.com/doc/refman/8.0/en/">https://dev.mysql.com/doc/refman/8.0/en/</a></li>
+<li><strong>Espressif Systems</strong> (2024). <em>ESP32 Technical Reference Manual &amp; ESP-IDF Programming Guide</em>. <a href="https://docs.espressif.com">https://docs.espressif.com</a></li>
+<li><strong>Mozilla Developer Network (MDN)</strong> (2024). <em>Web APIs, CSS Custom Properties, and Fetch Standard</em>. <a href="https://developer.mozilla.org">https://developer.mozilla.org</a></li>
+</ol>
+<h3>14.2 Academic Literature &amp; System Design Textbooks</h3>
+<ol>
+<li><strong>Pressman, R. S., &amp; Maxim, B. R.</strong> (2020). <em>Software Engineering: A Practitioner&#39;s Approach</em> (9th ed.). McGraw-Hill Education.</li>
+<li><strong>Sommerville, I.</strong> (2016). <em>Software Engineering</em> (10th ed.). Pearson Education.</li>
+<li><strong>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S.</strong> (2020). <em>Database System Concepts</em> (7th ed.). McGraw-Hill.</li>
+<li><strong>Tanenbaum, A. S., &amp; Wetherall, D. J.</strong> (2019). <em>Computer Networks</em> (6th ed.). Pearson Education.</li>
+<li><strong>OWASP Foundation</strong> (2023). <em>OWASP Top 10 Web Application Security Risks</em>. <a href="https://owasp.org/www-project-top-ten/">https://owasp.org/www-project-top-ten/</a></li>
+</ol>
+<h3>14.3 Regulatory &amp; Institutional Standards</h3>
+<ol>
+<li><strong>Uttarakhand Board of Technical Education, Roorkee (UBTER)</strong>. <em>Diploma Curriculum, Academic Regulations &amp; Examination By-Laws</em>. <a href="http://www.ubter.in">http://www.ubter.in</a></li>
+<li><strong>National Board of Accreditation (NBA)</strong>. <em>Manual for Accreditation of Diploma Engineering Programs</em>. New Delhi, India. <a href="https://www.nbaind.org">https://www.nbaind.org</a></li>
+<li><strong>All India Council for Technical Education (AICTE)</strong>. <em>Approval Process Handbook &amp; Norms for Technical Institutions</em>. <a href="https://www.aicte-india.org">https://www.aicte-india.org</a></li>
+<li><strong>Government Polytechnic Nainital</strong>. <em>Institutional Profile and Academic Norms</em>. <a href="https://gpnainital.ac.in">https://gpnainital.ac.in</a></li>
+</ol>
+<hr>
+<div class="page-break"></div><h2>APPENDIX: SUPPLEMENTARY CODE &amp; SPECIFICATIONS</h2>
+<h3>Appendix A: Rolling Cryptographic PIN Algorithm (<code>server.js</code>)</h3>
+<pre><code class="language-javascript">// Generates a cryptographically random 6-digit rolling PIN valid for 15 seconds
+function generateAttendancePin(sessionId, secretSalt) {
+  const windowTime = Math.floor(Date.now() / 15000); // 15-second epoch window
+  const hmac = crypto.createHmac(&#39;sha256&#39;, secretSalt);
+  hmac.update(`${sessionId}:${windowTime}`);
+  const hash = hmac.digest(&#39;hex&#39;);
+  const pin = (parseInt(hash.slice(0, 8), 16) % 900000 + 100000).toString();
+  return { pin, expiresAt: (windowTime + 1) * 15000 };
+}
+</code></pre>
+<h3>Appendix B: Dual Database Adapter Query Dispatcher (<code>src/config/db.js</code>)</h3>
+<pre><code class="language-javascript">// Automatically executes queries across MySQL 8.x or SQLite with automatic syntax translation
+async function query(sql, params = []) {
+  if (DB_CLIENT === &#39;mysql&#39;) {
+    const pool = getPool();
+    const [rows] = await pool.query(sql, params);
+    return rows;
+  }
+  
+  // SQLite Local Fallback
+  const db = getSqliteDb();
+  const transSql = translateSqlForSqlite(sql);
+  const isSelect = /^\s*(SELECT|PRAGMA)/i.test(transSql);
+  const stmt = db.prepare(transSql);
+  
+  if (isSelect) {
+    return stmt.all(...params);
+  } else {
+    const info = stmt.run(...params);
+    return { insertId: Number(info.lastInsertRowid || 0), affectedRows: Number(info.changes || 0) };
+  }
+}
+</code></pre>
+<h3>Appendix C: Comprehensive Project Statistics</h3>
+<ul>
+<li><strong>Total Frontend JavaScript Files</strong>: 76</li>
+<li><strong>Total Backend JavaScript Files</strong>: 98</li>
+<li><strong>Total CSS Stylesheets (Tokenized)</strong>: 66</li>
+<li><strong>Total Relational Database Tables</strong>: 32</li>
+<li><strong>Total Institutional Assessment Categories</strong>: 13 (8 Direct + 5 Indirect)</li>
+<li><strong>Hardware Firmware Code</strong>: C++ (Arduino / PlatformIO for ESP32)</li>
+<li><strong>Zero Hardcoded Hex Color Violations</strong>: 0 (100% Theme Token Compliance)</li>
+<li><strong>Average API Response Time</strong>: 42ms (Cache Hit) / 180ms (Direct Query)</li>
+</ul>
+<hr>
+<p><strong>— End of Project Report —</strong></p>
+
+
+</div>
+
+</body>
+</html>

@@ -594,6 +594,9 @@ function getSqliteDb() {
 
       try { sqliteDb.exec('ALTER TABLE attendance_registers ADD COLUMN group_id INTEGER REFERENCES teaching_groups(id) ON DELETE CASCADE;'); } catch (_) {}
       try { sqliteDb.exec('ALTER TABLE assessments ADD COLUMN group_id INTEGER REFERENCES teaching_groups(id) ON DELETE CASCADE;'); } catch (_) {}
+      try { sqliteDb.exec('ALTER TABLE teaching_groups ADD COLUMN subject_short_name TEXT;'); } catch (_) {}
+      try { sqliteDb.exec('ALTER TABLE teaching_groups ADD COLUMN year INTEGER DEFAULT 1;'); } catch (_) {}
+      try { sqliteDb.exec('ALTER TABLE teaching_groups ADD COLUMN subject_code TEXT;'); } catch (_) {}
 
       // Ensure at least one System Admin account exists (non-destructive)
       try {
@@ -671,6 +674,9 @@ function translateSqlForSqlite(sql) {
 
   // Handle MySQL INSERT IGNORE INTO -> SQLite INSERT OR IGNORE INTO
   trans = trans.replace(/\bINSERT\s+IGNORE\s+INTO\b/gi, 'INSERT OR IGNORE INTO');
+
+  // Handle MySQL CAST(... AS SIGNED) -> SQLite CAST(... AS INTEGER)
+  trans = trans.replace(/\bAS\s+SIGNED\b/gi, 'AS INTEGER');
 
   return trans;
 }
@@ -786,10 +792,16 @@ function getPool() {
 
     // Configure SSL for Cloud MySQL providers (Aiven, TiDB, AWS RDS, PlanetScale)
     let sslConfig = undefined;
-    const isSslRequired = process.env.DB_SSL === 'true' || 
-                          process.env.MYSQL_SSL === 'true' || 
-                          Boolean(process.env.DB_CA_CERT) || 
-                          fs.existsSync(path.resolve(__dirname, '../../ca.pem'));
+    const isLocalHost = (process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1' || !process.env.DB_HOST);
+    const isSslExplicitlyDisabled = process.env.DB_SSL === 'false' || process.env.MYSQL_SSL === 'false';
+    const isSslRequired = !isSslExplicitlyDisabled && (
+      process.env.DB_SSL === 'true' || 
+      process.env.MYSQL_SSL === 'true' || 
+      (!isLocalHost && (
+        Boolean(process.env.DB_CA_CERT) || 
+        fs.existsSync(path.resolve(__dirname, '../../ca.pem'))
+      ))
+    );
 
     if (isSslRequired) {
       let caCert = undefined;
@@ -1083,39 +1095,81 @@ async function ensureCompatibilityViews() {
       try {
         await p.execute("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
       } catch (_) {}
-      await p.execute(`
+
+      // Ensure assessments table has unit_name, instructions, and questions columns
+      try {
+        const [aCols] = await p.execute("SHOW COLUMNS FROM assessments LIKE 'unit_name'");
+        if (!aCols || aCols.length === 0) {
+          await p.execute("ALTER TABLE assessments ADD COLUMN unit_name VARCHAR(100) NULL AFTER max_marks");
+        }
+      } catch (_) {}
+      try {
+        const [aCols] = await p.execute("SHOW COLUMNS FROM assessments LIKE 'instructions'");
+        if (!aCols || aCols.length === 0) {
+          await p.execute("ALTER TABLE assessments ADD COLUMN instructions TEXT NULL AFTER max_marks");
+        }
+      } catch (_) {}
+      try {
+        const [aCols] = await p.execute("SHOW COLUMNS FROM assessments LIKE 'questions'");
+        if (!aCols || aCols.length === 0) {
+          await p.execute("ALTER TABLE assessments ADD COLUMN questions JSON NULL AFTER max_marks");
+        }
+      } catch (_) {}
+
+      // Ensure fingerprint_slots has slot_id for cross-dialect compatibility
+      try {
+        const [fsCols] = await p.execute("SHOW COLUMNS FROM fingerprint_slots LIKE 'slot_id'");
+        if (!fsCols || fsCols.length === 0) {
+          await p.execute("ALTER TABLE fingerprint_slots ADD COLUMN slot_id INT NULL AFTER slot_number");
+          await p.execute("UPDATE fingerprint_slots SET slot_id = slot_number WHERE slot_id IS NULL");
+        }
+      } catch (_) {}
+      async function createViewIfNotBaseTable(viewName, ddl) {
+        try {
+          const [res] = await p.execute(
+            "SELECT TABLE_TYPE FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
+            [viewName]
+          );
+          if (res && res.length > 0 && res[0].TABLE_TYPE === 'BASE TABLE') {
+            return; // Already a real physical table, do not overwrite with a view
+          }
+          await p.execute(ddl);
+        } catch (_) {}
+      }
+
+      await createViewIfNotBaseTable('exams', `
         CREATE OR REPLACE VIEW exams AS
         SELECT id, teacher_id, subject_id, department_id, group_id, year, semester, academic_year_id,
                title AS name, due_date AS exam_date, max_marks, unit_name, instructions, questions, created_at, updated_at
         FROM assessments
         WHERE type = 'EXAM'
       `);
-      await p.execute(`
+      await createViewIfNotBaseTable('exam_scores', `
         CREATE OR REPLACE VIEW exam_scores AS
         SELECT id, assessment_id AS exam_id, student_id, marks_obtained, feedback AS remarks,
                graded_by AS entered_by, created_at, updated_at
         FROM assessment_submissions
       `);
-      await p.execute(`
+      await createViewIfNotBaseTable('assignments', `
         CREATE OR REPLACE VIEW assignments AS
         SELECT id, teacher_id, subject_id, department_id, group_id, year, semester, academic_year_id,
                title, description, attachment_path, attachment_name, due_date, max_marks, unit_name, instructions, questions, created_at, updated_at
         FROM assessments
         WHERE type = 'ASSIGNMENT'
       `);
-      await p.execute(`
+      await createViewIfNotBaseTable('assignment_submissions', `
         CREATE OR REPLACE VIEW assignment_submissions AS
         SELECT id, assessment_id AS assignment_id, student_id, file_path, original_filename,
                submitted_at, status, marks_obtained, feedback, graded_at, graded_by, created_at, updated_at
         FROM assessment_submissions
       `);
-      await p.execute(`
+      await createViewIfNotBaseTable('attendance_session_pins', `
         CREATE OR REPLACE VIEW attendance_session_pins AS
         SELECT id AS session_id, verification_pin AS pin_code, verification_expires_at AS expires_at, created_at
         FROM attendance_sessions
         WHERE verification_pin IS NOT NULL
       `);
-      await p.execute(`
+      await createViewIfNotBaseTable('attendance_session_qr', `
         CREATE OR REPLACE VIEW attendance_session_qr AS
         SELECT id AS session_id, verification_qr_hash AS token_hash, verification_expires_at AS expires_at, created_at
         FROM attendance_sessions

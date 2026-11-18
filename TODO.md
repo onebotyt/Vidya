@@ -3,6 +3,193 @@
 
 
 
+### 🏛️ Milestone 331: Resolved Bulk CSV Student Import 400 Bad Request & MariaDB Collation
+- **Status**: 🟢 Completed & Fully Verified
+- **User Request**:
+  - *"lets fixx bulk csv Student import is no working fix it"* (with DevTools screenshot showing `POST /api/v1/hod/students/bulk 400 (Bad Request)`)
+- **Root Cause Analysis**:
+  1. **Payload Schema Mismatch**: Frontend `submitBulkCsv` previously posted `{ students: [...] }` without top-level `year` and `semester`, causing `body('year').isInt()` and `body('semester').isInt()` in `routes/hod.js` to reject the payload with `400 Validation Error`.
+  2. **Collation Incompatibility**: `HodModel.reindexCohortRollNumbers` used SQLite-specific `COLLATE NOCASE` in `ORDER BY s.full_name COLLATE NOCASE ASC`, which crashed MariaDB/MySQL with `ER_UNKNOWN_COLLATION (1273): Unknown collation: 'NOCASE'`.
+  3. **Biometric Slot Column Parity**: MariaDB schema uses `slot_number` whereas roster queries referenced `fs.slot_id`.
+- **Key Solutions Implemented**:
+  1. **Backend Validation & Auto-Detection (`routes/hod.js` & `controllers/hodController.js`)**:
+     - Made top-level `year` and `semester` optional in validation middleware.
+     - In `HodController.bulkCreateStudents`, auto-detects `semester` and `year` from the first student in the array if omitted at the top level.
+  2. **Model Multi-Dialect Harmonization (`models/hodModel.js`)**:
+     - Changed `COLLATE NOCASE` to universal `ORDER BY LOWER(s.full_name) ASC, s.official_enrollment_no ASC`.
+     - Enhanced `HodModel.bulkCreateStudents` to honor per-student `year`, `semester`, and provided `class_roll_no`.
+     - Supports multi-cohort batches by dynamically re-indexing all cohorts present in the imported batch.
+  3. **Frontend Client Update (`deployfolder/VidyaOS/faculty/students/students.js`)**:
+     - Updated `submitBulkCsv()` to explicitly pass `year: defaultYear` and `semester: defaultSem` alongside `students`.
+  4. **Schema Auto-Healing (`src/config/db.js`)**:
+     - Auto-added `slot_id` synchronization to `fingerprint_slots` for zero-error cross-dialect queries.
+- **Verification**:
+  - Successfully imported 10 student records from the user's screenshot (`AMIT SARKAR`, `ARYAN SINGH NEGI`, `ASHISH RANA`, etc.): HTTP 201 Created.
+  - Verified roster retrieval via `GET /api/v1/hod/students?semester=1`: HTTP 200 OK with all 10 students alphabetically indexed with proper class roll numbers.
+
+### 🏛️ Milestone 330: Connected Local MariaDB / MySQL Database `vidyaos`
+- **Status**: 🟢 Completed & Fully Operational
+- **User Request**:
+  - *"this is the local host and the database name is vidyaos connect it"* (with XAMPP phpMyAdmin screenshot confirming `127.0.0.1`, MariaDB 10.11.16, user `root@localhost`, SSL disabled)
+- **Configuration & Connection Details**:
+  1. **Database Adapter & SSL Configuration**:
+     - Updated `deployfolder/VidyaOS_BackEnd/.env` and `backend/.env` to:
+       - `DB_CLIENT=mysql`
+       - `DB_HOST=127.0.0.1`
+       - `DB_PORT=3306`
+       - `DB_USER=root`
+       - `DB_PASSWORD=` (empty string)
+       - `DB_NAME=vidyaos`
+     - Updated `src/config/db.js` to automatically bypass SSL when connecting to localhost / 127.0.0.1 non-SSL MariaDB instances, eliminating `HANDSHAKE_NO_SSL_SUPPORT` errors.
+     - Added physical table check in `ensureCompatibilityViews()` to protect existing base tables from view collisions.
+  2. **Schema Provisioning & Institutional Master Data**:
+     - Applied authoritative `schema.sql` and `cpanel_production_mysql.sql` DDLs to `vidyaos`, creating all 58 institutional tables.
+     - Successfully migrated 929 records from local seeded SQLite into MariaDB `vidyaos`:
+       - 35 Users (Admins, HODs, Teachers, Students)
+       - 25 Students & Enrollments
+       - 6 Departments (CSE, IT, ME, CE, EE, Pharmacy)
+       - 7 Teaching Groups & Classroom Posts
+       - 8 Attendance Registers & 23 Attendance Sessions
+       - 301 Register Attendance Records
+       - 31 System Settings (with LONGTEXT branding asset storage)
+  3. **Live Health & Authentication Verification**:
+     - Backend API running on port 3001 connected to `vidyaos`: `/api/v1/health` -> HTTP 200 ONLINE.
+     - Admin login (`admin@gmail.com`): HTTP 200 OK, stats fetched from `vidyaos`.
+     - Teacher login (`teacher.amit@polytechnic.edu`): HTTP 200 OK, teaching groups fetched from `vidyaos`.
+     - HOD login (`hod.it@polytechnic.edu`): HTTP 200 OK, departmental teachers fetched from `vidyaos`.
+     - Student login (`aarav.mehta@student.polytechnic.edu`): HTTP 200 OK, `/api/v1/auth/me` fetched from `vidyaos`.
+     - Frontend dev server running on port 5001 successfully proxying requests to MariaDB `vidyaos` backend.
+
+### 🏛️ Milestone 329: Synchronized Both Frontend & Backend Repositories from GitHub
+- **Status**: 🟢 Completed & Fully Operational
+- **User Request**:
+  - *"pull the updated code from github frountend and backend both repo"*
+- **Repositories Synchronized**:
+  1. **VidyaOS (Frontend - `deployfolder/VidyaOS`)**:
+     - Fast-forward pulled latest `origin/main` commits (28 commits up to `3356c57` / version `v1.0.15`).
+     - Key updates integrated:
+       - Universal mobile notch clearance, safe area insets, and surface contrast polish (`47808db`, `d1b15f6`).
+       - Isolated admin dashboard routing, role priority resolution, and PDF export menu isolation (`9ad3141`).
+       - Native Capacitor Android application integration, auto-APK builder CI workflows, and lockfile synchronization (`0a7afb6`, `63fc9e1`, `3c1feb3`).
+       - Classroom bottom navigation restoration, resilient trash API integration, and group-detail styling parity (`dc69ca5`, `f44704c`).
+       - Student workspace modernization, mobile attendance FAB, and mock data removal from Sheet Studio (`7386500`, `772e43a`).
+       - Preserved local mobile network binding (`0.0.0.0:5001`) in `server.js` and report assets.
+  2. **VidyaOS_BackEnd (Backend - `deployfolder/VidyaOS_BackEnd`)**:
+     - Fast-forward pulled latest `origin/main` commits (30 commits up to `fb9b3ca`).
+     - Key updates integrated:
+       - Google OAuth-aware password validation and auth route synchronization (`6d5fb1b`).
+       - Dynamic column reflection and auto-healing schema migrations (`92602c0`, `29cb5a3`, `f6cbbc3`).
+       - Biometric IoT hardware controllers, dual-layer verification, and device service modernization (`7518f68`).
+       - Faculty trash recovery studio, 30-day auto-purge schema additions (`students.deleted_at`), and student academic records parity (`bf2a966`, `4f97446`, `e6e0cb0`).
+       - Preserved local SQLite/MySQL dual adapter with auto-migration fallbacks in `src/config/db.js` and `src/config/dbPath.js`.
+- **Validation & Health Audit**:
+  - Frontend JS Syntax: 80 files scanned, **0 errors**.
+  - Backend JS Syntax: 98 files scanned, **0 errors**.
+  - Backend REST API daemon running on port 3001: `/api/v1/health` -> HTTP 200 OK (`status: ONLINE`).
+  - Frontend Dev Server daemon running on port 5001: `http://localhost:5001/` -> HTTP 200 OK.
+  - Local Mobile Wi-Fi Access: `http://192.168.31.248:5001/` operational with proxying to backend.
+  - Project Report Endpoints: `/report.html` and `/VidyaOS_Project_Report.pdf` HTTP 200 OK.
+
+### 🏛️ Milestone 328: UBTER / AICTE Institutional Project Report Generated for VidyaOS
+- **Status**: 🟢 Completed & Published
+- **User Request**:
+  - *"this is the demo project report make our project report by using demo preoject report make same as demo report but details use is our project"* (with attached `Final_ProjectReport_.pdf`)
+- **Key Deliverables & Specifications**:
+  1. **Source Demo Report Analyzed**:
+     - 65-page UBTER diploma project report format for Uttarakhand Government Institute of Polytechnic Nainital (UGIP), Department of Information Technology (VI Semester, Session 2025–26).
+     - Guide: Mrs. Anjali Prasad (Lecturer, IT Dept.); HOD: Mr. Neeraj Verma (HOD, IT Dept.).
+     - Authors: Akash Kumar (23011120002 / UBTER Reg: 24008071), Pooja Dhami (23011120014), Deepika Jeena (23011120021), Prashansa Bisht (23011120020).
+  2. **Comprehensive Report Structure Built**:
+     - All preliminary pages: Cover & Title Page, Certificate, Candidate Declaration, Acknowledgement, Abstract, Table of Contents, List of Figures & Tables.
+     - **Chapter 1: Introduction**: Background, motivation, institutional context (UGIP Nainital), project objectives, scope & boundaries.
+     - **Chapter 2: Existing System & Problem Statement**: Traditional paper registers, proxy attendance, NBA compliance overhead, data fragmentation, problem statement.
+     - **Chapter 3: System Analysis**: Feasibility study (Technical, Operational, Economic), functional & non-functional requirements, DFD Level 0 (Context Diagram), DFD Level 1 (Decomposition), ER Diagram with entity attributes.
+     - **Chapter 4: System Architecture & Design**: Modular high-level architecture, directory organization, 3NF database schema (16 relational tables), technology stack rationalization.
+     - **Chapter 5: Module Description & Workflows**: Dual Live Attendance Studio, Day 1-31 Monthly Matrix, Direct & Indirect NBA Assessments, Student Performance Monitoring, ESP32 IoT Biometric Node, Role-Based Access Control.
+     - **Chapter 6: Hardware & Software Requirements**: Server & client specifications, ESP32 DevKit V1, AS608 optical fingerprint sensor, SSD1306 OLED, system constraints.
+     - **Chapter 7: Methodology & Development Process**: Agile/Iterative methodology, security-first architecture, rolling 15s HMAC PIN/QR synchronization algorithm.
+     - **Chapter 8: Testing, Verification & Results**: Functional test suite matrix (TC-01 through TC-20), OWASP Top 10 security verification, performance benchmark results.
+     - **Chapter 9: System User Interface & Wireframes**: UI layouts for dashboards, attendance studios, dossiers, and assessment modules.
+     - **Chapter 10: Deployment, Hosting & Operations**: cPanel/Render cloud hosting, Dual SQLite/MySQL adapter, advantages & system limitations.
+     - **Chapter 11: Future Scope & Enhancements**: Edge facial recognition, SMS gateway alerts, predictive AI dropout analytics, blockchain credential issuance.
+     - **Chapter 12: Team Roles & Development Timeline**: Work breakdown structure, role distribution, 14-week Gantt chart milestone schedule.
+     - **Chapter 13: Conclusion**: Achievement summary, institutional impact, concluding remarks.
+     - **Chapter 14: Bibliography & References**: AICTE guidelines, UBTER curricula, RFC specs, modern web engineering citations.
+     - **Appendices A–D**: Core HMAC rolling PIN & Dual DB adapter code, project statistics, ESP32 hardware schematic.
+  3. **Output Files**:
+     - Artifact: `project_report_vidyaos.md`
+     - Workspace Documentation: `docs/PROJECT_REPORT_VIDYAOS.md`
+
+### 🏛️ Milestone 327: Comprehensive Post-Pull Verification Across Frontend, Backend & Database
+- **Status**: 🟢 Completed & Fully Verified
+- **User Request**:
+  - *"check every thing"*
+- **Audit & Verification Findings**:
+  1. **Frontend JS Syntax & Compilation (`deployfolder/VidyaOS`)**:
+     - Scanned 76 JavaScript files with Node syntax compiler: **0 errors**.
+     - Scanned 66 CSS stylesheets for theme token compliance: **0 hardcoded color regressions**.
+  2. **Backend JS Syntax & Compilation (`deployfolder/VidyaOS_BackEnd`)**:
+     - Scanned 98 JavaScript files across `src/`: **0 errors**.
+  3. **Database Dual Adapter & SQL Compatibility**:
+     - Fixed `translateSqlForSqlite` to translate MySQL `CAST(... AS SIGNED)` into SQLite `CAST(... AS INTEGER)`.
+     - Added auto-migration for `subject_short_name` and `year` in `teaching_groups` for SQLite environments.
+     - Local SQLite database `college_attendance.sqlite` successfully initialized, preserved, and operational.
+  4. **Live Server & API Endpoints Verification**:
+     - Backend API running on port 3001 (`/api/v1/health` -> HTTP 200 OK, `uptime` verified).
+     - Frontend Dev Server running on port 5001 with proxying to backend (`http://localhost:5001` and `http://192.168.31.248:5001` -> HTTP 200 OK).
+     - Full authentication workflow verified across all roles:
+       - System Admin (`admin@gmail.com`): Login HTTP 200, `/api/v1/admin/stats` HTTP 200 (25 students, 6 depts).
+       - Teacher (`teacher.amit@polytechnic.edu`): Login HTTP 200, `/api/v1/teaching-groups` HTTP 200.
+       - HOD (`hod.it@polytechnic.edu`): Login HTTP 200, `/api/v1/hod/teachers` HTTP 200 (5 teachers).
+       - Student (`aarav.mehta@student.polytechnic.edu`): Login HTTP 200, `/api/v1/auth/me` HTTP 200.
+     - Frontend pages verified through proxy: `/`, `/login`, `/student/dashboard`, `/faculty/dashboard`, `/admin/dashboard` (all HTTP 200 OK).
+  5. **Invariants & Protected Folders**:
+     - All 9 frozen directories (`frontend/faculty/*` and `frontend/student/*`) 100% intact and untouched.
+
+### 🏛️ Milestone 326: Pulled Latest GitHub Code Across Both Frontend & Backend Repositories
+- **Status**: 🟢 Completed & Verified
+- **User Request**:
+  - *"pull the updated code from github frountend and backend both repo"*
+- **Repositories Synchronized**:
+  1. **VidyaOS (Frontend - `deployfolder/VidyaOS`)**:
+     - Fast-forward pulled latest `origin/main` commits (9 commits up to `6a4ab5d`).
+     - Key updates:
+       - Leave Approvals mobile compact card redesign, Academic Dossier upgrades, and Sheet Studio session sync (`6a4ab5d`).
+       - Dynamic dashboard admin settings integration & faculty profile upgrades (`7970016`, `742544e`).
+       - Standalone directory-based routing, modular component architecture, and ESP32 device portal (`acdb36b`).
+       - Simple year-based PDF timetable and navigation toggle transformations (`a31c293`, `5e0d7ff`).
+       - Preserved local mobile network binding (`0.0.0.0` on port 5001 in `server.js`).
+  2. **VidyaOS_BackEnd (Backend - `deployfolder/VidyaOS_BackEnd`)**:
+     - Fast-forward pulled latest `origin/main` commits (4 commits up to `50485fa`, 90 files updated).
+     - Key updates:
+       - Leave applications schema normalization, teaching group auto-provisioning, session nomenclature, and student records APIs (`50485fa`).
+       - Timetable PDF uploads controller, models, and routes (`ed3e9a0`).
+       - Pure MySQL 8.x compatibility views, ESP32 presence, teaching groups subject code, and auto-session stabilization (`8e0fd05`).
+       - Full ESP32 biometric node C++ firmware and wiring protocol (`esp32_firmware/VidyaOS_ESP32_Biometric_Node/`).
+  3. **Root Monorepo (`Vidya`)**:
+     - Fetched latest changes from `origin`.
+     - Synchronized local `main` branch to track `origin/main` (`a065a2b`).
+
+### 🏛️ Milestone 325: Synchronized & Pulled Latest GitHub Code Across All Workspaces
+- **Status**: 🟢 Completed & Verified
+- **User Request**:
+  - *"pull the updated code from github"*
+- **Repositories Synchronized**:
+  1. **VidyaOS (Frontend - `deployfolder/VidyaOS`)**:
+     - Fast-forward pulled latest `origin/main` commits up to `ea5a88c` (`feat(faculty): polish management UI, year filters, compact registration, and restore student archive`).
+     - Includes new Faculty Management workspace (`admin/faculty-management/`), classwork creation modules, updated student components, and clean URL rewrites.
+     - Preserved mobile server network bindings (`0.0.0.0` on port 5001).
+  2. **VidyaOS_BackEnd (Backend - `deployfolder/VidyaOS_BackEnd`)**:
+     - Fast-forward pulled latest `origin/main` commits up to `ec06470` (`feat(core): db compatibility, auth role claims, and environment path resolution`).
+     - Includes HttpOnly cookie authentication, token sanitization, and admin model updates.
+  3. **Root Monorepo (`Vidya`)**:
+     - Synced remote branches `origin/main` and `origin/feature/student-dashboard-redesign`.
+     - Active working branch `feature/student-dashboard-redesign` is up to date with `origin/feature/student-dashboard-redesign`.
+     - Updated local `main` pointer to mirror `origin/main` (`3ec6b9c`).
+- **Server Verification**:
+  - VidyaOS Backend running on port 3001 (`/api/v1/health` -> HTTP 200 OK).
+  - VidyaOS Frontend running on port 5001 (`http://localhost:5001` and `http://192.168.31.248:5001` -> HTTP 200 OK).
+
 ### 🏛️ Milestone 324: Mobile Sidebar 50% Width & Outside-Click Tap Dismissal Fix
 - **Status**: 🟢 Completed & Verified
   - Target Frontend: `deployfolder/VidyaOS/admin/components/sidebar/` (`sidebar.js`, `sidebar.css`), `frontend/admin/components/sidebar/`
