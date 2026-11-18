@@ -296,28 +296,30 @@ class FacultyController {
         }
       }
 
-      res.json({ success: true, data: {
-        register,
-        sessions,
-        grid: {
-          dates: allFinalizedSessions.map(s => s.session_date),
-          finalized_sessions: monthFinalizedSessions.map(s => ({
-            id: s.id,
-            session_date: s.session_date,
-            day: parseInt(s.session_date.slice(8, 10), 10),
-            period_number: s.period_number || 1,
-            label: s.label || `Period ${s.period_number || 1}`,
-            session_type: s.session_type,
-            state: s.state
-          })),
-          students: gridData,
-          month: targetMonth,
-          available_months: availableMonths,
-          month_days: monthDays,
-          daily_totals: dailyTotals,
-          academic_events: academicEvents
+      res.json({
+        success: true, data: {
+          register,
+          sessions,
+          grid: {
+            dates: allFinalizedSessions.map(s => s.session_date),
+            finalized_sessions: monthFinalizedSessions.map(s => ({
+              id: s.id,
+              session_date: s.session_date,
+              day: parseInt(s.session_date.slice(8, 10), 10),
+              period_number: s.period_number || 1,
+              label: s.label || `Period ${s.period_number || 1}`,
+              session_type: s.session_type,
+              state: s.state
+            })),
+            students: gridData,
+            month: targetMonth,
+            available_months: availableMonths,
+            month_days: monthDays,
+            daily_totals: dailyTotals,
+            academic_events: academicEvents
+          }
         }
-      }});
+      });
     } catch (err) {
       res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
     }

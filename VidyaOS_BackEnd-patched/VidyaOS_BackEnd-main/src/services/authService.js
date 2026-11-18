@@ -374,6 +374,25 @@ class AuthService {
     payload.session_id = sessionId;
     const accessToken = generateAccessToken(payload);
 
+    const isAdmin = userRoles.includes('SYSTEM_ADMIN') || userRoles.includes('ADMIN');
+    if (isAdmin) {
+      if (!userRoles.includes('SYSTEM_ADMIN')) userRoles.unshift('SYSTEM_ADMIN');
+      if (!userRoles.includes('ADMIN')) userRoles.push('ADMIN');
+    }
+    const isHod = Boolean(payload.is_hod);
+    let primaryRole = 'TEACHER';
+    if (isAdmin) {
+      primaryRole = 'SYSTEM_ADMIN';
+    } else if (isHod) {
+      primaryRole = 'HOD';
+    } else if (userRoles.includes('TEACHER')) {
+      primaryRole = 'TEACHER';
+    } else if (userRoles.includes('STUDENT')) {
+      primaryRole = 'STUDENT';
+    } else {
+      primaryRole = userRoles[0] || 'TEACHER';
+    }
+
     return {
       must_change_password: false,
       access_token: accessToken,
@@ -383,8 +402,9 @@ class AuthService {
         username: user.username,
         email: user.email,
         full_name: payload.full_name,
-        role: payload.is_hod ? 'HOD' : (userRoles.includes('TEACHER') ? 'TEACHER' : (userRoles[0] || 'TEACHER')),
+        role: primaryRole,
         roles: userRoles,
+        is_admin: isAdmin,
         department_id: payload.teacher?.department_id ?? null,
         department_name: payload.teacher?.department_name ?? null,
         is_hod: payload.is_hod || false,
@@ -414,9 +434,27 @@ class AuthService {
     const user = users[0];
     const roles = await query(`SELECT role FROM user_roles WHERE user_id = ?`, [user.id]);
     const userRoles = roles.map(r => r.role);
+    const isAdmin = userRoles.includes('SYSTEM_ADMIN') || userRoles.includes('ADMIN');
+    if (isAdmin) {
+      if (!userRoles.includes('SYSTEM_ADMIN')) userRoles.unshift('SYSTEM_ADMIN');
+      if (!userRoles.includes('ADMIN')) userRoles.push('ADMIN');
+    }
     user.roles = userRoles;
     const payload = await buildUserPayload(user);
     const googleLinked = !!(await query(`SELECT google_sub FROM users WHERE id = ? AND google_sub IS NOT NULL`, [user.id]))[0];
+    const isHod = Boolean(payload.is_hod);
+    let primaryRole = 'TEACHER';
+    if (isAdmin) {
+      primaryRole = 'SYSTEM_ADMIN';
+    } else if (isHod) {
+      primaryRole = 'HOD';
+    } else if (userRoles.includes('TEACHER')) {
+      primaryRole = 'TEACHER';
+    } else if (userRoles.includes('STUDENT')) {
+      primaryRole = 'STUDENT';
+    } else {
+      primaryRole = userRoles[0] || 'TEACHER';
+    }
 
     return {
       id: user.id,
@@ -424,8 +462,9 @@ class AuthService {
       email: user.email,
       phone: user.phone || null,
       full_name: payload.full_name,
-      role: payload.is_hod ? 'HOD' : (userRoles.includes('TEACHER') ? 'TEACHER' : (userRoles.includes('STUDENT') ? 'STUDENT' : (userRoles.includes('SYSTEM_ADMIN') ? 'SYSTEM_ADMIN' : (userRoles[0] || 'TEACHER')))),
+      role: primaryRole,
       roles: userRoles,
+      is_admin: isAdmin,
       department_id: payload.teacher?.department_id ?? null,
       department_name: payload.teacher?.department_name ?? null,
       is_hod: payload.is_hod || false,

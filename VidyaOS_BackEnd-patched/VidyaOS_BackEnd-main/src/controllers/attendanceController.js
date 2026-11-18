@@ -498,7 +498,7 @@ class AttendanceController {
           details: { register_id: registerId, session_date: date },
           ipAddress: req.ip
         });
-      } catch (_) {}
+      } catch (_) { }
 
       res.json({
         success: true,
