@@ -45,6 +45,11 @@ body.cw-create-body {
    1. GOOGLE CLASSROOM TOP HEADER (48px)
    ══════════════════════════════════════════════════════════════ */
 .cw-gclass-nav {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
   height: 48px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
@@ -52,8 +57,9 @@ body.cw-create-body {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.25rem;
+  box-sizing: border-box;
   flex-shrink: 0;
-  z-index: 10;
+  z-index: 10001 !important;
 }
 
 .cw-nav-left {
@@ -182,7 +188,7 @@ body.cw-create-body {
 .cw-gclass-container {
   max-width: 1200px;
   width: 100%;
-  margin: 0 auto;
+  margin: 48px auto 0 auto;
   padding: 1.15rem 1.25rem 1.5rem;
   box-sizing: border-box;
 }
@@ -1058,7 +1064,8 @@ body.cw-create-body {
   }
   .cw-gclass-nav {
     padding: 0 0.85rem;
-    height: 46px;
+    height: calc(48px + max(42px, env(safe-area-inset-top, 0px))) !important;
+    padding-top: max(42px, env(safe-area-inset-top, 0px)) !important;
   }
   .cw-page-subtitle {
     display: none !important;
@@ -1070,6 +1077,7 @@ body.cw-create-body {
     font-size: 0.95rem;
   }
   .cw-gclass-container {
+    margin-top: calc(48px + max(42px, env(safe-area-inset-top, 0px))) !important;
     padding: 0.65rem 0.65rem 1.5rem;
     height: auto;
     max-height: none;
