@@ -1,0 +1,395 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-004",
+  "role": "Student",
+  "route": "/student/group-detail.html",
+  "source_file": "frontend/student/group-detail/index.html",
+  "content_hash": "e54c0546a40f",
+  "last_scanned": "2026-11-18T23:27:23.285Z",
+  "title": "Classwork — Student Portal | VidyaOS",
+  "purpose": "Enrolled course stream, teacher announcements, materials",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: wide stream timeline; Mobile: compact vertical timeline",
+  "url_parameters": [
+    "id",
+    "groupId",
+    "group",
+    "tab"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/stream",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/assignments/:id/submit",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/assignments/:id/unsubmit",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "student-att-table",
+        "headers": [
+          "Date & Time",
+          "Session / Topic",
+          "Type",
+          "Status",
+          "Recorded Via"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "mobile-unit-filter-modal",
+        "title": "Filter by Topic",
+        "field_count": 0
+      },
+      {
+        "id": "student-course-info-modal",
+        "title": "Class Information",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "toggleStudentDrawer()",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mobile-btn-filter",
+        "label": "Filter Units",
+        "action": "toggleMobileUnitFilter()",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": "Filter Units"
+      },
+      {
+        "id": "btn-theme-toggle-mobile",
+        "label": "Toggle Theme",
+        "action": "toggleTheme()",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": "Toggle Theme"
+      },
+      {
+        "id": null,
+        "label": "Options",
+        "action": "toggleMobileOptionsMenu()",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": "Options"
+      },
+      {
+        "id": null,
+        "label": "Refresh",
+        "action": "refreshClassroomData()",
+        "class": "mobile-opt-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Class Info",
+        "action": "showCourseInfoModal()",
+        "class": "mobile-opt-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeMobileUnitFilter()",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeCourseInfoModal()",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeCourseInfoModal()",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-stream",
+        "label": "Stream",
+        "action": "switchStudentTab(",
+        "class": "student-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-classwork",
+        "label": "Classwork",
+        "action": "switchStudentTab(",
+        "class": "student-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-people",
+        "label": "People",
+        "action": "switchStudentTab(",
+        "class": "student-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-attendance",
+        "label": "Attendance",
+        "action": "switchStudentTab(",
+        "class": "student-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "clearComposerAttachment()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "collapseStudentComposer()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-post-announcement",
+        "label": "Post",
+        "action": "submitStudentAnnouncement()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mob-tab-stream",
+        "label": "Stream",
+        "action": "switchStudentTab(",
+        "class": "mobile-bottom-nav-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mob-tab-classwork",
+        "label": "Classwork",
+        "action": "switchStudentTab(",
+        "class": "mobile-bottom-nav-item active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mob-tab-people",
+        "label": "People",
+        "action": "switchStudentTab(",
+        "class": "mobile-bottom-nav-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mob-tab-attendance",
+        "label": "Attendance",
+        "action": "switchStudentTab(",
+        "class": "mobile-bottom-nav-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Options",
+        "action": null,
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": "Options"
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "submitPcClassComment()",
+        "class": "comment-send-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pc-btn-unsubmit",
+        "label": "Unsubmit",
+        "action": "handleUnsubmitWork()",
+        "class": "btn-pwd-unsubmit",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pc-btn-turnin",
+        "label": "Turn in",
+        "action": "handleStudentWorkSubmission()",
+        "class": "btn-pwd-turnin",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeStudentWorkDetails(event)",
+        "class": "btn-icon-ghost",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Unsubmit",
+        "action": "handleUnsubmitWork()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": null,
+        "type": "text",
+        "name": null,
+        "placeholder": "Announce something to your class...",
+        "handler": null,
+        "class": "composer-placeholder-input"
+      },
+      {
+        "id": "composer-file-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleComposerFileSelected(event)",
+        "class": null
+      },
+      {
+        "id": "pc-class-comment-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Add comment...",
+        "handler": null,
+        "class": "comment-input-field"
+      },
+      {
+        "id": "pc-work-file-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleWorkFileSelected(event)",
+        "class": null
+      },
+      {
+        "id": "mobile-work-file-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleWorkFileSelected(event)",
+        "class": null
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "mobile-unit-filter-modal",
+      "title": "Filter by Topic",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "student-course-info-modal",
+      "title": "Class Information",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/group-detail/student-group.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadStudentProfile",
+    "loadGroupDetails",
+    "renderHeroBanner",
+    "switchStudentTab",
+    "loadStreamPosts",
+    "renderStreamPosts",
+    "togglePostComments",
+    "loadClasswork",
+    "renderClasswork",
+    "renderPcWorkCard",
+    "renderMobileWorkItemRow",
+    "togglePcWorkCard",
+    "toggleUnitAccordion",
+    "toggleCollapseAllUnits",
+    "toggleWorkCardExpand",
+    "renderUpcomingWorkSidebar"
+  ]
+}

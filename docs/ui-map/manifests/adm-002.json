@@ -1,0 +1,578 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "ADM-002",
+  "role": "Admin",
+  "route": "/admin/faculty.html",
+  "source_file": "frontend/admin/faculty/index.html",
+  "content_hash": "35dbd6692559",
+  "last_scanned": "2026-11-17T17:56:40.346Z",
+  "title": "HOD Management — Admin Console",
+  "purpose": "Faculty roster, designations, assignments and account provisioning",
+  "shell": "Admin Shell (`nav.css`, `nav.js`)",
+  "states": "Desktop: high-density table + KPI grid; Mobile: automatic card view + sliding bottom-sheet modal",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": [
+      {
+        "id": "create-modal",
+        "title": "Appoint Head of Department",
+        "field_count": 0
+      },
+      {
+        "id": "cred-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "reassign-modal",
+        "title": "Reassign HOD Department",
+        "field_count": 0
+      },
+      {
+        "id": "reset-modal",
+        "title": "Reset Faculty Password",
+        "field_count": 0
+      },
+      {
+        "id": "delete-modal",
+        "title": "Remove HOD Role",
+        "field_count": 0
+      },
+      {
+        "id": "approve-hod-modal",
+        "title": "Approve HOD Registration",
+        "field_count": 0
+      },
+      {
+        "id": "appoint-common-mgr-modal",
+        "title": "Appoint Common Faculty Manager",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "theme-toggle-btn",
+        "label": "Toggle Dark/Light Mode",
+        "action": "toggleDashboardTheme()",
+        "class": "header-icon-btn header-theme-toggle",
+        "data_ui": null,
+        "title": "Toggle Dark/Light Mode"
+      },
+      {
+        "id": "header-user-profile",
+        "label": "SA",
+        "action": "toggleAdminProfileMenu(event)",
+        "class": "header-profile-round-btn",
+        "data_ui": null,
+        "title": "System Administrator Profile"
+      },
+      {
+        "id": null,
+        "label": "Sign Out",
+        "action": "logout()",
+        "class": "profile-dropdown-item dropdown-logout-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "create-hod-btn",
+        "label": "Create HOD",
+        "action": "openCreateModal()",
+        "class": "btn btn-primary fac-create-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-toggle-hod-gate",
+        "label": "HOD Loading...",
+        "action": "toggleAdminGate(",
+        "class": "fac-gate-pill-btn",
+        "data_ui": null,
+        "title": "Toggle HOD Self-Registration"
+      },
+      {
+        "id": "btn-toggle-common-gate",
+        "label": "Common Loading...",
+        "action": "toggleAdminGate(",
+        "class": "fac-gate-pill-btn",
+        "data_ui": null,
+        "title": "Toggle Common Faculty Self-Registration"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeCreateModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-search",
+        "label": "Search Existing Faculty",
+        "action": "setHODModalMode(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-create",
+        "label": "Create New Account",
+        "action": "setHODModalMode(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-search-faculty",
+        "label": "Find",
+        "action": "searchFacultyByEmail()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeCreateModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-assign",
+        "label": "Appoint as HOD",
+        "action": "submitAssignExistingHOD()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "create-submit-btn",
+        "label": "Create HOD Account",
+        "action": null,
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "slip-copy-btn",
+        "label": "Copy Details",
+        "action": "copyCredentials()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Done",
+        "action": "closeCredModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeReassignModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeReassignModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reassign-step1-btn",
+        "label": "Next: Review Transfer &rarr;",
+        "action": "goToReassignStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back to Step 1",
+        "action": "goToReassignStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reassign-submit-btn",
+        "label": "Confirm Reassignment",
+        "action": "submitReassign()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeResetModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Suggest Secure",
+        "action": "generateRandomResetPassword()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Show/Hide",
+        "action": "togglePassVisibility(",
+        "class": null,
+        "data_ui": null,
+        "title": "Show/Hide"
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeResetModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reset-step1-btn",
+        "label": "Next: Review &amp; Confirm &rarr;",
+        "action": "goToResetStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reset-preview-eye-btn",
+        "label": "Reveal",
+        "action": "toggleResetPassPreview()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back to Edit",
+        "action": "goToResetStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reset-btn",
+        "label": "Confirm &amp; Reset Password",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeDeleteModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeDeleteModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "delete-step1-btn",
+        "label": "Proceed to Safeguard Confirmation &rarr;",
+        "action": "goToDeleteStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back to Step 1",
+        "action": "goToDeleteStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "delete-btn",
+        "label": "Permanently Remove HOD",
+        "action": "submitDeleteHOD()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeApproveHodModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeApproveHodModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-approve-hod",
+        "label": "Confirm &amp; Activate HOD",
+        "action": "confirmApproveHod()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAppointCommonMgrModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeAppointCommonMgrModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-common-mgr",
+        "label": "Save Appointment",
+        "action": "submitAppointCommonMgr()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "search-faculty-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "e.g. teacher@college.edu",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "hod-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "Dr. Girdhar Dhami",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "hod-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "hod.it@gmail.com",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "hod-password",
+        "type": "text",
+        "name": null,
+        "placeholder": "Password@123",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "hod-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "9876543210",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "reset-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Min 6 chars (e.g. Password@123)",
+        "handler": "clearResetStep1Error()",
+        "class": "form-control"
+      },
+      {
+        "id": "reset-password-confirm",
+        "type": "password",
+        "name": null,
+        "placeholder": "Re-type new password",
+        "handler": "clearResetStep1Error()",
+        "class": "form-control"
+      },
+      {
+        "id": "delete-confirm-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type DELETE to confirm",
+        "handler": "checkDeleteConfirmation()",
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "assign-existing-dept",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select Department —"
+          }
+        ]
+      },
+      {
+        "id": "hod-dept",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select Department —"
+          }
+        ]
+      },
+      {
+        "id": "reassign-dept",
+        "title": null,
+        "onchange": "clearReassignStep1Error()",
+        "class": "form-control",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select Department —"
+          }
+        ]
+      },
+      {
+        "id": "common-mgr-teacher-select",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select an active faculty member —"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "create-modal",
+      "title": "Appoint Head of Department",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "cred-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "reassign-modal",
+      "title": "Reassign HOD Department",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "reset-modal",
+      "title": "Reset Faculty Password",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "delete-modal",
+      "title": "Remove HOD Role",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "approve-hod-modal",
+      "title": "Approve HOD Registration",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "appoint-common-mgr-modal",
+      "title": "Appoint Common Faculty Manager",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "js/api.js",
+    "js/auth.js",
+    "admin/components/icons.js",
+    "admin/components/sidebar/sidebar.js",
+    "admin/components/header/header.js",
+    "admin/components/admin-ui.js",
+    "admin/faculty/faculty.js"
+  ],
+  "exported_functions": [
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "openSidebar",
+    "closeSidebar",
+    "toggleNotifications",
+    "closeAdminLogoutModal",
+    "toggleAdminProfileMenu",
+    "toggleDashboardTheme",
+    "openModal",
+    "closeModal",
+    "loadRegistrationGates",
+    "renderRegistrationGates",
+    "toggleAdminGate",
+    "loadDepartments",
+    "loadHODs",
+    "renderHODs",
+    "openCreateModal",
+    "closeCreateModal",
+    "closeCredModal",
+    "openReassignModal",
+    "closeReassignModal",
+    "togglePassVisibility",
+    "toggleResetPassPreview",
+    "openResetModal",
+    "closeResetModal"
+  ]
+}

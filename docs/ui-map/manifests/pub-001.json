@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "PUB-001",
+  "role": "Public",
+  "route": "/ or /landing/",
+  "source_file": "frontend/landing/index.html",
+  "content_hash": "a6b9dac4ba3e",
+  "last_scanned": "2026-11-18T23:27:23.306Z",
+  "title": "VidyaOS — Institutional Campus & Academic Operating System",
+  "purpose": "Institutional homepage, system features, login entrance",
+  "shell": "Landing Shell (`variables.css`)",
+  "states": "Desktop: expansive hero showcase; Mobile: stacked feature cards with bottom login CTA",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/health",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "studio-toolbar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "preview-table",
+        "headers": [
+          "Roll",
+          "Student Applicant",
+          "Official Enrollment",
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "Attended %",
+          "Compliance"
+        ]
+      }
+    ],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "theme-toggle-btn",
+        "label": "Toggle Dark / Light Theme",
+        "action": "toggleTheme()",
+        "class": "theme-toggle",
+        "data_ui": null,
+        "title": "Toggle Dark / Light Theme"
+      },
+      {
+        "id": null,
+        "label": "Theme",
+        "action": "toggleTheme()",
+        "class": "dock-btn",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [],
+  "companion_scripts": [],
+  "exported_functions": []
+}

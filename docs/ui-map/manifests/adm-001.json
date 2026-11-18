@@ -1,0 +1,241 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "ADM-001",
+  "role": "Admin",
+  "route": "/admin/academic-structure.html",
+  "source_file": "frontend/admin/academic-structure/index.html",
+  "content_hash": "79959d607a69",
+  "last_scanned": "2026-11-18T23:27:23.058Z",
+  "title": "Academic Departments &amp; Branches — Admin Console",
+  "purpose": "Department, course, semester, section and room structure management",
+  "shell": "Admin Shell (`nav.css`, `nav.js`)",
+  "states": "Desktop: high-density table + KPI cards; Mobile: automatic card view + sliding bottom-sheet modal",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "catalog-toolbar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "table academic-table",
+        "headers": [
+          "Code",
+          "Department / Program Name",
+          "Current Appointed HOD",
+          "Status",
+          "Actions"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "dept-modal",
+        "title": "Edit Department",
+        "field_count": 0
+      },
+      {
+        "id": "delete-confirm-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeDeptModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "dept-delete-btn",
+        "label": "Delete",
+        "action": "deleteCurrentDeptFromModal()",
+        "class": "btn-danger-soft",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeDeptModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "dept-submit-btn",
+        "label": "Save Department",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeDeleteModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "delete-modal-confirm-btn",
+        "label": "Delete",
+        "action": "executeDeleteDepartment()",
+        "class": "btn-danger",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "dept-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by code or name...",
+        "handler": "renderDepartments()",
+        "class": "form-control"
+      },
+      {
+        "id": "dept-id",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "dept-code",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. IT, CE, ME, CL, EE",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "dept-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Information Technology",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "delete-modal-code-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type department code here",
+        "handler": "handleDeleteCodeInput(this.value)",
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "dept-duration",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "3",
+            "text": "3 Years (Standard Diploma)"
+          },
+          {
+            "value": "2",
+            "text": "2 Years (D.Pharm / Lateral Entry)"
+          },
+          {
+            "value": "1",
+            "text": "1 Year (Certificate)"
+          }
+        ]
+      },
+      {
+        "id": "dept-status",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 2,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Active"
+          },
+          {
+            "value": "0",
+            "text": "Inactive"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "dept-modal",
+      "title": "Edit Department",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "delete-confirm-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "admin/components/core/api.js",
+    "admin/components/core/auth.js",
+    "admin/components/icons.js",
+    "admin/components/sidebar/sidebar.js",
+    "admin/components/header/header.js",
+    "admin/components/admin-ui.js",
+    "admin/academic-structure/academic-structure.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "openSidebar",
+    "closeSidebar",
+    "toggleNotifications",
+    "closeAdminLogoutModal",
+    "toggleAdminProfileMenu",
+    "toggleDashboardTheme",
+    "openModal",
+    "closeModal",
+    "loadSessionStatus",
+    "loadAllData",
+    "renderDepartments",
+    "openDeptModal",
+    "closeDeptModal",
+    "openDeleteModal",
+    "closeDeleteModal"
+  ]
+}

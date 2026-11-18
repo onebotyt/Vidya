@@ -46,6 +46,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 467: ESP32 Firmware HTTPS TLS Handshake, Render Cold-Start Resilience & 32KB Template Deserialization
+- **Diagnostic & Root Cause Analysis**:
+  1. *Silent TLS Handshake Abort on HTTPS URLs*:
+     - `http.begin(url)` in ESP32 Arduino core defaults to plain HTTP. When connecting to production servers over HTTPS (such as `https://vidyaos-backend.onrender.com`), the TLS handshake aborted with silent `httpCode = -1`.
+  2. *Render Free-Tier Spin-Up Timeout*:
+     - Render cold-starts require 15–25 seconds to spin up containers. The previous 4-second timeout aborted requests before Render could respond.
+  3. *JSON Deserialization Buffer Limit*:
+     - `StaticJsonDocument<4096>` overflowed when downloading multi-student template sync payloads (`/api/v1/devices/esp32/templates-sync`), failing with `DeserializationError::NoMemory`.
+- **Delivered Solutions**:
+  - **`VidyaOS_ESP32_Biometric_Node.ino` (`postEncryptedToServer`)**:
+    - Integrated dual client switching: checks `url.startsWith("https://")`, mounts `WiFiClientSecure` with `secureClient.setInsecure()`, or falls back to `WiFiClient plainClient` for local HTTP development.
+    - Extended request timeout to 25,000ms (`http.setTimeout(25000)`) ensuring resilience against cloud container cold-starts.
+    - Upgraded JSON parsing buffer to `DynamicJsonDocument doc(32768)` (with backward-compatible support for ArduinoJson v6 and v7).
+    - Added structured error diagnostic logging (`[HTTP] POST %s FAILED -> code=%d, body=%s`).
+  - **`config.h` Configuration**:
+    - Updated `VIDYAOS_SERVER_BASE_URL` to point to the live Render deployment (`https://vidyaos-backend.onrender.com/api/v1/devices/esp32`) with commented fallback for local development.
+  - **Packaging & Verification**:
+    - Packaged updated firmware into `VidyaOS_ESP32_Biometric_Firmware.zip` and `VidyaOS_ESP32_Biometric_Firmware_FIXED.zip`.
+    - Automated tests passing: `test-ui-manifest-sync.js` (200/200 Passed).
+
 ### ✅ Milestone 466: Admin Portal Routing Isolation, Role Priority Resolution, High-Fidelity Sheets Export & Multi-Repo Git Synchronization
 - **Root-Cause Analysis of Admin Route Misdirection & Faculty Feature Leakage**:
   1. *Dual-Role Priority Inversion in `authService.js`*:

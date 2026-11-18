@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-18T08:04:29.980Z",
-  "total_pages": 33,
+  "generated_at": "2026-11-18T23:27:23.314Z",
+  "total_pages": 31,
   "totals": {
-    "buttons": 636,
-    "modals": 194,
-    "inputs": 394,
-    "apis": 180
+    "buttons": 544,
+    "modals": 155,
+    "inputs": 351,
+    "apis": 178
   },
   "pages": [
     {
@@ -21,19 +21,6 @@
         "modals": 2,
         "inputs": 7,
         "apis": 3
-      }
-    },
-    {
-      "page_id": "ADM-002",
-      "route": "/admin/faculty.html",
-      "title": "HOD Management — Admin Console",
-      "manifest_file": "docs/ui-map/manifests/adm-002.json",
-      "content_hash": "35dbd6692559",
-      "counts": {
-        "buttons": 39,
-        "modals": 7,
-        "inputs": 12,
-        "apis": 1
       }
     },
     {
@@ -132,7 +119,7 @@
       "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
       "title": "Student Academic Records & Dossiers — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-001.json",
-      "content_hash": "8419efd27502",
+      "content_hash": "b234c83c5950",
       "counts": {
         "buttons": 16,
         "modals": 4,
@@ -154,29 +141,16 @@
       }
     },
     {
-      "page_id": "FAC-003",
-      "route": "/faculty/groups.html",
-      "title": "Faculty Classroom Dashboard — VidyaOS",
-      "manifest_file": "docs/ui-map/manifests/fac-003.json",
-      "content_hash": "9a02d7d355d9",
-      "counts": {
-        "buttons": 53,
-        "modals": 32,
-        "inputs": 31,
-        "apis": 1
-      }
-    },
-    {
       "page_id": "FAC-004",
       "route": "/faculty/group-detail.html",
       "title": "Teaching Group Classroom - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-004.json",
-      "content_hash": "a39490651aab",
+      "content_hash": "3cd12d2a499e",
       "counts": {
         "buttons": 180,
         "modals": 54,
         "inputs": 86,
-        "apis": 29
+        "apis": 32
       }
     },
     {
@@ -184,7 +158,7 @@
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
       "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "d9c8f7f097ea",
+      "content_hash": "012dddb8ea6d",
       "counts": {
         "buttons": 48,
         "modals": 16,
@@ -210,12 +184,12 @@
       "route": "/faculty/classwork/create.html",
       "title": "Create Classwork - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-009.json",
-      "content_hash": "5c8a8cabdf14",
+      "content_hash": "257046a62e9e",
       "counts": {
         "buttons": 27,
         "modals": 7,
         "inputs": 14,
-        "apis": 13
+        "apis": 10
       }
     },
     {
@@ -275,7 +249,7 @@
       "route": "/faculty/classes/index.html",
       "title": "My Teaching Classes — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-015.json",
-      "content_hash": "b69a179685a5",
+      "content_hash": "eef9ad8abbf8",
       "counts": {
         "buttons": 15,
         "modals": 9,
@@ -301,7 +275,7 @@
       "route": "/student/dashboard.html",
       "title": "Student Classroom Dashboard — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-001.json",
-      "content_hash": "ec9e9961b840",
+      "content_hash": "4ac9037799a7",
       "counts": {
         "buttons": 21,
         "modals": 9,
@@ -353,7 +327,7 @@
       "route": "/student/scores.html",
       "title": "My Test Scores &amp; Marks — Student Portal",
       "manifest_file": "docs/ui-map/manifests/stu-005.json",
-      "content_hash": "2264d042ac21",
+      "content_hash": "bb32fad670f6",
       "counts": {
         "buttons": 10,
         "modals": 0,
@@ -418,7 +392,7 @@
       "route": "/login/",
       "title": "Sign In — VidyaOS Campus Management",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "16342a547e81",
+      "content_hash": "387fb7f2d313",
       "counts": {
         "buttons": 6,
         "modals": 4,

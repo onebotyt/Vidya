@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "PUB-002",
+  "role": "Public",
+  "route": "/login/",
+  "source_file": "frontend/login/index.html",
+  "content_hash": "387fb7f2d313",
+  "last_scanned": "2026-11-18T23:27:23.310Z",
+  "title": "Sign In — VidyaOS Campus Management",
+  "purpose": "Single sign-on portal, role redirection, multi-device warning",
+  "shell": "Auth Shell (`login/index.css`)",
+  "states": "Desktop: centered card with brand illustration; Mobile: full-width card with numeric keypad support",
+  "url_parameters": [
+    "reason",
+    "pending",
+    "google_pending",
+    "status",
+    "email",
+    "message",
+    "error"
+  ],
+  "api_contracts": [
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/health",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "https://vidyaos-backend.onrender.com/api/v1/health",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "POST",
+      "endpoint": "https://vidyaos-backend.onrender.com/api/v1/health",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/change-password",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": [
+      {
+        "id": "activation-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "act-title",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "act-name",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "act-email",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "google-signin-btn",
+        "label": "Continue with Google",
+        "action": "handleGoogleSignIn()",
+        "class": "btn-google",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pw-toggle-btn",
+        "label": "Show / hide password",
+        "action": "togglePw()",
+        "class": "pw-toggle",
+        "data_ui": null,
+        "title": "Show / hide password"
+      },
+      {
+        "id": "force-login-btn",
+        "label": "Disconnect Other Device &amp; Sign In Here",
+        "action": "submitForceLogin()",
+        "class": "btn-force",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "status-alert-close",
+        "label": "&times;",
+        "action": "document.getElementById(",
+        "class": "status-alert-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "submit-btn",
+        "label": "Sign In →",
+        "action": null,
+        "class": "btn-submit",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "act-submit-btn",
+        "label": "Save & Enter Portal →",
+        "action": null,
+        "class": "btn-submit",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "identifier",
+        "type": "text",
+        "name": "identifier",
+        "placeholder": "e.g. student@gmail.com, prof.sharma, or 2024IT001",
+        "handler": null,
+        "class": "field-input"
+      },
+      {
+        "id": "password",
+        "type": "password",
+        "name": "password",
+        "placeholder": "Enter your password",
+        "handler": null,
+        "class": "field-input has-addon"
+      },
+      {
+        "id": "act-new-pw",
+        "type": "password",
+        "name": null,
+        "placeholder": "Create a strong password",
+        "handler": null,
+        "class": "field-input"
+      },
+      {
+        "id": "act-confirm-pw",
+        "type": "password",
+        "name": null,
+        "placeholder": "Re-enter your password",
+        "handler": null,
+        "class": "field-input"
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "activation-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "act-title",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "act-name",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "act-email",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "mobile-bridge.js",
+    "login/core/ui.js",
+    "login/core/api.js",
+    "login/core/auth.js",
+    "login/index.js"
+  ],
+  "exported_functions": [
+    "togglePw"
+  ]
+}

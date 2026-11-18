@@ -1,0 +1,280 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "ADM-004",
+  "role": "Admin",
+  "route": "/admin/audit-logs.html",
+  "source_file": "frontend/admin/audit-logs/index.html",
+  "content_hash": "b81e5c1d9f9b",
+  "last_scanned": "2026-11-18T23:27:23.074Z",
+  "title": "Institutional Audit Trail — Admin Console",
+  "purpose": "Compliance audit trail, login attempts, grade changes, ledger edits",
+  "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",
+  "states": "Desktop: tabular event log with timestamp filters; Mobile: stacked event timeline",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "audit-table",
+        "headers": [
+          "Timestamp",
+          "Action / Event",
+          "Actor",
+          "Role",
+          "Target Entity",
+          "Details Snapshot",
+          "IP Address"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "details-modal",
+        "title": "Audit Event Details",
+        "field_count": 0
+      },
+      {
+        "id": "modal-meta-line",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Export JSON",
+        "action": "exportLogsJson()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Refresh Feed",
+        "action": "loadAuditLogs()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Apply",
+        "action": "applyFilters()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Reset",
+        "action": "resetFilters()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "prev-btn",
+        "label": "&larr; Previous",
+        "action": "changePage(-1)",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "next-btn",
+        "label": "Next &rarr;",
+        "action": "changePage(1)",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "filter-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search actor, email, role, or details...",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "filter-start-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "applyFilters()",
+        "class": "form-control"
+      },
+      {
+        "id": "filter-end-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "applyFilters()",
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "filter-event",
+        "title": null,
+        "onchange": "applyFilters()",
+        "class": "form-select",
+        "options_count": 20,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Event Types"
+          },
+          {
+            "value": "FACULTY_APPROVED",
+            "text": "FACULTY_APPROVED"
+          },
+          {
+            "value": "FACULTY_REJECTED",
+            "text": "FACULTY_REJECTED"
+          },
+          {
+            "value": "HOD_ASSIGNED",
+            "text": "HOD_ASSIGNED"
+          },
+          {
+            "value": "HOD_REMOVED",
+            "text": "HOD_REMOVED"
+          },
+          {
+            "value": "HOD_REPLACED",
+            "text": "HOD_REPLACED"
+          },
+          {
+            "value": "COMMON_MANAGER_ASSIGNED",
+            "text": "COMMON_MANAGER_ASSIGNED"
+          },
+          {
+            "value": "STUDENT_APPROVED",
+            "text": "STUDENT_APPROVED"
+          }
+        ]
+      },
+      {
+        "id": "filter-target",
+        "title": null,
+        "onchange": "applyFilters()",
+        "class": "form-select",
+        "options_count": 11,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "All Target Types"
+          },
+          {
+            "value": "teachers",
+            "text": "Teachers"
+          },
+          {
+            "value": "students",
+            "text": "Students"
+          },
+          {
+            "value": "teaching_groups",
+            "text": "Teaching Groups"
+          },
+          {
+            "value": "devices",
+            "text": "Devices"
+          },
+          {
+            "value": "fingerprint_slots",
+            "text": "Fingerprint Slots"
+          },
+          {
+            "value": "attendance_sessions",
+            "text": "Attendance Sessions"
+          },
+          {
+            "value": "register_attendance",
+            "text": "Register Attendance"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "details-modal",
+      "title": "Audit Event Details",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-meta-line",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "admin/components/core/api.js",
+    "admin/components/core/auth.js",
+    "admin/components/icons.js",
+    "admin/components/sidebar/sidebar.js",
+    "admin/components/header/header.js",
+    "admin/components/admin-ui.js",
+    "admin/audit-logs/audit-logs.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "openSidebar",
+    "closeSidebar",
+    "toggleNotifications",
+    "closeAdminLogoutModal",
+    "toggleAdminProfileMenu",
+    "toggleDashboardTheme",
+    "openModal",
+    "closeModal",
+    "loadKpis",
+    "loadAuditLogs",
+    "renderTable",
+    "openDetailsModal",
+    "exportLogsJson"
+  ]
+}

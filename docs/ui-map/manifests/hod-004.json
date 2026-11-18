@@ -1,0 +1,295 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "HOD-004",
+  "role": "HOD",
+  "route": "/faculty/faculty/index.html",
+  "source_file": "frontend/faculty/faculty/index.html",
+  "content_hash": "2a9971732c4a",
+  "last_scanned": "2026-11-18T23:27:23.106Z",
+  "title": "Faculty Management — VidyaOS",
+  "purpose": "Department faculty roster, instructor onboarding, self-registration toggle, credentials",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: compact faculty table with actions; Mobile: compact cards with direct reset/remove actions",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1:id",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "fac-toolbar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "fac-table",
+        "headers": [
+          "#",
+          "Faculty Member",
+          "Employee ID",
+          "Designation / Role",
+          "Retention",
+          "Actions"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "modal-add-faculty",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-faculty-details",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Trash Bin 0",
+        "action": "switchToTrashTab()",
+        "class": "btn-trash-header",
+        "data_ui": null,
+        "title": "Open Faculty Trash Bin (30-day recovery)"
+      },
+      {
+        "id": null,
+        "label": "All Faculty 0",
+        "action": null,
+        "class": "fac-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "HOD",
+        "action": null,
+        "class": "fac-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Lecturers",
+        "action": null,
+        "class": "fac-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pill-pending",
+        "label": "Pending 0",
+        "action": null,
+        "class": "fac-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pill-trash",
+        "label": "Trash 0",
+        "action": null,
+        "class": "fac-pill pill-trash",
+        "data_ui": null,
+        "title": "Faculty in Trash Bin (30-day recovery)"
+      },
+      {
+        "id": null,
+        "label": "Add Faculty",
+        "action": "openAddFacultyModal()",
+        "class": "btn-primary-compact",
+        "data_ui": null,
+        "title": "Add New Faculty Member"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAddFacultyModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeAddFacultyModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Onboard Faculty",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeFacultyDetailsModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "detail-btn-reset",
+        "label": "Reset Password",
+        "action": "detailResetPassword()",
+        "class": "btn-icon-action",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "detail-btn-delete",
+        "label": "Remove Faculty",
+        "action": "detailDeleteFaculty()",
+        "class": "btn-icon-action danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeFacultyDetailsModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "toggle-faculty-reg",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "faculty-search",
+        "type": "search",
+        "name": null,
+        "placeholder": "Search faculty by name, ID...",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-fac-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Prof. Amit Verma",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-fac-empid",
+        "type": "text",
+        "name": null,
+        "placeholder": "IT-T-02",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-fac-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "9876543210",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-fac-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "faculty@college.edu",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-fac-pass",
+        "type": "password",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "modal-add-faculty",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-faculty-details",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/components/delete-modal/delete-modal.js",
+    "faculty/faculty/faculty.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "closeDeleteModal",
+    "openDeleteModal",
+    "loadFacultyRoster",
+    "loadPendingFaculty",
+    "loadTrashFaculty",
+    "loadRegistrationStatus",
+    "renderToggleState",
+    "toggleRegistration",
+    "switchToPendingTab",
+    "switchToTrashTab",
+    "renderTable",
+    "renderPendingRoster",
+    "renderTrashRoster",
+    "toggleFacultyMenu",
+    "closeAllMenus"
+  ]
+}

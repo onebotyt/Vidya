@@ -1,0 +1,699 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-012",
+  "role": "Faculty",
+  "route": "/faculty/course-file.html",
+  "source_file": "frontend/faculty/course-file/index.html",
+  "content_hash": "23897169f398",
+  "last_scanned": "2026-11-18T23:27:23.238Z",
+  "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
+  "purpose": "NBA/NAAC course compliance file compilation",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: syllabus checklist + document previews; Mobile: file list with upload buttons",
+  "url_parameters": [
+    "group_id",
+    "groupId",
+    "class_id",
+    "classId",
+    "id",
+    "subject_id",
+    "subjectId",
+    "register_id",
+    "registerId",
+    "doc",
+    "action"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/course-files",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/course-files/:id/documents",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/course-files/:id/documents/:id",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/course-files/:id/evaluation-scheme",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/course-files/:id/structured-data",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/course-files/:id/audit",
+      "type": "INTERNAL"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "cf-meter-bar",
+        "class": "cf-meter-bar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "table-students-roster",
+        "class": "data-table",
+        "headers": [
+          "Roll No",
+          "Enrollment No",
+          "Student Full Name",
+          "Email Address",
+          "Attended",
+          "Attendance %"
+        ]
+      },
+      {
+        "id": "table-assignments-schedule",
+        "class": "data-table",
+        "headers": [
+          "#",
+          "Assignment Title",
+          "Issue Date",
+          "Due Date",
+          "Max Marks",
+          "Submissions"
+        ]
+      },
+      {
+        "id": "table-copo-matrix",
+        "class": "data-table",
+        "headers": [
+          "CO",
+          "PO1",
+          "PO2",
+          "PO3",
+          "PO4",
+          "PO5",
+          "PO6",
+          "PO7",
+          "PO8",
+          "PO9",
+          "PO10",
+          "PO11",
+          "PO12",
+          "PSO1",
+          "PSO2"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "data-table",
+        "headers": [
+          "Roll No",
+          "Enrollment No",
+          "Full Name",
+          "Attendance",
+          "Diagnostic Status &amp; Mentoring Action"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "modal-upload-doc",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "upload-modal-title",
+        "title": "Upload Course File Document",
+        "field_count": 0
+      },
+      {
+        "id": "upload-doc-title",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-submit-upload",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-pdf-preview",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "preview-modal-title",
+        "title": "Document Preview",
+        "field_count": 0
+      },
+      {
+        "id": "pdf-preview-frame",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-student-roster",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "roster-count-badge",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-assignment-schedule",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "schedule-count-badge",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-evaluation-scheme",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "eval-midsem",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-copo-matrix",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "co-list-inputs",
+        "title": "Course Outcomes (CO1\n          - CO6)",
+        "field_count": 0
+      },
+      {
+        "id": "modal-learners-view",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "learners-modal-title",
+        "title": "Student Diagnostic Roster",
+        "field_count": 0
+      },
+      {
+        "id": "tbody-learners-roster",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-learners-upload-pdf",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-hod-audit",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "audit-decision-status",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Print Dossier Index",
+        "action": "printDossierIndex()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": "Print complete institutional NBA/NAAC index and cover sheet"
+      },
+      {
+        "id": null,
+        "label": "HOD Audit Verification",
+        "action": "openHodAuditModal()",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": "HOD Quality &amp; Compliance Audit Verification"
+      },
+      {
+        "id": null,
+        "label": "All 18 Documents 18",
+        "action": "setCategoryFilter(",
+        "class": "cf-tab-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Curriculum &amp; Syllabus 7",
+        "action": "setCategoryFilter(",
+        "class": "cf-tab-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Students &amp; Diagnostics 4",
+        "action": "setCategoryFilter(",
+        "class": "cf-tab-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Assessments &amp; Schedules 5",
+        "action": "setCategoryFilter(",
+        "class": "cf-tab-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Review &amp; Attainment 2",
+        "action": "setCategoryFilter(",
+        "class": "cf-tab-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeModal(",
+        "class": "modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-upload",
+        "label": "Upload Document",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Print Student List",
+        "action": "printStudentRoster()",
+        "class": "btn btn-sm btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Upload Signed / Certified PDF Roster (Optional)",
+        "action": "openDirectUploadModal(",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeModal(",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Print Schedule",
+        "action": "printAssignmentSchedule()",
+        "class": "btn btn-sm btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Upload Signed Tutorial Schedule PDF (Optional)",
+        "action": "openDirectUploadModal(",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Upload Signed PDF",
+        "action": "openDirectUploadModal(",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Evaluation Plan",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Upload CO-PO PDF",
+        "action": "openDirectUploadModal(",
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Outcomes &amp; Matrix",
+        "action": "saveCopoData()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-learners-upload-pdf",
+        "label": "Upload Formal PDF Report",
+        "action": null,
+        "class": "btn btn-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Submit Audit Sign-Off",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "cf-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search course file document or keyword...",
+        "handler": "onSearchDocuments(this.value)",
+        "class": null
+      },
+      {
+        "id": "cf-hidden-file-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleDirectFileSelect(event)",
+        "class": null
+      },
+      {
+        "id": "upload-item-key",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "upload-doc-title",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "upload-file-field",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "onModalFileSelected(this)",
+        "class": null
+      },
+      {
+        "id": "eval-midsem",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "recalcEvalTotal()",
+        "class": "form-control"
+      },
+      {
+        "id": "eval-assignments",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "recalcEvalTotal()",
+        "class": "form-control"
+      },
+      {
+        "id": "eval-lab",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "recalcEvalTotal()",
+        "class": "form-control"
+      },
+      {
+        "id": "eval-attendance",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "recalcEvalTotal()",
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "select-class-switch",
+        "title": null,
+        "onchange": "onSwitchClass(this.value)",
+        "class": "cf-select-class form-control",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading classes..."
+          }
+        ]
+      },
+      {
+        "id": "audit-decision-status",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "APPROVED",
+            "text": "APPROVE — Course File Complete &amp; Verified"
+          },
+          {
+            "value": "REVISION_REQUESTED",
+            "text": "REVISION REQUESTED — Missing Required Documents"
+          },
+          {
+            "value": "AUDITED",
+            "text": "AUDITED — In Review"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "modal-upload-doc",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "upload-modal-title",
+      "title": "Upload Course File Document",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "upload-doc-title",
+      "title": "Modal Dialog",
+      "fields": [
+        "upload-doc-title"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-upload",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-pdf-preview",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "preview-modal-title",
+      "title": "Document Preview",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "pdf-preview-frame",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-student-roster",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "roster-count-badge",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-assignment-schedule",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "schedule-count-badge",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-evaluation-scheme",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "eval-midsem",
+      "title": "Modal Dialog",
+      "fields": [
+        "eval-midsem"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-copo-matrix",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "co-list-inputs",
+      "title": "Course Outcomes (CO1\n          - CO6)",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-learners-view",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "learners-modal-title",
+      "title": "Student Diagnostic Roster",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "tbody-learners-roster",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-learners-upload-pdf",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-hod-audit",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "audit-decision-status",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/course-file/course-file.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "loadAvailableClasses",
+    "renderEmptyClassState",
+    "loadCourseFileDossier",
+    "renderHeroBanner",
+    "renderCategoryCounts",
+    "renderArtifactCards"
+  ]
+}

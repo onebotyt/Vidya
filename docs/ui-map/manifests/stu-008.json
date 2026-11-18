@@ -1,0 +1,276 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-008",
+  "role": "Student",
+  "route": "/student/profile.html",
+  "source_file": "frontend/student/profile/index.html",
+  "content_hash": "5f7ec9bafa2a",
+  "last_scanned": "2026-11-18T23:27:23.303Z",
+  "title": "Student Profile & Academic Credentials — College Attendance System",
+  "purpose": "Academic credentials, PRN, branch, semester, active devices",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: 2-column card layout; Mobile: single-column profile view",
+  "url_parameters": [
+    "complete"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      },
+      {
+        "id": "health-progress-bar",
+        "class": "progress-bar-fill"
+      }
+    ],
+    "tables": [],
+    "modals": []
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "togglePassVisibility(",
+        "class": "password-toggle-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "save-profile-btn",
+        "label": "Save Profile Updates",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Print / PDF",
+        "action": "exportStudentDossier(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Excel (.csv)",
+        "action": "exportStudentDossier(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Word (.doc)",
+        "action": "exportStudentDossier(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "save-demographics-btn",
+        "label": "Save Demographic Details",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "profile-username",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@gmail.com",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "current-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Required only if changing password",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "new-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Minimum 8 characters",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "confirm-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Re-enter new password",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-father-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Rajesh Sharma",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-mother-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Sunita Sharma",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-dob",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-aadhar",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 1234 5678 9012",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "10-digit mobile",
+        "handler": null,
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "profile-gender",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select Gender —"
+          },
+          {
+            "value": "Male",
+            "text": "Male"
+          },
+          {
+            "value": "Female",
+            "text": "Female"
+          },
+          {
+            "value": "Other",
+            "text": "Other"
+          }
+        ]
+      },
+      {
+        "id": "profile-category",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select Category —"
+          },
+          {
+            "value": "General",
+            "text": "General"
+          },
+          {
+            "value": "OBC",
+            "text": "OBC"
+          },
+          {
+            "value": "SC",
+            "text": "SC"
+          },
+          {
+            "value": "ST",
+            "text": "ST"
+          },
+          {
+            "value": "EWS",
+            "text": "EWS"
+          },
+          {
+            "value": "Other",
+            "text": "Other"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/core/utils.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/profile/profile.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "exportToCsv",
+    "exportTableToRealXlsx",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "togglePassVisibility",
+    "loadStudentProfile",
+    "loadStudentDocuments",
+    "exportStudentDossier"
+  ]
+}

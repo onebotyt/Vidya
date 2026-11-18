@@ -1,0 +1,3272 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-004",
+  "role": "Faculty",
+  "route": "/faculty/group-detail.html",
+  "source_file": "frontend/faculty/group-detail/index.html",
+  "content_hash": "3cd12d2a499e",
+  "last_scanned": "2026-11-18T23:27:23.185Z",
+  "title": "Teaching Group Classroom - VidyaOS",
+  "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: multi-tab classroom workspace; Mobile: scrollable tab bar + compact stream feed",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/attendance/registers/",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/units",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/teaching-groups/",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/assignments/:id/submit",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/assignments/:id/unsubmit",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/faculty/session-header",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/teaching-groups/:id/tests/:id",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/tests/:id/export/:id",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/faculty/registers",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/faculty/registers/",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/faculty/registers/:id/mark-cell",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/registers/:id/sessions",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/v1/faculty/registers/:id/sessions/:id",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/attendance/registers/:id/esp32-day-scans",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/attendance/registers/:id/confirm-day-attendance",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/faculty/registers/:id/student-status",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/faculty/registers/:id/sessions",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/attendance/sessions/:id/state",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/attendance/sessions/:id/pin",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/attendance/sessions/:id/qr",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/attendance/sessions/:id/self-attendance",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/registers/:id/export/attendance",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "classroom-sheets-bar",
+        "class": "classroom-sheets-bar"
+      },
+      {
+        "id": "compose-toolbar",
+        "class": ""
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar gc-cw-toolbar"
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar-left"
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar-right"
+      },
+      {
+        "id": "work-inst-bottom-bar",
+        "class": "work-inst-bottom-bar"
+      },
+      {
+        "id": "",
+        "class": "gc-edit-rich-toolbar"
+      },
+      {
+        "id": "",
+        "class": "esp-toolbar no-print"
+      },
+      {
+        "id": "",
+        "class": "esp-toolbar-actions"
+      },
+      {
+        "id": "pc-matrix-bulk-bar",
+        "class": "matrix-bulk-bar"
+      },
+      {
+        "id": "",
+        "class": "marks-modal-toolbar"
+      },
+      {
+        "id": "",
+        "class": "marks-toolbar-left"
+      },
+      {
+        "id": "",
+        "class": "marks-toolbar-right desktop-only-toolbar-right"
+      },
+      {
+        "id": "",
+        "class": "am-toolbar"
+      },
+      {
+        "id": "mobile-bulk-bar",
+        "class": "mobile-bulk-bar mobile-bulk-floating-dock"
+      }
+    ],
+    "tables": [
+      {
+        "id": "marks-tests-table",
+        "class": "marks-table",
+        "headers": [
+          "#",
+          "TEST NAME",
+          "DATE",
+          "MAX MARKS",
+          "GRADED",
+          "ACTIONS"
+        ]
+      },
+      {
+        "id": "marks-assignments-table",
+        "class": "marks-table",
+        "headers": [
+          "#",
+          "ASSIGNMENT TITLE",
+          "TYPE",
+          "DUE DATE",
+          "MAX MARKS",
+          "SUBMISSIONS",
+          "ACTIONS"
+        ]
+      },
+      {
+        "id": "marks-practicals-table",
+        "class": "marks-table",
+        "headers": [
+          "#",
+          "PRACTICAL TITLE",
+          "TYPE",
+          "DUE DATE",
+          "MAX MARKS",
+          "SUBMISSIONS",
+          "ACTIONS"
+        ]
+      },
+      {
+        "id": "class-register-matrix-table",
+        "class": "register-table",
+        "headers": [
+          "Loading register headers..."
+        ]
+      },
+      {
+        "id": "mobile-compact-matrix-table",
+        "class": "mobile-compact-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Class 1",
+          "Class 2",
+          "Attended"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "marks-table",
+        "headers": [
+          "Date &amp; Time",
+          "Session Label",
+          "Type",
+          "Status",
+          "Source"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": null,
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Status"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "sync-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Enrollment No",
+          "Scan Time"
+        ]
+      },
+      {
+        "id": "marks-entry-table",
+        "class": "marks-table",
+        "headers": []
+      },
+      {
+        "id": "assign-marks-table",
+        "class": "am-table",
+        "headers": [
+          "Roll No",
+          "Student Name",
+          "Submission",
+          "Marks Obtained"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "marks-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Enrollment No",
+          "Action"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "classroom-roll-modal",
+        "title": "Live Roll Call &amp; Attendance",
+        "field_count": 0
+      },
+      {
+        "id": "modal-export-attendance",
+        "title": "Export Attendance",
+        "field_count": 0
+      },
+      {
+        "id": "btn-execute-export",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "esp-confirm-modal",
+        "title": "Confirm ESP32 Attendance",
+        "field_count": 0
+      },
+      {
+        "id": "add-session-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "sess-date",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-existing-periods-list",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-submit-add-period",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-create-assignment",
+        "title": "Create Assignment",
+        "field_count": 0
+      },
+      {
+        "id": "assign-num",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-create-practical",
+        "title": "Practical Work / Lab Experiment",
+        "field_count": 0
+      },
+      {
+        "id": "practical-title",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-submit-practical",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-create-finaldocs",
+        "title": "Final Documents Request",
+        "field_count": 0
+      },
+      {
+        "id": "finaldocs-title",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-submit-finaldocs",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-classwork",
+        "title": "Edit Classwork",
+        "field_count": 0
+      },
+      {
+        "id": "edit-work-id",
+        "title": "Modal Dialog",
+        "field_count": 3
+      },
+      {
+        "id": "btn-save-edit-work",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-delete-work-direct",
+        "title": "Delete Classwork",
+        "field_count": 0
+      },
+      {
+        "id": "del-work-title",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-confirm-delete-work",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-unit-editor",
+        "title": "Add Syllabus Unit",
+        "field_count": 0
+      },
+      {
+        "id": "unit-editor-mode",
+        "title": "Modal Dialog",
+        "field_count": 3
+      },
+      {
+        "id": "btn-save-unit-editor",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-confirm-delete-unit",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "delete-unit-display-name",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-confirm-delete-unit",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-schedule-test",
+        "title": "Schedule Class Test",
+        "field_count": 0
+      },
+      {
+        "id": "test-unit-type",
+        "title": "Modal Dialog",
+        "field_count": 2
+      },
+      {
+        "id": "modal-enter-marks",
+        "title": "Enter Marks",
+        "field_count": 0
+      },
+      {
+        "id": "btn-modal-edit-q",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "marks-register-att-banner",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "marks-footer-max",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-questions",
+        "title": "",
+        "field_count": 0
+      },
+      {
+        "id": "edit-q-total-max",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-enter-assignment-marks",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "assign-marks-modal-meta",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "assign-marks-table",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "assign-marks-footer-max",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-archive",
+        "title": "Archive Teaching Group",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-group",
+        "title": "Edit Class Settings",
+        "field_count": 0
+      },
+      {
+        "id": "edit-group-form",
+        "title": "Modal Dialog",
+        "field_count": 2
+      },
+      {
+        "id": "modal-add-unenrolled",
+        "title": "Add Students from Cohort",
+        "field_count": 0
+      },
+      {
+        "id": "search-unenrolled-input",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-confirm-delete",
+        "title": "Confirm Action",
+        "field_count": 0
+      },
+      {
+        "id": "del-modal-step2-text",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-final-delete-confirm",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-work-filter",
+        "title": "Filter Classwork",
+        "field_count": 0
+      },
+      {
+        "id": "cw-filter-modal-list",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-class-info",
+        "title": "About this class",
+        "field_count": 0
+      },
+      {
+        "id": "modal-new-announcement",
+        "title": "Post",
+        "field_count": 0
+      },
+      {
+        "id": "modal-announcement-text",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-attachment-preview",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "btn-edit-group",
+        "label": "Customize",
+        "action": "openEditGroupModal()",
+        "class": "banner-action-btn",
+        "data_ui": null,
+        "title": "Customize class details"
+      },
+      {
+        "id": null,
+        "label": "Sheets Studio",
+        "action": "openSheetStudio()",
+        "class": "banner-action-btn",
+        "data_ui": null,
+        "title": "Open Unified Sheets Studio"
+      },
+      {
+        "id": null,
+        "label": "Register",
+        "action": "openLinkedRegister()",
+        "class": "banner-action-btn primary",
+        "data_ui": null,
+        "title": "Take Attendance Register"
+      },
+      {
+        "id": "btn-banner-promote",
+        "label": "Promote Cohort",
+        "action": "openPromoteModal()",
+        "class": "banner-action-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Open Mark's Excel Sheet",
+        "action": "openSheetStudio(",
+        "class": "sheets-bar-btn",
+        "data_ui": null,
+        "title": "Open Class Test Marksheet &amp; Questions in unified multi-sheet console"
+      },
+      {
+        "id": null,
+        "label": "Open Assignment Excel Sheet",
+        "action": "openSheetStudio(",
+        "class": "sheets-bar-btn",
+        "data_ui": null,
+        "title": "Open Assignment &amp; Practical Marksheet in unified multi-sheet console"
+      },
+      {
+        "id": null,
+        "label": "Open Evaluation Sheet",
+        "action": "openSheetStudio(",
+        "class": "sheets-bar-btn",
+        "data_ui": null,
+        "title": "Open Master Internal Evaluation Sheet (Formula &amp; Grading) in unified multi-sheet console"
+      },
+      {
+        "id": null,
+        "label": "Unified Studio",
+        "action": "openSheetStudio()",
+        "class": "sheets-bar-btn primary",
+        "data_ui": null,
+        "title": "Launch Unified All-in-One Multi-Sheet Workspace"
+      },
+      {
+        "id": "tab-btn-stream",
+        "label": "Stream",
+        "action": "switchTab(",
+        "class": "gc-nav-tab active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-classwork",
+        "label": "Classwork",
+        "action": "switchTab(",
+        "class": "gc-nav-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-people",
+        "label": "People",
+        "action": "switchTab(",
+        "class": "gc-nav-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-register",
+        "label": "Register",
+        "action": "switchTab(",
+        "class": "gc-nav-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-marks",
+        "label": "Marks 0",
+        "action": "switchTab(",
+        "class": "gc-nav-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-attendance",
+        "label": "Attendance",
+        "action": "switchTab(",
+        "class": "gc-nav-tab student-only-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "qa-item-assignment",
+        "label": "Create Assignment",
+        "action": "switchTab(",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "qa-item-test",
+        "label": "Schedule Class Test",
+        "action": "switchTab(",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "qa-item-practical",
+        "label": "Create Lab Practical",
+        "action": "switchTab(",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sheets Studio (All Sheets)",
+        "action": "openSheetStudio(",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Open Attendance Register",
+        "action": "openLinkedRegister()",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "document.getElementById('add-enroll-input').focus(),100)\"> Add Student",
+        "action": "switchTab(",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Promote Cohort",
+        "action": "openPromoteModal()",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Archive Group",
+        "action": "openArchiveModal()",
+        "class": "qa-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-new-announcement",
+        "label": "New announcement",
+        "action": "triggerNewAnnouncement()",
+        "class": "btn-new-announcement-pill",
+        "data_ui": null,
+        "title": "New announcement"
+      },
+      {
+        "id": "btn-post-ann",
+        "label": "Icon Button",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back to Stream",
+        "action": "closeAnnouncementDetail()",
+        "class": "detail-back-btn",
+        "data_ui": null,
+        "title": "Back to Stream"
+      },
+      {
+        "id": null,
+        "label": "Options",
+        "action": "toggleDetailOverflow(event)",
+        "class": "detail-overflow-btn",
+        "data_ui": null,
+        "title": "Options"
+      },
+      {
+        "id": "btn-detail-send",
+        "label": "Send comment",
+        "action": "submitDetailComment()",
+        "class": "detail-send-btn",
+        "data_ui": null,
+        "title": "Send comment"
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeMobileAnnouncementComposer()",
+        "class": "mobile-composer-btn mobile-composer-close",
+        "data_ui": null,
+        "title": "Cancel"
+      },
+      {
+        "id": "btn-mobile-composer-submit",
+        "label": "Create",
+        "action": "submitMobileAnnouncement()",
+        "class": "mobile-composer-create-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Options",
+        "action": "showToast(",
+        "class": "mobile-composer-btn mobile-composer-menu",
+        "data_ui": null,
+        "title": "Options"
+      },
+      {
+        "id": null,
+        "label": "Add attachment",
+        "action": "ById(",
+        "class": "mobile-composer-attach-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&#10005;",
+        "action": "clearMobileComposerFile()",
+        "class": "attachment-remove-btn",
+        "data_ui": null,
+        "title": "Remove file"
+      },
+      {
+        "id": "cw-main-create-btn",
+        "label": "Create",
+        "action": "toggleCWDrop()",
+        "class": "cw-create-btn gc-create-pill-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-collapse-all-units",
+        "label": "Collapse all",
+        "action": "toggleCollapseAllUnits()",
+        "class": "gc-collapse-all-btn",
+        "data_ui": null,
+        "title": "Collapse all topics"
+      },
+      {
+        "id": null,
+        "label": "Classwork",
+        "action": "closeWorkInstructionsView()",
+        "class": "work-inst-back-btn",
+        "data_ui": null,
+        "title": "Back to Classwork"
+      },
+      {
+        "id": "btn-work-inst-more",
+        "label": "Options",
+        "action": "toggleWorkInstMoreMenu(event)",
+        "class": "work-inst-tool-btn",
+        "data_ui": null,
+        "title": "Options"
+      },
+      {
+        "id": null,
+        "label": "Edit",
+        "action": "openEditWorkFromInstructions(); closeWorkInstDropdown();",
+        "class": "work-dd-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Delete",
+        "action": "deleteWorkFromInstructions(); closeWorkInstDropdown();",
+        "class": "work-dd-item danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-inst-tab-instructions",
+        "label": "Instructions",
+        "action": "switchWorkInstTab(",
+        "class": "work-inst-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-inst-tab-roster",
+        "label": "Student work 0",
+        "action": "switchWorkInstTab(",
+        "class": "work-inst-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "work-inst-bottom-send-btn",
+        "label": "Send comment",
+        "action": "submitWorkInstActiveComment()",
+        "class": "work-inst-bottom-send-btn",
+        "data_ui": null,
+        "title": "Send comment"
+      },
+      {
+        "id": null,
+        "label": "Close without saving",
+        "action": "closeWorkEditPage()",
+        "class": "work-edit-close-btn",
+        "data_ui": null,
+        "title": "Close without saving"
+      },
+      {
+        "id": "btn-save-edit-work",
+        "label": "Save",
+        "action": "submitEditWork()",
+        "class": "work-edit-save-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "More options",
+        "action": "toast(",
+        "class": "work-edit-more-btn",
+        "data_ui": null,
+        "title": "More options"
+      },
+      {
+        "id": null,
+        "label": "All students",
+        "action": "toast(",
+        "class": "gc-edit-audience-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "B",
+        "action": "formatEditDesc(",
+        "class": "gc-rich-btn",
+        "data_ui": null,
+        "title": "Bold"
+      },
+      {
+        "id": null,
+        "label": "I",
+        "action": "formatEditDesc(",
+        "class": "gc-rich-btn",
+        "data_ui": null,
+        "title": "Italic"
+      },
+      {
+        "id": null,
+        "label": "U",
+        "action": "formatEditDesc(",
+        "class": "gc-rich-btn",
+        "data_ui": null,
+        "title": "Underline"
+      },
+      {
+        "id": null,
+        "label": "&#8226;",
+        "action": "formatEditDesc(",
+        "class": "gc-rich-btn",
+        "data_ui": null,
+        "title": "Bullet list"
+      },
+      {
+        "id": null,
+        "label": "&#10006;",
+        "action": "formatEditDesc(",
+        "class": "gc-rich-btn",
+        "data_ui": null,
+        "title": "Clear formatting"
+      },
+      {
+        "id": null,
+        "label": "Add attachment",
+        "action": "promptAddAttachment(",
+        "class": "gc-edit-add-attach-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add",
+        "action": "addEditFinalDocRequirement()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Drive",
+        "action": "promptAddAttachment(",
+        "class": "gc-attach-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "YouTube",
+        "action": "promptAddAttachment(",
+        "class": "gc-attach-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Create",
+        "action": "promptAddAttachment(",
+        "class": "gc-attach-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Upload",
+        "action": "promptAddAttachment(",
+        "class": "gc-attach-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Link",
+        "action": "promptAddAttachment(",
+        "class": "gc-attach-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Rubric",
+        "action": "toast(",
+        "class": "gc-sidebar-rubric-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Copy Link",
+        "action": "copyInviteCode()",
+        "class": "btn btn-secondary btn-sm compact-invite-btn",
+        "data_ui": null,
+        "title": "Copy Invite Link"
+      },
+      {
+        "id": null,
+        "label": "+ Add",
+        "action": "addStudentByEnroll()",
+        "class": "add-student-submit-btn",
+        "data_ui": null,
+        "title": "Add student by enrollment number"
+      },
+      {
+        "id": null,
+        "label": "Cohort",
+        "action": "openAddUnenrolledModal()",
+        "class": "btn btn-secondary btn-sm add-student-cohort-btn",
+        "data_ui": null,
+        "title": "Add students from cohort"
+      },
+      {
+        "id": null,
+        "label": "Unified Sheets Studio",
+        "action": "openSheetStudio()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": "Open full-page multi-sheet studio"
+      },
+      {
+        "id": "btn-marks-create-main",
+        "label": "+ Create",
+        "action": "toggleMarksCreateDropdown(event)",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "marks-dd-test-item",
+        "label": "Class Test",
+        "action": "openScheduleTestModal();toggleMarksCreateDropdown(false)",
+        "class": "dropdown-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "marks-dd-assignment-item",
+        "label": "Assignment",
+        "action": "openCreateAssignmentModal();toggleMarksCreateDropdown(false)",
+        "class": "dropdown-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "marks-dd-practical-item",
+        "label": "Lab Practical",
+        "action": "openCreatePracticalModal();toggleMarksCreateDropdown(false)",
+        "class": "dropdown-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-marks-cat-all",
+        "label": "All 0",
+        "action": "filterMarksCategory(",
+        "class": "expand-filter-btn marks-filter-icon-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-marks-cat-tests",
+        "label": "Tests 0",
+        "action": "filterMarksCategory(",
+        "class": "expand-filter-btn marks-filter-icon-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-marks-cat-assignments",
+        "label": "Assignments 0",
+        "action": "filterMarksCategory(",
+        "class": "expand-filter-btn marks-filter-icon-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-marks-cat-practicals",
+        "label": "Practicals 0",
+        "action": "filterMarksCategory(",
+        "class": "expand-filter-btn marks-filter-icon-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Schedule Test",
+        "action": "openScheduleTestModal()",
+        "class": "btn btn-secondary btn-sm mobile-sec-add-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ New Assignment",
+        "action": "openCreateAssignmentModal()",
+        "class": "btn btn-secondary btn-sm mobile-sec-add-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-toggle-mobile-mode",
+        "label": "Full 31-Day Ledger",
+        "action": "toggleMobileRegisterMode()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Switch between Compact Daily view and Full 31-Day Ledger"
+      },
+      {
+        "id": null,
+        "label": "Previous Month",
+        "action": "navigateClassRegisterMonth(-1)",
+        "class": "month-nav-arrow",
+        "data_ui": null,
+        "title": "Previous Month"
+      },
+      {
+        "id": "btn-class-reg-month-picker",
+        "label": "OctoberOct 2026",
+        "action": "openClassRegMonthPicker()",
+        "class": "month-nav-display",
+        "data_ui": null,
+        "title": "Choose month"
+      },
+      {
+        "id": null,
+        "label": "Next Month",
+        "action": "navigateClassRegisterMonth(1)",
+        "class": "month-nav-arrow",
+        "data_ui": null,
+        "title": "Next Month"
+      },
+      {
+        "id": null,
+        "label": "Today",
+        "action": "jumpToClassRegisterCurrentMonth()",
+        "class": "month-nav-today",
+        "data_ui": null,
+        "title": "Jump to current month"
+      },
+      {
+        "id": null,
+        "label": "Export",
+        "action": "openAttendanceExportModal()",
+        "class": "btn btn-secondary btn-sm btn-export-register",
+        "data_ui": null,
+        "title": "Export Attendance Register (Excel, PDF, Word)"
+      },
+      {
+        "id": null,
+        "label": "Print",
+        "action": "printClassRegister()",
+        "class": "btn btn-secondary btn-sm btn-print-register",
+        "data_ui": null,
+        "title": "Print physical inspection format"
+      },
+      {
+        "id": "btn-class-esp-sync",
+        "label": "Sync ESP Scans Sync ESP",
+        "action": "triggerClassEspDaySync()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": "Fetch ESP scans and preview attendance"
+      },
+      {
+        "id": null,
+        "label": "Roll Call (Manual, QR &amp; PIN) Roll Call",
+        "action": "openClassRollCallModal()",
+        "class": "btn btn-secondary btn-sm btn-roll-call",
+        "data_ui": null,
+        "title": "Conduct manual roll call, QR attendance, or 6-digit PIN"
+      },
+      {
+        "id": null,
+        "label": "Deselect",
+        "action": "deselectAllMatrixStudents()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "P Mark Present",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-bulk-present",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "A Mark Absent",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-bulk-absent",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Clear",
+        "action": "bulkMarkAttendance(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-mobile-del-class",
+        "label": "Remove P2",
+        "action": "confirmDeleteCurrentPeriod()",
+        "class": "btn-roster-del-period",
+        "data_ui": null,
+        "title": "Remove this period"
+      },
+      {
+        "id": "btn-period-single",
+        "label": "P1",
+        "action": null,
+        "class": "mobile-period-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-mobile-add-class",
+        "label": "Add Period",
+        "action": "openAddPeriodModal()",
+        "class": "mobile-add-class-btn",
+        "data_ui": null,
+        "title": "Add Theory, Practical, or Custom Period"
+      },
+      {
+        "id": "mobile-search-clear-btn",
+        "label": "&times;",
+        "action": "clearMobileStudentSearch()",
+        "class": "mobile-search-clear",
+        "data_ui": null,
+        "title": "Clear search"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeClassRollCallModal()",
+        "class": null,
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": "class-rc-tab-live",
+        "label": "Dynamic QR &amp; 6-Digit PIN",
+        "action": "switchClassRollCallMode(",
+        "class": "rollcall-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "class-rc-tab-manual",
+        "label": "Manual Roll Call Roster",
+        "action": "switchClassRollCallMode(",
+        "class": "rollcall-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeClassRollCallModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-class-rollcall",
+        "label": "Confirm &amp; Save Attendance",
+        "action": "submitClassRollCall()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAttendanceExportModal()",
+        "class": "export-modal-close",
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": "btn-scope-both",
+        "label": "Theory + Lab",
+        "action": "selectExportScope(",
+        "class": "export-scope-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-scope-theory",
+        "label": "Theory Only",
+        "action": "selectExportScope(",
+        "class": "export-scope-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-scope-practical",
+        "label": "Lab Only",
+        "action": "selectExportScope(",
+        "class": "export-scope-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeAttendanceExportModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-execute-export",
+        "label": "Download Report",
+        "action": "executeAttendanceExport()",
+        "class": "btn btn-primary btn-sm btn-download-export",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeModal(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-save-esp",
+        "label": "Confirm &amp; Add to Register",
+        "action": "submitEspConfirmation()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeModal(",
+        "class": "modal-close-icon-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Theory Lecture",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Practical Lab",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Lab Batch A",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Lab Batch B",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Tutorial",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Remedial",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Viva / Seminar",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Extra Class",
+        "action": "applyPeriodQuickName(",
+        "class": "period-suggestion-chip",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-toggle-period-time",
+        "label": "+ Add class timing (optional)",
+        "action": "togglePeriodTimeInputs()",
+        "class": "period-time-toggle-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-add-period",
+        "label": "Create Period",
+        "action": null,
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeRemarkMenu()",
+        "class": "remark-popover-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Enrolled (Regular) Active enrolled student",
+        "action": "applyStudentStatusChange(",
+        "class": "remark-opt-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Transferred Moved to another college/branch",
+        "action": "applyStudentStatusChange(",
+        "class": "remark-opt-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Dropped / Detained Inactive in this academic session",
+        "action": "applyStudentStatusChange(",
+        "class": "remark-opt-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&#10005;",
+        "action": "closeModal(",
+        "class": "modal-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Publish",
+        "action": "submitCreateAssignment()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-practical",
+        "label": "Publish Practical Work",
+        "action": "submitCreatePractical()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add",
+        "action": "addFinalDocRequirement()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-finaldocs",
+        "label": "Request Final Documents",
+        "action": "submitCreateFinalDocs()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-delete-work",
+        "label": "Delete",
+        "action": "confirmDirectDeleteWork()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-unit-editor",
+        "label": "Add Unit",
+        "action": "submitSaveUnit()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-delete-unit",
+        "label": "Delete Topic",
+        "action": "confirmExecuteDeleteUnit()",
+        "class": "btn btn-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Auto-Split",
+        "action": "autoSplitScheduleQuestions()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Distribute total marks equally across questions"
+      },
+      {
+        "id": null,
+        "label": "+ Add Question",
+        "action": "addScheduleTestQuestion()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Add another question to the test"
+      },
+      {
+        "id": null,
+        "label": "Schedule Test",
+        "action": "submitScheduleTest()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-modal-edit-q",
+        "label": "Q EditQ Edit",
+        "action": "openEditQuestionsModal()",
+        "class": "btn btn-secondary btn-sm btn-tool-minimal",
+        "data_ui": null,
+        "title": "Edit questions, max marks &amp; topics"
+      },
+      {
+        "id": "btn-add-q",
+        "label": "+ Add Q+ Q",
+        "action": "addModalQuestion()",
+        "class": "btn btn-secondary btn-sm btn-tool-minimal",
+        "data_ui": null,
+        "title": "Add another question column"
+      },
+      {
+        "id": "btn-remove-q",
+        "label": "&minus; Remove Q&minus; Q",
+        "action": "removeModalQuestion()",
+        "class": "btn btn-secondary btn-sm btn-tool-minimal",
+        "data_ui": null,
+        "title": "Remove last question column"
+      },
+      {
+        "id": "btn-marks-col-filter",
+        "label": "Columns 0",
+        "action": "toggleMarksColFilterMenu(event)",
+        "class": "btn btn-secondary btn-sm btn-tool-minimal",
+        "data_ui": null,
+        "title": "Filter columns: Show/Hide SR. NO., Enrollment No., Registration No."
+      },
+      {
+        "id": "btn-marks-export",
+        "label": "Export",
+        "action": "toggleMarksExportMenu(event)",
+        "class": "btn btn-secondary btn-sm btn-tool-minimal",
+        "data_ui": null,
+        "title": "Export marksheet in multiple formats"
+      },
+      {
+        "id": null,
+        "label": "Excel Spreadsheet (.xlsx)",
+        "action": "exportGroupTestMarks(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "PDF Document (.pdf)",
+        "action": "exportGroupTestMarks(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Word Document (.doc)",
+        "action": "exportGroupTestMarks(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-view-table",
+        "label": "Table",
+        "action": "setMarksModalView(",
+        "class": "view-mode-btn",
+        "data_ui": null,
+        "title": "Compact normal table format"
+      },
+      {
+        "id": "btn-view-excel",
+        "label": "Excel",
+        "action": "setMarksModalView(",
+        "class": "view-mode-btn",
+        "data_ui": null,
+        "title": "Excel Ledger format matching Attendance Register"
+      },
+      {
+        "id": "btn-set-default-view",
+        "label": "Set Default",
+        "action": "saveCurrentViewAsDefault()",
+        "class": "btn btn-secondary btn-sm marks-toolbar-extra-btn desktop-only-toggle",
+        "data_ui": null,
+        "title": "Save this view as your preferred default"
+      },
+      {
+        "id": "btn-save-marks-entry",
+        "label": "Save Marks",
+        "action": "saveMarksEntry()",
+        "class": "btn btn-primary btn-modal-save",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Split Evenly",
+        "action": "distributeEditQuestionsEvenly()",
+        "class": "btn btn-secondary btn-sm btn-edit-q-tool",
+        "data_ui": null,
+        "title": "Split total marks equally among all questions"
+      },
+      {
+        "id": null,
+        "label": "+ Add Q",
+        "action": "addEditQuestionRow()",
+        "class": "btn btn-primary-tint btn-sm btn-edit-q-tool",
+        "data_ui": null,
+        "title": "Add another question"
+      },
+      {
+        "id": null,
+        "label": "Apply &amp; Update",
+        "action": "saveEditedQuestions()",
+        "class": "btn btn-primary btn-edit-q-apply",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-am-filter-all",
+        "label": "All (0)",
+        "action": "filterAssignModalStatus(",
+        "class": "am-filter-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-am-filter-sub",
+        "label": "Submitted (0)",
+        "action": "filterAssignModalStatus(",
+        "class": "am-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-am-filter-unsub",
+        "label": "Not Submitted (0)",
+        "action": "filterAssignModalStatus(",
+        "class": "am-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-am-filter-ungraded",
+        "label": "Ungraded (0)",
+        "action": "filterAssignModalStatus(",
+        "class": "am-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-assign-marks",
+        "label": "Save Assignment Marks Save",
+        "action": "saveAssignmentMarksEntry()",
+        "class": "am-save-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Confirm &amp; Archive",
+        "action": "executeArchive()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-edit-group",
+        "label": "Save Changes",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-batch-enroll-unenrolled",
+        "label": "+ Enroll Selected (0)",
+        "action": "submitBatchEnrollUnenrolled()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Proceed to Step 2 &rarr;",
+        "action": "proceedDeleteStep2()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&larr; Back",
+        "action": "backDeleteStep1()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-final-delete-confirm",
+        "label": "Confirm &amp; Remove",
+        "action": "executeConfirmedDelete()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Copy",
+        "action": "copyInviteCode()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeModal(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "post-btn-bold",
+        "label": "B",
+        "action": "formatModalText(",
+        "class": "post-format-btn",
+        "data_ui": null,
+        "title": "Bold (Ctrl+B)"
+      },
+      {
+        "id": "post-btn-italic",
+        "label": "I",
+        "action": "formatModalText(",
+        "class": "post-format-btn",
+        "data_ui": null,
+        "title": "Italic (Ctrl+I)"
+      },
+      {
+        "id": "post-btn-underline",
+        "label": "U",
+        "action": "formatModalText(",
+        "class": "post-format-btn",
+        "data_ui": null,
+        "title": "Underline (Ctrl+U)"
+      },
+      {
+        "id": "post-btn-bullet",
+        "label": "Bulleted list",
+        "action": "formatModalText(",
+        "class": "post-format-btn",
+        "data_ui": null,
+        "title": "Bulleted list"
+      },
+      {
+        "id": "post-btn-clear",
+        "label": "Tx",
+        "action": "formatModalText(",
+        "class": "post-format-btn",
+        "data_ui": null,
+        "title": "Clear formatting"
+      },
+      {
+        "id": null,
+        "label": "&#10005;",
+        "action": "clearModalAnnouncementFile()",
+        "class": "attachment-remove-btn",
+        "data_ui": null,
+        "title": "Remove file"
+      },
+      {
+        "id": null,
+        "label": "Upload file",
+        "action": "ById(",
+        "class": "post-icon-btn",
+        "data_ui": null,
+        "title": "Upload file"
+      },
+      {
+        "id": null,
+        "label": "Add link",
+        "action": "insertLinkToModalAnnouncement()",
+        "class": "post-icon-btn",
+        "data_ui": null,
+        "title": "Add link"
+      },
+      {
+        "id": "btn-submit-modal-announcement",
+        "label": "Post",
+        "action": "submitModalAnnouncement()",
+        "class": "post-submit-pill-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "classwork-mobile-fab",
+        "label": "Add Classwork",
+        "action": "toggleCwFabMenu()",
+        "class": "classwork-mobile-fab cw-mobile-fab",
+        "data_ui": null,
+        "title": "Add Classwork"
+      },
+      {
+        "id": "cw-fab-assignment-item",
+        "label": "Assignment",
+        "action": "openCreateAssignmentModal();toggleCwFabMenu(false)",
+        "class": "cw-fab-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "cw-fab-test-item",
+        "label": "Class Test",
+        "action": "openScheduleTestModal();toggleCwFabMenu(false)",
+        "class": "cw-fab-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "cw-fab-practical-item",
+        "label": "Lab Practical",
+        "action": "openCreatePracticalModal();toggleCwFabMenu(false)",
+        "class": "cw-fab-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Final Documents",
+        "action": "openFinalDocsModal();toggleCwFabMenu(false)",
+        "class": "cw-fab-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Unit / Topic",
+        "action": "openCreateUnitModal();toggleCwFabMenu(false)",
+        "class": "cw-fab-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Present",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-dock-mark btn-dock-present",
+        "data_ui": null,
+        "title": "Mark all selected students Present"
+      },
+      {
+        "id": null,
+        "label": "Absent",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-dock-mark btn-dock-absent",
+        "data_ui": null,
+        "title": "Mark all selected students Absent"
+      },
+      {
+        "id": null,
+        "label": "Cancel selection",
+        "action": "deselectAllMobileStudents()",
+        "class": "btn-dock-dismiss",
+        "data_ui": null,
+        "title": "Cancel selection"
+      },
+      {
+        "id": "mobile-tab-btn-stream",
+        "label": "Stream",
+        "action": "switchTab(",
+        "class": "classroom-mobile-nav-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mobile-tab-btn-classwork",
+        "label": "Classwork",
+        "action": "switchTab(",
+        "class": "classroom-mobile-nav-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mobile-tab-btn-register",
+        "label": "Register",
+        "action": "switchTab(",
+        "class": "classroom-mobile-nav-btn",
+        "data_ui": null,
+        "title": "Attendance Register"
+      },
+      {
+        "id": "mobile-tab-btn-marks",
+        "label": "Marks",
+        "action": "switchTab(",
+        "class": "classroom-mobile-nav-btn",
+        "data_ui": null,
+        "title": "Marksheets &amp; Results"
+      },
+      {
+        "id": "mobile-tab-btn-people",
+        "label": "People",
+        "action": "switchTab(",
+        "class": "classroom-mobile-nav-btn",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "compose-stream-file",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleComposeStreamFileSelect(this)",
+        "class": null
+      },
+      {
+        "id": "detail-comment-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Add class comment…",
+        "handler": null,
+        "class": "detail-comment-input"
+      },
+      {
+        "id": "mobile-composer-file",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleMobileComposerFileSelect(this)",
+        "class": null
+      },
+      {
+        "id": "work-inst-bottom-comment-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Add class comment…",
+        "handler": null,
+        "class": "work-inst-bottom-input"
+      },
+      {
+        "id": "edit-work-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "Title",
+        "handler": null,
+        "class": "gc-edit-title-input"
+      },
+      {
+        "id": "edit-work-marks-mobile",
+        "type": "number",
+        "name": null,
+        "placeholder": "100",
+        "handler": null,
+        "class": "gc-mobile-set-input"
+      },
+      {
+        "id": "edit-work-due-mobile",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "gc-mobile-set-input"
+      },
+      {
+        "id": "edit-work-unit-mobile",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-finaldocs-new-req-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type document name...",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "edit-work-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input gc-sidebar-input"
+      },
+      {
+        "id": "edit-work-due",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input gc-sidebar-input"
+      },
+      {
+        "id": "edit-work-close-due",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-work-unit",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "add-enroll-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Enrollment No. to add…",
+        "handler": null,
+        "class": "add-student-input"
+      },
+      {
+        "id": "marks-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search tests, assignments, practicals&#8230;",
+        "handler": "filterAllMarks(this.value)",
+        "class": null
+      },
+      {
+        "id": "hidden-class-reg-month-picker",
+        "type": "month",
+        "name": null,
+        "placeholder": null,
+        "handler": "changeClassRegisterMonth(this.value)",
+        "class": null
+      },
+      {
+        "id": "class-sync-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "checkClassEspStatus();onSyncDateChange();",
+        "class": "form-control"
+      },
+      {
+        "id": "mobile-student-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Quick search student by name or roll...",
+        "handler": "filterMobileStudents(this.value)",
+        "class": "mobile-search-input"
+      },
+      {
+        "id": "mobile-check-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleSelectAllMobileStudents(this.checked)",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "export-format",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "export-format",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "export-format",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "range-opt-all",
+        "type": "radio",
+        "name": "export-range",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "range-opt-overview",
+        "type": "radio",
+        "name": "export-range",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "range-opt-month",
+        "type": "radio",
+        "name": "export-range",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "range-opt-day",
+        "type": "radio",
+        "name": "export-range",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "range-opt-week",
+        "type": "radio",
+        "name": "export-range",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "export-day-input",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "export-inline-date"
+      },
+      {
+        "id": "export-scope-val",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "esp-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleAllEspCheckboxes(this.checked)",
+        "class": null
+      },
+      {
+        "id": "sess-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "sess-type",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "sess-label",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Theory Class, Practical Lab, Tutorial...",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "sess-period",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "sess-start-time",
+        "type": "time",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "sess-end-time",
+        "type": "time",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "assign-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Assignment 1: SQL Normalization",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "assign-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "assign-due",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "practical-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Lab Experiment 1: SQL Join Operations & Indexing",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "practical-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "practical-due",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "practical-post-stream",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "finaldocs-title",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "finaldocs-new-req-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type document name (e.g. Viva Voce Report)...",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "finaldocs-due",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "finaldocs-post-stream",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-work-id",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-work-type",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-work-title",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "edit-work-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "edit-work-due",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "edit-finaldocs-new-req-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type document name...",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "del-work-delete-files",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "unit-editor-mode",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "unit-editor-num",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "unit-editor-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Unit 1",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "unit-editor-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Basics and Language Fundamentals",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "test-number-input",
+        "type": "number",
+        "name": null,
+        "placeholder": "No.",
+        "handler": "onTestTypeOrNumChange()",
+        "class": "form-input"
+      },
+      {
+        "id": "test-unit-no",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "test-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Unit Test 1: SQL Basics",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "test-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input"
+      },
+      {
+        "id": "test-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "updateScheduleTestQPreview()",
+        "class": "form-input"
+      },
+      {
+        "id": "test-num-questions",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "updateScheduleTestQPreview()",
+        "class": "form-input"
+      },
+      {
+        "id": "chk-show-sr",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleMarksColumn(",
+        "class": null
+      },
+      {
+        "id": "chk-show-enroll",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleMarksColumn(",
+        "class": null
+      },
+      {
+        "id": "chk-show-reg",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleMarksColumn(",
+        "class": null
+      },
+      {
+        "id": "assign-marks-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search student by name or roll&#8230;",
+        "handler": "filterAssignMarksModalRoster(this.value)",
+        "class": "am-search-input"
+      },
+      {
+        "id": "edit-group-id",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-name",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-subject",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-group-total-units",
+        "type": "number",
+        "name": null,
+        "placeholder": "e.g. 5",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "search-unenrolled-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by name, roll, or enrollment no...",
+        "handler": "filterUnenrolledStudents()",
+        "class": null
+      },
+      {
+        "id": "unenrolled-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleUnenrolledSelectAll(this.checked)",
+        "class": null
+      },
+      {
+        "id": "del-confirm-checkbox",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "document.getElementById(",
+        "class": null
+      },
+      {
+        "id": "modal-announcement-file",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleModalAnnouncementFileSelect(this)",
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "cw-unit-filter-select",
+        "title": null,
+        "onchange": "filterCWByUnit(this.value)",
+        "class": "gc-topic-filter-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "all",
+            "text": "All topics"
+          }
+        ]
+      },
+      {
+        "id": "cw-cat-filter-select",
+        "title": null,
+        "onchange": "filterCW(this.value)",
+        "class": "gc-topic-filter-select",
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "all",
+            "text": "All Work"
+          },
+          {
+            "value": "assignments",
+            "text": "Assignments"
+          },
+          {
+            "value": "practicals",
+            "text": "Lab Practical"
+          },
+          {
+            "value": "finaldocs",
+            "text": "Final Documents"
+          },
+          {
+            "value": "tests",
+            "text": "Class Tests"
+          },
+          {
+            "value": "materials",
+            "text": "Materials"
+          }
+        ]
+      },
+      {
+        "id": "export-month-select",
+        "title": null,
+        "onchange": null,
+        "class": "export-inline-select",
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "assign-num",
+        "title": null,
+        "onchange": "onAssignNumChange(this.value)",
+        "class": "form-select",
+        "options_count": 9,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Assignment 1 (A1)"
+          },
+          {
+            "value": "2",
+            "text": "Assignment 2 (A2)"
+          },
+          {
+            "value": "3",
+            "text": "Assignment 3 (A3)"
+          },
+          {
+            "value": "4",
+            "text": "Assignment 4 (A4)"
+          },
+          {
+            "value": "5",
+            "text": "Assignment 5 (A5)"
+          },
+          {
+            "value": "6",
+            "text": "Assignment 6 (A6)"
+          },
+          {
+            "value": "7",
+            "text": "Assignment 7 (A7)"
+          },
+          {
+            "value": "8",
+            "text": "Assignment 8 (A8)"
+          }
+        ]
+      },
+      {
+        "id": "assign-unit",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "No Specific Unit / General"
+          }
+        ]
+      },
+      {
+        "id": "practical-unit",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "No Specific Unit / General"
+          }
+        ]
+      },
+      {
+        "id": "edit-work-unit",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "No Specific Unit / General"
+          }
+        ]
+      },
+      {
+        "id": "test-unit-type",
+        "title": null,
+        "onchange": "onTestTypeOrNumChange()",
+        "class": "form-select",
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "UT",
+            "text": "Unit Test (UT)"
+          },
+          {
+            "value": "CT",
+            "text": "Class Test (CT)"
+          },
+          {
+            "value": "MT",
+            "text": "Mid-Term Exam (MT)"
+          },
+          {
+            "value": "PB",
+            "text": "Pre-Board Exam (PB)"
+          },
+          {
+            "value": "CUSTOM",
+            "text": "Custom / Other"
+          }
+        ]
+      },
+      {
+        "id": "test-unit",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Full Syllabus / General"
+          }
+        ]
+      },
+      {
+        "id": "edit-group-component",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "THEORY",
+            "text": "THEORY (Lecture Register)"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "PRACTICAL (Lab Work)"
+          },
+          {
+            "value": "THEORY + PRACTICAL",
+            "text": "THEORY + PRACTICAL (Both)"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "classroom-roll-modal",
+      "title": "Live Roll Call &amp; Attendance",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-export-attendance",
+      "title": "Export Attendance",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-execute-export",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeAttendanceExportModal()"
+    },
+    {
+      "id": "esp-confirm-modal",
+      "title": "Confirm ESP32 Attendance",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-session-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "sess-date",
+      "title": "Modal Dialog",
+      "fields": [
+        "sess-date"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-existing-periods-list",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-add-period",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-create-assignment",
+      "title": "Create Assignment",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "assign-num",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-create-practical",
+      "title": "Practical Work / Lab Experiment",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "practical-title",
+      "title": "Modal Dialog",
+      "fields": [
+        "practical-title"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-practical",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-create-finaldocs",
+      "title": "Final Documents Request",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "finaldocs-title",
+      "title": "Modal Dialog",
+      "fields": [
+        "finaldocs-title"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-finaldocs",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-edit-classwork",
+      "title": "Edit Classwork",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "edit-work-id",
+      "title": "Modal Dialog",
+      "fields": [
+        "edit-work-id",
+        "edit-work-type",
+        "edit-work-title"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-save-edit-work",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-delete-work-direct",
+      "title": "Delete Classwork",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "del-work-title",
+      "title": "Modal Dialog",
+      "fields": [
+        "del-work-delete-files"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-delete-work",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-unit-editor",
+      "title": "Add Syllabus Unit",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "unit-editor-mode",
+      "title": "Modal Dialog",
+      "fields": [
+        "unit-editor-mode",
+        "unit-editor-num",
+        "unit-editor-name"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-save-unit-editor",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-confirm-delete-unit",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "delete-unit-display-name",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-delete-unit",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
+    },
+    {
+      "id": "modal-schedule-test",
+      "title": "Schedule Class Test",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "test-unit-type",
+      "title": "Modal Dialog",
+      "fields": [
+        "test-number-input",
+        "test-unit-no"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-enter-marks",
+      "title": "Enter Marks",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-modal-edit-q",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "openEditQuestionsModal()"
+    },
+    {
+      "id": "marks-register-att-banner",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "marks-footer-max",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-questions",
+      "title": "",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "edit-q-total-max",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-enter-assignment-marks",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "assign-marks-modal-meta",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "assign-marks-table",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "assign-marks-footer-max",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-archive",
+      "title": "Archive Teaching Group",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-group",
+      "title": "Edit Class Settings",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "edit-group-form",
+      "title": "Modal Dialog",
+      "fields": [
+        "edit-group-id",
+        "edit-group-name"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-add-unenrolled",
+      "title": "Add Students from Cohort",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "search-unenrolled-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "search-unenrolled-input"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-confirm-delete",
+      "title": "Confirm Action",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "del-modal-step2-text",
+      "title": "Modal Dialog",
+      "fields": [
+        "del-confirm-checkbox"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-final-delete-confirm",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "backDeleteStep1()"
+    },
+    {
+      "id": "modal-work-filter",
+      "title": "Filter Classwork",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "cw-filter-modal-list",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-class-info",
+      "title": "About this class",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-new-announcement",
+      "title": "Post",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-announcement-text",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-attachment-preview",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/core/exceljs.min.js",
+    "faculty/group-detail/js/group-detail-core.js",
+    "faculty/group-detail/js/group-detail-stream.js",
+    "faculty/group-detail/js/group-detail-people.js",
+    "faculty/group-detail/js/group-detail-classwork.js",
+    "faculty/group-detail/js/group-detail-register.js",
+    "faculty/group-detail/group-detail.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "renderUserAvatar",
+    "loadAttStat",
+    "renderBanner",
+    "switchTab",
+    "loadGroup",
+    "loadStudentSubjectAttendance",
+    "renderStudentAttendanceHistory",
+    "renderUpcomingWorkSidebar",
+    "toggleDesktopClassSettings",
+    "closeDesktopClassSettings",
+    "toggleMobileClassroomOverflow",
+    "openSheetStudio",
+    "openLinkedRegister"
+  ]
+}

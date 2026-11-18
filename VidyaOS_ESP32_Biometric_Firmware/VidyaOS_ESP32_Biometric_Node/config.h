@@ -23,8 +23,7 @@
 #define VIDYAOS_ESP32_CONFIG_H
 
 // ─── 1. Wi-Fi & Institutional Server Configuration ──────────────────────────
-// Connect ESP32 to the SAME Wi-Fi or Mobile Hotspot as your computer:
-#define WIFI_SSID                   "YOUR_WIFI_OR_MOBILE_HOTSPOT"
+#define WIFI_SSID                   "YOUR_WIFI_NAME"
 #define WIFI_PASSWORD               "YOUR_WIFI_PASSWORD"
 
 // Factory Fallback Wi-Fi Credentials
@@ -33,16 +32,15 @@
 #define NVS_WIFI_NAMESPACE          "vidya_wifi"
 
 // Base URL of the VidyaOS Node.js / Express Backend
-// [LOCAL NETWORK]: Replace '192.168.1.15' with your PC's IPv4 address from 'ipconfig'.
-// NEVER write 'localhost' or '127.0.0.1' here because ESP32 cannot resolve your PC as localhost.
-#define VIDYAOS_SERVER_BASE_URL     "http://192.168.1.15:3000/api/v1/devices/esp32"
-
-// [PRODUCTION CLOUD OPTION]:
-// #define VIDYAOS_SERVER_BASE_URL  "https://api.gpnainital.com/api/v1/devices/esp32"
+// Use Render HTTPS:
+#define VIDYAOS_SERVER_BASE_URL     "https://vidyaos-backend.onrender.com/api/v1/devices/esp32"
+// OR for local laptop testing (replace with your LAN IP):
+// #define VIDYAOS_SERVER_BASE_URL  "http://192.168.1.15:5000/api/v1/devices/esp32"
 
 // Unique Hardware Terminal UID & 256-Bit Shared Encryption Secret
+// Copy these exact two values from HOD Portal -> /faculty/esp32-devices/ -> config.h
 #define DEVICE_UID                  "ESP32-IT-LAB-01"
-#define DEVICE_AES_SECRET            "8f4b2e9a1c7d6035a9e8f12b34c56d7890ab12cd34ef567890abcdef12345678"
+#define DEVICE_AES_SECRET           "8f4b2e9a1c7d6035a9e8f12b34c56d7890ab12cd34ef567890abcdef12345678"
 #define FIRMWARE_VERSION            "v3.1.0-SECURE-BIOMETRIC-TERMINAL"
 
 // ─── 2. Complete Pinout Definitions (ESP32 DevKit V1) ───────────────────────

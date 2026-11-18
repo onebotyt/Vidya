@@ -1,0 +1,567 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-009",
+  "role": "Faculty",
+  "route": "/faculty/classwork/create.html",
+  "source_file": "frontend/faculty/classwork/create/index.html",
+  "content_hash": "257046a62e9e",
+  "last_scanned": "2026-11-18T23:27:23.224Z",
+  "title": "Create Classwork - VidyaOS",
+  "purpose": "Create assignments, materials, quizzes, and deadlines",
+  "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: structured 2-column form (content + settings); Mobile: single-column form with sticky save bar",
+  "url_parameters": [
+    "type",
+    "group",
+    "groupId",
+    "id",
+    "register",
+    "registerId"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/teaching-groups/:id",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/teaching-groups/:id/tests",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/teaching-groups/:id/assignments",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/units",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/ocr/extract-questions",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/exams",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/teaching-groups/:id/assignments",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "cw-box-toolbar"
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar-left"
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar-right"
+      },
+      {
+        "id": "",
+        "class": "cw-box-toolbar"
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar-left"
+      },
+      {
+        "id": "",
+        "class": "cw-toolbar-right"
+      }
+    ],
+    "tables": [],
+    "modals": [
+      {
+        "id": "ocr-scanner-modal",
+        "title": "Smart Question Paper OCR",
+        "field_count": 0
+      },
+      {
+        "id": "ocr-dropzone",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-ingest-ocr",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-add-unit",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "unit-modal-tag",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-submit-add-unit",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-set-due-date",
+        "title": "Set due date",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "cw-btn-back",
+        "label": "Cancel and close",
+        "action": null,
+        "class": "cw-close-btn",
+        "data_ui": null,
+        "title": "Cancel and close"
+      },
+      {
+        "id": "cw-btn-cancel",
+        "label": "Cancel",
+        "action": "window.cwHandleCancel()",
+        "class": "btn-gclass-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "cw-btn-publish",
+        "label": "Assign",
+        "action": "window.cwHandlePublish()",
+        "class": "btn-gclass-assign",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add Syllabus Unit",
+        "action": "window.cwOpenAddUnitModal()",
+        "class": "cw-add-unit-mini-btn",
+        "data_ui": null,
+        "title": "Add Syllabus Unit"
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": null,
+        "class": "cw-collapse-icon-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "B",
+        "action": "window.cwFormatText(",
+        "class": "cw-tool-btn",
+        "data_ui": null,
+        "title": "Bold"
+      },
+      {
+        "id": null,
+        "label": "I",
+        "action": "window.cwFormatText(",
+        "class": "cw-tool-btn",
+        "data_ui": null,
+        "title": "Italic"
+      },
+      {
+        "id": null,
+        "label": "U",
+        "action": "window.cwFormatText(",
+        "class": "cw-tool-btn",
+        "data_ui": null,
+        "title": "Underline"
+      },
+      {
+        "id": null,
+        "label": "Add numbered line",
+        "action": "window.cwFormatText(",
+        "class": "cw-tool-btn",
+        "data_ui": null,
+        "title": "Add numbered line"
+      },
+      {
+        "id": null,
+        "label": "Insert Template",
+        "action": "window.cwInsertInstructionTemplate()",
+        "class": "cw-tool-chip",
+        "data_ui": null,
+        "title": "Insert official instruction template"
+      },
+      {
+        "id": null,
+        "label": "Clear instructions",
+        "action": "window.cwClearInstructions()",
+        "class": "cw-tool-btn",
+        "data_ui": null,
+        "title": "Clear instructions"
+      },
+      {
+        "id": null,
+        "label": "Reset Numbers",
+        "action": "window.cwResetQuestionSlots()",
+        "class": "cw-tool-chip",
+        "data_ui": null,
+        "title": "Reset to simple question numbers"
+      },
+      {
+        "id": null,
+        "label": "Clear questions",
+        "action": "window.cwClearText()",
+        "class": "cw-tool-btn",
+        "data_ui": null,
+        "title": "Clear questions"
+      },
+      {
+        "id": "btn-attach-doc",
+        "label": "Upload File",
+        "action": "window.cwTriggerAttachDoc()",
+        "class": "cw-attach-pill-btn",
+        "data_ui": null,
+        "title": "Upload PDF or Document"
+      },
+      {
+        "id": "btn-ocr-scan",
+        "label": "Scan Paper (OCR)",
+        "action": "window.cwOpenOcrModal()",
+        "class": "cw-attach-pill-btn",
+        "data_ui": null,
+        "title": "Scan paper or photo to extract questions"
+      },
+      {
+        "id": null,
+        "label": "Remove attachment",
+        "action": "window.cwRemoveAttachedDoc()",
+        "class": "cw-att-remove-btn",
+        "data_ui": null,
+        "title": "Remove attachment"
+      },
+      {
+        "id": "btn-due-date-trigger",
+        "label": "No due date",
+        "action": "window.cwOpenDueDateModal()",
+        "class": "cw-due-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-due-date-clear",
+        "label": "Remove due date",
+        "action": "window.cwClearDueDate(event)",
+        "class": "cw-due-clear-btn",
+        "data_ui": null,
+        "title": "Remove due date"
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "window.cwCloseOcrModal()",
+        "class": "cw-modal-close",
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "window.cwCloseOcrModal()",
+        "class": "btn-gclass-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-ingest-ocr",
+        "label": "Ingest Questions",
+        "action": "window.cwIngestOcrQuestions()",
+        "class": "btn-gclass-assign",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "window.cwCloseAddUnitModal()",
+        "class": "cw-modal-close",
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "window.cwCloseAddUnitModal()",
+        "class": "btn-gclass-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-add-unit",
+        "label": "Add Unit",
+        "action": "window.cwSubmitAddUnit()",
+        "class": "btn-gclass-assign",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "window.cwCloseDueDateModal()",
+        "class": "cw-modal-close",
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "window.cwCloseDueDateModal()",
+        "class": "btn-gclass-cancel",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save",
+        "action": "window.cwSaveDueDateModal()",
+        "class": "btn-gclass-assign",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "work-number",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "cw-num-input"
+      },
+      {
+        "id": "work-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "Title",
+        "handler": null,
+        "class": "cw-title-input"
+      },
+      {
+        "id": "work-questions-count",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "cw-qcount-input"
+      },
+      {
+        "id": "input-attach-doc",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "window.cwHandleDocFileSelected(this)",
+        "class": null
+      },
+      {
+        "id": "work-course-select",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "work-max-marks",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "cw-sidebar-input"
+      },
+      {
+        "id": "work-due-date",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "input-ocr-file",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "window.cwHandleOcrFileSelect(this)",
+        "class": null
+      },
+      {
+        "id": "unit-modal-tag",
+        "type": "text",
+        "name": null,
+        "placeholder": "Unit 6",
+        "handler": null,
+        "class": "cw-modal-input"
+      },
+      {
+        "id": "unit-modal-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Basics and Language Features",
+        "handler": null,
+        "class": "cw-modal-input"
+      },
+      {
+        "id": "modal-due-date-input",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "cw-modal-date-inp"
+      },
+      {
+        "id": "modal-due-time-input",
+        "type": "time",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "cw-modal-time-inp"
+      },
+      {
+        "id": "modal-due-close-submissions",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "work-unit",
+        "title": null,
+        "onchange": "window.cwHandleTopicSelectChange(this)",
+        "class": "cw-topic-select",
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "No Topic"
+          },
+          {
+            "value": "Unit 1",
+            "text": "Unit 1"
+          },
+          {
+            "value": "Unit 2",
+            "text": "Unit 2"
+          },
+          {
+            "value": "Unit 3",
+            "text": "Unit 3"
+          },
+          {
+            "value": "Unit 4",
+            "text": "Unit 4"
+          },
+          {
+            "value": "Unit 5",
+            "text": "Unit 5"
+          },
+          {
+            "value": "__ADD_NEW_UNIT__",
+            "text": "+ Add Syllabus Unit..."
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "ocr-scanner-modal",
+      "title": "Smart Question Paper OCR",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "ocr-dropzone",
+      "title": "Modal Dialog",
+      "fields": [
+        "input-ocr-file"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-ingest-ocr",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-add-unit",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "unit-modal-tag",
+      "title": "Modal Dialog",
+      "fields": [
+        "unit-modal-tag"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-submit-add-unit",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "window.cwCloseAddUnitModal()"
+    },
+    {
+      "id": "modal-set-due-date",
+      "title": "Set due date",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/classwork/classwork-create.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "renderSvgIcons",
+    "loadClassContext"
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "STU-002",
+  "role": "Student",
+  "route": "/student/attendance.html",
+  "source_file": "frontend/student/attendance/index.html",
+  "content_hash": "9ed047c1ab0e",
+  "last_scanned": "2026-11-18T23:27:23.274Z",
+  "title": "My Attendance &amp; Calendar — Student Portal",
+  "purpose": "Personal monthly attendance ledger, present/absent breakdown",
+  "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
+  "states": "Desktop: full monthly calendar ledger; Mobile: swipeable monthly view + subject summary",
+  "url_parameters": [
+    "subject_id",
+    "group_id"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "student-sidebar-mount",
+        "class": ""
+      }
+    ],
+    "tables": [],
+    "modals": [
+      {
+        "id": "calendar-modal",
+        "title": "Database Management Systems",
+        "field_count": 0
+      },
+      {
+        "id": "cal-month-stats",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "Submit PIN",
+        "action": "submitLivePin()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeCalendarModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "◀",
+        "action": "prevMonth()",
+        "class": "calendar-nav-btn",
+        "data_ui": null,
+        "title": "Previous Month"
+      },
+      {
+        "id": null,
+        "label": "▶",
+        "action": "nextMonth()",
+        "class": "calendar-nav-btn",
+        "data_ui": null,
+        "title": "Next Month"
+      },
+      {
+        "id": null,
+        "label": "Close Calendar",
+        "action": "closeCalendarModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "live-pin-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "6-DIGIT PIN",
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "cal-month-select",
+        "title": null,
+        "onchange": "onMonthSelectChange()",
+        "class": "calendar-select",
+        "options_count": 12,
+        "sample_options": [
+          {
+            "value": "0",
+            "text": "January"
+          },
+          {
+            "value": "1",
+            "text": "February"
+          },
+          {
+            "value": "2",
+            "text": "March"
+          },
+          {
+            "value": "3",
+            "text": "April"
+          },
+          {
+            "value": "4",
+            "text": "May"
+          },
+          {
+            "value": "5",
+            "text": "June"
+          },
+          {
+            "value": "6",
+            "text": "July"
+          },
+          {
+            "value": "7",
+            "text": "August"
+          }
+        ]
+      },
+      {
+        "id": "cal-year-select",
+        "title": null,
+        "onchange": "onYearSelectChange()",
+        "class": "calendar-select",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "2024",
+            "text": "2024"
+          },
+          {
+            "value": "2025",
+            "text": "2025"
+          },
+          {
+            "value": "2026",
+            "text": "2026"
+          },
+          {
+            "value": "2027",
+            "text": "2027"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "calendar-modal",
+      "title": "Database Management Systems",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "cal-month-stats",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "student/components/icons.js",
+    "student/components/student-ui.js",
+    "student/components/header/header.js",
+    "student/components/sidebar/sidebar.js",
+    "student/attendance/attendance.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "toggleStudentDrawer",
+    "toggleStudentApps",
+    "toggleStudentProfile",
+    "toggleStudentTheme",
+    "loadDrawerClasses",
+    "toggleDrawerComponent",
+    "loadAttendanceData",
+    "renderSubjectCards",
+    "openCalendarModal",
+    "closeCalendarModal",
+    "renderCalendarGrid"
+  ]
+}
