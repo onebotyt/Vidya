@@ -4,25 +4,33 @@
 > Whenever you start a conversation, **read this file first** to understand the latest completed work, active tasks, and architecture.
 > When finishing or updating any task, **update this file** to maintain a persistent record.
 > 
-> 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///d:/uiap/Attendance-System-Simplified/TODO_AI_SYSTEM.md).
+> 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///e:/uiap/VidyaOS/TODO_AI_SYSTEM.md).
 > 
-> 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///d:/uiap/Attendance-System-Simplified/TODO_AI_SYSTEM.md).
+> 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///e:/uiap/VidyaOS/TODO_AI_SYSTEM.md).
 
 ---
 
 ## 📌 Project Overview
 - **System**: **VidyaOS** (Unified Institutional Campus & Academic Operating System)
-- **Path**: `d:/uiap/Attendance-System-Simplified/`
+- **Path**: `e:/uiap/VidyaOS/`
+- **Frontend**: `e:/uiap/VidyaOS/VidyaOS-Frontend-patched/VidyaOS-main/` → `github.com/onebotyt/VidyaOS.git`
+- **Backend**: `e:/uiap/VidyaOS/VidyaOS_BackEnd-patched/VidyaOS_BackEnd-main/` → `github.com/onebotyt/VidyaOS_BackEnd.git`
+- **Combined Root**: `e:/uiap/VidyaOS/` → `github.com/onebotyt/Vidya.git`
 - **Stack**:
-  - **Backend**: Node.js, Express, SQLite (`college_attendance.sqlite`), JWT auth.
-  - **Frontend**: Vanilla HTML5/CSS3/JavaScript (modular, no build step required).
-  - **Shared Assets**: `frontend/shared/{js,css}/` (aliased in Express server to `/js`, `/css`, `/shared`).
+  - **Backend**: Node.js, Express, MySQL 8.x (`database/` migrations 001-008), JWT auth.
+  - **Frontend**: Vanilla HTML5/CSS3/JavaScript (modular, no build step). Android Capacitor app included.
+  - **UI Map / Manifests**: `e:/uiap/VidyaOS/docs/ui-map/`
 - **Server Command**:
   ```powershell
-  cd d:\uiap\Attendance-System-Simplified\backend
+  cd e:\uiap\VidyaOS\VidyaOS_BackEnd-patched\VidyaOS_BackEnd-main
   node server.js
   ```
   Launches on `http://localhost:3000`.
+- **Push All 3 Repos**:
+  ```powershell
+  cd e:\uiap\VidyaOS
+  .\push-all.ps1 -Message "feat: your message"
+  ```
 
 ---
 
