@@ -66,5 +66,33 @@ All demo accounts use password: `Admin@123` (Admin) or `Password@123` (Faculty &
 
 ---
 
+## 👥 Contributors & Collaboration
+
+- **Lead Architect (Dev 1)**: `@onebotyt`
+- **Contributor (Dev 2)**: `@AkashK-Repo`
+- **Contributor (Dev 3)**: `@onebotyt-mobile`
+
+---
+
+## 🤝 3-Developer Git Collaboration Workflow
+
+When working simultaneously across the repository ecosystem:
+
+1. **Always Pull Before Coding**:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\pull-all.ps1
+   ```
+2. **Create a Scoped Feature Branch**:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\new-feature.ps1 -BranchName dev<2|3>/<feature-name>
+   ```
+3. **Commit & Push for Pull Request Review**:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\push-feature.ps1 -Message "feat: description of work"
+   ```
+4. Read the complete setup and anti-collision guidelines in [MULTI_DEVELOPER_SETUP.md](MULTI_DEVELOPER_SETUP.md).
+
+---
+
 ## 📄 License
 ISC License. Built for modern academic institutions.
