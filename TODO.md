@@ -3,6 +3,26 @@
 
 
 
+### 🏛️ Milestone 332: Deployed Bulk CSV Import Fixes to Vercel & Render Production
+- **Status**: 🟢 Deployed & Verified Live
+- **User Issue**:
+  - *"still no working"* with DevTools screenshot from `https://vidyaos-pink.vercel.app/faculty/students` showing repeated `400 (Bad Request)` responses.
+- **Root Cause**:
+  - The fixes implemented in Milestone 331 were verified locally on MariaDB `vidyaos`, but had not yet been pushed to GitHub `origin/main` for `onebotyt/VidyaOS.git` (Vercel frontend) and `onebotyt/VidyaOS_BackEnd.git` (Render backend).
+  - Consequently, the live production site was still executing the older backend validation schema that required strict top-level `year`/`semester` parameters and the older MariaDB query with `COLLATE NOCASE`.
+- **Deployment Details**:
+  1. **Backend Service (`onebotyt/VidyaOS_BackEnd.git`)**:
+     - Pushed commit `c56f8f5` to `origin/main`.
+     - Render automatically triggered build and deployed new container (verified fresh uptime ~25s at `https://vidyaos-backend.onrender.com`).
+  2. **Frontend Application (`onebotyt/VidyaOS.git`)**:
+     - Pushed commit `c7637ad` to `origin/main`.
+     - Vercel automatically deployed (verified `students.js` includes `defaultYear` and `defaultSem` at `https://vidyaos-pink.vercel.app`).
+  3. **Repository Sync (`onebotyt/Vidya.git`)**:
+     - Pushed commit `16a7668` to `feature/student-dashboard-redesign`.
+- **Live Verification**:
+  - `GET https://vidyaos-pink.vercel.app/faculty/students/students.js` confirmed containing payload fix.
+  - `GET https://vidyaos-backend.onrender.com/api/v1/health` confirmed online and operational.
+
 ### 🏛️ Milestone 331: Resolved Bulk CSV Student Import 400 Bad Request & MariaDB Collation
 - **Status**: 🟢 Completed & Fully Verified
 - **User Request**:
