@@ -125,6 +125,7 @@ class DeviceController {
         deptId = dRows[0]?.id || 1;
       }
 
+      const allDepartments = await query('SELECT id, name, code FROM departments ORDER BY name ASC');
       const [deptRow] = await query('SELECT id, name, code FROM departments WHERE id = ?', [deptId]);
       let devices = await deviceModel.listDevices(deptId);
       if (!devices || devices.length === 0) {
@@ -147,10 +148,10 @@ class DeviceController {
          FROM esp32_command_queue cq
          JOIN devices d ON cq.device_id = d.id
          LEFT JOIN students s ON cq.student_id = s.id
-         WHERE cq.department_id = ?
+         WHERE (cq.department_id = ? OR cq.department_id IS NULL OR cq.device_id IN (SELECT id FROM devices WHERE department_id = ? OR department_id IS NULL))
          ORDER BY cq.id DESC
          LIMIT 25`,
-        [deptId]
+        [deptId, deptId]
       );
 
       const recentScans = await deviceModel.getRawIotEvents({ deptId, limit: 25 });
@@ -159,6 +160,7 @@ class DeviceController {
         success: true,
         data: {
           department: deptRow || { id: deptId, name: 'Department', code: 'DEPT' },
+          departments: allDepartments,
           devices,
           students: cohortBio.students,
           commands,
@@ -618,7 +620,7 @@ class DeviceController {
     let { device_uid, name, department_id, year = 1, semester = 1, years, semesters, academic_year_id, secret_key, secret } = req.body;
 
     try {
-      if (!req.user.roles.includes('SYSTEM_ADMIN')) {
+      if (!req.user.roles.includes('SYSTEM_ADMIN') && !department_id) {
         const tRows = await query('SELECT department_id FROM teachers WHERE id = ?', [req.user.teacher_id]);
         if (tRows.length && tRows[0].department_id) {
           department_id = tRows[0].department_id;

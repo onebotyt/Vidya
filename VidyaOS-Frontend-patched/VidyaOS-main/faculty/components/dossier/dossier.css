@@ -1172,6 +1172,7 @@
 
 /* Print Sheet */
 @media print {
+
   .faculty-top-header,
   .cf-filter-section,
   .cf-hero-actions,
@@ -1180,10 +1181,12 @@
   .toast-container {
     display: none !important;
   }
+
   .cf-main-container {
     padding: 0;
     max-width: 100%;
   }
+
   .cf-hero-card,
   .cf-artifact-card {
     box-shadow: none;
@@ -1747,6 +1750,7 @@
     align-items: flex-start;
     gap: 0.75rem;
   }
+
   .cf-card-actions {
     width: 100%;
     justify-content: flex-start;
@@ -1780,8 +1784,15 @@
 }
 
 @keyframes cfModalFadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .cf-modal-header {
@@ -1948,4 +1959,3 @@
   border-color: var(--border-focus);
   box-shadow: 0 0 0 2px var(--color-primary-light);
 }
-

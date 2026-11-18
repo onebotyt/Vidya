@@ -38,6 +38,149 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 463: ESP32 Hardware Node & HOD Biometric Terminal Portal Full Integration & Live Polling Sync
+- **Root-Cause Analysis of Portal "Page Not Showing ESP" & "Display Not Updating / Enroll Not Working"**:
+  1. *ESP32 Core 3.x Deprecations*:
+     - `mbedtls_sha256_starts_ret` was removed in ESP32 Core 3.0+ mbedTLS 3.x (replaced with `mbedtls_sha256_starts`).
+     - `ledcSetup` and `ledcAttachPin` were deprecated in Core 3.0+ (replaced with unified `ledcAttach(pin, freq, res)`).
+     - Missing closing quote in `config.h` string macro triggered compilation failures.
+  2. *RBAC Route Access Constraint*:
+     - `/api/v1/devices/hod/*` endpoints previously authorized only `'TEACHER', 'SYSTEM_ADMIN'`. Any faculty whose primary role is `'HOD'`, `'DEPT_HEAD'`, `'FACULTY'`, or `'CLASS_TEACHER'` encountered 403 Forbidden.
+  3. *Static Page Without Command State Polling*:
+     - When `ENROLL_STUDENT` was queued on the frontend, the ESP32 received the command and uploaded the template, but the web UI had no polling mechanism and remained stuck displaying `"NOT ENROLLED"` until a hard browser refresh.
+  4. *Multi-Department Terminal & Roster Isolation*:
+     - Hardware terminals mapped to specific departments (e.g. `ESP32-IT-LAB-01` in IT Dept 4) were invisible or mismatched when accessed by staff from other departments or institutional administrators without an explicit department switcher.
+- **Architectural Solutions Delivered**:
+  - **Firmware (`v3.1.0-SECURE-BIOMETRIC-TERMINAL`)**:
+    - Created dual-core compatibility headers (`crypto_aes_gcm.h` with `MBEDTLS_SHA256_STARTS/UPDATE/FINISH` macros and `oled_buzzer_ui.h` with `VIDYA_LEDC_CORE_3` macro) supporting both ESP32 Core 2.x and Core 3.x seamlessly.
+    - Packaged and delivered ready-to-flash firmware: `VidyaOS_ESP32_Biometric_Firmware_FIXED.zip`.
+  - **Backend Controller & RBAC Hardening (`deviceController.js`, `devices.js`)**:
+    - Expanded `/devices/hod/*` and `/devices/*` routes to all faculty roles: `['TEACHER', 'HOD', 'DEPT_HEAD', 'FACULTY', 'CLASS_TEACHER', 'COMMON_FACULTY_MANAGER', 'SYSTEM_ADMIN', 'ADMIN']`.
+    - Added `departments` catalog to `getHodEsp32Overview` response and query parameter filter `?department_id=`.
+    - Expanded command queue retrieval so queued commands for institutional or department-specific terminals are fully accessible.
+    - Updated `registerDevice` to support explicit department assignment from modal input.
+  - **Frontend UI & Real-Time Polling Engine (`esp32-devices.html`, `esp32-devices.js`)**:
+    - Integrated Department Switcher (`#dept-switcher-select`) into page header with instant reactive reload on change.
+    - Added Department Selector dropdown (`#esp-dept-input`) to Connect ESP32 modal.
+    - Synchronized active terminal card click with `#active-device-select` dropdown.
+    - Built intelligent command poller (`manageCommandPolling`) running at 3.5s intervals while commands are `PENDING` or `DELIVERED`, which automatically updates the roster to `✓ 512B TEMPLATE STORED`, plays WebAudio piezo buzzer chime, and updates the OLED hardware simulator with the enrolled student's name upon template upload completion.
+    - Added resilient error handling with "↻ Retry Loading" UI rather than silent hangs.
+  - **UI Memory Map & Verification (UIMS)**:
+    - Registered page `[HOD-005]` `/faculty/esp32-devices.html` in `docs/ui-map/pages.md`.
+    - Generated deterministic UI manifest (`docs/ui-map/manifests/hod-005.json`).
+    - All test suites passing:
+      - `test-ui-manifest-sync.js`: **216/216 passed** (100% manifest and DOM parity)
+      - `test-esp32-secure-terminal.js`: **34/34 passed** (firmware pins, crypto, dual-layer match, simulation, multi-network Wi-Fi failover)
+      - `test-theme-support.js`: **88/88 passed** (zero hardcoded colors, theme tokens)
+      - `test-rbac-and-structure.js`: **38/38 passed** (redirects & RBAC guards)
+
+### ✅ Milestone 462: Comprehensive Class Work (Tests, Assignments, Labs) & Attendance Seeding Engine (Dual MySQL/SQLite Parity)
+- **Objective & Scope**:
+  - Seed complete Class Work coursework items (`assessments`) covering Tests (`EXAM`), Assignments (`ASSIGNMENT`), and Labs (`PRACTICAL`) across all 6 teaching groups (classes: IT501, IT502, IT503, IT504, IT505P, IT501P).
+  - Seed student submissions (`assessment_submissions`) for all 13 active students with realistic scores, submission dates, and teacher feedback.
+  - Seed missing attendance sessions and records (`attendance_sessions`, `register_attendance`, and `attendance_session_students`) across all official registers (especially registers 2, 4, 5, 6, 16, 18, 21) ensuring zero empty registers.
+  - Ensure 100% dual-database parity between MySQL (`college_attendance`) and SQLite (`college_attendance.sqlite`).
+- **Data Added & Verified**:
+  - **Assessments**: 41 new assessments created across all 6 classes (total: 67 assessments: 24 Tests/Exams, 16 Assignments, 26 Practical Labs, 1 Final Docs).
+  - **Submissions**: 544 new graded submissions inserted (total: 789 student submissions with marks, graded timestamps, and teacher remarks).
+  - **Attendance Marks**: 2,200 new attendance marks inserted across Department 4 sessions (total: 3,994 attendance marks across all 292 sessions and registers).
+  - **Teaching Group Members & Enrollments**: Ensured all 13 students (`[1, 2, 3, 4, 105, 6, 7, 8, 9, 10, 271, 272, 273]`) are linked to all groups and enrollments.
+- **Dual-Database Synchronization**:
+  - Synced all 12 registers, 292 attendance sessions, 4,086 session student links, and 3,994 attendance marks into `college_attendance.sqlite`.
+  - Both MySQL and SQLite now have exact matching counts and zero registers with 0 attendance marks.
+- **Verification Suite Passed**:
+  - `node backend/scripts/test-ui-manifest-sync.js` (208/208 Passed)
+  - `node backend/scripts/test-theme-support.js` (88/88 Passed)
+  - `node backend/scripts/test-rbac-and-structure.js` (38/38 Passed)
+  - `node backend/scripts/test-dossier-refactor.js` (7/7 Passed)
+
+### ✅ Milestone 461: ESP32 Biometric Hardware Node — Display Freeze & Enrollment Diagnostic & Fix
+- **Root-Cause Analysis of Display Freezing & "Display Not Updating"**:
+  1. *Clock & Screen Refresh Stalled*: Idle screen was only called within `if (millis() - lastHeartbeatMs >= HEARTBEAT_INTERVAL_MS)` (8000ms). When RTC/NTP was uninitialized or pending, it defaulted to a static `"10:45 AM"`, presenting a completely frozen screen.
+  2. *Unbounded HTTPClient Blocking*: `postEncryptedToServer()` had no connection or read timeouts configured. If the server was slow or on an unreachable host, `http.POST()` blocked the ESP32 main loop for 15-30 seconds.
+  3. *Unbounded Post-Scan Screen Lock*: Banners (`showAttendanceSuccess`, `showAttendanceFailed`, `showFingerNotRegistered`) had no automatic reversion logic back to the idle screen without waiting on the 8s heartbeat.
+  4. *Light Sleep Lockup (GPIO 33 floating)*: Inactivity sleep timer turned off the display (`SSD1306_DISPLAYOFF`) and waited for GPIO 33 active-HIGH touch interrupt. On standard 4-wire AS608 setups, GPIO 33 was floating, trapping the ESP32 in deep light sleep forever.
+  5. *W25Qxx SPI Bus Freeze*: If an external SPI flash chip was missing or disconnected, `loadRosterFromFlash()` called `waitBusy()` 300 times with a 500ms timeout, freezing boot for 2.5 minutes with a black screen.
+- **Root-Cause Analysis of Enrollment Failure ("Enroll Not Working")**:
+  1. *Unbounded Serial Loops in AS608 Driver*: `while (!serialPort->available())` in `findFirstAvailableSlot()` and `uploadCharBuffer1ToEsp32()` had no timeouts, hanging indefinitely on communication hiccups.
+  2. *Packet Checksum Collision*: `uploadCharBuffer1ToEsp32()` failed to strip the 2 checksum bytes per Synochip packet, corrupting length checks and prematurely failing `enrollAndExtractTemplate()`.
+  3. *Zero-Slot Invalidation*: When slot calculation returned 0 or outside 1..300, `storeModel(0)` failed on AS608 hardware.
+  4. *Lift-Finger Infinite Wait*: `while (finger.getImage() != FINGERPRINT_NOFINGER)` had no bounded timeout, hanging if the user delayed lifting their finger or if residue was present.
+- **Architectural Firmware Fixes Delivered (`v3.1.0-SECURE-BIOMETRIC-TERMINAL`)**:
+  - `oled_buzzer_ui.h`: Added dual-address detection (`0x3C` / `0x3D`), `showBootScreen()` sequence for real-time startup feedback, and dual-core LEDC buzzer compatibility (ESP32 Core 2.x and 3.x).
+  - `as608_driver.h`: Eliminated unbounded loops with strict 40ms/50ms timeouts; added 3.5s bounded lift-finger timeout; implemented resilient fallback in `enrollAndExtractTemplate` so that if `storeModel()` succeeds, cloud enrollment is guaranteed.
+  - `w25q32_storage.h`: Reads JEDEC ID first; if flash is absent, instantly switches to zero-latency internal ESP32 RAM cache mode without freezing SPI bus.
+  - `VidyaOS_ESP32_Biometric_Node.ino`: Dedicated 1-second display update loop with live uptime clock ticking; non-blocking UI state machine (`UI_STATE_IDLE`, `UI_STATE_BANNER`, `UI_STATE_ENROLL`); 4-second bounded `HTTPClient` timeout; disabled auto-sleep by default (`ENABLE_AUTO_SLEEP = false`) with 60s backup timer wakeup.
+  - Generated ready-to-flash package: `VidyaOS_ESP32_Biometric_Firmware_FIXED.zip`. Verified all 34 tests in `test-esp32-secure-terminal.js` pass.
+
+### ✅ Milestone 459: Fixed Student Records 401 Unauthorized API Errors, RBAC Route Guard & Token Replay
+- **Root-Cause Resolution for Student Records 401 Unauthorized (`records.js`)**:
+  - Identified that `frontend/faculty/student-records/records.js` was making unauthenticated and raw `fetch()` calls to `/api/v1/student-records/filters` and `/api/v1/student-records?status=active`.
+  - Missing authentication gate (`guardRoute()` / `requireFacultyAuth()`): When unauthenticated visitors or users with expired sessions loaded the page, `init()` executed immediately, firing unauthenticated requests that produced 401 console errors.
+  - Raw `fetch()` bypassed token refresh: Unlike other faculty portals that use `fetchApi()`, `records.js` used raw `window.fetch()`, preventing automatic token refresh via `/auth/refresh` on 401, missing credentials/cookies forwarding (`credentials: 'include'`), and device identification (`X-Device-Id`).
+- **Standardized Client-Side API Helper & Auth Gate (`records.js`)**:
+  - Implemented immediate Auth Gate in `records.js` using `requireFacultyAuth(['TEACHER', 'HOD', 'SYSTEM_ADMIN', 'FACULTY', 'COMMON_FACULTY_MANAGER'])` (with fallback to `guardRoute()`), halting execution and cleanly redirecting to `/login/index.html?reason=unauthenticated`.
+  - Added unified `api(url, opts)` client wrapping `window.fetchApi || window.FacultyAPI.fetch` with automatic Bearer token injection, request retrying on expired token refresh, and credentials inclusion across all 6 API operations (`filters`, `getStudents`, `dossier`, `export`).
+- **Hardened Backend RBAC Middleware & Department Resolution (`studentRecords.js`, `auth.js`, `studentRecordController.js`)**:
+  - Expanded `studentRecords.js` router guard to authorize all institutional staff roles: `requireRole('TEACHER', 'HOD', 'DEPT_HEAD', 'FACULTY', 'COMMON_FACULTY_MANAGER', 'SYSTEM_ADMIN', 'ADMIN')`.
+  - Enhanced `backend/src/middleware/auth.js` to resolve `user.is_hod` and `user.hod_department_id` from `departments.hod_user_id` as well as `teacher_assignments`.
+  - Fixed fallback department ID in `studentRecordController.js` from erroneous `2` to default institutional department `4` (Information Technology).
+  - Synchronized MySQL database student enrollments from canonical SQLite database, bringing active cohort student count to 13.
+- **Automated Verification Suites**:
+  - `test-ui-manifest-sync.js`: 208/208 passed.
+  - `test-theme-support.js`: 88/88 passed.
+  - `test-rbac-and-structure.js`: 38/38 passed.
+  - `test-dossier-refactor.js`: 7/7 passed.
+  - Port 5000 Dev Proxy & Port 3000 Backend verified with 200 OK across HOD, Teacher, and unauthenticated redirection flows.
+
+### ✅ Milestone 458: Universal Fixed Top Header Stickiness Across All Portals
+- **Root-Cause Architectural Resolution for Header Scroll Departure**:
+  - Identified that `position: sticky` on headers failed to stick when scrolling because layout containers (`.faculty-app-layout`, `.faculty-main-wrap`, `.admin-main-wrap`, `body`) use `overflow-x: hidden !important;`, which under CSS specifications prevents viewport sticky behavior on nested descendants.
+  - In addition, semantic mounts (`#admin-header-mount`, `#faculty-header-mount`, `#student-header-mount`) served as finite containing blocks that scrolled away with the document flow.
+- **Universal Viewport-Fixed Top Headers Across Portals**:
+  - Converted `.admin-top-header`, `.faculty-top-header`, `#faculty-header`, `.student-top-navbar`, and `.gc-navbar` to `position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 10001 !important;`.
+  - Configured `#admin-header-mount`, `#faculty-header-mount`, and `#student-header-mount` with `display: contents !important;` so semantic mount divs never disrupt document box flow or create artificial containing boundaries.
+  - Synchronized zero-layout-shift clearance across all portals:
+    - Desktop: `padding-top: 60px !important;` on `.admin-main-wrap`, `.faculty-main-wrap`, and `body.student-page`.
+    - Mobile: `padding-top: calc(58px + max(42px, env(safe-area-inset-top, 0px))) !important;` ensuring complete hardware notch and punch-hole clearance.
+- **Specialized Workspaces & Public Landing Page Alignment**:
+  - `faculty/classwork/create/`: Made `.cw-gclass-nav` `position: fixed !important; top: 0 !important; width: 100% !important; z-index: 10001 !important;` with matching top margin on `.cw-gclass-container` so the assignment creator top bar remains accessible throughout long rubric edits.
+  - `landing/index.html`: Converted `.site-header` to `position: fixed !important; top: 0 !important; width: 100% !important; z-index: 10001 !important;` with matching `padding-top: 72px;` on `body`.
+- **Automated Verification Suites & Chrome Scroll Emulation**:
+  - Headless Chrome testing confirmed `header top = 0` at scroll `0px` and remained strictly `header top = 0` after scrolling `1500px` down on both desktop (1280x800) and mobile (375x812) viewports.
+  - `test-ui-manifest-sync.js`: 208/208 passed.
+  - `test-theme-support.js`: 88/88 passed.
+  - `test-rbac-and-structure.js`: 38/38 passed.
+  - Capacitor Android Sync: `Sync finished in 0.398s`.
+
+### ✅ Milestone 457: Mobile Notch Clearance, Surface Contrast, Classroom Navigation & CI/CD Node 22 Parity
+- **GitHub Actions CI/CD Engine Upgrade (`build-android.yml`)**:
+  - Pinned `actions/setup-node@v4` to `node-version: 22` in `.github/workflows/build-android.yml`, resolving the `@capacitor/cli` v7+ build failure: `[fatal] The Capacitor CLI requires NodeJS >=22.0.0`.
+  - Atomically bumped version stamping script (`scripts/bump-version.js`) to guarantee build numbers are passed cleanly into `build.gradle` without Groovy `versionCode undefined` failures.
+- **Universal Notch & Camera Punch-Hole Clearance (`header.css`, `student-group.css`)**:
+  - Enforced `height: calc(58px + max(42px, env(safe-area-inset-top, 0px))) !important;` and `padding-top: max(42px, env(safe-area-inset-top, 0px)) !important;` on mobile across Admin (`admin/components/header/header.css`), Faculty (`faculty/components/header/header.css`), Student (`student/components/header/header.css`), and Login (`login/index.css`).
+  - Completely clears clock (`4:18`), battery icons (71%/57%), Bluetooth, and camera punch holes from overlapping header menu buttons and user profile badges.
+  - Desktop headers remain strictly isolated at standard `height: 60px; padding: 0 1.25rem;` via `@media (min-width: 769px)`.
+- **System Navigation Bar Contrast & Surface Token Separation**:
+  - Transformed header and mobile bottom docks (`.admin-mobile-bottom-nav`, `.faculty-mobile-bottom-nav`, `.student-mobile-bottom-bar`, `.student-mobile-bottom-nav`) to `var(--bg-surface)` with `1.5px solid var(--border-color)` borders and elevated soft drop-shadows (`box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08)` in Light mode and `rgba(0, 0, 0, 0.35)` in Dark mode).
+  - Raised bottom dock padding to `max(18px, env(safe-area-inset-bottom, 0px))` so Android's transparent 3-button system navigation bar no longer blends into white pages or obscures touch targets.
+- **Classroom Workspace Desktop & Mobile Navigation Parity (`group-detail`)**:
+  - **Desktop Fix**: Fixed `#student-sidebar-mount` and `body.classroom-page` layout so the 72px persistent navigation rail (`#student-rail`) stays fixed on the left rail while the course banner and coursework tabs center cleanly with zero unwanted vertical pushing.
+  - **Mobile Fix**: Restored the 4-tab mobile bottom navigation dock (`Stream`, `Classwork`, `People`, `Attendance`) with `flex: 1 1 0 !important; max-width: 25% !important;`, ensuring all 4 tabs fit side by side with zero horizontal overflow across any screen width.
+  - **Server URL Decoding**: Added URI component decoding in `server.js` request pipeline so spaces in URLs (e.g. `/student/group detail/`) rewrite cleanly to `/student/group-detail/index.html`.
+- **PC Website & API Error Resolution**:
+  - `GET /favicon.ico` 404 resolved by placing vector emblem favicon in public web roots.
+  - `GET /api/v1/hod/registrations/pending-students` (404) and `GET /api/v1/hod/student-registration-status` (404) resolved via route aliases in `routes/hod.js`.
+  - `GET /api/v1/hod/students-roster` (500) and `GET /api/v1/hod/trash/students` (500) resolved by adding `deleted_at DATETIME NULL DEFAULT NULL` to `college_attendance.students` and hardening `ensureColumns()` in `config/db.js`.
+- **Desktop Update Banner Isolation (`mobile-bridge.js`)**:
+  - Guarded GitHub APK update toast notifications behind `isRealNativeApp` so desktop web browsers on `http://localhost:5000` never show mobile app update dialogs.
+- **Automated Verification Suites & Published Release**:
+  - `extract-ui-manifest.js` & `test-ui-manifest-sync.js`: 208/208 passed.
+  - `test-theme-support.js`: 88/88 passed.
+  - `test-rbac-and-structure.js`: 38/38 passed.
+  - Capacitor Android Sync: `Sync finished in 0.44s` with zero warnings.
+  - **Published GitHub Release `v1.0.13`**: [VidyaOS Mobile App v1.0.13](https://github.com/onebotyt/VidyaOS/releases/tag/v1.0.13) with direct APK download [VidyaOS.apk](https://github.com/onebotyt/VidyaOS/releases/download/v1.0.13/VidyaOS.apk).
+
 ### ✅ Milestone 456: Presentation-Ready Institutional Database Seeding & Zero Test Data Cleanup
 - **Complete Test & Junk Data Purge (`vdiyaos` & `college_attendance`)**:
   - Purged all automated test artifacts and leftover dummy accounts: deleted all `delstu_*`, `delfac_*`, `teststudent*`, `rejecttest*`, `test_del_*`, `EMPTEST_*` faculty records.
@@ -235,6 +378,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Added buttons: `🔍 Scan Nearby Wi-Fi`, `+ Add Wi-Fi Manually`, `🔄 Fallback to Default Wi-Fi`, and `⚠️ Emergency Reset`.
   - Added **Nearby Scanned Wi-Fi Networks Modal** (`#scan-wifi-modal`) with real-time RSSI signal badges, security tags, and 1-click password connect prompt.
   - Added **Add Wi-Fi Network Modal** (`#add-wifi-modal`) supporting immediate switch and default designation.
+  - Fixed terminal discovery in `getHodEsp32Overview`: added institutional terminal fallback so connected nodes are visible across all faculty roles and departments (`devices: 1`).
   - Zero hardcoded colors: all styles fully tokenized via CSS variables (`var(--bg-surface)`, `var(--color-primary)`, `var(--status-present)`, etc.).
 - **Automated Verification Suite**:
   - `test-esp32-secure-terminal.js`: 34/34 Passed (100% pass rate: 23 hardware/crypto/mode tests + 11 Wi-Fi multi-network, scan, switch, fallback, and reset tests).
@@ -10482,7 +10626,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   4. **Consolidated Mobile Media Queries**: Removed fragmented `@media` queries throughout `leave-approvals.css` and unified all mobile responsive rules into Section 8.
   5. **Verification & Regression Suites**: Verified 100% passing across **88/88 theme token tests** (zero hex colors) and **195/195 UI manifest tests** (`npm run ui:verify`).
 
-### âœ… Milestone 460: Capacitor Native Mobile App Integration, GitHub Actions Auto-APK Release & In-App Auto-Updates
+### ✅ Milestone 460: Capacitor Native Mobile App Integration, GitHub Actions Auto-APK Release & In-App Auto-Updates
 - **Date**: November 18, 2026
 - **Scope & Objectives**:
   1. **Capacitor Mobile Setup (Frontend-Only Native Wrapper)**:
@@ -10505,6 +10649,46 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Verified 88/88 theme token compliance tests (`test-theme-support.js`).
      - Verified 38/38 RBAC route gate tests (`test-rbac-and-structure.js`).
      - Verified 208/208 UI Manifest Parity tests (`test-ui-manifest-sync.js`).
+
+### ✅ Milestone 461: NBA/NAAC Course File Dossier Resolution, Universal Parameter Mapping & In-App Class Switcher
+- **Date**: November 18, 2026
+- **Problem Diagnosed**:
+  - The Course File / NBA Dossier page (`/faculty/course-file/index.html`) was stuck in loading state ("Loading Subject Course File...") with 0 documents rendered and a blank section below the search box.
+  - Root causes identified:
+    1. Query Parameter Mismatch: The Classroom page passed `?groupId=${g.id}` (camelCase), but `course-file.js` only checked `group_id` (snake_case) or `id`, resulting in `null`.
+    2. Missing Parameter Fallback: Navigating directly to `/faculty/course-file/` without parameters caused `loadCourseFileDossier()` to return immediately before active classes were loaded.
+    3. Absence of In-Page Class Switcher: No `<select id="select-class-switch">` existed in the HTML toolbar, leaving users unable to switch classes within the NBA page.
+    4. Button Text Styling: Missing explicit contrast rules on `.btn-primary` and `.cf-card-btn.primary` on mobile.
+- **Implemented Fixes**:
+  1. **Universal Query Parameter Support**: Updated `course-file.js` to parse `group_id`, `groupId`, `class_id`, `classId`, and `id`.
+  2. **Active Class Fallback & Asynchronous Sequencing**: Properly awaited `loadAvailableClasses()` during initialization; if no parameter is provided, defaults to the faculty's first active class (`state.allClasses[0].id`).
+  3. **Interactive Class Switcher Dropdown (`#select-class-switch`)**: Added directly into the hero action toolbar on both desktop and mobile, with seamless `window.onSwitchClass` state updates without full-page reloads.
+  4. **Friendly Empty State Handling**: When a faculty member has 0 assigned classes, displays an informative empty state card with a direct link to Classroom (`/faculty/classes/index.html`) rather than an empty white void.
+  5. **Theme Token Compliance & Contrast**: Added CSS variables for `.btn-primary`, `.cf-card-btn.primary`, and `.cf-select-class` with zero hardcoded hex colors.
+  6. **UI Manifest Synchronization**: Re-scanned and synchronized all 32 manifests with 208/208 passing tests on `test-ui-manifest-sync.js`.
+  7. **Visual Regression Verification**: Captured headless Chrome screenshots for desktop (?groupId=1, no params) and mobile (390x844), verifying all 18 documents, readiness score (17%), and top headers render crisply.
+
+### ✅ Milestone 462: Assessment & Student Performance Dossier CSS Restoration, Card Modernization & Class Switcher
+- **Date**: November 18, 2026
+- **Problem Diagnosed**:
+  - Across `/faculty/student-performance/`, `/faculty/direct-assessment/`, `/faculty/indirect-assessment/`, and `/faculty/assessment-process/`, document and evidence cards were rendered as completely unstyled plain text blocks with raw unstyled buttons.
+  - Root causes identified:
+    1. DOM Structure / Class Mismatch: `mountAssessmentDossier()` in `faculty/components/dossier/dossier.js` was rendering `.cf-doc-card`, `.cf-doc-card-header`, `.cf-doc-number-badge`, etc., whereas `dossier.css` only had styling for `.cf-artifact-card`.
+    2. Lack of In-Page Class Switcher: None of the assessment portals had `<select id="select-class-switch">`, preventing faculty from switching between active teaching cohorts.
+    3. Missing Explicit Theme Button Styles: `.btn-primary` and `.cf-card-btn.primary` lacked explicit theme token contrast in assessment cards, causing inconsistent styling.
+    4. URL Whitespace & Underscore Normalization: Paths like `/faculty/student performance/` or `/faculty/direct_assessment/` resulted in 404s when accessed directly.
+- **Implemented Fixes**:
+  1. **Standardized Card Architecture**: Upgraded `renderCardsGrid()` in `dossier.js` to render modern `.cf-artifact-card` elements with card numbers, title badges, descriptions, audit status indicators, and clean action buttons.
+  2. **Backward-Compatible & Resilient CSS**: Enhanced `faculty/components/dossier/dossier.css` to comprehensively style both `.cf-artifact-card` and legacy `.cf-doc-card` markup with full dark/light theme tokens.
+  3. **Universal Class Switcher Dropdown (`#select-class-switch`)**: Injected into the hero toolbar across `student-performance/index.html`, `direct-assessment/index.html`, `indirect-assessment/index.html`, and `assessment-process/index.html`, backed by `loadAvailableClasses()` and `window.onSwitchClass(groupId)`.
+  4. **Universal Query Parameter Support**: Supported `groupId`, `group_id`, `classId`, `class_id`, and `id` across all dossier pages.
+  5. **Static Routing Rewrites (`server.js`)**: Added regex rewrites to seamlessly map spaces, underscores, and hyphens for all assessment routes.
+  6. **Capacitor Mobile Sync**: Ran `npx cap sync android` to ensure web assets in Capacitor Android reflect all updated styles and scripts.
+  7. **Full Automated Verification & Zero Regression**:
+     - `test-theme-support.js`: 88/88 Passed (0 hardcoded hex/raw colors).
+     - `test-ui-manifest-sync.js`: 208/208 Passed across all 32 pages.
+     - `test-rbac-and-structure.js`: 38/38 Passed.
+     - Visual regression testing with Headless Chrome virtual time budget verified cards, badges, and class switchers on desktop (1920x1080) and mobile (390x844).
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.

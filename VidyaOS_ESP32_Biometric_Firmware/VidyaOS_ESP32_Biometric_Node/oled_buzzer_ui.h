@@ -33,10 +33,20 @@
 #define VIDYAOS_OLED_BUZZER_UI_H
 
 #include <Arduino.h>
+#include <esp_arduino_version.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "config.h"
+
+// Detect ESP32 Arduino Core 3.0+ vs Core 2.x
+#if defined(ESP_ARDUINO_VERSION)
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    #define VIDYA_LEDC_CORE_3 1
+  #endif
+#elif defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
+  #define VIDYA_LEDC_CORE_3 1
+#endif
 
 class VidyaPeripheralsUI {
 private:
@@ -60,7 +70,7 @@ public:
     pinMode(BATTERY_ADC_PIN, INPUT);
 
     // 3. Initialize passive buzzer PWM (Supports ESP32 Core 2.x and 3.x)
-#if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
+#if defined(VIDYA_LEDC_CORE_3)
     buzzerPwmReady = ledcAttach(BUZZER_PIN, 2000, 8);
     if (!buzzerPwmReady) {
       pinMode(BUZZER_PIN, OUTPUT);
@@ -126,7 +136,7 @@ public:
   // ─── 2. 5V Passive Piezoelectric Buzzer Audio Profiles ───────────────────
   void playTone(uint32_t freqHz, uint32_t durationMs) {
     if (freqHz == 0 || durationMs == 0) {
-#if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
+#if defined(VIDYA_LEDC_CORE_3)
       if (buzzerPwmReady) ledcWriteTone(BUZZER_PIN, 0);
 #else
       ledcWriteTone(BUZZER_PWM_CHANNEL, 0);
@@ -134,7 +144,7 @@ public:
       return;
     }
 
-#if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
+#if defined(VIDYA_LEDC_CORE_3)
     if (buzzerPwmReady) ledcWriteTone(BUZZER_PIN, freqHz);
     delay(durationMs);
     if (buzzerPwmReady) ledcWriteTone(BUZZER_PIN, 0);
@@ -174,7 +184,7 @@ public:
       playTone(800, 75);
       delay(35);
     }
-#if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
+#if defined(VIDYA_LEDC_CORE_3)
     if (buzzerPwmReady) ledcWriteTone(BUZZER_PIN, 0);
 #else
     ledcWriteTone(BUZZER_PWM_CHANNEL, 0);

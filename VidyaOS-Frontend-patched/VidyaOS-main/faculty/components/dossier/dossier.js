@@ -323,8 +323,8 @@
         const statusBadgeHtml = isUploaded
           ? `<span class="badge badge-present" style="font-size:0.72rem;">Uploaded (${formatBytes(doc.file_size)})</span>`
           : (hasSystemData
-              ? `<span class="badge badge-sem" style="font-size:0.72rem;">Live DB Synced</span>`
-              : `<span class="badge badge-late" style="font-size:0.72rem;">Action Required</span>`);
+            ? `<span class="badge badge-sem" style="font-size:0.72rem;">Live DB Synced</span>`
+            : `<span class="badge badge-late" style="font-size:0.72rem;">Action Required</span>`);
 
         const sectionBadgeHtml = tag
           ? `<span class="badge" style="background:var(--bg-surface);border:1px solid var(--border-color);font-size:0.68rem;color:var(--text-muted);font-weight:600;">${tag}</span>`
@@ -630,7 +630,7 @@
     }
   }
 
-  
+
   function mountClassDeliveryDossier(cfg) {
     const prefix = cfg.prefix; // 'tc' or 'lc'
     const apiBase = cfg.apiBase; // '/theory-classes' or '/lab-classes'
@@ -690,7 +690,7 @@
             state.currentGroupId = g.id;
             state.currentRegisterId = g.register_id || null;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
       if (!state.currentGroupId && !state.currentSubjectId) return;
 
@@ -733,8 +733,8 @@
         statusBadge.innerText = (rec.status || 'IN_PROGRESS').replace(/_/g, ' ');
         statusBadge.className = 'badge ' + (
           rec.status === 'APPROVED' ? 'badge-present' :
-          rec.status === 'REVISION_REQUESTED' ? 'badge-absent' :
-          rec.status === 'AUDITED' ? 'badge-late' : 'badge-sem'
+            rec.status === 'REVISION_REQUESTED' ? 'badge-absent' :
+              rec.status === 'AUDITED' ? 'badge-late' : 'badge-sem'
         );
       }
 
@@ -808,8 +808,8 @@
         const statusBadgeHtml = doc
           ? `<span class="badge badge-present" style="font-size:0.7rem;">Uploaded (${formatBytes(doc.file_size)})</span>`
           : (hasSystemData
-              ? `<span class="badge badge-sem" style="font-size:0.7rem;">Live DB Synced</span>`
-              : `<span class="badge badge-late" style="font-size:0.7rem;">Action Required</span>`);
+            ? `<span class="badge badge-sem" style="font-size:0.7rem;">Live DB Synced</span>`
+            : `<span class="badge badge-late" style="font-size:0.7rem;">Action Required</span>`);
 
         const docInfoHtml = doc ? `
           <div class="cf-card-status-box">

@@ -1,0 +1,547 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "HOD-005",
+  "role": "HOD / Faculty",
+  "route": "/faculty/esp32-devices.html",
+  "source_file": "frontend/faculty/esp32-devices/index.html",
+  "content_hash": "ae0b471b0578",
+  "last_scanned": "2026-11-18T08:04:29.542Z",
+  "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
+  "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: split terminals & OLED simulator, biometric roster; Mobile: responsive card stack",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [
+      {
+        "id": "wifi-networks-table",
+        "class": "esp-table",
+        "headers": [
+          "Network SSID",
+          "Security / Type",
+          "Signal Strength (RSSI)",
+          "Priority / Default Status",
+          "Added On",
+          "Actions"
+        ]
+      },
+      {
+        "id": "bio-students-table",
+        "class": "esp-table",
+        "headers": [
+          "Roll #",
+          "Student Name",
+          "Enrollment / UBTER #",
+          "Cohort",
+          "Cloud Biometric Template (MySQL)",
+          "ESP32 Enrollment &amp; Test Actions"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "register-esp-modal",
+        "title": "Connect ESP32 Biometric Terminal",
+        "field_count": 0
+      },
+      {
+        "id": "esp-config-modal",
+        "title": "ESP32 Firmware Configuration (`config.h`)",
+        "field_count": 0
+      },
+      {
+        "id": "scan-wifi-modal",
+        "title": "Nearby Wi-Fi Networks",
+        "field_count": 0
+      },
+      {
+        "id": "add-wifi-modal",
+        "title": "Add Wi-Fi Network Manually",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "↻ Refresh Telemetry",
+        "action": "loadEsp32Overview()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Connect New ESP32",
+        "action": "openRegisterDeviceModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-scan-wifi",
+        "label": "🔍 Scan Nearby Wi-Fi",
+        "action": "triggerScanNearbyWifi()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-add-wifi-manual",
+        "label": "+ Add Wi-Fi Manually",
+        "action": "openAddWifiModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-fallback-wifi",
+        "label": "🔄 Fallback to Default Wi-Fi",
+        "action": "triggerWifiFallback()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-reset-wifi",
+        "label": "⚠️ Emergency Reset",
+        "action": "triggerWifiReset()",
+        "class": "btn btn-danger btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeRegisterDeviceModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Generate",
+        "action": "generateRandomHexSecret()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeRegisterDeviceModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Pair ESP32 to Department",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeEspConfigModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Copy `config.h`",
+        "action": "copyEspConfigCode()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Done",
+        "action": "closeEspConfigModal()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeScanWifiModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "↻ Rescan",
+        "action": "triggerScanNearbyWifi(true)",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeScanWifiModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Connect &amp; Switch Terminal Now",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAddWifiModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeAddWifiModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Wi-Fi Network",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "chk-buzzer-audio",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "search-bio-student",
+        "type": "search",
+        "name": null,
+        "placeholder": "Search name, roll #, reg...",
+        "handler": "renderStudentsBiometricTable()",
+        "class": "form-control"
+      },
+      {
+        "id": "esp-uid-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. ESP32-IT-LAB-01",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "esp-name-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. IT Dept Smart Classroom Room 102",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "esp-secret-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "64-character hex AES-256 key",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "scanned-wifi-ssid",
+        "type": "text",
+        "name": null,
+        "placeholder": "Select a network above or type SSID",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "scanned-wifi-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Leave blank if open Wi-Fi network",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "scanned-wifi-is-default",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "manual-wifi-ssid",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. IT_DEPT_FACULTY_5G",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "manual-wifi-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Router WPA2/WPA3 password",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "manual-wifi-is-default",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "manual-wifi-switch-now",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "dept-switcher-select",
+        "title": null,
+        "onchange": "onSwitchDepartment(this.value)",
+        "class": "form-select form-select-sm",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading Departments..."
+          }
+        ]
+      },
+      {
+        "id": "active-device-select",
+        "title": null,
+        "onchange": "onSelectActiveDevice(this.value)",
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Select Active ESP32..."
+          }
+        ]
+      },
+      {
+        "id": "filter-bio-year",
+        "title": null,
+        "onchange": "renderStudentsBiometricTable()",
+        "class": "form-select",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "all",
+            "text": "All Years"
+          },
+          {
+            "value": "1",
+            "text": "1st Year"
+          },
+          {
+            "value": "2",
+            "text": "2nd Year"
+          },
+          {
+            "value": "3",
+            "text": "3rd Year"
+          }
+        ]
+      },
+      {
+        "id": "filter-bio-status",
+        "title": null,
+        "onchange": "renderStudentsBiometricTable()",
+        "class": "form-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "all",
+            "text": "All Statuses"
+          },
+          {
+            "value": "ENROLLED",
+            "text": "Template Stored"
+          },
+          {
+            "value": "NOT_ENROLLED",
+            "text": "Not Enrolled"
+          }
+        ]
+      },
+      {
+        "id": "esp-dept-input",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Select Department..."
+          }
+        ]
+      },
+      {
+        "id": "esp-year-input",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "1st Year"
+          },
+          {
+            "value": "2",
+            "text": "2nd Year"
+          },
+          {
+            "value": "3",
+            "text": "3rd Year"
+          }
+        ]
+      },
+      {
+        "id": "esp-sem-input",
+        "title": null,
+        "onchange": null,
+        "class": "form-select",
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Sem 1"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "register-esp-modal",
+      "title": "Connect ESP32 Biometric Terminal",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "esp-config-modal",
+      "title": "ESP32 Firmware Configuration (`config.h`)",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "scan-wifi-modal",
+      "title": "Nearby Wi-Fi Networks",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-wifi-modal",
+      "title": "Add Wi-Fi Network Manually",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/esp32-devices/esp32-devices.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "loadEsp32Overview",
+    "renderLoadError",
+    "renderDevicesList",
+    "renderStudentsBiometricTable",
+    "renderRecentScans",
+    "renderCommandQueue",
+    "openRegisterDeviceModal",
+    "closeRegisterDeviceModal",
+    "closeEspConfigModal",
+    "loadDeviceWifiNetworks",
+    "renderScannedWifiList",
+    "closeScanWifiModal",
+    "openAddWifiModal"
+  ]
+}

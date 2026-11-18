@@ -1,0 +1,443 @@
+{
+  "generator": "UIMS (UI Manifest & Contract Extractor)",
+  "version": "1.0.0",
+  "generated_at": "2026-11-18T08:04:29.980Z",
+  "total_pages": 33,
+  "totals": {
+    "buttons": 636,
+    "modals": 194,
+    "inputs": 394,
+    "apis": 180
+  },
+  "pages": [
+    {
+      "page_id": "ADM-001",
+      "route": "/admin/academic-structure.html",
+      "title": "Academic Departments &amp; Branches — Admin Console",
+      "manifest_file": "docs/ui-map/manifests/adm-001.json",
+      "content_hash": "79959d607a69",
+      "counts": {
+        "buttons": 6,
+        "modals": 2,
+        "inputs": 7,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "ADM-002",
+      "route": "/admin/faculty.html",
+      "title": "HOD Management — Admin Console",
+      "manifest_file": "docs/ui-map/manifests/adm-002.json",
+      "content_hash": "35dbd6692559",
+      "counts": {
+        "buttons": 39,
+        "modals": 7,
+        "inputs": 12,
+        "apis": 1
+      }
+    },
+    {
+      "page_id": "ADM-003",
+      "route": "/admin/dashboard.html",
+      "title": "Admin Dashboard — VidyaOS Institutional Console",
+      "manifest_file": "docs/ui-map/manifests/adm-003.json",
+      "content_hash": "bda52340123e",
+      "counts": {
+        "buttons": 0,
+        "modals": 0,
+        "inputs": 0,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "ADM-004",
+      "route": "/admin/audit-logs.html",
+      "title": "Institutional Audit Trail — Admin Console",
+      "manifest_file": "docs/ui-map/manifests/adm-004.json",
+      "content_hash": "b81e5c1d9f9b",
+      "counts": {
+        "buttons": 8,
+        "modals": 2,
+        "inputs": 5,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "ADM-005",
+      "route": "/admin/reports.html",
+      "title": "Admin Console",
+      "manifest_file": "docs/ui-map/manifests/adm-005.json",
+      "content_hash": "ff045e8ad02f",
+      "counts": {
+        "buttons": 7,
+        "modals": 0,
+        "inputs": 5,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "ADM-006",
+      "route": "/admin/settings.html",
+      "title": "Institution Settings — Admin Console",
+      "manifest_file": "docs/ui-map/manifests/adm-006.json",
+      "content_hash": "0e31cddd497a",
+      "counts": {
+        "buttons": 6,
+        "modals": 0,
+        "inputs": 9,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "ADM-007",
+      "route": "/admin/profile.html",
+      "title": "Administrator Profile &amp; Security — VidyaOS Admin Console",
+      "manifest_file": "docs/ui-map/manifests/adm-007.json",
+      "content_hash": "aab4b517d68c",
+      "counts": {
+        "buttons": 13,
+        "modals": 2,
+        "inputs": 11,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "HOD-004",
+      "route": "/faculty/faculty/index.html",
+      "title": "Faculty Management — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/hod-004.json",
+      "content_hash": "2a9971732c4a",
+      "counts": {
+        "buttons": 14,
+        "modals": 2,
+        "inputs": 7,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "HOD-005",
+      "route": "/faculty/esp32-devices.html",
+      "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
+      "manifest_file": "docs/ui-map/manifests/hod-005.json",
+      "content_hash": "ae0b471b0578",
+      "counts": {
+        "buttons": 20,
+        "modals": 4,
+        "inputs": 19,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "FAC-001",
+      "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
+      "title": "Student Academic Records & Dossiers — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-001.json",
+      "content_hash": "8419efd27502",
+      "counts": {
+        "buttons": 16,
+        "modals": 4,
+        "inputs": 22,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "FAC-002",
+      "route": "/faculty/dashboard.html",
+      "title": "Faculty Dashboard — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-002.json",
+      "content_hash": "c90c223e7bf6",
+      "counts": {
+        "buttons": 0,
+        "modals": 0,
+        "inputs": 0,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "FAC-003",
+      "route": "/faculty/groups.html",
+      "title": "Faculty Classroom Dashboard — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-003.json",
+      "content_hash": "9a02d7d355d9",
+      "counts": {
+        "buttons": 53,
+        "modals": 32,
+        "inputs": 31,
+        "apis": 1
+      }
+    },
+    {
+      "page_id": "FAC-004",
+      "route": "/faculty/group-detail.html",
+      "title": "Teaching Group Classroom - VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-004.json",
+      "content_hash": "a39490651aab",
+      "counts": {
+        "buttons": 180,
+        "modals": 54,
+        "inputs": 86,
+        "apis": 29
+      }
+    },
+    {
+      "page_id": "FAC-005",
+      "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
+      "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
+      "manifest_file": "docs/ui-map/manifests/fac-005.json",
+      "content_hash": "d9c8f7f097ea",
+      "counts": {
+        "buttons": 48,
+        "modals": 16,
+        "inputs": 45,
+        "apis": 13
+      }
+    },
+    {
+      "page_id": "FAC-007",
+      "route": "/faculty/students/index.html",
+      "title": "Students Management — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-007.json",
+      "content_hash": "2cbb536b3191",
+      "counts": {
+        "buttons": 27,
+        "modals": 4,
+        "inputs": 12,
+        "apis": 5
+      }
+    },
+    {
+      "page_id": "FAC-009",
+      "route": "/faculty/classwork/create.html",
+      "title": "Create Classwork - VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-009.json",
+      "content_hash": "5c8a8cabdf14",
+      "counts": {
+        "buttons": 27,
+        "modals": 7,
+        "inputs": 14,
+        "apis": 13
+      }
+    },
+    {
+      "page_id": "FAC-011",
+      "route": "/faculty/leave-approvals.html",
+      "title": "Leave Requests — Faculty Portal",
+      "manifest_file": "docs/ui-map/manifests/fac-011.json",
+      "content_hash": "eb85da2ad595",
+      "counts": {
+        "buttons": 11,
+        "modals": 2,
+        "inputs": 2,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "FAC-012",
+      "route": "/faculty/course-file.html",
+      "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-012.json",
+      "content_hash": "23897169f398",
+      "counts": {
+        "buttons": 21,
+        "modals": 21,
+        "inputs": 11,
+        "apis": 11
+      }
+    },
+    {
+      "page_id": "FAC-013",
+      "route": "/faculty/media.html",
+      "title": "Faculty Drive &amp; Media Vault — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-013.json",
+      "content_hash": "eaa7c98d08c5",
+      "counts": {
+        "buttons": 13,
+        "modals": 3,
+        "inputs": 9,
+        "apis": 8
+      }
+    },
+    {
+      "page_id": "FAC-014",
+      "route": "/faculty/profile.html",
+      "title": "Faculty Profile — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-014.json",
+      "content_hash": "eeb7fa2da618",
+      "counts": {
+        "buttons": 7,
+        "modals": 1,
+        "inputs": 7,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "FAC-015",
+      "route": "/faculty/classes/index.html",
+      "title": "My Teaching Classes — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-015.json",
+      "content_hash": "b69a179685a5",
+      "counts": {
+        "buttons": 15,
+        "modals": 9,
+        "inputs": 21,
+        "apis": 9
+      }
+    },
+    {
+      "page_id": "FAC-016",
+      "route": "/faculty/classes/trash.html",
+      "title": "Classroom Trash Bin — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/fac-016.json",
+      "content_hash": "8231dfdf1c35",
+      "counts": {
+        "buttons": 3,
+        "modals": 2,
+        "inputs": 3,
+        "apis": 6
+      }
+    },
+    {
+      "page_id": "STU-001",
+      "route": "/student/dashboard.html",
+      "title": "Student Classroom Dashboard — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/stu-001.json",
+      "content_hash": "ec9e9961b840",
+      "counts": {
+        "buttons": 21,
+        "modals": 9,
+        "inputs": 12,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "STU-002",
+      "route": "/student/attendance.html",
+      "title": "My Attendance &amp; Calendar — Student Portal",
+      "manifest_file": "docs/ui-map/manifests/stu-002.json",
+      "content_hash": "9ed047c1ab0e",
+      "counts": {
+        "buttons": 5,
+        "modals": 2,
+        "inputs": 3,
+        "apis": 3
+      }
+    },
+    {
+      "page_id": "STU-003",
+      "route": "/student/assignments.html",
+      "title": "To-do — Student Portal | VidyaOS Classroom",
+      "manifest_file": "docs/ui-map/manifests/stu-003.json",
+      "content_hash": "70e96b658e4c",
+      "counts": {
+        "buttons": 3,
+        "modals": 0,
+        "inputs": 1,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "STU-004",
+      "route": "/student/group-detail.html",
+      "title": "Classwork — Student Portal | VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/stu-004.json",
+      "content_hash": "e54c0546a40f",
+      "counts": {
+        "buttons": 26,
+        "modals": 2,
+        "inputs": 5,
+        "apis": 7
+      }
+    },
+    {
+      "page_id": "STU-005",
+      "route": "/student/scores.html",
+      "title": "My Test Scores &amp; Marks — Student Portal",
+      "manifest_file": "docs/ui-map/manifests/stu-005.json",
+      "content_hash": "2264d042ac21",
+      "counts": {
+        "buttons": 10,
+        "modals": 0,
+        "inputs": 1,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "STU-006",
+      "route": "/student/timetable.html",
+      "title": "Academic Timetable (PDF) — Student Portal",
+      "manifest_file": "docs/ui-map/manifests/stu-006.json",
+      "content_hash": "c72e486f5291",
+      "counts": {
+        "buttons": 6,
+        "modals": 2,
+        "inputs": 0,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "STU-007",
+      "route": "/student/leave.html",
+      "title": "Leave Applications — Student Portal",
+      "manifest_file": "docs/ui-map/manifests/stu-007.json",
+      "content_hash": "a808ae715df7",
+      "counts": {
+        "buttons": 5,
+        "modals": 0,
+        "inputs": 2,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "STU-008",
+      "route": "/student/profile.html",
+      "title": "Student Profile & Academic Credentials — College Attendance System",
+      "manifest_file": "docs/ui-map/manifests/stu-008.json",
+      "content_hash": "5f7ec9bafa2a",
+      "counts": {
+        "buttons": 6,
+        "modals": 0,
+        "inputs": 12,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "PUB-001",
+      "route": "/ or /landing/",
+      "title": "VidyaOS — Institutional Campus & Academic Operating System",
+      "manifest_file": "docs/ui-map/manifests/pub-001.json",
+      "content_hash": "a6b9dac4ba3e",
+      "counts": {
+        "buttons": 2,
+        "modals": 0,
+        "inputs": 0,
+        "apis": 1
+      }
+    },
+    {
+      "page_id": "PUB-002",
+      "route": "/login/",
+      "title": "Sign In — VidyaOS Campus Management",
+      "manifest_file": "docs/ui-map/manifests/pub-002.json",
+      "content_hash": "16342a547e81",
+      "counts": {
+        "buttons": 6,
+        "modals": 4,
+        "inputs": 4,
+        "apis": 4
+      }
+    },
+    {
+      "page_id": "PUB-003",
+      "route": "/login/register/",
+      "title": "Register — VidyaOS Campus Management",
+      "manifest_file": "docs/ui-map/manifests/pub-003.json",
+      "content_hash": "01bde5083416",
+      "counts": {
+        "buttons": 12,
+        "modals": 1,
+        "inputs": 16,
+        "apis": 6
+      }
+    }
+  ]
+}
