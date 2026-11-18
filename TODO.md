@@ -38,6 +38,119 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 466: Admin Portal Routing Isolation, Role Priority Resolution, High-Fidelity Sheets Export & Multi-Repo Git Synchronization
+- **Root-Cause Analysis of Admin Route Misdirection & Faculty Feature Leakage**:
+  1. *Dual-Role Priority Inversion in `authService.js`*:
+     - User 1 (`admin@gmail.com`) possessed both `ADMIN` and `TEACHER` roles (and an entry in `teachers` as `ADMIN-01`).
+     - In `authService.facultyLogin` and `authService.getMe`, the role resolution evaluated `if (userRoles.includes('TEACHER'))` *before* checking for `ADMIN` or `SYSTEM_ADMIN`.
+     - Dual-role admin accounts were returned with `role: 'TEACHER'`, `roles: ['TEACHER']`, and `is_admin: false`, stripping admin identity during login and session hydration.
+  2. *Login Redirection Blind Spot*:
+     - In `frontend/login/index.js`, `redirectAfterLogin(user)` checked `roles.includes('SYSTEM_ADMIN')`. Because the backend returned `TEACHER`, the check evaluated to false and routed the admin directly to `/faculty/dashboard/index.html`.
+  3. *Faculty Dashboard & Header Misidentification*:
+     - Once at `/faculty/dashboard/index.html`, the page attempted to load HOD metrics (`/api/v1/hod/stats`), throwing the red toast error: *"You do not have an active HOD assignment. Only HODs can perform this action."*
+     - The faculty header popover displayed `"Faculty Member"` and rendered faculty navigation links (Classes, Records, Sheets, Leave, Students, ESP32, Timetable, Drive) instead of Admin Executive links.
+  4. *Sheets Studio Export Dropdown Stacking Context Collision*:
+     - In `faculty/sheets/`, `.studio-bar-3` had `z-index: 40; position: relative;` while `.studio-bar-1` had `z-index: 30;`, causing `#sheet-visible-tally` ("Showing 62 of 62 students") to paint over the top of the `.studio-export-menu`, clipping the `.XLSX` format option.
+  5. *Full Webpage Print Leakage on PDF Export*:
+     - Triggering `.PDF` export previously invoked `window.print()` which printed the entire application shell (headers, sidebars, buttons, URL bars) rather than the clean institutional evaluation ledger.
+- **Architectural Solutions Delivered**:
+  - **Strict Admin First-Priority Identity Resolution (`backend/src/services/authService.js`)**:
+    - Updated `facultyLogin` and `getMe` to evaluate `isAdmin` (`SYSTEM_ADMIN` or `ADMIN`) with top priority before any teacher or student checks.
+    - Dual-role accounts now strictly return `role: 'SYSTEM_ADMIN'`, `is_admin: true`, and ensure `userRoles` contains both `SYSTEM_ADMIN` and `ADMIN`.
+    - Seeded missing `SYSTEM_ADMIN` role into `user_roles` for User 1 in both SQLite and MySQL databases.
+  - **Client-Side Admin Route Isolation & Auto-Redirect**:
+    - `frontend/login/index.js`: Updated `redirectAfterLogin` and `checkExistingSession` to evaluate `user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN' || Boolean(user.is_admin)` and redirect immediately to `/admin/dashboard/index.html`.
+    - `frontend/faculty/dashboard/dashboard.js` & `frontend/faculty/components/core/auth.js`: Added protective client guards that immediately detect any admin session visiting `/faculty/dashboard/index.html` and replace the location with `/admin/dashboard/index.html`.
+    - `frontend/admin/components/core/auth.js`: Normalized `guardRoute` to accept both `ADMIN` and `SYSTEM_ADMIN` interchangeably.
+    - `frontend/faculty/components/header/header.js`: Updated profile pill to display `"System Administrator"` and routed the brand logo link to `/admin/dashboard/index.html` for admin sessions.
+  - **Sheets Export Menu Stacking Context & Isolated High-Fidelity Print Engine**:
+    - `sheets.css`: Raised `.studio-bar-1` to `z-index: 1000` and `.studio-export-menu` to `z-index: 1100`, eliminating clipping over the table summary tally.
+    - Overhauled `@media print` rules to hide all outer app shells (`#faculty-header-mount`, `.sidebar`, `.mobile-bottom-nav`, `.studio-bar`, buttons, inputs, modals).
+    - `sheets.js`: Implemented `printActiveSheetDirect(activeTableId, sheetTitle)` which generates an off-screen print-isolated iframe containing institutional branding, table clone with plain-text inputs, and formal verification signature row.
+  - **Ecosystem Multi-Repo Git Synchronization**:
+    - Synchronized all production updates into standalone frontend worktree and pushed to `onebotyt/VidyaOS.git` (commit `9ad3141`).
+    - Synchronized all production updates into standalone backend worktree and pushed to `onebotyt/VidyaOS_BackEnd.git` (commit `80c2d33`).
+    - Committed and pushed unified ecosystem to `onebotyt/Vidya.git` (commit `3b0db51`).
+  - **Test Suite Verification & Parity**:
+    - `test-ui-manifest-sync.js`: **216/216 passed** (100% DOM parity, content hashes, button/modal IDs, API contracts).
+    - `test-theme-support.js`: **88/88 passed** (0 hardcoded hex colors).
+    - Verified admin API authentication: `admin@gmail.com` returns `role: "SYSTEM_ADMIN"`, `is_admin: true`, and accesses `/api/v1/admin/stats` with status 200.
+
+### ✅ Milestone 465: Resolved Students Trash Check RBAC 403 Forbidden & Complete Database Account Purge Engine
+- **Root-Cause Analysis of Trash Check Error & Incomplete Deletion**:
+  1. *RBAC Redundancy Triggering 403 Forbidden*:
+     - Route `/api/v1/hod/trash/students` and `/trash/students/:id/restore` had redundant route-level middleware `requireHOD()`. Because the router-level middleware `requireHODOrClassTeacher()` already validates Department Faculty, Class Teachers, and HODs, the inner `requireHOD()` threw an immediate 403 Forbidden: `"You do not have an active HOD assignment. Only HODs can perform this action."` when non-HOD faculty opened `students.html`.
+  2. *Only Soft-Delete Implemented in Architecture*:
+     - Deleting a student previously only set `deleted_at = NOW()` on the `students` table and `status = 'SUSPENDED'` on `users`. There was no hard-delete or permanent purge method in the entire system. Rows remained permanently in `users`, `students`, `enrollments`, and `user_roles`, locking unique credentials (`username`, `official_enrollment_no`, `email`) and causing duplicate conflict errors upon re-import or re-admission.
+  3. *Cross-Database Incompatibilities in Trash Queries*:
+     - `HodModel.getTrashStudents` used MySQL-specific functions (`DATEDIFF(NOW(), st.deleted_at)`, `DATE_SUB(NOW(), INTERVAL 30 DAY)`), failing under SQLite.
+     - When `deptId` was `null` (such as for System Admin), SQL `(e.department_id = ?)` with `null` evaluated to UNKNOWN, returning empty lists.
+     - `deleteStudent` attempted to update `users.deleted_at`, but `users` table lacks a `deleted_at` column.
+- **Architectural Solutions Delivered**:
+  - **Backend Route & Controller RBAC Alignment (`backend/src/routes/hod.js`, `backend/src/controllers/hodController.js`)**:
+    - Removed redundant `requireHOD()` from `GET /trash/students`, `POST /trash/students/:id/restore`, `DELETE /students/:id`, `POST /students/:id/transfer`, `withdraw`, `reactivate`, and `reset-password`, allowing all authorized department faculty and class teachers to manage student cohorts seamlessly.
+    - Added routes `DELETE /api/v1/hod/trash/students/:id` and `DELETE /api/v1/hod/trash/students/:id/purge` for permanent purging.
+    - Added `permanent=true` query/body parameter support to `DELETE /api/v1/hod/students/:id` to allow direct atomic purge from the active roster.
+  - **Comprehensive Cascading Purge Engine (`backend/src/models/hodModel.js`)**:
+    - Implemented `HodModel.purgeStudent(id, deptId, userId)` executing atomic transactional deletions across all 18 dependent student tables in dependency order:
+      - Attendance: `register_attendance`, `attendance_session_students`, `student_self_attendance`, `attendance_corrections`, `iot_attendance_events`, `esp32_presence`, `esp32_command_queue`.
+      - Academics & Evaluations: `assessment_submissions`, `assignment_submissions`, `exam_scores`.
+      - Biometrics, Documents & Leave: `student_biometric_templates`, `fingerprint_slots`, `student_documents`, `faculty_media_assets`, `leave_applications`.
+      - Memberships & Roster: `teaching_group_members`, `student_department_enrollments`, `enrollments`, `students`.
+      - Account & Authentication: `notifications`, `user_sessions`, `user_roles`, `classroom_post_comments`, disassociating `audit_logs`, and finally `users`.
+      - Atomic cohort roll number re-indexing post-purge and audit log creation (`'STUDENT_PERMANENTLY_PURGED'`).
+  - **Cross-Database Dual-Engine Parity (`backend/src/models/hodModel.js`)**:
+    - Replaced SQL `DATEDIFF` and `DATE_SUB` with portable JavaScript ISO timestamp cutoff calculations, ensuring identical behavior across MySQL 8.x and SQLite.
+    - Handled null `deptId` via `(? IS NULL OR e.department_id = ? OR e.department_id IS NULL)`.
+  - **Frontend UI & Action Controls (`students.js`, `students.css`, `index.html`)**:
+    - Added `.btn-purge-compact` in `students.css` with 100% theme token compliance (`var(--status-absent-bg)`, `var(--status-absent)`).
+    - Integrated "Purge" action button into Trash Bin table alongside "Restore".
+    - Implemented `purgeStudentMember(id, name)` with strict double-confirmation safeguards.
+    - Enhanced `deleteStudentMember(id, name)` with choice between Trash Bin (30-day retention) and direct permanent purge.
+    - Cleaned `loadTrashStudents` error handling to prevent console log pollution.
+    - Exported `purgeStudentMember` to `window`.
+  - **Test Suite Verification & Parity**:
+    - Created dedicated verification suite `backend/scripts/test-trash-and-purge.js`: **18/18 passed** (model-level trash, restore, cascading purge, credential reuse, HTTP RBAC access without 403, HTTP soft delete, HTTP trash purge, and direct HTTP `?permanent=true` purge).
+    - `test-ui-manifest-sync.js`: **216/216 passed** (100% manifest and DOM parity).
+    - `test-theme-support.js`: **88/88 passed** (zero hardcoded colors, theme tokens).
+    - `test-rbac-and-structure.js`: **38/38 passed**.
+    - `test-bulk-import.js`: **20/20 passed**.
+    - `test-student-self-registration.js`: **30/30 passed**.
+
+### ✅ Milestone 464: Student Bulk CSV/TSV Import System Full Modernization & Dual-DB Parity
+- **Root-Cause Analysis of "Broken Bulk Import System"**:
+  1. *Validation Constraint Failure*:
+     - Route `/api/v1/hod/students/bulk` enforced mandatory `body('year').isInt()` and `body('semester').isInt()`. The client previously sent `{ students }` directly without root `year`/`semester`, triggering an immediate 400 Bad Request error on every import.
+  2. *Cross-Database Collation Crash*:
+     - `HodModel.reindexCohortRollNumbers` executed `ORDER BY s.full_name COLLATE NOCASE ASC`. While valid in SQLite, MySQL 8.x lacks a `NOCASE` collation, throwing fatal error `Unknown collation: 'NOCASE'` and terminating transaction with HTTP 500.
+  3. *Frontend Form & Modal Desynchronization*:
+     - `students.js` looked only for `#modal-bulk-csv` and lacked support for `#bulk-modal`, `#bulk-form`, and `#bulk-result-modal`.
+     - `submitBulk`, `copyBulkCredentials`, and `closeModal` were not exported to `window`, triggering `ReferenceError` on button submission.
+     - Did not support Tab-delimited (TSV) paste from Microsoft Excel or Google Sheets.
+  4. *Missing Credentials & Auto-Assigned Roll Reporting*:
+     - Backend did not return `temporary_password` or fetch updated `class_roll_no` after cohort reindexing, leaving the bulk admission credentials modal empty.
+  5. *Department Resolution for System Admin*:
+     - System Admin provisioning lacked department fallback in `HodController.bulkCreateStudents`, failing foreign key validation when `req.hod_department_id` was null.
+- **Architectural Solutions Delivered**:
+  - **Backend Route & Validation (`backend/src/routes/hod.js`)**:
+    - Relaxed root `year`, `semester`, and added `department_id` as optional fields, validating ranges when present and allowing per-student cohort determination.
+  - **Backend Controller & Multi-Cohort Partitioning (`backend/src/controllers/hodController.js`)**:
+    - Added resilient `deptId` resolution checking `req.hod_department_id`, `req.body.department_id`, teacher department, and first active department.
+    - Implemented automatic multi-cohort partitioning: students in the same import batch with differing years/semesters are grouped and processed cohort-by-cohort with atomic reindexing.
+  - **Backend Model & Dual-Engine Parity (`backend/src/models/hodModel.js`)**:
+    - Replaced SQLite-specific `COLLATE NOCASE` with cross-compatible `ORDER BY LOWER(s.full_name) ASC`.
+    - Captured and returned `temporary_password` (`Password@123` or custom), registration number aliases (`registration_no`, `ubter_reg_no`, `reg_no`), and re-queried the newly assigned `class_roll_no` post-reindexing for every enrolled student.
+  - **Frontend UI & Multi-Format Parser (`students.js`, `index.html`)**:
+    - Enhanced parser to accept Tab (`\t`), Comma (`,`), and Semicolon (`;`) delimiters, handle quoted strings, detect and skip header rows, and support 2, 3, 4, 5, and 6-column formats.
+    - Added Target Year & Semester dropdown controls and Credentials Result Modal (`#bulk-result-modal`) with 1-click clipboard copy (`copyBulkCredentials()`) formatted as clean TSV.
+    - Exported all handlers (`submitBulk`, `submitBulkCsv`, `openBulkModal`, `closeBulkModal`, `closeBulkResultModal`, `copyBulkCredentials`, `closeModal`) to `window`.
+  - **Test Suite Verification & Parity**:
+    - Created dedicated verification test `backend/scripts/test-bulk-import.js`: **20/20 passed** (RBAC guards, validation, roll sequencing, duplicate handling, multi-cohort partitioning, admin provisioning).
+    - `test-ui-manifest-sync.js`: **216/216 passed** (100% manifest and DOM parity).
+    - `test-theme-support.js`: **88/88 passed** (zero hardcoded colors, theme tokens).
+    - `test-rbac-and-structure.js`: **38/38 passed**.
+    - `test-student-self-registration.js`: **30/30 passed**.
+
 ### ✅ Milestone 463: ESP32 Hardware Node & HOD Biometric Terminal Portal Full Integration & Live Polling Sync
 - **Root-Cause Analysis of Portal "Page Not Showing ESP" & "Display Not Updating / Enroll Not Working"**:
   1. *ESP32 Core 3.x Deprecations*:
@@ -10689,6 +10802,70 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - `test-ui-manifest-sync.js`: 208/208 Passed across all 32 pages.
      - `test-rbac-and-structure.js`: 38/38 Passed.
      - Visual regression testing with Headless Chrome virtual time budget verified cards, badges, and class switchers on desktop (1920x1080) and mobile (390x844).
+
+### ✅ Milestone 463: Classroom Live Roll Call Roster, Session Resolution & ESP32 Hardware Sync
+- **Date**: November 18, 2026
+- **Problem Diagnosed**:
+  1. Attendance Take Error: Opening Live Roll Call on `/faculty/group-detail/index.html?id=4&tab=register` triggered toast error: `API endpoint '/api/v1/faculty/registers/18/sessions' does not exist`.
+  2. Missing Session Creation Fields: `POST /api/v1/faculty/registers/:id/sessions` crashed with `Column 'start_time' cannot be null` because `start_time` lacked an automatic timestamp fallback.
+  3. Session Identification & Token Mismatch: `FacultyController.createSession` returned only `{ session_id }` instead of `{ id, session_id }`, causing `sess.id` to be undefined on client and preventing session opening, PIN generation, and live check-in polling.
+  4. Missing Roll Call Save Action: In `classroom-roll-modal`, the only action button was "Done", which exited without committing student attendance to the register matrix ledger.
+  5. ESP32 Offline & Roster Omission:
+     - In `AttendanceModel.getEsp32DayScans` and `AttendanceModel.getEnrolledStudentsForRegister`, students with `status = 'ACTIVE'` were excluded due to strict `tgm.status = 'ENROLLED'`.
+     - Timezone offset mismatch: appending `'Z'` to local IST timestamp in `attendanceController.js:405` caused devices to always be calculated as 5.5 hours outdated and flagged as offline/standby.
+- **Implemented Fixes**:
+  1. **New Backend Route (`routes/faculty.js` & `facultyController.js`)**:
+     - Added `GET /api/v1/faculty/registers/:id/sessions` calling `FacultyModel.getRegisterSessions(registerId)` returning active and finalized sessions.
+     - Updated `createSession` to return `{ id: newSessionId, session_id: newSessionId, session_date, period_number, state: 'DRAFT', label }`.
+  2. **Robust SQL Fallbacks (`facultyModel.js`)**:
+     - Updated `createSessionManual` to supply `effStartTime = startTime || `${sDate} 09:00:00``, preventing `NOT NULL` constraint violations.
+  3. **Multi-Status Roster Inclusivity (`attendanceModel.js`)**:
+     - Relaxed `teaching_group_members` filter to `(tgm.status = 'ENROLLED' OR tgm.status = 'ACTIVE')` in both `getEsp32DayScans` and `getEnrolledStudentsForRegister`.
+  4. **Timezone-Aware Heartbeat Reconciliation (`attendanceController.js`)**:
+     - Removed rogue UTC `'Z'` string concatenation on local MySQL datetime strings; accurately calculates `isOnline` within 120-minute tolerance.
+  5. **Live Roll Call Confirmation (`group-detail-register.js` & `index.html`)**:
+     - Added `#btn-save-class-rollcall` ("Confirm & Save Attendance") in `classroom-roll-modal`.
+     - Implemented `submitClassRollCall()` which collects verified QR/PIN claims (in Live mode) or toggled student attendance (in Manual mode) and commits them to `confirm-day-attendance`.
+  6. **Capacitor Mobile Sync & UI Manifests**:
+     - Verified 216/216 passing UI manifest sync tests.
+     - Verified 88/88 passing theme support tests (0 hardcoded hex colors).
+     - Verified 38/38 passing RBAC tests.
+     - Synchronized web assets to Capacitor Android via `npx cap sync android`.
+
+### ✅ Milestone 464: System Administrator Portal Routing Isolation, Role Priority Resolution & Evaluation Sheets Export/PDF High-Fidelity Engine
+- **Date**: November 18, 2026
+- **Problem Diagnosed**:
+  1. *Admin Login Redirection & Domain Isolation Bug*:
+     - When logging into `admin@gmail.com` locally, the user was routed to `/faculty/dashboard/index.html` instead of `/admin/dashboard/index.html`.
+     - In `authService.js` (both MySQL and SQLite), `role: payload.is_hod ? 'HOD' : (userRoles.includes('TEACHER') ? 'TEACHER' : ...)` checked `TEACHER` before `SYSTEM_ADMIN` or `ADMIN`. For dual-role accounts, this caused the backend to mark the System Administrator as a `"TEACHER"` ("Faculty Member").
+     - In `login/index.js`, `redirectAfterLogin` and `checkExistingSession` only checked `roles.includes('SYSTEM_ADMIN')`, completely ignoring `ADMIN`, `user.role === 'ADMIN'`, and `user.is_admin`.
+     - In SQLite `user_roles`, User 1 had `ADMIN` and `TEACHER`, but lacked `SYSTEM_ADMIN`.
+     - On `/faculty/dashboard/index.html`, admin was presented with faculty statistics (My Teaching Classes, Total Faculty, Active Registers) and hit with a red toast: `"You do not have an active HOD assignment. Only HODs can perform this action."`.
+  2. *Evaluation Sheets Export Dropdown Stacking Context Clipping*:
+     - On `/faculty/sheets/index.html`, clicking `Export ▾` opened `.studio-export-menu`, but the top `.XLSX` option was clipped and covered by `.studio-bar-3` / `#sheet-visible-tally` ("Showing 62 of 62 students") because `.studio-bar-3` had `z-index: 40; position: relative;` while `.studio-bar-1` only had `z-index: 30`.
+     - In `sheets.js`, `toggleExportMenu` set `display: block` which stripped flexbox direction from the dropdown menu.
+  3. *PDF Export Full-Page Bleed*:
+     - Clicking `.PDF Printable Document` in Sheets Studio executed raw `window.print()`, which printed the whole web application (navigation rail, top header, status bars, action buttons) instead of the clean institutional evaluation marksheet document.
+- **Implemented Fixes**:
+  1. **Strict Admin Role Priority & Redirection (`authService.js` & `login/index.js`)**:
+     - Updated `authService.facultyLogin` and `authService.getMe` to evaluate `isAdmin` (`SYSTEM_ADMIN` or `ADMIN`) first. Guaranteed `role = 'SYSTEM_ADMIN'`, `is_admin = true`, and both `SYSTEM_ADMIN` and `ADMIN` in `userRoles`.
+     - Seeded missing `SYSTEM_ADMIN` role for User 1 in `college_attendance.sqlite`.
+     - Updated `login/index.js` (`redirectAfterLogin` and `checkExistingSession`) to check `roles.includes('SYSTEM_ADMIN') || roles.includes('ADMIN') || user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN' || Boolean(user.is_admin)` and redirect cleanly to `/admin/dashboard/index.html`.
+     - Updated `faculty/components/core/auth.js` and `faculty/dashboard/dashboard.js` to redirect administrators visiting `/faculty/dashboard` directly to `/admin/dashboard/index.html`.
+     - Updated `faculty/components/header/header.js` so administrator accounts display `"System Administrator"` pill and brand logo routes to `/admin/dashboard/index.html`.
+  2. **Stacking Context & Export Dropdown Restoration (`sheets.css` & `sheets.js`)**:
+     - Raised `.studio-bar-1` to `position: relative !important; z-index: 1000 !important;`.
+     - Set `.studio-bar-2` to `z-index: 50; position: relative;` and `.studio-bar-3` to `z-index: 40; position: relative;`.
+     - Configured `.studio-export-wrapper` to `z-index: 1050; position: relative;` and `.studio-export-menu` to `z-index: 1100; box-shadow: 0 10px 30px rgba(0,0,0,0.28)`.
+     - Fixed `toggleExportMenu(e)` to toggle `m.classList.toggle('open')` and preserve `display: flex`.
+  3. **High-Fidelity Isolated PDF Print Engine (`sheets.js`, `sheets.css`, `index.html`)**:
+     - Implemented `printActiveSheetDirect(activeTableId, sheetTitle)` in `sheets.js`: creates a clean, offscreen iframe containing the institutional header banner, active marksheet table (with input fields converted to clean text), and official signature blocks (Subject Faculty, HOD, Principal).
+     - Enhanced `@media print` in `sheets.css` to completely hide all outer navigation bars, headers, sidebars, mobile bottom navs, command bars, buttons, and status bars.
+     - Added `#sheet-print-signatures` block at the bottom of `faculty/sheets/index.html`.
+  4. **Capacitor Mobile Sync & UI Manifest Parity**:
+     - Ran `npm run ui:scan` and `npm run ui:verify`: 216/216 passed across all 33 pages.
+     - Verified `test-theme-support.js`: 88/88 passed (0 hardcoded hex colors).
+     - Synchronized web assets to Capacitor Android via `npx cap sync android`.
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.
