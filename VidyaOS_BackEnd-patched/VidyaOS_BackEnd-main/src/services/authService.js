@@ -842,7 +842,8 @@ class AuthService {
         google_email: email,
         google_name: profile.name,
         picture: profile.picture,
-        message: 'Google account linked successfully. You can now use 1-click login.'
+        message: 'Google account linked successfully. You can now use 1-click login.',
+        frontendOrigin: state.frontendOrigin || null
       };
     }
 
@@ -860,7 +861,8 @@ class AuthService {
         picture: profile.picture || null,
         already_registered: alreadyRegistered,
         status: existingStatus,
-        message: alreadyRegistered ? 'An account with this Google email already exists.' : 'Google account verified. Details auto-filled.'
+        message: alreadyRegistered ? 'An account with this Google email already exists.' : 'Google account verified. Details auto-filled.',
+        frontendOrigin: state.frontendOrigin || null
       };
     }
 
@@ -878,7 +880,8 @@ class AuthService {
           google_name: profile.name || email.split('@')[0],
           google_sub: googleSub,
           picture: profile.picture || null,
-          message: `No student account found for ${email}. Please complete registration first.`
+          message: `No student account found for ${email}. Please complete registration first.`,
+          frontendOrigin: state.frontendOrigin || null
         };
       }
 
@@ -888,7 +891,8 @@ class AuthService {
           action: 'PENDING_APPROVAL',
           google_email: email,
           google_name: profile.name || email.split('@')[0],
-          message: 'Your registration is pending approval by your Department Class Teacher.'
+          message: 'Your registration is pending approval by your Department Class Teacher.',
+          frontendOrigin: state.frontendOrigin || null
         };
       }
 
@@ -1010,7 +1014,8 @@ class AuthService {
           roles: user.roles,
           student: payload.student || null,
           google_linked: true
-        }
+        },
+        frontendOrigin: state.frontendOrigin || null
       };
     }
 
@@ -1027,6 +1032,7 @@ class AuthService {
       action: 'LOGIN',
       access_token: accessToken,
       refresh_token: refreshToken,
+      frontendOrigin: state.frontendOrigin || null,
       user: {
         id: user.id,
         username: user.username,
