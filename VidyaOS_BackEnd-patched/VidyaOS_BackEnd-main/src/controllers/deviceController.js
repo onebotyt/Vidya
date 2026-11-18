@@ -111,10 +111,14 @@ class DeviceController {
    */
   async getHodEsp32Overview(req, res) {
     try {
-      let deptId = req.query.department_id ? parseInt(req.query.department_id, 10) : null;
-      if (!deptId && req.user.teacher_id) {
+      const queryParams = req.query || {};
+      let deptId = queryParams.department_id ? parseInt(queryParams.department_id, 10) : null;
+      if (!deptId && req.user?.teacher_id) {
         const tRows = await query('SELECT department_id FROM teachers WHERE id = ?', [req.user.teacher_id]);
         deptId = tRows[0]?.department_id || null;
+      }
+      if (!deptId && req.user?.department_id) {
+        deptId = req.user.department_id;
       }
       if (!deptId) {
         const dRows = await query('SELECT id FROM departments ORDER BY id ASC LIMIT 1');
@@ -122,12 +126,16 @@ class DeviceController {
       }
 
       const [deptRow] = await query('SELECT id, name, code FROM departments WHERE id = ?', [deptId]);
-      const devices = await deviceModel.listDevices(deptId);
+      let devices = await deviceModel.listDevices(deptId);
+      if (!devices || devices.length === 0) {
+        // Fallback: If no device specifically tagged to this department, load all active institutional terminals
+        devices = await deviceModel.listDevices(null);
+      }
       const cohortBio = await deviceService.getCohortBiometrics(
         deptId,
         deptId,
-        req.query.year ? parseInt(req.query.year, 10) : null,
-        req.query.semester ? parseInt(req.query.semester, 10) : null,
+        queryParams.year ? parseInt(queryParams.year, 10) : null,
+        queryParams.semester ? parseInt(queryParams.semester, 10) : null,
         null
       );
 

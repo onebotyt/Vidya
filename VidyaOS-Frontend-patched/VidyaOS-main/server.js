@@ -106,10 +106,15 @@ const STATIC_REWRITES = [
   [/^\/student\/profile\/?$/, '/student/profile/index.html'],
   [/^\/faculty\/group[ -]detail(\/index\.html)?\/?$/, '/faculty/group-detail/index.html'],
   [/^\/student\/group[ -]detail(\/index\.html)?\/?$/, '/student/group-detail/index.html'],
+  [/^\/faculty\/student[ -_]performance(\/index\.html)?\/?$/, '/faculty/student-performance/index.html'],
+  [/^\/faculty\/direct[ -_]assessment(\/index\.html)?\/?$/, '/faculty/direct-assessment/index.html'],
+  [/^\/faculty\/indirect[ -_]assessment(\/index\.html)?\/?$/, '/faculty/indirect-assessment/index.html'],
+  [/^\/faculty\/assessment[ -_]process(\/index\.html)?\/?$/, '/faculty/assessment-process/index.html'],
+  [/^\/faculty\/course[ -_]file(\/index\.html)?\/?$/, '/faculty/course-file/index.html'],
 
   // Generic section/:page pattern
-  [/^\/(admin|faculty|student)\/([a-zA-Z0-9_-]+)\/?$/, '/$1/$2/index.html'],
-  [/^\/(admin|faculty|student)\/([a-zA-Z0-9_-]+)\.html$/, '/$1/$2/index.html'],
+  [/^\/(admin|faculty|student)\/([a-zA-Z0-9_ -]+)\/?$/, '/$1/$2/index.html'],
+  [/^\/(admin|faculty|student)\/([a-zA-Z0-9_ -]+)\.html$/, '/$1/$2/index.html'],
 ];
 
 // ─── Resolve request path via rewrites ───────────────────────────────────────
