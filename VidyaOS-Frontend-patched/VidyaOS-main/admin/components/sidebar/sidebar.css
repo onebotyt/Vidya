@@ -807,7 +807,7 @@ html:not(.sidebar-collapsed) .sidebar-nav-body {
   transition: opacity 0.22s ease !important;
 }
 
-.admin-sidebar.desktop-open ~ #sidebar-backdrop,
+.admin-sidebar.desktop-open~#sidebar-backdrop,
 #sidebar-backdrop.active,
 #sidebar-backdrop.open {
   display: block !important;
@@ -862,6 +862,7 @@ html:not(.sidebar-collapsed) .sidebar-nav-body {
   .sidebar-nav-short-label {
     display: none !important;
   }
+
   .sidebar-nav-label {
     display: block !important;
   }
@@ -1461,6 +1462,7 @@ html:not(.sidebar-collapsed) .sidebar-nav-body {
 
 /* ── 8. Desktop Rail Toggle Expand/Collapse Button ── */
 @media (min-width: 769px) {
+
   /* Collapsed Rail mode: 56x52 squircle button */
   .admin-sidebar:not(.desktop-open) .sidebar-rail-toggle-item,
   .admin-app-layout.sidebar-collapsed .sidebar-rail-toggle-item {
