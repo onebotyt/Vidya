@@ -5103,7 +5103,7 @@ function switchTestSubsheet(val) {
     }
   } else {
     // Switch to single-test sheet matching testId, shortName, or name
-    const idx = EXCEL_WB.sheets.findIndex(s => 
+    const idx = EXCEL_WB.sheets.findIndex(s =>
       s.type === 'single-test' && (
         String(s.testId) === String(val) ||
         String(s.shortName) === String(val) ||
