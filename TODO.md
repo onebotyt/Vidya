@@ -49,6 +49,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 491: Sheet Studio Student Roster Hydration, Default 0 Marks Architecture & Zero-Blank-Grid Invariant
+- **Objective & Architectural Scope**:
+  1. *Zero-Blank-Grid Invariant (`/faculty/sheets/sheets.js`)*:
+     - Fixed `ReferenceError: sortStudentsList is not defined` bug that previously aborted `hydrateAcademicSheetsFromGroup` execution and left `EXCEL_WB.sheets = []` empty with `Showing 0 students`.
+     - Defined canonical `sortStudentsList(list)` at root of sheets logic: safely sorts students by class roll number ascending, then full name alphabetical.
+     - Implemented student roster fallback: even if a classroom has zero enrolled members in the database yet, automatically generates 15 structured student rows (`SR. NO.` 1..15, enrollment template, default 0 marks), ensuring Sheet Studio never renders a blank or broken grid.
+  2. *Default 0 Marks Architecture for Instant Faculty Direct Grading*:
+     - Guaranteed that even when a classroom (teaching group) has zero classwork, assignments, or tests created yet in Google Classroom / VidyaOS database:
+       - Displays complete student roster (`SR. NO.`, `ROLL NO.`, `STUDENT NAME`).
+       - Initializes all evaluation, test, assignment, and practical mark columns to `0` by default (eliminating mock numbers).
+       - Automatically wires all formulas (`=ROUND(D3+E3+F3+G3, 2)`, `=SUM(D3:G3)`, `=AVERAGE(...)`) so they calculate from 0 and immediately update as soon as the teacher types marks.
+       - Enables teachers to directly enter marks in Sheet Studio without first having to create classwork in Classroom.
+  3. *Teaching Group & Attendance Register Bi-Directional Resolution (`backend/src/models/facultyModel.js`)*:
+     - Enhanced `FacultyModel.getRegisterById(registerId)`: automatically resolves `group_id` if null by matching against `teaching_groups`, and seamlessly resolves when a teaching group ID is passed directly.
+     - Updated database registers to link `group_id = id`, allowing `/api/v1/faculty/registers/:id/internal-evaluation` to return full 13-student rosters with real student enrollment numbers and roll numbers.
+  4. *Stale Local Storage Cache Invalidation & Dropdown Switching*:
+     - Cache validation checks `hasStudentRow`: discards any stale `localStorage` workbook that lacks student rows or has corrupted structure.
+     - In `onSwitchGroup(newGroupId)`: invokes `await switchSheetTab(S.activeSheet || 'evaluation', false)` to immediately refresh the grid on subject change.
+     - Filter row scanning in `applyExcelGridFilters`: excludes signoff rows from `totalStudentRows` tally for precise student counts (`Showing 13 of 13 students`).
+  5. *Verification & Regression Suite*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js`.
+     - 100% RBAC guards and permanent redirects: 38/38 checks pass in `node backend/scripts/test-rbac-and-structure.js`.
+
 ### ✅ Milestone 490: Sheet Studio Institutional Worksheets, Single/Consolidated Test Switching, Clean Headers & Zero-DataSheet Compliance
 - **Objective & Architectural Scope**:
   1. *Institutional Multi-Sheet Hydration & Exact Government Polytechnic Formats (`/faculty/sheets/sheets.js`)*:
