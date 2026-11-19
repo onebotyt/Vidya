@@ -11138,6 +11138,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `node backend/scripts/test-ui-manifest-sync.js` (203/203 passed, 0 failures).
     - `node backend/scripts/test-theme-support.js` (84/84 passed, 0 failures).
 
+- [x] **Milestone 480: ESP32 Modal Overflow Fix, Department Auto-Resolution, Remote Cloud Diagnostics & Final USB OTA Baseline**:
+  - **Modal Overflow & Responsive Viewport Fix**:
+    - Resolved `#register-esp-modal` and child dialog overflows in `esp32-devices.css`.
+    - Configured `.modal-backdrop` (`align-items: flex-start !important; overflow-y: auto !important;`) and `.modal-card` (`max-height: calc(100vh - 3.5rem) !important; overflow-y: auto !important;`) so modal headers, inputs, and action buttons never clip offscreen.
+  - **Department Auto-Resolution & MySQL `branch_id` Fix**:
+    - Eliminated redundant manual department selector; HOD/faculty session automatically maps to their assigned department.
+    - Removed non-existent `branch_id` and `academic_year_id` columns from `INSERT INTO devices` in `deviceModel.js`, `hodModel.js`, and `adminModel.js`, completely resolving the MySQL fatal error.
+  - **Browser Autofill Prevention on Wi-Fi Modals**:
+    - Defeated Chrome heuristic password manager injection (which filled `hod@gmail.com` into the Wi-Fi SSID field) using `readonly onfocus="this.removeAttribute('readonly');"`, `autocomplete="off"`/`"new-password"`, and explicit field clearing on modal initialization.
+  - **Remote Cloud Diagnostics Logging System**:
+    - Built circular log buffer (12 items) in `VidyaOS_ESP32_Biometric_Node.ino` that batches diagnostic logs (INFO, WARN, ERROR) into the AES-256-GCM encrypted 10s heartbeat.
+    - Created `device_logs` MySQL table with indexed query optimization (`012_create_device_logs.sql`).
+    - Added backend routes (`/api/v1/devices/esp32/logs`, `/api/v1/devices/hod/:device_id/logs`) and service methods (`recordDeviceLogs`, `getDeviceLogs`, `clearDeviceLogs`).
+    - Integrated "Live Remote ESP32 System Logs" console into the HOD portal with real-time polling (4s), log-level filtering, and clear controls.
+  - **Final Physical USB Flash & Wireless OTA Update Baseline**:
+    - Compiled `VidyaOS_ESP32_Biometric_Node.ino` (1,141,712 bytes, 87% flash) and flashed via physical USB to `COM5` via `esptool.py` at 921600 baud with verified hash.
+    - Synchronized compiled binary to `backend/uploads/firmware/firmware.bin` and `VidyaOS_ESP32_Biometric_Node.ino.bin` to serve as the baseline for all subsequent wireless over-the-air (OTA) updates.
+  - **Verification Suite**:
+    - `node backend/scripts/test-ui-manifest-sync.js` (203/203 passed, 100% manifest/DOM parity).
+    - `node backend/scripts/test-theme-support.js` (84/84 passed, zero hardcoded hex colors).
+    - `node -c backend/server.js` (clean syntax verification).
+
 - [ ] **Dedicated Institutional Parent Notification System (Future Plan)**:
   - Comprehensive multi-channel parent communication portal for publishing official college notices, circulars, fee reminders, exam schedules, and holiday announcements.
   - **Parent Attendance Defaulter Escalations**: Deferred from immediate MVP to be incorporated as a specialized module within this future parent notification hub.
