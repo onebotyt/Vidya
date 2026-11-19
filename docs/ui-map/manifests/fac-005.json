@@ -5,7 +5,7 @@
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
   "content_hash": "012dddb8ea6d",
-  "last_scanned": "2026-11-19T07:51:33.739Z",
+  "last_scanned": "2026-11-19T08:35:35.362Z",
   "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",

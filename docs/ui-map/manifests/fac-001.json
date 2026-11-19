@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "040a8ea4396f",
-  "last_scanned": "2026-11-19T07:51:33.652Z",
+  "content_hash": "08dbb9afa834",
+  "last_scanned": "2026-11-19T08:35:35.285Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -40,7 +40,6 @@
           "Student Name",
           "Cohort",
           "Batch",
-          "Attendance",
           "Actions"
         ]
       },

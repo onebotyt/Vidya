@@ -49,6 +49,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 483: Student Academic Records & Dossiers Roster Attendance Column Removal
+- **Objective & Architectural Scope**:
+  1. *Roster Table Streamlining (`/faculty/student-records/index.html` & `records.js`)*:
+     - Removed the redundant `ATTENDANCE` column header (`<th>Attendance</th>`) from the main student roster table (`#rec-students-table`).
+     - Removed the attendance percentage badge (`<span class="rec-att-badge">${attPct}%</span>`) cell from the student row template in `records.js` (`renderTable`).
+     - Adjusted table loading and empty cell `colspan` attributes from `7` to `6` across both HTML markup and dynamic JavaScript states.
+     - Synchronized mobile distribution assets via `prepare-mobile.js`.
+  2. *Verification & Regression Suite*:
+     - Re-extracted manifests via `extract-ui-manifest.js`; all 203 checks passed in `test-ui-manifest-sync.js` (100% parity).
+     - Verified CSS theme tokenization in `test-theme-support.js` (84/84 passed).
+     - Verified RBAC and structure in `test-rbac-and-structure.js` (38/38 passed).
+
 ### ✅ Milestone 482: HOD Assignment Role Synchronization, Dashboard 403 Suppression & Cloudinary Branding Fallback
 - **Objective & Architectural Scope**:
   1. *Immediate HOD Role & Auth Cache Synchronization*:
