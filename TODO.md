@@ -49,44 +49,37 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 472: Dual-Section Student Search & Coursework Matrix, Clean Marks Score, Export Modal, and High-Fidelity Excel Evaluation Sheet Studio with Multi-Format Exports
+### ✅ Milestone 473: Unified Classroom Academic Dossier, Dynamic Module Dropdown, Quick-Access Links & Combine-Export PDF Merge Engine
 - **Objective & Architectural Scope**:
-  1. *Dual-Section Layout for Student Search & Control (`/faculty/student-records/index.html`)*:
-     - Split student academic records display into two concurrent, dedicated sections:
-       - **Section 1: "Showing Students"** (`#sec-showing-students`): Displays student demographic cards/rows (Roll #, Enrollment No, Student Name, Cohort, Batch, Attendance %, Actions). When searching by student roll/name, displays the matching student card.
-       - **Section 2: "Showing Records"** (`#sec-showing-records`): Displays all coursework and academic class work of that student (Assignments, Unit Tests, Lab Practicals, Final Docs).
-  2. *Clean Marks Column Display*:
-     - Removed verbose subtext hints (`Sheet (PC) / Table (Mobile)`) so the Marks column strictly displays the clean score badge (e.g. `9.5 / 10`, `18 / 20`, `Ungraded`).
-  3. *Section Header Export Action & Modal (`#btn-export-records` & `#modal-export-records`)*:
-     - Integrated a dedicated "Export" action button into Section 2's header.
-     - Created `#modal-export-records` allowing faculty to select:
-       - Classwork Assessment Type: `Unit Test 1`, `Unit Test 2`, `All Unit Tests (Combined)`, `Theory Coursework & Assignments`, `Practical / Lab Journal Records`.
-       - Semester Filter: `Semester 5 (IT Year 3)` to other semesters.
-       - Export Format: `Excel (.xlsx)`, `PDF (.pdf)`, `Word (.docx)`.
-     - Action Buttons: `View` (`#btn-view-sheet`) and `Export` (`#btn-export-sheet`).
-  4. *High-Fidelity Evaluation Sheet Studio (`#modal-sheet-preview` & `records.js`)*:
-     - **Single Test Selection (Image 3 Design)**:
-       - Non-editable evaluation sheet with institutional blue header banner (`Uttarakhand Government Institute of Polytechnic, Nainital | Internal Evaluation Sheet 2026-27 (Winter Session)`).
-       - Demographic columns (`SR. NO.`, `ROLL NO.`, `REG. NO.`, `ENROLLMENT NO.`, `STUDENT NAME`) in rows.
-       - Unit test columns spanning questions (`Q1`, `Q2`, `Q3`, `Q4`) with live max marks row (`5 5 5 5 -> 20`).
-       - Right-side instructions pane (`Unit Test Details (Mode : OFFLINE)`, Instructions list, Questions list, absent note, and present class average).
-     - **All Unit Tests Combined (Image 4 Design)**:
-       - Unit tests across columns (`UT1`, `UT2`, `UT3`, `Total Marks`, `Average %`), student demographics in rows, class average footer.
-       - Crucial Rule: Strictly omits the right-hand instructions/questions pane.
-     - **Assignments & Lab Records (Image 4 Design)**:
-       - Theory assignments (`A1`, `A2`...) or lab practicals (`L1`, `L2`...) across columns with max marks row, total marks, average %, and class average summary.
-  5. *Multi-Format Exporters Engine*:
-     - **Excel (`.xlsx`)**: Formatted multi-level headers, column widths, and cells using client-side `ExcelJS`.
-     - **PDF (`.pdf`)**: Print-isolated landscape iframe rendering institutional evaluation ledger without web application shell.
-     - **Word (`.docx` / `.doc`)**: Structured document export with formal verification signature blocks.
-  6. *Backend Data Engine (`studentRecords.js`, `studentRecordController.js`, `studentRecordModel.js`)*:
-     - Added `GET /api/v1/student-records/classwork-sheet` delivering dynamic evaluation sheet payloads for single tests, all tests, assignments, and labs.
-     - Upgraded `getStudents` to return matched `students` (for Section 1) and `records` (for Section 2) concurrently on search.
-- **Verification Suites & Health Checks**:
-  - `test-ui-manifest-sync.js`: **202/202 passed** (100% manifest and DOM parity).
-  - `test-theme-support.js`: **84/84 passed** (zero hardcoded hex colors, 100% CSS variable tokens).
-  - `test-rbac-and-structure.js`: **38/38 passed**.
-  - `test-smart-search.js`: Verified composite token parsing and multi-row assignment retrieval.
+  1. *Consolidation of Classroom Academic Dossiers (`/faculty/course-file/index.html`)*:
+     - Consolidated redundant standalone classroom modules (`theory-classes`, `lab-classes`, `student-performance`, `direct-assessment`, `indirect-assessment`, and `assessment-process`) into a single, unified dynamic Academic Dossier page.
+     - Added `#select-dossier-type` dropdown in toolbar allowing faculty to seamlessly switch between modules (`theory`, `lab`, `nba`, `performance`, `direct`, `indirect`, and `all`) without page reload.
+     - Replaced legacy standalone HTML pages with instant 301/JavaScript redirection to `/faculty/course-file/index.html?type=<module>` preserving any `groupId` context.
+  2. *Classroom Quick-Access Links (`/faculty/classes/classes.js`)*:
+     - Preserved all 6 dedicated quick-access action tiles on teaching group classroom cards (`Theory Classes`, `Laboratory`, `NBA`, `Student Performance`, `Direct Assessment`, `Indirect Assessment`), linking directly to `/faculty/course-file/index.html?groupId=${g.id}&type=${type}`.
+  3. *Combine-Export PDF Engine (`courseFileController.js` & `pdf-lib`)*:
+     - Integrated `pdf-lib` for institutional multi-document compilation.
+     - Added endpoint `GET /api/v1/course-files/merge-export?group_id=<id>&type=<module_or_all>`.
+     - Automatically compiles an Institutional Cover Sheet (Uttarakhand Government Institute of Polytechnic, Nainital, Department, Subject, Semester, Teacher, AY, Audit Readiness Pill, 3 official verification signature blocks), Table of Contents with starting page numbers & audit compliance index, followed by all uploaded PDF documents.
+     - Implemented `sanitizePdfText` to guarantee WinAnsi/Latin-1 standard font compliance without character encoding crashes.
+  4. *Multi-Repo & UIMS Verification*:
+     - Re-extracted manifests via `extract-ui-manifest.js` and verified 100% DOM parity across all 31 pages with `test-ui-manifest-sync.js` (203/203 passed).
+     - Verified CSS tokenization and 0 hardcoded colors via `test-theme-support.js` (84/84 passed).
+     - Verified backend route authorization and structure via `test-rbac-and-structure.js` (38/38 passed).
+     - Synced mobile distribution with `prepare-mobile.js`.
+
+### ✅ Milestone 472: ESP32 Firmware Direct Flash, Airtel_Ruby Wi-Fi Association & Render Cloud Heartbeat Live Verification
+- **Objective & Architectural Scope**:
+  1. *Silicon Labs CP2102 VCP Driver Installation & Port Binding*:
+     - Installed CP2102 VCP driver for Windows; confirmed device mounted as active serial COM port `COM5`.
+  2. *Arduino Toolchain & Core Engine Installation*:
+     - Installed `esp32:esp32@3.0.7` core platform and all required sensor/display libraries (`ArduinoJson`, `PubSubClient`, `Adafruit SSD1306`, `Adafruit GFX`, `Adafruit BusIO`, `Adafruit Fingerprint Sensor Library`) via `arduino-cli`.
+  3. *Firmware Compilation & Flashing*:
+     - Successfully compiled `VidyaOS_ESP32_Biometric_Node.ino` (1,128,881 bytes program space, 86%) and flashed directly to ESP32 over `COM5` via `esptool.py` with automatic RTS reset.
+  4. *Live Serial Monitor & Wi-Fi Association Verified*:
+     - Monitored real-time boot sequence at 115200 baud: W25Q32 flash detected, Wi-Fi successfully connected to `Airtel_Ruby` (`192.168.1.20`, RSSI -51 dBm).
+     - Successfully dispatched AES-256-GCM encrypted HTTPS heartbeat to live Render cloud backend (`https://vidyaos-backend.onrender.com/api/v1/devices/esp32/heartbeat`).
+     - Render cloud returned HTTP 404 (`ESP32 terminal 'ESP32-IT-LAB-01' is not registered`), confirming live end-to-end TLS handshake, routing, and crypto verification from hardware to cloud.
 
 ### ✅ Milestone 471: ESP32 Biometric Terminals Auto-Detection & Animated Loading Bar Experience
 - **Objective & Architectural Scope**:

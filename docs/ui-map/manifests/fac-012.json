@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/course-file.html",
   "source_file": "frontend/faculty/course-file/index.html",
-  "content_hash": "23897169f398",
-  "last_scanned": "2026-11-19T02:35:30.504Z",
+  "content_hash": "0b167487a9c3",
+  "last_scanned": "2026-11-19T03:20:41.315Z",
   "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
   "purpose": "NBA/NAAC course compliance file compilation",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -20,6 +20,8 @@
     "subjectId",
     "register_id",
     "registerId",
+    "type",
+    "tab",
     "doc",
     "action"
   ],
@@ -56,12 +58,12 @@
     },
     {
       "method": "POST",
-      "endpoint": "/api/v1/course-files/:id/documents",
+      "endpoint": "/api/v1/course-files/:id/documents:id",
       "type": "REST"
     },
     {
       "method": "DELETE",
-      "endpoint": "/course-files/:id/documents/:id",
+      "endpoint": "/course-files/:id/documents/:id:id",
       "type": "INTERNAL"
     },
     {
@@ -250,18 +252,41 @@
         "id": "audit-decision-status",
         "title": "Modal Dialog",
         "field_count": 0
+      },
+      {
+        "id": "modal-combine-export",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "scope-current-module",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-start-merge-export",
+        "title": "Modal Dialog",
+        "field_count": 0
       }
     ]
   },
   "ui_elements": {
     "action_buttons": [
       {
+        "id": "btn-combine-export",
+        "label": "Combine &amp; Export All",
+        "action": "openCombineExportModal()",
+        "class": "btn btn-primary btn-combine-export",
+        "data_ui": null,
+        "title": "Merge all uploaded documents into one consolidated institutional PDF dossier"
+      },
+      {
         "id": null,
         "label": "Print Dossier Index",
         "action": "printDossierIndex()",
-        "class": "btn btn-primary",
+        "class": "btn btn-outline",
         "data_ui": null,
-        "title": "Print complete institutional NBA/NAAC index and cover sheet"
+        "title": "Print complete institutional dossier index and cover sheet"
       },
       {
         "id": null,
@@ -422,6 +447,14 @@
         "class": "btn btn-primary",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": "btn-start-merge-export",
+        "label": "⏳ Merge &amp; Download Combined PDF",
+        "action": "executeCombineExport()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -496,6 +529,22 @@
         "placeholder": null,
         "handler": "recalcEvalTotal()",
         "class": "form-control"
+      },
+      {
+        "id": "scope-current-module",
+        "type": "radio",
+        "name": "export-merge-scope",
+        "placeholder": null,
+        "handler": "updateMergeModalPreview()",
+        "class": null
+      },
+      {
+        "id": "scope-all-modules",
+        "type": "radio",
+        "name": "export-merge-scope",
+        "placeholder": null,
+        "handler": "updateMergeModalPreview()",
+        "class": null
       }
     ],
     "dropdown_selectors": [
@@ -509,6 +558,43 @@
           {
             "value": "",
             "text": "Loading classes..."
+          }
+        ]
+      },
+      {
+        "id": "select-dossier-type",
+        "title": null,
+        "onchange": "onSwitchDossierType(this.value)",
+        "class": "cf-select-class form-control",
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "theory",
+            "text": "Theory Classes (Syllabus, Lesson Plans, Log)"
+          },
+          {
+            "value": "lab",
+            "text": "Laboratory (Manuals, Practicals, Journals)"
+          },
+          {
+            "value": "nba",
+            "text": "NBA Course File (CO-PO, 18 Criteria Dossier)"
+          },
+          {
+            "value": "performance",
+            "text": "Student Performance (Advanced &amp; Slow Learners)"
+          },
+          {
+            "value": "direct",
+            "text": "Direct Assessment (Test &amp; Assignment Attainment)"
+          },
+          {
+            "value": "indirect",
+            "text": "Indirect Assessment (Surveys &amp; Feedback)"
+          },
+          {
+            "value": "all",
+            "text": "All Documents (Consolidated Classroom Dossier)"
           }
         ]
       },
@@ -665,6 +751,26 @@
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
+    },
+    {
+      "id": "modal-combine-export",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "scope-current-module",
+      "title": "Modal Dialog",
+      "fields": [
+        "scope-current-module"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-start-merge-export",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeModal("
     }
   ],
   "companion_scripts": [
@@ -693,7 +799,7 @@
     "renderEmptyClassState",
     "loadCourseFileDossier",
     "renderHeroBanner",
-    "renderCategoryCounts",
+    "renderCategoryTabs",
     "renderArtifactCards"
   ]
 }
