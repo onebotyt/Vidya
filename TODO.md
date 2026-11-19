@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 479: ESP32 Wi-Fi Airwave Discovery Fix, Radar Scanning Animation, Browser Credential Autofill Suppression, and Student Biometric Vault Removal
+- **Objective & Architectural Scope**:
+  1. *Real-Time ESP32 Wi-Fi Discovery & Mock Removal*:
+     - Root-caused `triggerScanNearbyWifi` fallback bug: `/devices/hod/:device_id/wifi/scans` returns `{ success: true, data: scans }` where `data` is an Array directly. Updated parsing to `Array.isArray(scansRes?.data) ? scansRes.data : (scansRes?.data?.scans || [])`.
+     - Removed hardcoded mock AP fallback (`Airtel_Ruby`, `CAMPUS_WIFI_HIGH_SPEED`). The portal now exclusively displays real access points discovered by the ESP32 radio chip (`vivot3lite`, `mobile`, `New`, `Shantanu poly`, `Airtel_neer_3811`, `Kpalariya`, `cabin57`).
+     - Displayed authentic authentication security protocols (`WPA2_PSK`, `WPA3_PSK`, `WPA_WPA2_PSK`, `OPEN`) mapped from radio chip encryption types.
+  2. *Dual-Display Animated Wi-Fi Scanner (Physical OLED & Webpage Console)*:
+     - Physical 0.96" SSD1306 OLED (`oled_buzzer_ui.h`): Added `showWifiScanningScreen(step)` with live channel detection progress bar and `showWifiScanComplete(count)` screen. Integrated into `scanNearbyWifiNetworksAndReport()` in `VidyaOS_ESP32_Biometric_Node.ino`.
+     - Webpage Wi-Fi Modal (`esp32-devices.css`): Added `.wifi-radar-circle`, `.wifi-radar-sweep`, and `.wifi-radar-blip` radar animations with sweeping conic gradients and signal blips during active scans.
+     - Simulated Live Hardware OLED Console: Synchronized state with `SCANNING 2.4G` airwave animation and instant `WI-FI DISCOVERY` discovery summaries.
+  3. *Browser Credential Autofill Suppression*:
+     - Protected `#scanned-wifi-form` in `frontend/faculty/esp32-devices/index.html` from browser credential manager autofill (which previously auto-injected HOD login email `hod@gmail.com` and password into SSID and WPA key fields).
+     - Added `autocomplete="off"`, dummy hidden credential traps, `autocomplete="new-password"` for the Wi-Fi key, and `autocomplete="off" autocapitalize="off" spellcheck="false"` for SSID.
+  4. *Student Biometric Removal Feature*:
+     - Added prominent `🗑️ Remove Biometric` button (`btn-danger btn-sm`) in the Department Student Biometric Vault roster table for enrolled students.
+     - Implemented `removeStudentCloudTemplate(studentId, fullName, rollNo)` with confirmation dialog, cloud vault deletion (`DELETE /devices/hod/template/:student_id`), hardware slot clearing, and real-time OLED removal feedback (`TEMPLATE CLEARED`).
+  5. *Verification & Regression Suite*:
+     - Ran `extract-ui-manifest.js` and `test-ui-manifest-sync.js` (203/203 passed with 100% hash parity).
+     - Ran `test-theme-support.js` (84/84 passed).
+     - Verified backend server syntax (`node -c backend/server.js`).
+
 ### ✅ Milestone 478: Student Roster Duplicate Enrollment Removal, 8-Digit UBTER Reg No Limit, UBTER Enrollment Labeling, and Registration Google Button Styling
 - **Objective & Architectural Scope**:
   1. *Student Management Roster Table*:

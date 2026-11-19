@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "d56be0d84330",
-  "last_scanned": "2026-11-19T06:03:18.409Z",
+  "content_hash": "d807c605d55a",
+  "last_scanned": "2026-11-19T06:23:29.726Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -400,7 +400,7 @@
       {
         "id": "scanned-wifi-ssid",
         "type": "text",
-        "name": null,
+        "name": "esp_selected_wifi_ssid",
         "placeholder": "Select a network above or type SSID",
         "handler": null,
         "class": "form-control"
@@ -408,7 +408,7 @@
       {
         "id": "scanned-wifi-password",
         "type": "password",
-        "name": null,
+        "name": "esp_selected_wifi_key",
         "placeholder": "Leave blank if open Wi-Fi network",
         "handler": null,
         "class": "form-control"
