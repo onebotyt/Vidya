@@ -49,7 +49,40 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### ✅ Milestone 469: Student Academic Records Composite Smart Search, Dynamic Work Matrix & Standardized Submission Filename Engine
+### ✅ Milestone 470: PC-First UGIP Nainital Login Redesign, Multi-Identifier Auth, UBTER/Roll No Student Registration & Faculty Self-Reg Sunset
+- **Objective & Architectural Scope**:
+  1. *PC-First UGIP Nainital Login Interface (`/login/index.html` & `index.css`)*:
+     - Replaced login interface with the Himalayan scenic slideshow theme from `vidyaos-ugip-nainital`.
+     - Added institutional branding: NBA Guidelines accreditation badge, scenic quote block, campus gallery cards with lightbox preview, and high-contrast login card.
+     - Preserved all required UIMS elements (`#google-signin-btn`, `#login-form`, `#identifier`, `#password`, `#pw-toggle-btn`, `#forgot-link`, `#submit-btn`, `#force-login-btn`, `#conflict-banner`, `#pending-banner`, `#status-alert-banner`, `#activation-modal`, `#google-signin-modal`).
+  2. *Multi-Identifier Authentication Engine (`authService.js` & `authController.js`)*:
+     - Removed obsolete `ENROLLMENT_LOGIN_DISABLED` barrier.
+     - Upgraded credential parser to recognize student Enrollment Numbers, UBTER Registration Numbers, Usernames, and Employee IDs in addition to Email/Phone.
+     - Upgraded `studentLogin` to query `official_enrollment_no`, `registration_no`, and `username`.
+     - Anti-User Enumeration Security: Standardized all authentication failures (non-existent account, incorrect password, inactive status) to return status 401 with unified security error message: `'invalid credentials check id and password '`.
+  3. *Removal of Faculty Self-Registration*:
+     - Faculty and HOD accounts are now strictly provisioned by Institutional Administrators and Department HODs.
+     - Retired `/faculty/register` endpoint; returns 403 Forbidden with institutional governance notice.
+     - Removed `#tab-faculty` and `#faculty-section` from registration page; streamlined registration exclusively for students (`/login/register/index.html`).
+  4. *Student Registration Upgrades with Optional Roll Number & UBTER Support*:
+     - Added optional `class_roll_no` input (`#stu-class-roll-no`).
+     - Allowed students without an issued Enrollment Number to register using their UBTER Registration Number (`#stu-ubter`).
+     - Persisted `class_roll_no` and registration identifier across `students` and `enrollments` tables atomically.
+  5. *Google Authentication Integration Fixes*:
+     - Fixed Google Sign-In and Google Sign-Up buttons with fallback Google Account Chooser modal (`#google-signin-modal`) ensuring seamless functionality across both production OAuth and local developer environments.
+- **Components Modified & Delivered**:
+  - `backend/src/services/authService.js`: Identifier parsing, UBTER/Enrollment student authentication, unified 401 security error.
+  - `backend/src/controllers/authController.js`: Disabled `registerFaculty`, updated `studentLogin`/`facultyLogin` responses, added `class_roll_no` handling in `registerStudent`.
+  - `backend/src/routes/auth.js`: Input validation updates for enrollment/UBTER and class roll number; 403 response for faculty self-reg.
+  - `backend/src/models/authModel.js`: Atomically wrote `class_roll_no` to `students` and `enrollments` tables in `registerStudentTransaction`.
+  - `frontend/login/index.html`, `index.css`, `index.js`: Replaced with UGIP Nainital theme, image slideshow, unified error handling, and Google account chooser.
+  - `frontend/login/register/index.html`, `register.js`: Student-exclusive registration, `class_roll_no`, UBTER fallback, Google sign-up modal handler.
+  - `frontend/images/*` & `frontend/login/images/*`: Added 10 high-resolution campus & gallery assets.
+  - `docs/ui-map/manifests/*.json`: Re-scanned and synchronized all 31 page manifests.
+- **Verification Suites & Health Checks**:
+  - `test-ui-manifest-sync.js`: **201/201 passed** (100% manifest and DOM parity).
+  - Backend syntax checks (`node -c`): 0 errors across all modified controllers, models, and routes.
+  - Multi-Dev Git verification (`pull-all.ps1`): All 3 repositories synchronized and up-to-date.
 - **Objective & Architectural Scope**:
   1. *Composite Multi-Attribute Search Engine (`/faculty/student-records/index.html`)*:
      - Enabled composite freeform search parsing: roll number (e.g. `1`), student name/alias (e.g. `girdhardhami`), work type (`assignment`, `assinment`, `test`, `exam`, `lab`, `practical`, `finaldocs`), and subject (`java`, `dbms`, `webtech`, `os`).
