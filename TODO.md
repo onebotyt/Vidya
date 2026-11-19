@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 488: Restored Multi-Sheet Switcher & Two-Way Excel Worksheet Synchronization
+- **Objective & Architectural Scope**:
+  1. *Prominent Top Academic Sheet Switcher (`/faculty/sheets/index.html` & `sheets.css`)*:
+     - Restored the primary sheet selector dropdown (`#sheet-selector-dropdown`) and subsheet container (`#subsheet-selector-container`) in the workspace toolbar (`studio-bar-3`) immediately before the search and filter controls.
+     - Provides clear, direct access to all four academic registers:
+       - 📋 **1. Master Evaluation Sheet** (Theory + Practical scaled grand total)
+       - 📝 **2. Class Test Marksheet** (Unit tests scores and average)
+       - 📚 **3. Assignment Marksheet** (Coursework tasks and average)
+       - 🔬 **4. Practical & Lab Work Marksheet** (Lab experiments and viva records)
+  2. *Two-Way Excel Worksheet Synchronization (`/faculty/sheets/sheets.js`)*:
+     - Unified `switchSheetTab(sheetName)` and `switchWorksheet(idx)`:
+       - Selecting a sheet from the top dropdown instantly loads and switches the active Excel worksheet in `EXCEL_WB.sheets`, renders the Excel grid, updates formula bar, and highlights the corresponding bottom Excel tab.
+       - Clicking any bottom Excel tab (`renderSheetTabs`) synchronizes the top `#sheet-selector-dropdown`, updates `S.activeSheet`, pushes the URL query parameter (`?sheet=...`), and updates the sub-sheet selector.
+  3. *Subsheet Assessment Focus & Dynamic Banner*:
+     - When viewing Class Tests, Assignments, or Practicals, `#subsheet-selector-container` renders the subsheet selector (e.g., *All Unit Tests Combined*, *Unit Test 1*, *Unit Test 2*, *Assignment 1*) and automatically focuses the active assessment column in the Excel grid.
+     - Synchronized `hdr-banner-line2` via `updateBannerForSheet(sheetType)` to clearly display the active register component and subject name.
+  4. *Verification & Regression Suite*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js`.
+     - 100% RBAC guards and permanent redirects: 38/38 checks pass in `node backend/scripts/test-rbac-and-structure.js`.
+
 ### ✅ Milestone 487: Sheet Studio Ribbon UI Layout Optimization, Dynamic Spreadsheet Filtering & Sort Synchronization
 - **Objective & Architectural Scope**:
   1. *Ribbon UI Layout Restructuring (`/faculty/sheets/index.html` & `sheets.css`)*:

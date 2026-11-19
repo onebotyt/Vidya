@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "75aede122995",
-  "last_scanned": "2026-11-19T10:16:54.140Z",
+  "content_hash": "da25317335da",
+  "last_scanned": "2026-11-19T10:28:23.376Z",
   "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -1939,6 +1939,31 @@
         ]
       },
       {
+        "id": "sheet-selector-dropdown",
+        "title": "Choose Active Academic Spreadsheet",
+        "onchange": "switchSheetDropdown(this.value)",
+        "class": "sheet-select-dropdown excel-sheet-select",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "evaluation",
+            "text": "📋 1. Master Evaluation Sheet"
+          },
+          {
+            "value": "tests",
+            "text": "📝 2. Class Test Marksheet"
+          },
+          {
+            "value": "assignments",
+            "text": "📚 3. Assignment Marksheet"
+          },
+          {
+            "value": "practicals",
+            "text": "🔬 4. Practical &amp; Lab Work Marksheet"
+          }
+        ]
+      },
+      {
         "id": "sheet-column-focus-select",
         "title": "Jump directly to column",
         "onchange": "onFocusColumnChange(this.value)",
@@ -1948,31 +1973,6 @@
           {
             "value": "",
             "text": "Column Focus ▾"
-          }
-        ]
-      },
-      {
-        "id": "sheet-selector-dropdown",
-        "title": "Choose Active Spreadsheet",
-        "onchange": "switchSheetDropdown(this.value)",
-        "class": "sheet-select-dropdown",
-        "options_count": 4,
-        "sample_options": [
-          {
-            "value": "evaluation",
-            "text": "1. Master Evaluation Sheet"
-          },
-          {
-            "value": "tests",
-            "text": "2. Class Test Marksheet"
-          },
-          {
-            "value": "assignments",
-            "text": "3. Assignment Marksheet"
-          },
-          {
-            "value": "practicals",
-            "text": "4. Practical &amp; Lab Work Marksheet"
           }
         ]
       },
