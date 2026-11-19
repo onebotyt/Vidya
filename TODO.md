@@ -49,6 +49,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 482: HOD Assignment Role Synchronization, Dashboard 403 Suppression & Cloudinary Branding Fallback
+- **Objective & Architectural Scope**:
+  1. *Immediate HOD Role & Auth Cache Synchronization*:
+     - Root-caused the 403 Forbidden error when newly appointed HODs access `/api/v1/hod/dashboard`: `reassignHOD` updated `teacher_assignments` and `departments.hod_user_id` but never inserted `'HOD'` into `user_roles`, and did not invalidate active auth cache.
+     - Updated `AdminModel.reassignHOD`: ensures `'HOD'` role is recorded in `user_roles` and calls `auth.invalidateUserAuthCache(userId)`.
+     - Updated `AdminModel.removeHOD`: safely purges `'HOD'` role from `user_roles` if user has no remaining active department assignments and invalidates cache.
+     - Updated `auth.js` and `requireScope.js`: checks both `user.id` and `user.teacher_id` against `teacher_assignments` and `departments.hod_user_id`, synchronizing `is_hod = true` and `roles.push('HOD')` on-the-fly.
+     - Updated `authService.js`: checks `teacher_assignments` and `departments` in `buildUserPayload`, syncing `is_hod: true`, `role: 'HOD'`, and `roles` in both `facultyLogin` and `getMe`.
+  2. *Faculty Dashboard Silent Handling & Role Guard*:
+     - Updated `loadDashboardKpis()` in `frontend/faculty/dashboard/dashboard.js`: evaluates `isHod` before calling `/hod/dashboard`.
+     - Added `{ suppressToast: true }` parameter to `fetchFn('/hod/dashboard')` and `/auth/me` calls so background KPI hydration never triggers a red error toast for non-HOD teachers or sessions pending role refresh.
+     - In `init()`, awaited `loadUserAndDepartment()` before `loadDashboardKpis()`, ensuring `localStorage` session state is fresh.
+  3. *Cloudinary Persistent Branding Storage & Ephemeral Fallback*:
+     - Root-caused `GET /uploads/branding/college_logo_... 404 (Not Found)`: Render ephemeral disk loses `/uploads/branding/` on container restarts.
+     - Updated `POST /api/v1/admin/branding/upload` in `backend/src/routes/admin.js`: pipes uploaded images directly to `storageService.upload(req.file, { subfolder: 'branding' })`, returning persistent Cloudinary HTTPS URLs.
+     - Updated `AdminController.updateSettings`: processes base64 logo and banner data URLs through `storageService.upload()` to save to Cloudinary.
+     - Updated `server.js`: added `/uploads/branding/:filename` fallback route that returns default institutional logo (`/images/collegelogo.jpeg` or `/images/college-logo.svg`) with HTTP 200 instead of 404 if a local file is missing.
+     - Updated `server.js` `/api/v1/settings/institution`: checks if `institution_logo_url` points to an unresolvable local file, falling back cleanly to `/images/collegelogo.jpeg`.
+     - Added image `onerror` fallback handlers in `dept-hero.js` and `dashboard.js`.
+  4. *Multi-Repo & UIMS Verification*:
+     - Re-extracted manifests via `extract-ui-manifest.js`; all 203 checks passed in `test-ui-manifest-sync.js` (100% parity).
+     - Verified CSS tokenization and zero hardcoded colors in `test-theme-support.js` (84/84 passed).
+     - Verified backend route authorization and structure in `test-rbac-and-structure.js` (38/38 passed).
+     - Verified backend syntax across all modified files (`node -c`).
+
 ### ✅ Milestone 481: ESP32 Smart Fingerprint Attendance with Automatic Hardware Deep Sleep, Touch-Wake & Background FreeRTOS Wi-Fi Synchronization
 - **Objective & Architectural Scope**:
   1. *Automatic Hardware Deep Sleep & AS608 Touch Wake*:
