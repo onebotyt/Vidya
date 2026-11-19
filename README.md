@@ -66,13 +66,14 @@ All demo accounts use password: `Admin@123` (Admin) or `Password@123` (Faculty &
 
 ## 👥 Contributors & Collaboration
 
-- **Lead Architect (Dev 1)**: `@onebotyt`
-- **Contributor (Dev 2)**: `@AkashK-Repo`
-- **Contributor (Dev 3)**: `@onebotyt-mobile`
+- **Lead Architect (Dev 1)**: [@onebotyt](https://github.com/onebotyt)
+- **Contributor (Dev 2)**: [@AkashK-Repo](https://github.com/AkashK-Repo)
+- **Contributor (Dev 3)**: [@onebotyt-mobile](https://github.com/onebotyt-mobile)
+- **Contributor (Dev 4)**: [@Surendra-singh885](https://github.com/Surendra-singh885)
 
 ---
 
-## 🤝 3-Developer Git Collaboration Workflow
+## 🤝 4-Developer Git Collaboration Workflow
 
 When working simultaneously across the repository ecosystem:
 
@@ -82,7 +83,7 @@ When working simultaneously across the repository ecosystem:
    ```
 2. **Create a Scoped Feature Branch**:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .\new-feature.ps1 -BranchName dev<2|3>/<feature-name>
+   powershell -ExecutionPolicy Bypass -File .\new-feature.ps1 -BranchName dev<2|3|4>/<feature-name>
    ```
 3. **Commit & Push for Pull Request Review**:
    ```powershell

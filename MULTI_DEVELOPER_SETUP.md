@@ -1,6 +1,17 @@
 # VidyaOS Multi-Developer Collaboration Guide
 
-This guide describes how **multiple full-stack developers (Dev 1, Dev 2, Dev 3)** work concurrently on VidyaOS across Frontend, Backend, and Root repositories without collisions.
+This guide describes how **multiple full-stack developers (Dev 1, Dev 2, Dev 3, Dev 4)** work concurrently on VidyaOS across Frontend, Backend, and Root repositories without collisions.
+
+---
+
+## 👥 Development Team Roster
+
+| Developer Role | GitHub Profile | Primary Scope | Branch Prefix |
+| :--- | :--- | :--- | :--- |
+| **Lead Architect (Dev 1)** | [@onebotyt](https://github.com/onebotyt) | Core Architecture, Deployments, Approvals | `main`, `feature/*` |
+| **Frontend Contributor (Dev 2)** | [@AkashK-Repo](https://github.com/AkashK-Repo) | UI Pages, Components, CSS Tokens, UIMS | `dev2/*` |
+| **Mobile Development (Dev 3)** | [@onebotyt-mobile](https://github.com/onebotyt-mobile) | Capacitor Android, Native Mobile, Termux Sync | `dev3/*` |
+| **Full-Stack Contributor (Dev 4)** | [@Surendra-singh885](https://github.com/Surendra-singh885) | Features, API Endpoints, UI & Integrations | `dev4/*` |
 
 ---
 
@@ -83,7 +94,10 @@ Every developer and AI assistant working on any task must adhere to the 3-phase 
 If developing on an isolated feature branch:
 ```powershell
 # Format: .\new-feature.ps1 -BranchName <name>
-powershell -ExecutionPolicy Bypass -File .\new-feature.ps1 -BranchName dev2/student-portal-ui
+# Examples:
+# For Dev 2: .\new-feature.ps1 -BranchName dev2/student-portal-ui
+# For Dev 4: .\new-feature.ps1 -BranchName dev4/api-feature-upgrade
+powershell -ExecutionPolicy Bypass -File .\new-feature.ps1 -BranchName dev4/your-feature-name
 ```
 This automatically branches frontend, backend, and the root monorepo.
 
