@@ -223,7 +223,34 @@ router.post(
   authLimiter,
   [
     body('full_name').trim().notEmpty().withMessage('Full name is required'),
-    body('official_enrollment_no').trim().notEmpty().withMessage('Enrollment number is required'),
+    body('enrollment_not_available').optional().toBoolean(),
+    body('official_enrollment_no').custom((val, { req }) => {
+      const isNotAvailable = Boolean(req.body.enrollment_not_available);
+      if (isNotAvailable) {
+        return true;
+      }
+      const enroll = (val || '').trim();
+      if (!enroll) {
+        throw new Error('Enrollment number is required (or check "Enrollment Number Not Available")');
+      }
+      if (!/^\d{11}$/.test(enroll)) {
+        throw new Error('Enrollment number must contain exactly 11 numeric digits (0–9)');
+      }
+      return true;
+    }),
+    body('registration_no').optional().trim(),
+    body('class_roll_no').optional({ checkFalsy: true }).custom((val) => {
+      if (val === undefined || val === null || val === '') return true;
+      const str = String(val).trim();
+      if (!/^\d{1,2}$/.test(str)) {
+        throw new Error('Class roll number must be numeric and maximum 2 digits (e.g. 01 to 99)');
+      }
+      const num = parseInt(str, 10);
+      if (isNaN(num) || num <= 0) {
+        throw new Error('Class roll number must be a positive integer');
+      }
+      return true;
+    }),
     body('email').isEmail().withMessage('Valid Gmail address is required').normalizeEmail({ gmail_remove_dots: false }),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('phone').optional().trim(),

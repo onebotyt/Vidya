@@ -3,6 +3,45 @@
 
 
 
+### 🏛️ Milestone 337: Student Registration & Student Management Improvements (11-Digit Enrollment, Not Available Checkbox, 2-Digit Roll & Edit Student Modal)
+- **Status**: 🟢 Completed, Verified & Deployed
+- **User Request**:
+  - *"VidyaOS – Student Registration & Student Management Improvements: Enrollment Number Availability Checkbox, 11-digit validation, 2-digit Class Roll Number validation, 'Not Assigned' badge display in roster and view details, and Edit Student option in 3-dot menu with modal for 5 fields."*
+- **Key Features Implemented**:
+  1. **Student Registration – Enrollment Number Availability Checkbox**:
+     - Added `☐ Enrollment Number Not Available` checkbox near the Enrollment Number field in `deployfolder/VidyaOS/login/register/index.html`.
+     - When checked: disables `#stu-enroll` input, sets placeholder to `Not Assigned`, clears validation errors, hides mandatory asterisk, and marks enrollment as optional.
+     - When unchecked: re-enables `#stu-enroll`, sets placeholder to `11-digit numeric enrollment`, restores mandatory asterisk, and requires valid 11-digit entry.
+     - Saved in database as `official_enrollment_no = NULL` and `enrollment_no_status = 'Not Assigned'`.
+  2. **Strict 11-Digit Enrollment Number Validation**:
+     - Frontend sanitization: strips non-numeric characters (`replace(/\D/g, '')`) and enforces `maxlength="11"`.
+     - Validation: enforces exact 11 digits (`^\d{11}$`). Shows clear contextual error message if `< 11` or `> 11` digits.
+     - Backend enforcement: registered express-validator custom rule and controller checks in `auth.js`, `authController.js`, `hod.js`, and `hodController.js`.
+  3. **Class Roll Number Validation (Maximum 2 Digits)**:
+     - Frontend sanitization: strips non-numeric characters and enforces `maxlength="2"`.
+     - Validation: enforces maximum 2 digits (`^\d{1,2}$` e.g., `01` to `99`).
+     - Backend enforcement: registered express-validator custom rule in both `routes/auth.js` and `routes/hod.js`.
+  4. **Faculty Dashboard – Display Enrollment Number Status**:
+     - In Department Students Roster (`faculty/students/`), students with an assigned enrollment number display their 11-digit number in mono styling.
+     - Students who registered with "Enrollment Number Not Available" display a prominent themed `<span class="stu-badge-unassigned">Not Assigned</span>` badge (never left blank).
+     - Reflected identically in Student View Details Dossier modal (`#detail-stu-enroll`).
+  5. **Edit Student Button in 3-Dot Kebab Menu & View Details**:
+     - Added `Edit Student` option in the row 3-dot dropdown menu (`#stu-menu-${studentId}`) alongside View Details, Transfer, Withdraw, Reset Password, and Remove Student.
+     - Added `Edit Student` primary action button (`#detail-btn-edit`) in the View Details Dossier modal footer.
+  6. **Interactive Edit Student Modal (`#modal-edit-student`)**:
+     - Form automatically pre-populates existing student credentials:
+       1. Student Full Name (`#edit-stu-name`)
+       2. Official Enrollment Number (`#edit-stu-enroll`) with `☐ Enrollment Number Not Available` checkbox (`#edit-chk-enroll-not-available`)
+       3. Registration Number / UBTER Reg. # (`#edit-stu-reg`)
+       4. Class Roll Number (`#edit-stu-roll`, max 2 digits)
+       5. Year / Semester dropdown (`#edit-stu-sem`)
+     - Enforces identical 11-digit and 2-digit validation rules.
+     - Saves updates via `PUT /api/v1/hod/students/:id`.
+     - Updates existing database records across `students`, `enrollments`, and `users` without duplicate creation, preserving all unedited fields.
+     - Immediately reflects updated values in the Department Students Roster and View Details modal.
+  7. **100% Theme Token Compliance**:
+     - All new CSS additions strictly utilize CSS variables (`var(--status-late)`, `var(--status-late-bg)`, `var(--border-color)`, `var(--color-primary)`) with zero hardcoded hex or RGB colors.
+
 ### 🏛️ Milestone 336: Added Trash Bin Checkboxes, Bulk Restore/Delete with Confirmation Modal & Import/Enroll Loading Animations
 - **Status**: 🟢 Completed, Verified & Deployed
 - **User Request**:
