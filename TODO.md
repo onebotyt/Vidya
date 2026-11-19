@@ -3,6 +3,26 @@
 
 
 
+### 🏛️ Milestone 338: Configured Mandatory Pre-Work Git Sync & Pre-Push Synchronization Protocol
+- **Status**: 🟢 Completed, Tested & Active Protocol
+- **User Request**:
+  - *"ok set when u start working u have to check the git commit and if there i any commit update the code and for pushing time"*
+- **Implementation Details**:
+  1. **Permanent Agent Guideline Anchor in `AGENTS.md`**:
+     - Embedded **Rule 3: Mandatory Pre-Work Git Check & Sync**: Before starting any task or writing any code, always check Git for remote commits across `Vidya`, `deployfolder/VidyaOS`, and `deployfolder/VidyaOS_BackEnd`. If remote is ahead, automatically update with `git pull --rebase`.
+     - Embedded **Rule 4: Mandatory Pre-Push Git Check & Sync**: Before pushing, verify modified files with `git status`, fetch & rebase latest upstream commits, stage, commit, and push cleanly.
+  2. **Automated Synchronization Engine (`scripts/pre-work-sync.ps1`)**:
+     - Built one-click pre-work check script that:
+       - Inspects local modified/uncommitted status.
+       - Runs `git fetch origin` across all three repos.
+       - Compares local SHA vs. remote SHA.
+       - Automatically detects when remote is ahead and executes `git pull --rebase` to bring local code up to date.
+  3. **Verification**:
+     - Ran pre-work sync test:
+       - `Vidya`: Verified 100% up to date on `feature/student-dashboard-redesign`.
+       - `VidyaOS_BackEnd`: Detected 12 incoming commits on `main` and cleanly rebased to `8248e6f`.
+       - `VidyaOS`: Detected 34 incoming commits on `main` and cleanly rebased to `bb79d50`.
+
 ### 🏛️ Milestone 337: Student Registration & Student Management Improvements (11-Digit Enrollment, Not Available Checkbox, 2-Digit Roll & Edit Student Modal)
 - **Status**: 🟢 Completed, Verified & Deployed
 - **User Request**:

@@ -1,10 +1,17 @@
 # Antigravity Agent Guidelines & Project Memory Anchor
 
-> **CRITICAL INSTRUCTION FOR ALL AGENT SESSIONS & CONTEXT RESTORATIONS:**
+> **CRITICAL INSTRUCTION FOR ALL AGENT SESSIONS & CONTEXT RESTorations:**
 > Whenever this conversation starts, restarts, or resumes after chat history truncation ("prefix cleared"):
-> 1. **IMMEDIATELY READ `TODO.md`** at the workspace root (`d:/uiap/TODO.md` or `d:/uiap/Attendance-System-Simplified/TODO.md`).
+> 1. **IMMEDIATELY READ `TODO.md`** at the workspace root (`d:/uiap/TODO.md` or `c:/Users/hp/.gemini/antigravity-ide/scratch/Vidya/TODO.md`).
 > 2. `TODO.md` contains the **single source of truth** regarding the current project state, active tasks, completed milestones, architectural rules, and test suites.
-> 3. **KEEP `TODO.md` SYNCHRONIZED:** Whenever you start a task, complete a task, or discover a bug/change in requirements, update `TODO.md` immediately.
+> 3. **MANDATORY PRE-WORK GIT CHECK & SYNC**:
+>    - At the start of *any* task or instruction, **always check Git for remote commits** across all active repos (`Vidya`, `deployfolder/VidyaOS`, `deployfolder/VidyaOS_BackEnd`).
+>    - If remote commits exist, immediately run `git pull --rebase` to update the local code to the latest revision *before* making any changes.
+> 4. **MANDATORY PRE-PUSH GIT CHECK & SYNC**:
+>    - Before pushing, check `git status` to verify modified files.
+>    - Fetch and rebase any new remote commits (e.g. GitHub Actions version bumps or external PRs) with `git pull --rebase`.
+>    - Commit and push all repos cleanly, then report commit SHAs and PR links.
+> 5. **KEEP `TODO.md` SYNCHRONIZED:** Whenever you start a task, complete a task, or discover a bug/change in requirements, update `TODO.md` immediately.
 
 ---
 
