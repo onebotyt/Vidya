@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/register/",
   "source_file": "frontend/login/register/index.html",
-  "content_hash": "69b2885f6481",
-  "last_scanned": "2026-11-19T03:43:02.652Z",
+  "content_hash": "f40ce0548d02",
+  "last_scanned": "2026-11-19T03:45:19.734Z",
   "title": "Register — VidyaOS Campus Management",
   "purpose": "Student self-registration with branch/year onboarding",
   "shell": "Auth Shell (`register.css`)",
@@ -137,10 +137,18 @@
         "class": "inp"
       },
       {
+        "id": "chk-enroll-not-available",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
         "id": "stu-enroll",
         "type": "text",
         "name": null,
-        "placeholder": "e.g. 2024IT001",
+        "placeholder": "11-digit numeric enrollment",
         "handler": null,
         "class": "inp mono"
       },
@@ -154,11 +162,11 @@
       },
       {
         "id": "stu-class-roll-no",
-        "type": "number",
+        "type": "text",
         "name": null,
-        "placeholder": "e.g. 15",
+        "placeholder": "e.g. 15 (max 2 digits)",
         "handler": null,
-        "class": "inp"
+        "class": "inp mono"
       },
       {
         "id": "stu-email",

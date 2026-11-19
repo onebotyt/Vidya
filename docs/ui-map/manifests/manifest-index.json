@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-19T03:43:02.655Z",
+  "generated_at": "2026-11-19T03:45:19.736Z",
   "total_pages": 31,
   "totals": {
-    "buttons": 566,
-    "modals": 171,
-    "inputs": 356,
+    "buttons": 570,
+    "modals": 172,
+    "inputs": 364,
     "apis": 178
   },
   "pages": [
@@ -171,11 +171,11 @@
       "route": "/faculty/students/index.html",
       "title": "Students Management — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-007.json",
-      "content_hash": "bbc9ccf5aa84",
+      "content_hash": "85783028eb5a",
       "counts": {
-        "buttons": 34,
-        "modals": 6,
-        "inputs": 13,
+        "buttons": 38,
+        "modals": 7,
+        "inputs": 20,
         "apis": 5
       }
     },
@@ -405,11 +405,11 @@
       "route": "/login/register/",
       "title": "Register — VidyaOS Campus Management",
       "manifest_file": "docs/ui-map/manifests/pub-003.json",
-      "content_hash": "69b2885f6481",
+      "content_hash": "f40ce0548d02",
       "counts": {
         "buttons": 8,
         "modals": 1,
-        "inputs": 11,
+        "inputs": 12,
         "apis": 5
       }
     }

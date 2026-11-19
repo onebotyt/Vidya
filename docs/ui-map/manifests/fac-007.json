@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "bbc9ccf5aa84",
-  "last_scanned": "2026-11-19T03:43:02.247Z",
+  "content_hash": "85783028eb5a",
+  "last_scanned": "2026-11-19T03:45:19.468Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and permanent teacher document dossier access",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -70,6 +70,11 @@
       },
       {
         "id": "detail-stu-enroll",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-student",
         "title": "Modal Dialog",
         "field_count": 0
       },
@@ -250,6 +255,14 @@
         "title": null
       },
       {
+        "id": "detail-btn-edit",
+        "label": "Edit Student",
+        "action": "detailEditStudent()",
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "detail-btn-transfer",
         "label": "Transfer",
         "action": "detailTransferStudent()",
@@ -286,6 +299,30 @@
         "label": "Remove Student",
         "action": "detailDeleteStudent()",
         "class": "btn-stu-compact danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeEditStudentModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeEditStudentModal()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-edit-student",
+        "label": "Save Changes",
+        "action": null,
+        "class": "btn-stu-compact",
         "data_ui": null,
         "title": null
       },
@@ -412,6 +449,54 @@
         "class": null
       },
       {
+        "id": "edit-stu-id",
+        "type": "hidden",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-stu-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Aarav Sharma",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-chk-enroll-not-available",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-stu-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": "11-digit numeric enrollment",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-stu-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 24101054001 or R230104001",
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "edit-stu-roll",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 05 (max 2 digits)",
+        "handler": null,
+        "class": null
+      },
+      {
         "id": "add-stu-name",
         "type": "text",
         "name": null,
@@ -499,6 +584,47 @@
         ]
       },
       {
+        "id": "edit-stu-sem",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 8,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Sem 1 (Year 1)"
+          },
+          {
+            "value": "2",
+            "text": "Sem 2 (Year 1)"
+          },
+          {
+            "value": "3",
+            "text": "Sem 3 (Year 2)"
+          },
+          {
+            "value": "4",
+            "text": "Sem 4 (Year 2)"
+          },
+          {
+            "value": "5",
+            "text": "Sem 5 (Year 3)"
+          },
+          {
+            "value": "6",
+            "text": "Sem 6 (Year 3)"
+          },
+          {
+            "value": "7",
+            "text": "Sem 7 (Year 4)"
+          },
+          {
+            "value": "8",
+            "text": "Sem 8 (Year 4)"
+          }
+        ]
+      },
+      {
         "id": "add-stu-sem",
         "title": null,
         "onchange": null,
@@ -542,6 +668,12 @@
     },
     {
       "id": "detail-stu-enroll",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-student",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
