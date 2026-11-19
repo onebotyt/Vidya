@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 478: Student Roster Duplicate Enrollment Removal, 8-Digit UBTER Reg No Limit, UBTER Enrollment Labeling, and Registration Google Button Styling
+- **Objective & Architectural Scope**:
+  1. *Student Management Roster Table*:
+     - Removed redundant `${enrollSub}` rendering from under the student name in `frontend/faculty/students/students.js` (`renderTable`). Enrollment already has its own dedicated column, preventing duplicate text under student names.
+  2. *Registration Page UBTER Identity Fields*:
+     - Renamed Enrollment No. input label to `UBTER Enrollment No. *` in `frontend/login/register/index.html`.
+     - Limited UBTER Reg. No. (`#stu-ubter`) to 8 characters/digits maximum (`maxlength="8"`, placeholder `e.g. 24101054 (max 8 digits)`).
+     - Added real-time input slicing (`slice(0, 8)`) and blur validation in `frontend/login/register/register.js`.
+     - Added backend API validation guard in `backend/src/controllers/authController.js` rejecting `registration_no` longer than 8 characters.
+  3. *Theme-Tokenized Google 1-Click Button & Modal*:
+     - Styled `.btn-google` in `frontend/login/register/register.css` as a full-width, clean institutional button with icon alignment, hover elevation, and responsive sizing.
+     - Styled Google modal dialog overlay, card, account list items, avatar badges, and manual input panels using 100% CSS variable tokens (`var(--reg-...)`) with zero hardcoded hex colors.
+  4. *Verification & Regression Suite*:
+     - Ran `extract-ui-manifest.js` and `test-ui-manifest-sync.js` (203/203 passed with 100% hash parity).
+     - Ran `test-theme-support.js` (84/84 passed).
+     - Ran `test-rbac-and-structure.js` (38/38 passed).
+     - Verified backend server syntax (`node -c backend/server.js`).
+
 ### ✅ Milestone 475: ESP32 Multi-Network Failover (Airtel_neer_3811 + vivot3lite), Dual-Server HTTP Fallback & Direct Enrollment Route Aliasing
 - **Objective & Architectural Scope**:
   1. *Wi-Fi Multi-Network Failover Configuration*:
