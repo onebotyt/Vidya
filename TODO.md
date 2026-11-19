@@ -49,6 +49,49 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 485: Professional Microsoft Excel-Like Spreadsheet Studio Upgrade
+- **Objective & Architectural Scope**:
+  1. *Ribbon & Toolbar Navigation System (`/faculty/sheets/index.html` & `sheets.css`)*:
+     - Designed an 8-tab ribbon toolbar (`File`, `Home`, `Insert`, `Page Layout`, `Formulas`, `Data`, `Review`, `View`) with compact tool groups.
+     - Clipboard group: Cut (Ctrl+X), Copy (Ctrl+C), Paste (Ctrl+V) with system clipboard interop.
+     - Undo / Redo group: Full history tracking with Ctrl+Z and Ctrl+Y shortcuts.
+     - Font formatting: Font family selection (Inter, Arial, JetBrains Mono, Times New Roman, Segoe UI), Font size (9-20), Bold, Italic, Underline, Font color picker, Background fill picker, and Borders menu (All, Outside, Thick Bottom, None).
+     - Alignment & layout: Horizontal (Left, Center, Right), Vertical (Top, Middle, Bottom), Wrap Text toggle, and Merge & Center.
+     - Number formatting: General, Number, Currency (₹), Percentage (%), Short Date, and Decimal increase/decrease (+.0 / -.0).
+     - Cell operations: Insert Row, Delete Row, Insert Column, Delete Column, and Clear Contents.
+     - Editing: AutoSum dropdown (SUM, AVERAGE, COUNT, MAX, MIN), Sort (A→Z, Z→A), Filter toggle, and Find & Replace modal.
+  2. *Interactive Spreadsheet Grid Workspace with Column Letters & Row Numbers*:
+     - Grid layout with column letters (`A`, `B`, `C`...) and row numbers (`1`, `2`, `3`...).
+     - Interactive column resizing (`.excel-col-resizer`) and row resizing (`.excel-row-resizer`).
+     - Multi-cell range selection with click-and-drag and Shift+Arrow keys.
+     - Active selection box highlight with auto-fill handle (`.excel-fill-handle`) at bottom-right corner.
+     - Auto-fill dragging with live dashed preview box (`.excel-fill-preview-box`) and formula reference shifting (`shiftFormulaReferences` adjusts relative rows/cols while preserving absolute references marked with `$`).
+     - Fast inline cell editor (`.excel-inline-editor`) on double click, F2, or direct typing.
+  3. *Formula Bar with Two-Way Live Synchronization*:
+     - Name Box (`#excel-name-box`): displays active cell coordinate (e.g. `A1`) or range (`A1:C10`), supports typing cell reference and pressing Enter to jump.
+     - Formula action buttons: Cancel (`✕`), Accept (`✓`), and Insert Function (`ƒx`).
+     - Formula input (`#excel-formula-input`): full-width formula bar input synchronized with active cell in real-time.
+  4. *Client-Side Excel Formula Engine*:
+     - Tokenizer and evaluator supporting: `SUM`, `AVERAGE`, `COUNT`, `COUNTA`, `MIN`, `MAX`, `IF`, `SUMIF`, `COUNTIF`, `CONCAT`, `ROUND`, and `TODAY`.
+     - Arithmetic operators (`+`, `-`, `*`, `/`, `^`, `%`), parentheses, and comparison operators (`>`, `<`, `>=`, `<=`, `=`, `<>`).
+     - Dependency recalculation: automatic recalculation of all dependent formulas on cell change with cycle protection.
+  5. *Multi-Sheet Management & Status Bar*:
+     - Bottom worksheet navigation bar with scroll arrows (`◀`, `▶`), interactive sheet tabs list, and `+` add sheet button.
+     - Sheet operations: switch sheet, add new worksheet, rename worksheet modal (`#modal-rename-sheet`), duplicate worksheet, and delete worksheet.
+     - Status bar: displays mode (`READY` / `EDIT`) and real-time statistics (`Average`, `Count`, `Sum`) for selected range.
+  6. *Import & Export Capabilities*:
+     - Binary Excel import/export (`.xlsx` using bundled `ExcelJS`).
+     - CSV import/export with standard comma-separation and UTF-8 formatting.
+     - Printable PDF layout with institutional header banner and examination signatures block.
+     - Word document export (`.doc`).
+  7. *Academic Data Integration & Manifest Parity*:
+     - Automatic hydration of teaching group data (`S.members`, `S.tests`, `S.assignments`, `S.practicals`) into the 4 default sheets: `Master Evaluation`, `Class Tests`, `Assignments`, `Practicals`.
+     - Retained all existing modal contracts (`modal-add-column`, `modal-remove-column`, `modal-add-row`, `modal-edit-row`, `sheet-filter-modal`, `modal-edit-total-marks`, `modal-edit-student-roster`).
+     - Added `#modal-find-replace` and `#modal-insert-function`.
+     - 100% theme variable compliance (zero hardcoded colors, 84/84 theme test pass).
+     - 100% manifest sync (203/203 UIMS checks pass in `test-ui-manifest-sync.js`).
+     - Strict push embargo observed: all changes remain strictly local.
+
 ### ✅ Milestone 484: Dev 4 Onboarding & Multi-Developer Ecosystem Protocol Expansion
 - **Objective & Architectural Scope**:
   1. *Developer Roster & Contributor Profile Expansion*:

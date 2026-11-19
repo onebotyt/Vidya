@@ -5,7 +5,7 @@
   "route": "/faculty/leave-approvals.html",
   "source_file": "frontend/faculty/leave-approvals/index.html",
   "content_hash": "eb85da2ad595",
-  "last_scanned": "2026-11-19T08:59:07.164Z",
+  "last_scanned": "2026-11-19T09:03:09.086Z",
   "title": "Leave Requests — Faculty Portal",
   "purpose": "Student medical and duty leave approval workflow",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
