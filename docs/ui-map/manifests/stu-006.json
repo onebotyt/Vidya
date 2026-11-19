@@ -5,7 +5,7 @@
   "route": "/student/timetable.html",
   "source_file": "frontend/student/timetable/index.html",
   "content_hash": "c72e486f5291",
-  "last_scanned": "2026-11-18T23:27:23.294Z",
+  "last_scanned": "2026-11-19T00:53:36.111Z",
   "title": "Academic Timetable (PDF) — Student Portal",
   "purpose": "Weekly class timetable, classroom locations, faculty names",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",

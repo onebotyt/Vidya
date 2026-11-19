@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "b234c83c5950",
-  "last_scanned": "2026-11-18T23:27:23.138Z",
+  "content_hash": "2cf821dcd63b",
+  "last_scanned": "2026-11-19T00:53:35.887Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -133,6 +133,36 @@
         "field_count": 0
       },
       {
+        "id": "modal-marks-mobile",
+        "title": "Marks Details",
+        "field_count": 0
+      },
+      {
+        "id": "mob-marks-assessment",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "mob-marks-score",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "mob-marks-pct",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "mob-marks-status",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "mob-marks-feedback",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
         "id": "modal-cohort-export",
         "title": "Modal Dialog",
         "field_count": 0
@@ -248,6 +278,22 @@
       {
         "id": null,
         "label": "&times;",
+        "action": "closeMobileMarksModal()",
+        "class": "btn-rec-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "mob-marks-open-dossier",
+        "label": "Open Complete Academic Dossier",
+        "action": null,
+        "class": "btn-rec-solid",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
         "action": "closeCohortExportModal()",
         "class": "btn-modal-close",
         "data_ui": null,
@@ -275,7 +321,7 @@
         "id": "rec-search-input",
         "type": "text",
         "name": null,
-        "placeholder": "Search by student name, roll #, enrollment #, or email...",
+        "placeholder": "Search by student, roll #, work or subject (e.g. 1 girdhardhami assinment java)...",
         "handler": "onSearchInput(this.value)",
         "class": null
       },
@@ -595,6 +641,42 @@
     },
     {
       "id": "modal-document-preview",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-marks-mobile",
+      "title": "Marks Details",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "mob-marks-assessment",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "mob-marks-score",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "mob-marks-pct",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "mob-marks-status",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "mob-marks-feedback",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null

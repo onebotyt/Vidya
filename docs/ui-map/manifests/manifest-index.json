@@ -1,11 +1,11 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-18T23:27:23.314Z",
+  "generated_at": "2026-11-19T00:53:36.146Z",
   "total_pages": 31,
   "totals": {
-    "buttons": 544,
-    "modals": 155,
+    "buttons": 546,
+    "modals": 161,
     "inputs": 351,
     "apis": 178
   },
@@ -119,10 +119,10 @@
       "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
       "title": "Student Academic Records & Dossiers — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-001.json",
-      "content_hash": "b234c83c5950",
+      "content_hash": "2cf821dcd63b",
       "counts": {
-        "buttons": 16,
-        "modals": 4,
+        "buttons": 18,
+        "modals": 10,
         "inputs": 22,
         "apis": 3
       }

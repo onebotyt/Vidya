@@ -5,7 +5,7 @@
   "route": "/login/",
   "source_file": "frontend/login/index.html",
   "content_hash": "387fb7f2d313",
-  "last_scanned": "2026-11-18T23:27:23.310Z",
+  "last_scanned": "2026-11-19T00:53:36.139Z",
   "title": "Sign In — VidyaOS Campus Management",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
