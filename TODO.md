@@ -49,6 +49,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 490: Sheet Studio Institutional Worksheets, Single/Consolidated Test Switching, Clean Headers & Zero-DataSheet Compliance
+- **Objective & Architectural Scope**:
+  1. *Institutional Multi-Sheet Hydration & Exact Government Polytechnic Formats (`/faculty/sheets/sheets.js`)*:
+     - Hydrated all 5 canonical institutional sheet formats matching Government Polytechnic Nainital standards:
+       - **Master Evaluation Sheet (Image 4)**: 13 columns (SR. NO., ROLL NO., STUDENT NAME, Assignment Average, UTs Total Best 4 Average, Attendance, Problem Solving Skills / Project, Theory TOTAL, Lab Record File, Creative Work, Attendance, Viva Voce, Practical TOTAL) with accurate formulas (`=ROUND(D3+E3+F3+G3, 2)` and `=ROUND(I3+J3+K3+L3, 2)`) and sign-off block (`Subject Teacher`, `Head of the Department`, `Principal`).
+       - **Unit Tests - Consolidated (Image 3)**: 14 columns (SR. NO., ROLL NO., STUDENT NAME, Tests 1..10, Final Total Best 4 Avg) with formula `=ROUND(AVERAGE(D3:G3) * 0.5, 2)` and sign-off block.
+       - **Single Unit Test Sheets (`UT1`, `UT2`, `UT3`) (Image 2)**: 9 columns (SR. NO., ROLL NO., STUDENT NAME, Questions 1..4, Total) with formula `=SUM(D3:G3)` and full official exam instructions & questions rendered in Column 8 with `pre-wrap` styling.
+       - **Assignments Sheet**: 10 columns (SR. NO., ROLL NO., STUDENT NAME, Assignments 1..5, Total Average, Assignment Details).
+       - **Practicals Sheet**: 8 columns (SR. NO., ROLL NO., STUDENT NAME, Lab Record, Creative Work, Attendance, Viva, TOTAL).
+  2. *Two-Way Test Subsheet & Bottom Tab Switching Synchronization*:
+     - Faculty can seamlessly switch between **All Unit Tests Combined** and individual unit test sheets (**UT1**, **UT2**, **UT3**) via `#subsheet-test-select` or bottom tabs.
+     - Selecting a test instantly activates that exact single test sheet (Image 2 format) or consolidated sheet (Image 3 format).
+     - Bottom tab clicks synchronize `#sheet-selector-dropdown`, `#subsheet-test-select`, and the dynamic header banner.
+  3. *Elimination of In-Grid Header Duplication (Image 5 Fix)*:
+     - Verified and ensured grid cells start directly on Row 0 with table column headers, eliminating row shifting, active cell displacement, and text repetition. Institutional banner is exclusively displayed in the top HTML banner above the grid.
+     - Cache validation invalidates stale cache containing obsolete banners or lacking single-test sheets.
+  4. *Zero DataSheet Tab Compliance & Clean Multi-Sheet Import/Export*:
+     - Guaranteed zero `DataSheet` tab in internal workbook hydration or exports; automatically skips auxiliary `DataSheet` tabs on Excel import.
+     - Excel export (`.xlsx`) bounds header merges strictly up to `maxDataCol + 1` without disturbing cell formulas or data.
+  5. *Verification & Regression Suite*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js`.
+     - 100% RBAC guards and permanent redirects: 38/38 checks pass in `node backend/scripts/test-rbac-and-structure.js`.
+
 ### ✅ Milestone 489: Sheet Studio Separate Marks Row, Grade Column Elimination, Merge UI Fix & Header-Bounded Export/Import Engine
 - **Objective & Architectural Scope**:
   1. *Separate Header Titles and Marks Row (`/faculty/sheets/sheets.js`)*:
