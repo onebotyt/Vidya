@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-19T03:20:41.576Z",
+  "generated_at": "2026-11-19T03:43:02.655Z",
   "total_pages": 31,
   "totals": {
     "buttons": 566,
@@ -210,7 +210,7 @@
       "route": "/faculty/course-file.html",
       "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-012.json",
-      "content_hash": "0b167487a9c3",
+      "content_hash": "1afbddcb5e36",
       "counts": {
         "buttons": 23,
         "modals": 24,

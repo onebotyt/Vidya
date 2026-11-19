@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/course-file.html",
   "source_file": "frontend/faculty/course-file/index.html",
-  "content_hash": "0b167487a9c3",
-  "last_scanned": "2026-11-19T03:20:41.315Z",
+  "content_hash": "1afbddcb5e36",
+  "last_scanned": "2026-11-19T03:43:02.314Z",
   "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
   "purpose": "NBA/NAAC course compliance file compilation",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -220,7 +220,7 @@
       },
       {
         "id": "co-list-inputs",
-        "title": "Course Outcomes (CO1\n          - CO6)",
+        "title": "Course Outcomes\n              (CO1\n              - CO6)",
         "field_count": 0
       },
       {
@@ -450,7 +450,7 @@
       },
       {
         "id": "btn-start-merge-export",
-        "label": "⏳ Merge &amp; Download Combined PDF",
+        "label": "⏳ Merge &amp; Download PDF",
         "action": "executeCombineExport()",
         "class": "btn btn-primary",
         "data_ui": null,
@@ -712,7 +712,7 @@
     },
     {
       "id": "co-list-inputs",
-      "title": "Course Outcomes (CO1\n          - CO6)",
+      "title": "Course Outcomes\n              (CO1\n              - CO6)",
       "fields": [],
       "submit_action": null
     },

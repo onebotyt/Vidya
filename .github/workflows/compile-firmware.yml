@@ -1,0 +1,64 @@
+name: Automated ESP32 Firmware Compilation & OTA Artifact Build
+
+on:
+  push:
+    paths:
+      - 'VidyaOS_ESP32_Biometric_Firmware/**'
+      - 'backend/esp32_firmware/**'
+      - '.github/workflows/compile-firmware.yml'
+  workflow_dispatch:
+
+jobs:
+  build-firmware:
+    name: Compile ESP32 Biometric OS Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Configure Espressif ESP32 Board Package Index
+        run: |
+          arduino-cli config init --overwrite
+          arduino-cli config add board_manager.additional_urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli core update-index
+
+      - name: Install ESP32 Core & Architecture Toolchain
+        run: |
+          arduino-cli core install esp32:esp32@3.0.7
+
+      - name: Install Required Embedded Libraries
+        run: |
+          arduino-cli lib install "ArduinoJson"@7.4.3
+          arduino-cli lib install "PubSubClient"@2.8.0
+          arduino-cli lib install "Adafruit SSD1306"@2.5.17
+          arduino-cli lib install "Adafruit GFX Library"@1.13.0
+          arduino-cli lib install "Adafruit BusIO"@1.17.4
+          arduino-cli lib install "Adafruit Fingerprint Sensor Library"@2.1.4
+
+      - name: Compile ESP32 Biometric Firmware
+        run: |
+          mkdir -p build_output
+          arduino-cli compile --fqbn esp32:esp32:esp32 \
+            --output-dir build_output \
+            VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node
+
+      - name: Rename & Stage Firmware Binary
+        run: |
+          cp build_output/VidyaOS_ESP32_Biometric_Node.ino.bin build_output/firmware.bin
+          cp build_output/VidyaOS_ESP32_Biometric_Node.ino.partitions.bin build_output/partitions.bin
+          cp build_output/VidyaOS_ESP32_Biometric_Node.ino.bootloader.bin build_output/bootloader.bin
+          echo "Firmware binary generated: $(ls -lh build_output/firmware.bin)"
+
+      - name: Upload Compiled Firmware Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vidyaos-esp32-firmware-latest
+          path: |
+            build_output/firmware.bin
+            build_output/partitions.bin
+            build_output/bootloader.bin
+          retention-days: 90
