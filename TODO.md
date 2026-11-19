@@ -49,6 +49,87 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 493: Sheet Studio Cell Selection Box Zoom/Scroll Alignment & Uniform Student Row Height Architecture
+- **Objective & Architectural Scope**:
+  1. *Zoom & Scroll-Aware Selection Box Positioning (`/faculty/sheets/sheets.js`)*:
+     - Fixed selection box displacement bug where clicking a cell under zoom (such as 80%, 70%, or 50%) or after horizontal/vertical scrolling caused `#excel-selection-box` to drift away or fail to appear on the clicked cell.
+     - Root cause: `getBoundingClientRect()` calculates viewport-scaled pixels, but `#excel-selection-box` is nested inside `#scale-wrapper`, which applies CSS `zoom`/`scale`, causing coordinate values to be scaled twice (e.g. 0.8 * 0.8 = 0.64) and drifting up to hundreds of pixels away from the clicked cell.
+     - Solution: Normalized all coordinates in `updateSelectionBoxUI()` by dividing viewport deltas by `scale = S.zoomScale || 1.0` and adding `ws.scrollLeft` / `ws.scrollTop`.
+     - Attached passive scroll listener to `#excel-grid-workspace` and window resize listener so the selection box tracks cells smoothly in real time during mousewheel, trackpad, and scrollbar drag.
+     - Synchronized `setSheetZoom` to immediately invoke `updateSelectionBoxUI()`.
+     - Updated inline editor (`startInlineEditing`) and auto-fill preview box (`initFillHandleDrag`) with the same scale-normalized coordinate math.
+  2. *Merge-Aware Anchor Resolution in Selection Box*:
+     - Replaced the backwards 2D grid probe with a deterministic merge lookup via `findCellOrMergeAnchor(r, c)`.
+     - When clicking or navigating to an absorbed cell inside a merged range, the selection box now accurately maps to the top-left anchor cell in `sheet.merges` without misattributing to unrelated columns.
+  3. *Uniform Student Row Height & Vertical Instructions Merge*:
+     - Resolved uneven/deformed student rows where Student 1 (Row 3, `Girdhar Dhami`) was expanded to ~250px tall due to multi-line test instructions in unmerged cell `(2, 8)`.
+     - Merged test instructions vertically across 10 rows (`s: { r: 2, c: 8 }, e: { r: 11, c: 8 }`) matching Government Polytechnic Nainital format (Image 2). The instructions text now distributes its height smoothly alongside student rows 2 to 11 without stretching any individual row.
+     - Merged test questions vertically across subsequent rows (`s: { r: 12, c: 8 }, e: { r: 20, c: 8 }`).
+     - Merged coursework assignment details in `assignSheet` vertically across rows 2 to 10 (`s: { r: 2, c: 9 }, e: { r: 10, c: 9 }`).
+     - Set explicit uniform row heights of `24px` for all student rows across all academic sheets (`evalSheet`, `testSheet`, `singleTestSheet`, `assignSheet`, and `practicalSheet`).
+     - Added CSS rules ensuring `.excel-grid-table tbody tr` and `.excel-cell` maintain a clean, uniform baseline height of `24px`.
+  4. *Verification & Regression Suite*:
+     - `node -c frontend/faculty/sheets/sheets.js` passed (Exit Code 0).
+     - `node backend/scripts/extract-ui-manifest.js` updated all 31 page manifests.
+     - `node backend/scripts/test-ui-manifest-sync.js` passed 203/203 tests.
+     - `node backend/scripts/test-theme-support.js` passed 84/84 tests.
+     - `node backend/scripts/test-rbac-and-structure.js` passed 38/38 tests.
+     - Strictly maintained local changes without git push as per protocol.
+
+### ✅ Milestone 492: Sheet Studio Advanced Excel Architecture, Full Worksheet Navigation Sync, Color/Formula Parser & Template Engine
+- **Objective & Architectural Scope**:
+  1. *Full Worksheet Navigation & Synchronization (`/faculty/sheets/sheets.js`)*:
+     - Implemented complete two-way synchronization between bottom worksheet tabs (`#excel-sheet-tabs-list`), top dropdown (`#sheet-selector-dropdown`), subsheet selector (`#subsheet-selector-container`), and URL query parameters (`?sheet=...`).
+     - In `switchWorksheet(idx)`: seamlessly synchronizes the active tab with the top selector (populating all worksheets for imported workbooks or category tabs for college subject sheets), updates URL, activates correct subsheet picker, updates institutional banner visibility, highlights active tab, and smoothly scrolls it into view.
+     - In `switchSheetDropdown(sheetValue)`: handles both index-based worksheet switching (`sheet_idx_*`) and category tabs (`evaluation`, `tests`, `assignments`, `practicals`).
+     - Added worksheet manipulation controls: Insert new sheet (+), rename sheet (double-click / modal), delete sheet (x button with confirmation), and horizontal tab scrolling chevrons.
+  2. *View & Display Integration into Home Ribbon & View Tab Retirement*:
+     - Migrated all settings from the separate View tab into a dedicated **View & Display** tool group in the Home ribbon tab:
+       - Show/Hide Gridlines toggle (`#btn-home-toggle-gridlines`)
+       - Show/Hide Formula Bar toggle (`#btn-home-toggle-formula-bar`)
+       - Freeze Panes dropdown (`#btn-home-freeze-panes` with Freeze Top Row, Freeze First Column, and Unfreeze Panes)
+       - Zoom controls (`-`, zoom percentage indicator, `+`, and Auto-Fit toggle)
+       - Density selector (`#home-density-selector` for Normal, Compact, Comfortable).
+     - Removed obsolete View tab button from the ribbon header for a streamlined, clutter-free Excel ribbon interface.
+  3. *Zero-Emoji Compliance & Professional SVG Icons*:
+     - Replaced 100% of emojis across the entire Sheet Studio interface with Lucide-style vector SVG icons:
+       - File tab: New Sheet, Open/Import, Save, Export, Print icons.
+       - Font tools: Fill color bucket icon.
+       - Alignment & Merge tools: Merge & Center, Merge Across, Merge Cells, and Unmerge vector icons.
+       - Insert tab: Student Row, Column, College Header, and Signatures vector icons.
+       - Formulas, Data, and Review tabs: Calculate Sheet, Refresh Data, Audit, and Protect Sheet vector icons.
+       - Context Menu: 100% SVG icons for Cut, Copy, Paste, Insert Row/Col, Delete Row/Col, Clear, Merge, Sort, and Filters.
+       - Formula bar: Vector checkmark and cross for Accept and Cancel.
+  4. *Bottom Right Excel-Style Zoom Controls*:
+     - Added native Excel-like zoom controls in the bottom status bar (`#excel-status-zoom-ctrls`):
+       - Zoom Out (`-`) button
+       - Range slider (`50% - 200%`, step 5) for continuous real-time zoom adjustment
+       - Zoom In (`+`) button
+       - Interactive percentage label (`100%`) with one-click reset to 100%.
+     - Synchronized slider and display labels bidirectionally with grid zoom scale.
+  5. *Dedicated Institutional Header Banner Show/Hide Control*:
+     - Added `#btn-toggle-college-banner` in the search toolbar (`#studio-bar-3`) next to Filters.
+     - For imported workbooks (`EXCEL_WB.isImportedWorkbook`), institutional banner is hidden by default to preserve the imported sheet's native layout.
+     - For college evaluation workbooks, banner is shown by default and can be toggled on/off at will.
+     - Export engine (`exportCurrentSheet('xlsx')`) respects the banner toggle and avoids shifting rows or merges when banner is disabled or for imported workbooks.
+  6. *Excel Import Engine Enhancement (Full Formatting & Color Fidelity)*:
+     - Built mathematical Excel Theme & Tint color parser (`parseExcelColor`) supporting ARGB, hex, and standard Office Theme palettes with positive/negative tints.
+     - Extracts font family, font size, bold, italic, underline, font color, background cell fill (`fgColor`), text alignments (horizontal & vertical), wrapText, merged cell ranges, row heights, and column widths.
+     - Supported multi-worksheet imports without skipping auxiliary sheets (e.g. `DataSheet` is fully imported and populated).
+  7. *Cross-Sheet Reference Formula Engine (`evaluateExcelFormula`)*:
+     - Added support for cross-sheet single-cell formula references (e.g. `=DataSheet!A2` or `='DataSheet'!A2`).
+     - Supported text/string formula evaluation without arithmetic distortion.
+     - Protected cached values (`cell.cachedValue`): if formula evaluation returns `#VALUE!` or empty, preserves the cached value from the Excel document.
+  8. *Reusable Spreadsheet Formatting Templates Engine*:
+     - Added Formatting Templates Manager modal (`#modal-template-manager`) accessible via `#btn-open-template-modal`.
+     - Allows saving layout, column widths, row heights, cell colors, font styles, borders, and merges into persistent storage **without saving student records, marks, or personal data**.
+     - Provides instant application of saved templates to imported sheets or college subject sheets while guaranteeing 100% student data integrity.
+  9. *Verification & Regression Suite*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js`.
+     - 100% RBAC guards and permanent redirects: 38/38 checks pass in `node backend/scripts/test-rbac-and-structure.js`.
+     - All changes remain strictly local (Zero unapproved git pushes).
+
 ### ✅ Milestone 491: Sheet Studio Student Roster Hydration, Default 0 Marks Architecture & Zero-Blank-Grid Invariant
 - **Objective & Architectural Scope**:
   1. *Zero-Blank-Grid Invariant (`/faculty/sheets/sheets.js`)*:
@@ -11437,6 +11518,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `node backend/scripts/test-ui-manifest-sync.js` (203/203 passed, 100% manifest/DOM parity).
     - `node backend/scripts/test-theme-support.js` (84/84 passed, zero hardcoded hex colors).
     - `node -c backend/server.js` (clean syntax verification).
+
+- [x] **Milestone 494: Unified Sheets Studio — Formula Auto-Calculation Engine, Single-Row Editable Banner, Ribbon Templates Tool Tab, Header Text Wrap, Auto-Fit Columns & Isolated Landscape PDF Print**:
+  - **Formula Engine & Total Auto-Calculation**:
+    - Eliminated blank total formula cells on initial load and sheet switching (e.g. Practicals sheet totals).
+    - Updated `setCell()` to auto-evaluate formula expressions on creation.
+    - Updated `recalculateAllSheetFormulas()` to recalculate across all worksheets in `EXCEL_WB.sheets`.
+    - Integrated `recalculateSheetFormulas(sheet)` into `switchWorksheet()`.
+    - Implemented on-the-fly formula evaluation fallback inside `renderExcelGrid()`.
+  - **Sleek Single-Row Editable Institutional Header Banner**:
+    - Restructured `#sheet-institutional-banner` into a compact single-row design with 3 clean segments (Institution/Session | Subject | Cohort/Semester).
+    - Enabled double-click inline editing (`makeBannerEditable()`) with persistent `localStorage` and `EXCEL_WB.customBanner` saving.
+    - Co-located `#btn-toggle-formula-bar` directly adjacent to `#btn-toggle-college-banner` in Studio Bar 3.
+  - **Interface Cleanliness & Status Bar Simplification**:
+    - Removed redundant `#excel-status-mode` (`EDIT`/`READY`) and statistics counters (`Average: 0`, `Count: 1`, `Sum: 0`) from the bottom status bar, retaining clean Excel-style zoom controls.
+    - Removed duplicate `Filters` button in Studio Bar 3.
+    - Moved `Save` and `Export` controls onto the primary toolbar (Bar 3) next to the college banner controls.
+  - **Dedicated Templates Tool Tab in Ribbon**:
+    - Promoted spreadsheet template operations to a dedicated top-level **Templates** tab in `.excel-ribbon-tabs`.
+    - Added `#panel-templates` with preset institutional evaluation templates and custom layout saving/restoration.
+  - **Header Text Wrapping & Dynamic Column Auto-Fit**:
+    - Enabled text wrapping on column headers (`.excel-grid-table thead th, td.excel-hdr-cell, td[data-row="0"]`) so lengthy names like `Creative Work (Model/Chart/Project)` wrap cleanly without clipping.
+    - Implemented `autoFitSheetColumns()` calculating optimal column widths according to content length.
+  - **VidyaOS Institutional Branding**:
+    - Replaced all legacy `Google Classroom` references with `VidyaOS` throughout test details and coursework assignment manifests.
+  - **High-Fidelity Isolated PDF Landscape Export**:
+    - Rewrote `exportCurrentSheet('pdf')` with `exportSheetToPdf()` utilizing an isolated printable iframe, `@page { size: A4 landscape; margin: 8mm 6mm; }`, clean table styling, cell merges, institutional header banner, and bottom teacher/HOD/principal signature blocks.
+  - **Verification Suite**:
+    - `node scripts/test-ui-manifest-sync.js` (203/203 passed, 100% manifest parity).
+    - `node scripts/test-theme-support.js` (84/84 passed, zero hardcoded hex colors).
+    - Clean JavaScript syntax check with zero runtime errors.
 
 - [ ] **Dedicated Institutional Parent Notification System (Future Plan)**:
   - Comprehensive multi-channel parent communication portal for publishing official college notices, circulars, fee reminders, exam schedules, and holiday announcements.

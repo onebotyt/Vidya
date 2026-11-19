@@ -921,14 +921,14 @@ function setDensity(mode) {
 function zoomIn() {
   S.autoFit = false;
   updateAutoFitUI();
-  const next = Math.min(1.5, Math.round((S.zoomScale + 0.1) * 10) / 10);
+  const next = Math.min(2.0, Math.round((S.zoomScale + 0.1) * 10) / 10);
   setSheetZoom(next);
 }
 
 function zoomOut() {
   S.autoFit = false;
   updateAutoFitUI();
-  const prev = Math.max(0.35, Math.round((S.zoomScale - 0.1) * 10) / 10);
+  const prev = Math.max(0.5, Math.round((S.zoomScale - 0.1) * 10) / 10);
   setSheetZoom(prev);
 }
 
@@ -936,6 +936,13 @@ function resetZoom() {
   S.autoFit = false;
   updateAutoFitUI();
   setSheetZoom(1.0);
+}
+
+function onZoomSliderInput(val) {
+  const pct = parseInt(val, 10) || 100;
+  S.autoFit = false;
+  updateAutoFitUI();
+  setSheetZoom(pct / 100);
 }
 
 function updateStickyHeaderOffsets(table) {
@@ -969,12 +976,23 @@ function setSheetZoom(scale) {
       wrapper.style.maxWidth = '100%';
     }
   }
+  const pct = Math.round(scale * 100);
   const lbl = document.getElementById('zoom-level-label');
-  if (lbl) lbl.textContent = `${Math.round(scale * 100)}%`;
+  if (lbl) lbl.textContent = `${pct}%`;
   const dLbl = document.getElementById('desktop-zoom-level-label');
-  if (dLbl) dLbl.textContent = `${Math.round(scale * 100)}%`;
+  if (dLbl) dLbl.textContent = `${pct}%`;
+  const hLbl = document.getElementById('home-zoom-level-label');
+  if (hLbl) hLbl.textContent = `${pct}%`;
+  const bLbl = document.getElementById('excel-status-zoom-pct');
+  if (bLbl) bLbl.textContent = `${pct}%`;
+  const slider = document.getElementById('excel-bottom-zoom-slider');
+  if (slider && Number(slider.value) !== pct) slider.value = pct;
+
   const activeTable = document.querySelector('.sheet-pane.active table');
   if (activeTable) updateStickyHeaderOffsets(activeTable);
+
+  // Immediately update selection box UI to prevent drift
+  updateSelectionBoxUI();
 }
 
 function toggleAutoFit() {
@@ -1708,6 +1726,13 @@ function updateInstitutionalBanner(line1, line2, line3) {
   const instEl = document.getElementById('hdr-banner-inst');
   const b2 = document.getElementById('hdr-banner-line2');
   const cohortEl = document.getElementById('hdr-banner-cohort');
+
+  if (EXCEL_WB && EXCEL_WB.customBanner) {
+    if (instEl && EXCEL_WB.customBanner.inst) instEl.innerText = EXCEL_WB.customBanner.inst;
+    if (b2 && EXCEL_WB.customBanner.subject) b2.innerText = EXCEL_WB.customBanner.subject;
+    if (cohortEl && EXCEL_WB.customBanner.cohort) cohortEl.innerText = EXCEL_WB.customBanner.cohort;
+    return;
+  }
 
   const sessionKey = (S.group && (S.group.academic_year_id || S.group.academic_year_label)) || '2026';
   const sessionStoreKey = `vidyaos_inst_header_session_${String(sessionKey).replace(/[^a-zA-Z0-9]/g, '_')}`;
@@ -4997,7 +5022,12 @@ function toggleEditSaveMode() {
 }
 
 function switchSheetDropdown(sheetName) {
-  switchSheetTab(sheetName);
+  if (sheetName.startsWith('sheet_idx_')) {
+    const idx = parseInt(sheetName.replace('sheet_idx_', ''), 10);
+    switchWorksheet(idx);
+  } else {
+    switchSheetTab(sheetName);
+  }
 }
 
 function renderSubsheetControls() {
@@ -5662,19 +5692,36 @@ function setCell(sheet, r, c, valOrObj) {
   const existing = sheet.cells[key] || { raw: '', v: '', f: null, s: {} };
 
   if (typeof valOrObj === 'object' && valOrObj !== null) {
+    const rawVal = valOrObj.raw !== undefined ? valOrObj.raw : existing.raw;
+    const formulaVal = valOrObj.f || (typeof rawVal === 'string' && rawVal.trim().startsWith('=') ? rawVal.trim() : null);
+    let computedVal = valOrObj.v;
+    if (formulaVal && (computedVal === undefined || computedVal === null || computedVal === '')) {
+      try {
+        computedVal = evaluateExcelFormula(formulaVal, sheet);
+      } catch (_) { }
+    }
     sheet.cells[key] = {
       ...existing,
       ...valOrObj,
+      raw: rawVal,
+      f: formulaVal,
+      v: computedVal !== undefined ? computedVal : existing.v,
       s: { ...(existing.s || {}), ...(valOrObj.s || {}) }
     };
   } else {
     const rawStr = String(valOrObj ?? '');
     const isFormula = rawStr.trim().startsWith('=');
+    let computedVal = (rawStr !== '' && !isNaN(Number(rawStr))) ? Number(rawStr) : rawStr;
+    if (isFormula) {
+      try {
+        computedVal = evaluateExcelFormula(rawStr.trim(), sheet);
+      } catch (_) { }
+    }
     sheet.cells[key] = {
       ...existing,
       raw: rawStr,
       f: isFormula ? rawStr.trim() : null,
-      v: isFormula ? existing.v : (rawStr !== '' && !isNaN(Number(rawStr)) ? Number(rawStr) : rawStr)
+      v: computedVal !== undefined ? computedVal : existing.v
     };
   }
 
@@ -5706,6 +5753,28 @@ function evalTokens(expr, sheet, evaluatingCells) {
   if (/^TODAY\s*\(\s*\)$/i.test(expr)) {
     const d = new Date();
     return d.toISOString().split('T')[0];
+  }
+
+  // Check direct cross-sheet single cell reference (e.g. DataSheet!A2 or 'DataSheet'!A2)
+  const crossSheetMatch = expr.match(/^(?:'([^']+)'|([A-Za-z0-9_]+))!\$?([A-Za-z]+)\$?([0-9]+)$/);
+  if (crossSheetMatch) {
+    const targetSheetName = crossSheetMatch[1] || crossSheetMatch[2];
+    const colLetters = crossSheetMatch[3];
+    const rowNum = crossSheetMatch[4];
+    const targetSheet = (EXCEL_WB.sheets || []).find(s => s.name && s.name.trim().toLowerCase() === targetSheetName.trim().toLowerCase());
+    if (targetSheet) {
+      const c = letterToCol(colLetters);
+      const r = parseInt(rowNum, 10) - 1;
+      return getCellValueResolved(targetSheet, r, c, evaluatingCells);
+    }
+  }
+
+  // Check direct single in-sheet cell reference (e.g. A1, $B$4)
+  const singleCellMatch = expr.match(/^\$?([A-Za-z]+)\$?([0-9]+)$/);
+  if (singleCellMatch) {
+    const c = letterToCol(singleCellMatch[1]);
+    const r = parseInt(singleCellMatch[2], 10) - 1;
+    return getCellValueResolved(sheet, r, c, evaluatingCells);
   }
 
   // Handle function calls: NAME(...)
@@ -5922,7 +5991,19 @@ function evalArithmetic(expr, sheet, evaluatingCells) {
     return e.slice(1, -1);
   }
 
-  // Replace single cell references with their resolved values
+  // 1. Replace cross-sheet references (e.g. DataSheet!A2 or 'DataSheet'!A2)
+  e = e.replace(/(?:'([^']+)'|([A-Za-z0-9_]+))!\$?([A-Za-z]+)\$?([0-9]+)/g, (match, qName, uName, colLetters, rowNum) => {
+    const targetSheetName = qName || uName;
+    const targetSheet = (EXCEL_WB.sheets || []).find(s => s.name && s.name.trim().toLowerCase() === targetSheetName.trim().toLowerCase());
+    if (!targetSheet) return '0';
+    const c = letterToCol(colLetters);
+    const r = parseInt(rowNum, 10) - 1;
+    const resolved = getCellValueResolved(targetSheet, r, c, evaluatingCells);
+    const num = Number(resolved);
+    return isNaN(num) ? `"${String(resolved).replace(/"/g, '\\"')}"` : String(num);
+  });
+
+  // 2. Replace single cell references with their resolved values
   e = e.replace(/\$?([A-Za-z]+)\$?([0-9]+)/g, (match, colLetters, rowNum) => {
     const c = letterToCol(colLetters);
     const r = parseInt(rowNum, 10) - 1;
@@ -5949,7 +6030,19 @@ function evalArithmetic(expr, sheet, evaluatingCells) {
    RECALCULATION ENGINE FOR SPREADSHEET
    ══════════════════════════════════════════════════════════════ */
 function recalculateAllSheetFormulas(updateDom = true) {
-  const sheet = getActiveSheet();
+  if (EXCEL_WB && Array.isArray(EXCEL_WB.sheets) && EXCEL_WB.sheets.length > 0) {
+    EXCEL_WB.sheets.forEach(s => recalculateSheetFormulas(s));
+  } else {
+    recalculateSheetFormulas(getActiveSheet());
+  }
+
+  if (updateDom) {
+    renderExcelGrid(false);
+    updateStatusBarStats();
+  }
+}
+
+function recalculateSheetFormulas(sheet) {
   if (!sheet || !sheet.cells) return;
 
   const formulaCells = [];
@@ -5964,13 +6057,12 @@ function recalculateAllSheetFormulas(updateDom = true) {
     const fStr = cell.f || cell.raw;
     cell.f = fStr;
     const computed = evaluateExcelFormula(fStr, sheet);
-    cell.v = computed;
+    if ((computed === '' || computed === '#VALUE!') && cell.cachedValue !== undefined) {
+      cell.v = cell.cachedValue;
+    } else {
+      cell.v = computed;
+    }
   });
-
-  if (updateDom) {
-    renderExcelGrid(false);
-    updateStatusBarStats();
-  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -6125,6 +6217,11 @@ function renderExcelGrid(rebuildStructure = true) {
           : '';
 
         const cell = getCell(sheet, r, c);
+        if (cell.f && (cell.v === undefined || cell.v === null || cell.v === '')) {
+          try {
+            cell.v = evaluateExcelFormula(cell.f, sheet);
+          } catch (_) { }
+        }
         const cellStyle = buildCellInlineStyle(cell.s);
         const displayVal = formatCellDisplayValue(cell.v !== undefined && cell.v !== null ? cell.v : cell.raw, cell.s);
         bodyHtml += `
@@ -6143,6 +6240,11 @@ function renderExcelGrid(rebuildStructure = true) {
         const td = tbody.querySelector(`.cell-${r}-${c}`);
         if (td) {
           const cell = getCell(sheet, r, c);
+          if (cell.f && (cell.v === undefined || cell.v === null || cell.v === '')) {
+            try {
+              cell.v = evaluateExcelFormula(cell.f, sheet);
+            } catch (_) { }
+          }
           td.style.cssText = buildCellInlineStyle(cell.s);
           const displayVal = formatCellDisplayValue(cell.v !== undefined && cell.v !== null ? cell.v : cell.raw, cell.s);
           td.textContent = displayVal;
@@ -6168,12 +6270,18 @@ function buildCellInlineStyle(s) {
   if (s.bg) styles.push(`background-color:${s.bg}`);
   if (s.align) styles.push(`text-align:${s.align}`);
   if (s.vAlign) styles.push(`vertical-align:${s.vAlign}`);
-  if (s.wrap) styles.push('white-space:pre-wrap;word-break:break-word');
+  if (s.wrap) styles.push('white-space:normal;word-break:break-word;line-height:1.18');
 
-  if (s.border === 'all') styles.push('border:1px solid var(--text-main)');
-  else if (s.border === 'outside') styles.push('outline:1px solid var(--text-main)');
+  if (s.border === 'all') styles.push('border:1px solid var(--border-color)');
+  else if (s.border === 'outside') styles.push('outline:1px solid var(--border-color)');
   else if (s.border === 'thick-bottom') styles.push('border-bottom:2px solid var(--text-main)');
   else if (s.border === 'none') styles.push('border:none');
+  else {
+    if (s.borderTop) styles.push(s.borderTop);
+    if (s.borderBottom) styles.push(s.borderBottom);
+    if (s.borderLeft) styles.push(s.borderLeft);
+    if (s.borderRight) styles.push(s.borderRight);
+  }
 
   return styles.join(';');
 }
@@ -6213,36 +6321,28 @@ function updateSelectionBoxUI() {
   const startC = Math.min(c1, c2);
   const endC = Math.max(c1, c2);
 
-  let startTd = tbody.querySelector(`.cell-${startR}-${startC}`);
-  let endTd = tbody.querySelector(`.cell-${endR}-${endC}`);
+  const sheet = getActiveSheet();
 
-  // If startTd is absorbed inside a merged cell, locate the top-left td
-  if (!startTd) {
-    for (let r = startR; r >= 0; r--) {
-      for (let c = startC; c >= 0; c--) {
-        const cand = tbody.querySelector(`.cell-${r}-${c}`);
-        if (cand) {
-          startTd = cand;
-          break;
-        }
+  function findCellOrMergeAnchor(r, c) {
+    let td = tbody.querySelector(`.cell-${r}-${c}`);
+    if (td) return td;
+    if (sheet && Array.isArray(sheet.merges)) {
+      const m = sheet.merges.find(m => {
+        const minR = Math.min(m.s.r, m.e.r), maxR = Math.max(m.s.r, m.e.r);
+        const minC = Math.min(m.s.c, m.e.c), maxC = Math.max(m.s.c, m.e.c);
+        return r >= minR && r <= maxR && c >= minC && c <= maxC;
+      });
+      if (m) {
+        const minR = Math.min(m.s.r, m.e.r);
+        const minC = Math.min(m.s.c, m.e.c);
+        return tbody.querySelector(`.cell-${minR}-${minC}`);
       }
-      if (startTd) break;
     }
+    return null;
   }
 
-  // If endTd is absorbed inside a merged cell, locate the candidate cell
-  if (!endTd) {
-    for (let r = endR; r >= startR; r--) {
-      for (let c = endC; c >= startC; c--) {
-        const cand = tbody.querySelector(`.cell-${r}-${c}`);
-        if (cand) {
-          endTd = cand;
-          break;
-        }
-      }
-      if (endTd) break;
-    }
-  }
+  let startTd = findCellOrMergeAnchor(startR, startC);
+  let endTd = findCellOrMergeAnchor(endR, endC);
 
   if (!startTd) startTd = endTd;
   if (!endTd) endTd = startTd;
@@ -6252,19 +6352,26 @@ function updateSelectionBoxUI() {
     return;
   }
 
+  const scale = S.zoomScale || 1.0;
   const wsRect = ws.getBoundingClientRect();
   const startRect = startTd.getBoundingClientRect();
   const endRect = endTd.getBoundingClientRect();
+
+  if (startRect.width === 0 && startRect.height === 0 && endRect.width === 0 && endRect.height === 0) {
+    box.style.display = 'none';
+    return;
+  }
 
   const minLeft = Math.min(startRect.left, endRect.left);
   const minTop = Math.min(startRect.top, endRect.top);
   const maxRight = Math.max(startRect.right, endRect.right);
   const maxBottom = Math.max(startRect.bottom, endRect.bottom);
 
-  const left = minLeft - wsRect.left + ws.scrollLeft;
-  const top = minTop - wsRect.top + ws.scrollTop;
-  const width = Math.max(10, maxRight - minLeft);
-  const height = Math.max(10, maxBottom - minTop);
+  // Divide viewport deltas by scale to account for zoom or CSS scaling on #scale-wrapper
+  const left = (minLeft - wsRect.left) / scale + ws.scrollLeft;
+  const top = (minTop - wsRect.top) / scale + ws.scrollTop;
+  const width = Math.max(6, (maxRight - minLeft) / scale);
+  const height = Math.max(6, (maxBottom - minTop) / scale);
 
   box.style.display = 'block';
   box.style.left = `${left}px`;
@@ -6446,19 +6553,21 @@ function startInlineEditing(r, c, initialChar = null) {
 
   const wsRect = ws.getBoundingClientRect();
   const tdRect = td.getBoundingClientRect();
+  const scale = S.zoomScale || 1.0;
 
   editor.style.display = 'block';
-  editor.style.left = `${tdRect.left - wsRect.left + ws.scrollLeft}px`;
-  editor.style.top = `${tdRect.top - wsRect.top + ws.scrollTop}px`;
-  editor.style.width = `${Math.max(tdRect.width, 100)}px`;
-  editor.style.height = `${Math.max(tdRect.height, 26)}px`;
+  editor.style.left = `${(tdRect.left - wsRect.left) / scale + ws.scrollLeft}px`;
+  editor.style.top = `${(tdRect.top - wsRect.top) / scale + ws.scrollTop}px`;
+  editor.style.width = `${Math.max(tdRect.width / scale, 100)}px`;
+  editor.style.height = `${Math.max(tdRect.height / scale, 24)}px`;
 
   const cell = getCell(sheet, r, c);
   editor.value = initialChar !== null ? initialChar : (cell.f || (cell.raw !== undefined ? cell.raw : ''));
   editor.focus();
   editor.setSelectionRange(editor.value.length, editor.value.length);
 
-  document.getElementById('excel-status-mode').textContent = 'EDIT';
+  const modeEl = document.getElementById('excel-status-mode');
+  if (modeEl) modeEl.textContent = 'EDIT';
 }
 
 function commitInlineEditor() {
@@ -6476,7 +6585,8 @@ function commitInlineEditor() {
 
   editor.style.display = 'none';
   EXCEL_WB.isEditing = false;
-  document.getElementById('excel-status-mode').textContent = 'READY';
+  const modeElReady = document.getElementById('excel-status-mode');
+  if (modeElReady) modeElReady.textContent = 'READY';
   markWorkbookUnsaved();
 }
 
@@ -6484,7 +6594,8 @@ function cancelInlineEditor() {
   const editor = document.getElementById('excel-inline-editor');
   if (editor) editor.style.display = 'none';
   EXCEL_WB.isEditing = false;
-  document.getElementById('excel-status-mode').textContent = 'READY';
+  const modeElReady = document.getElementById('excel-status-mode');
+  if (modeElReady) modeElReady.textContent = 'READY';
   updateFormulaBarUI();
 }
 
@@ -6688,6 +6799,21 @@ function initFillHandleDrag() {
   const ws = document.getElementById('excel-grid-workspace');
   if (!handle || !preview || !ws) return;
 
+  // Real-time synchronization of selection box on workspace scroll and window resize
+  if (!ws._hasScrollSelectionListener) {
+    ws._hasScrollSelectionListener = true;
+    ws.addEventListener('scroll', () => {
+      if (EXCEL_WB.selectedRange) {
+        updateSelectionBoxUI();
+      }
+    }, { passive: true });
+    window.addEventListener('resize', () => {
+      if (EXCEL_WB.selectedRange) {
+        updateSelectionBoxUI();
+      }
+    }, { passive: true });
+  }
+
   handle.addEventListener('mousedown', (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -6717,12 +6843,13 @@ function initFillHandleDrag() {
           const wsRect = ws.getBoundingClientRect();
           const startRect = startTd.getBoundingClientRect();
           const endRect = endTd.getBoundingClientRect();
+          const scale = S.zoomScale || 1.0;
 
           preview.style.display = 'block';
-          preview.style.left = `${startRect.left - wsRect.left + ws.scrollLeft}px`;
-          preview.style.top = `${startRect.top - wsRect.top + ws.scrollTop}px`;
-          preview.style.width = `${endRect.right - startRect.left}px`;
-          preview.style.height = `${endRect.bottom - startRect.top}px`;
+          preview.style.left = `${(startRect.left - wsRect.left) / scale + ws.scrollLeft}px`;
+          preview.style.top = `${(startRect.top - wsRect.top) / scale + ws.scrollTop}px`;
+          preview.style.width = `${(endRect.right - startRect.left) / scale}px`;
+          preview.style.height = `${(endRect.bottom - startRect.top) / scale}px`;
         }
       }
     };
@@ -7401,37 +7528,83 @@ function switchWorksheet(idx) {
   EXCEL_WB.activeSheetIndex = idx;
   const sheet = EXCEL_WB.sheets[idx];
 
-  let sheetType = sheet.type;
-  if (!sheetType) {
-    const n = (sheet.name || '').toLowerCase();
-    if (n.includes('test') || n.startsWith('ut')) sheetType = 'tests';
-    else if (n.includes('assignment')) sheetType = 'assignments';
-    else if (n.includes('practical') || n.includes('lab')) sheetType = 'practicals';
-    else sheetType = 'evaluation';
-  }
-
-  // If this is a single-test, the top dropdown maps to 'tests'
-  if (sheetType === 'single-test') {
-    S.activeSheet = 'tests';
-  } else {
-    S.activeSheet = sheetType;
-  }
-
+  // 1. Synchronize top dropdown (#sheet-selector-dropdown)
   const dropdown = document.getElementById('sheet-selector-dropdown');
-  if (dropdown && dropdown.value !== S.activeSheet) {
-    dropdown.value = S.activeSheet;
+  if (dropdown) {
+    if (EXCEL_WB.isImportedWorkbook) {
+      dropdown.innerHTML = EXCEL_WB.sheets.map((s, i) =>
+        `<option value="sheet_idx_${i}" ${i === idx ? 'selected' : ''}>${i + 1}. ${escapeHtml(s.name)}</option>`
+      ).join('');
+      dropdown.value = `sheet_idx_${idx}`;
+    } else {
+      let sheetType = sheet.type;
+      if (!sheetType) {
+        const n = (sheet.name || '').toLowerCase();
+        if (n.includes('test') || n.startsWith('ut')) sheetType = 'tests';
+        else if (n.includes('assignment')) sheetType = 'assignments';
+        else if (n.includes('practical') || n.includes('lab')) sheetType = 'practicals';
+        else sheetType = 'evaluation';
+      }
+      S.activeSheet = (sheetType === 'single-test') ? 'tests' : sheetType;
+      dropdown.value = S.activeSheet;
+    }
   }
 
+  // 2. Synchronize URL query parameter
   const url = new URL(window.location);
-  url.searchParams.set('sheet', S.activeSheet);
+  if (EXCEL_WB.isImportedWorkbook) {
+    url.searchParams.set('sheet', sheet.name);
+  } else {
+    url.searchParams.set('sheet', S.activeSheet || 'evaluation');
+  }
   if (S.groupId) url.searchParams.set('id', S.groupId);
   window.history.pushState({}, '', url);
 
+  // 3. Subsheet controls synchronization
   renderSubsheetControls();
-  updateBannerForSheet(sheetType === 'single-test' ? sheet.name : sheetType);
+
+  // 4. Institutional banner visibility synchronization
+  const banner = document.getElementById('sheet-institutional-banner');
+  const bannerBtn = document.getElementById('btn-toggle-college-banner');
+  const bannerViewBtn = document.getElementById('btn-toggle-banner-view');
+
+  if (EXCEL_WB.isImportedWorkbook) {
+    if (EXCEL_WB.bannerVisible === undefined) {
+      EXCEL_WB.bannerVisible = false;
+    }
+  } else {
+    if (EXCEL_WB.bannerVisible === undefined) {
+      EXCEL_WB.bannerVisible = true;
+    }
+    updateBannerForSheet(sheet.type === 'single-test' ? sheet.name : (sheet.type || S.activeSheet));
+  }
+
+  if (banner) banner.style.display = EXCEL_WB.bannerVisible ? 'block' : 'none';
+  if (bannerBtn) {
+    bannerBtn.classList.toggle('active', Boolean(EXCEL_WB.bannerVisible));
+    const lbl = document.getElementById('btn-banner-label');
+    if (lbl) lbl.textContent = EXCEL_WB.bannerVisible ? 'College Banner: ON' : 'College Banner: OFF';
+  }
+  if (bannerViewBtn) {
+    bannerViewBtn.classList.toggle('active', Boolean(EXCEL_WB.bannerVisible));
+    bannerViewBtn.textContent = `College Banner: ${EXCEL_WB.bannerVisible ? 'ON' : 'OFF'}`;
+  }
+
+  // 5. Render tabs, grid, formula bar, stats
+  recalculateSheetFormulas(sheet);
   renderSheetTabs();
   renderExcelGrid(true);
   updateFormulaBarUI();
+  updateStatusBarStats();
+
+  // Scroll active tab into view in the bottom bar
+  setTimeout(() => {
+    const list = document.getElementById('excel-sheet-tabs-list');
+    const activeTab = list?.querySelector('.excel-sheet-tab-item.active');
+    if (activeTab && list) {
+      activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+  }, 30);
 }
 
 function createNewWorksheet(sheetName) {
@@ -7748,13 +7921,14 @@ async function exportCurrentSheet(format) {
         }
         maxDataCol = Math.max(maxDataCol, 3); // at least 4 columns (A, B, C, D)
 
-        // 2. Check if this worksheet already has the institutional banner embedded
+        // 2. Check if this worksheet already has the institutional banner embedded or should omit banner
         const cell0_0 = String(getCell(wsData, 0, 0).v || getCell(wsData, 0, 0).raw || '');
         const alreadyHasBanner = cell0_0.includes('Polytechnic') || cell0_0.includes('Institute') || cell0_0.includes('Uttarakhand');
-        const bannerOffset = alreadyHasBanner ? 0 : 3;
+        const shouldPrependBanner = !EXCEL_WB.isImportedWorkbook && (EXCEL_WB.bannerVisible !== false) && !alreadyHasBanner;
+        const bannerOffset = shouldPrependBanner ? 3 : 0;
 
-        // 3. Prepend Institutional Header rows if not already present
-        if (!alreadyHasBanner) {
+        // 3. Prepend Institutional Header rows if required
+        if (shouldPrependBanner) {
           // Banner Row 1: Institution & Session
           const r1 = worksheet.getRow(1);
           r1.height = 28;
@@ -7914,12 +8088,207 @@ async function exportCurrentSheet(format) {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     triggerBrowserDownload(blob, `${sheet.name || 'Sheet'}.csv`);
   } else if (format === 'pdf') {
-    window.print();
+    exportSheetToPdf(sheet);
   } else if (format === 'doc') {
     exportSheetToWordDoc(sheet);
   }
 
   toggleExportMenu();
+}
+
+function exportSheetToPdf(sheet) {
+  if (!sheet) return;
+
+  let maxDataCol = 0;
+  for (let c = 0; c < sheet.colsCount; c++) {
+    for (let r = 0; r < sheet.rowsCount; r++) {
+      const v = getCell(sheet, r, c).v;
+      if (v !== '' && v !== null && v !== undefined) {
+        if (c > maxDataCol) maxDataCol = c;
+      }
+    }
+  }
+  maxDataCol = Math.max(maxDataCol, 3);
+
+  let maxDataRow = 0;
+  for (let r = 0; r < sheet.rowsCount; r++) {
+    for (let c = 0; c <= maxDataCol; c++) {
+      const v = getCell(sheet, r, c).v;
+      if (v !== '' && v !== null && v !== undefined) {
+        if (r > maxDataRow) maxDataRow = r;
+      }
+    }
+  }
+
+  const instBanner = document.getElementById('hdr-banner-inst')?.textContent?.trim() || 'Uttarakhand Government Institute of Polytechnic, Nainital | Internal Evaluation Sheet 2026-27 (Winter Session)';
+  const subjectBanner = document.getElementById('hdr-banner-line2')?.textContent?.trim() || (S.group ? `Internal Evaluation | Subject : ${S.group.name || S.group.subject_name || 'Subject'}` : 'Internal Evaluation');
+  const cohortBanner = document.getElementById('hdr-banner-cohort')?.textContent?.trim() || 'Information Technology | Semester 5';
+
+  const mergeMap = new Map();
+  if (Array.isArray(sheet.merges)) {
+    sheet.merges.forEach(m => {
+      const minR = Math.min(m.s.r, m.e.r);
+      const maxR = Math.max(m.s.r, m.e.r);
+      const minC = Math.min(m.s.c, m.e.c);
+      const maxC = Math.max(m.s.c, m.e.c);
+      const rowSpan = maxR - minR + 1;
+      const colSpan = maxC - minC + 1;
+      for (let r = minR; r <= maxR; r++) {
+        for (let c = minC; c <= maxC; c++) {
+          mergeMap.set(`${r},${c}`, { isTopLeft: (r === minR && c === minC), rowSpan, colSpan });
+        }
+      }
+    });
+  }
+
+  let tableRowsHtml = '';
+  for (let r = 0; r <= maxDataRow; r++) {
+    let rowHasData = false;
+    for (let c = 0; c <= maxDataCol; c++) {
+      const cell = getCell(sheet, r, c);
+      if (cell.v !== '' && cell.v !== null && cell.v !== undefined) {
+        rowHasData = true;
+        break;
+      }
+    }
+    if (!rowHasData && r > 2) continue;
+
+    const isHeader = (r === 0);
+    const isMarks = (r === 1 && isMarksRow(sheet, 1));
+    tableRowsHtml += '<tr>';
+
+    for (let c = 0; c <= maxDataCol; c++) {
+      const mInfo = mergeMap.get(`${r},${c}`);
+      if (mInfo && !mInfo.isTopLeft) continue;
+
+      const spanAttrs = (mInfo && mInfo.isTopLeft) ? ` rowspan="${mInfo.rowSpan}" colspan="${mInfo.colSpan}"` : '';
+      const cell = getCell(sheet, r, c);
+      const val = cell.v !== undefined && cell.v !== null ? cell.v : cell.raw;
+      const align = (c === 2 && !isHeader && !isMarks) ? 'left' : 'center';
+      const weight = (isHeader || isMarks || cell.s?.bold) ? 'bold' : 'normal';
+      const bg = isHeader ? '#f1f5f9' : isMarks ? '#f8fafc' : '#ffffff';
+
+      tableRowsHtml += `<td${spanAttrs} style="padding:4px 6px;text-align:${align};font-weight:${weight};background:${bg};border:1px solid #94a3b8;font-size:9pt;word-break:break-word;">${escapeHtml(val)}</td>`;
+    }
+    tableRowsHtml += '</tr>';
+  }
+
+  const printHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(sheet.name || 'Evaluation_Sheet')} - Print</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 8mm 6mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #0f172a;
+      background: #ffffff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .pdf-banner {
+      text-align: center;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 4px;
+    }
+    .pdf-banner-line1 {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #0369a1;
+    }
+    .pdf-banner-line2 {
+      font-size: 9.5pt;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .pdf-banner-line3 {
+      font-size: 8.5pt;
+      color: #475569;
+      margin-top: 1px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+      page-break-inside: auto;
+    }
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+    .pdf-signatures {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 9pt;
+      font-weight: 700;
+      page-break-inside: avoid;
+    }
+    .pdf-sig-block {
+      text-align: center;
+      border-top: 1px dashed #64748b;
+      padding-top: 4px;
+      min-width: 140px;
+    }
+  </style>
+</head>
+<body>
+  <div class="pdf-banner">
+    <div class="pdf-banner-line1">${escapeHtml(instBanner)}</div>
+    <div class="pdf-banner-line2">${escapeHtml(subjectBanner)}</div>
+    <div class="pdf-banner-line3">${escapeHtml(cohortBanner)}</div>
+  </div>
+  <table>
+    <tbody>
+      ${tableRowsHtml}
+    </tbody>
+  </table>
+  <div class="pdf-signatures">
+    <div class="pdf-sig-block">Subject Teacher</div>
+    <div class="pdf-sig-block">Head of the Department</div>
+    <div class="pdf-sig-block">Principal</div>
+  </div>
+</body>
+</html>`;
+
+  let iframe = document.getElementById('excel-print-iframe');
+  if (iframe) iframe.remove();
+  iframe = document.createElement('iframe');
+  iframe.id = 'excel-print-iframe';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(printHtml);
+  doc.close();
+
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (_) {
+      window.print();
+    }
+    setTimeout(() => {
+      try {
+        iframe.remove();
+      } catch (_) { }
+    }, 2000);
+  }, 250);
 }
 
 function generateActiveSheetCSV(sheet) {
@@ -8093,6 +8462,48 @@ function parseExcelCellCoord(coordStr) {
   };
 }
 
+function parseExcelColor(colorObj) {
+  if (!colorObj) return null;
+  if (typeof colorObj === 'string') {
+    if (colorObj.startsWith('#')) return colorObj;
+    if (colorObj.length === 8) return '#' + colorObj.slice(2);
+    if (colorObj.length === 6) return '#' + colorObj;
+    return colorObj;
+  }
+  if (colorObj.argb) {
+    let hex = colorObj.argb;
+    if (hex.length === 8) hex = hex.substring(2);
+    return '#' + hex;
+  }
+  if (colorObj.theme !== undefined) {
+    const themeIndex = Number(colorObj.theme);
+    const defaultThemes = [
+      '#FFFFFF', '#000000', '#E7E6E6', '#44546A',
+      '#4472C4', '#ED7D31', '#A5A5A5', '#FFC000',
+      '#5B9BD5', '#70AD47'
+    ];
+    let baseHex = defaultThemes[themeIndex] || '#4472C4';
+    let r = parseInt(baseHex.substr(1, 2), 16);
+    let g = parseInt(baseHex.substr(3, 2), 16);
+    let b = parseInt(baseHex.substr(5, 2), 16);
+    const tint = colorObj.tint !== undefined ? Number(colorObj.tint) : 0;
+    if (tint !== 0) {
+      if (tint > 0) {
+        r = Math.round(r * (1 - tint) + 255 * tint);
+        g = Math.round(g * (1 - tint) + 255 * tint);
+        b = Math.round(b * (1 - tint) + 255 * tint);
+      } else {
+        r = Math.round(r * (1 + tint));
+        g = Math.round(g * (1 + tint));
+        b = Math.round(b * (1 + tint));
+      }
+    }
+    const toHex = n => Math.max(0, Math.min(255, n)).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+  return null;
+}
+
 async function handleExcelFileImport(e) {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -8111,12 +8522,10 @@ async function handleExcelFileImport(e) {
       await workbook.xlsx.load(arrayBuffer);
 
       EXCEL_WB.sheets = [];
-      workbook.eachSheet((worksheet, sheetId) => {
-        // Skip auxiliary DataSheet tab as requested by faculty
-        if (worksheet.name && worksheet.name.toLowerCase().trim() === 'datasheet') {
-          return;
-        }
+      EXCEL_WB.isImportedWorkbook = true;
+      EXCEL_WB.bannerVisible = false; // Imported sheets hide college banner by default
 
+      workbook.eachSheet((worksheet, sheetId) => {
         // 1. Extract worksheet merges
         const merges = extractWorksheetMerges(worksheet);
 
@@ -8172,7 +8581,7 @@ async function handleExcelFileImport(e) {
           });
         }
 
-        // 5. Populate cell data, skipping duplicate values on absorbed cells
+        // 5. Populate cell data, styles, formulas and cached values
         worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
           const r = rowNumber - 1;
           if (row.height) {
@@ -8191,11 +8600,13 @@ async function handleExcelFileImport(e) {
 
             let val = cell.value;
             let formula = null;
+            let cachedVal = undefined;
 
             if (typeof val === 'object' && val !== null) {
               if (val.formula) {
                 formula = '=' + val.formula;
-                val = val.result !== undefined ? val.result : '';
+                cachedVal = val.result !== undefined ? val.result : '';
+                val = cachedVal;
               } else if (val.text) {
                 val = val.text;
               } else if (val.richText && Array.isArray(val.richText)) {
@@ -8205,20 +8616,40 @@ async function handleExcelFileImport(e) {
 
             const style = {};
             if (cell.font) {
+              if (cell.font.name) style.fontFamily = cell.font.name;
+              if (cell.font.size) style.fontSize = Math.round(cell.font.size * 1.15);
               if (cell.font.bold) style.bold = true;
               if (cell.font.italic) style.italic = true;
               if (cell.font.underline) style.underline = true;
+              const fontColor = parseExcelColor(cell.font.color);
+              if (fontColor) style.color = fontColor;
+            }
+            if (cell.fill && cell.fill.type === 'pattern') {
+              const bg = parseExcelColor(cell.fill.fgColor);
+              if (bg && bg.toLowerCase() !== '#ffffff' && bg.toLowerCase() !== '#fff') {
+                style.bg = bg;
+              }
             }
             if (cell.alignment) {
               if (cell.alignment.horizontal) style.align = cell.alignment.horizontal;
               if (cell.alignment.vertical) style.vAlign = cell.alignment.vertical;
               if (cell.alignment.wrapText) style.wrap = true;
             }
+            if (cell.border) {
+              if (cell.border.top) style.borderTop = '1px solid var(--border-color)';
+              if (cell.border.bottom) style.borderBottom = '1px solid var(--border-color)';
+              if (cell.border.left) style.borderLeft = '1px solid var(--border-color)';
+              if (cell.border.right) style.borderRight = '1px solid var(--border-color)';
+              if (cell.border.top && cell.border.bottom && cell.border.left && cell.border.right) {
+                style.border = 'all';
+              }
+            }
 
             setCell(sheetObj, r, c, {
               raw: formula || String(val ?? ''),
               f: formula,
               v: val,
+              cachedValue: cachedVal,
               s: Object.keys(style).length ? style : undefined
             });
           });
@@ -8232,7 +8663,8 @@ async function handleExcelFileImport(e) {
         const titleEl = document.getElementById('excel-workbook-title');
         if (titleEl) titleEl.textContent = file.name;
         switchWorksheet(0);
-        alert(`Imported ${EXCEL_WB.sheets.length} worksheet(s) successfully.`);
+        recalculateAllSheetFormulas(true);
+        showToast(`Imported ${EXCEL_WB.sheets.length} worksheet(s) successfully!`, 'success');
       }
     } catch (err) {
       console.error('Failed to import Excel file:', err);
@@ -8348,6 +8780,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     frozenRows: 2,
     frozenCols: 3
   });
+  evalSheet.rowHeights[0] = 28;
+  evalSheet.rowHeights[1] = 24;
+  for (let r = 2; r < 2 + students.length; r++) {
+    evalSheet.rowHeights[r] = 24;
+  }
   evalSheet.colWidths[0] = 60;  // SR. NO.
   evalSheet.colWidths[1] = 130; // ROLL NO.
   evalSheet.colWidths[2] = 200; // STUDENT NAME
@@ -8435,6 +8872,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     frozenRows: 2,
     frozenCols: 3
   });
+  testSheet.rowHeights[0] = 28;
+  testSheet.rowHeights[1] = 24;
+  for (let r = 2; r < 2 + students.length; r++) {
+    testSheet.rowHeights[r] = 24;
+  }
   testSheet.colWidths[0] = 60;
   testSheet.colWidths[1] = 130;
   testSheet.colWidths[2] = 200;
@@ -8501,6 +8943,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
       frozenRows: 2,
       frozenCols: 3
     });
+    singleTestSheet.rowHeights[0] = 28;
+    singleTestSheet.rowHeights[1] = 24;
+    for (let r = 2; r < 2 + students.length; r++) {
+      singleTestSheet.rowHeights[r] = 24;
+    }
     singleTestSheet.colWidths[0] = 60;
     singleTestSheet.colWidths[1] = 130;
     singleTestSheet.colWidths[2] = 200;
@@ -8511,29 +8958,42 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     singleTestSheet.colWidths[7] = 75;
     singleTestSheet.colWidths[8] = 340;
 
-    const singleHeaders = [
-      'SR. NO.', 'ROLL NO.', 'STUDENT NAME',
-      '1', '2', '3', '4', 'Total',
-      'Unit Test Details (Mode : OFFLINE, Posted in Google Classroom as well)'
-    ];
-    singleHeaders.forEach((h, c) => {
-      setCell(singleTestSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
-    });
+    // Header Row 0: SR. NO., ROLL NO., STUDENT NAME, Unit Test (Total Marks: 20) [merged 3..7], Details
+    setCell(singleTestSheet, 0, 0, { raw: 'SR. NO.', v: 'SR. NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(singleTestSheet, 0, 1, { raw: 'ROLL NO.', v: 'ROLL NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(singleTestSheet, 0, 2, { raw: 'STUDENT NAME', v: 'STUDENT NAME', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(singleTestSheet, 0, 3, { raw: `Unit Test ${tNum} (Total Marks : 20)`, v: `Unit Test ${tNum} (Total Marks : 20)`, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(singleTestSheet, 0, 8, { raw: 'Unit Test Details (Mode : OFFLINE, Posted in VidyaOS as well)', v: 'Unit Test Details (Mode : OFFLINE, Posted in VidyaOS as well)', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
 
-    const questionRow = [
-      'Question No. -->', '', '',
-      5, 5, 5, 5, 20,
-      `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes`
-    ];
-    questionRow.forEach((q, c) => {
-      setCell(singleTestSheet, 1, c, { raw: q, v: q, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
-    });
+    // Merges for Header Row 0
+    singleTestSheet.merges.push({ s: { r: 0, c: 3 }, e: { r: 0, c: 7 } });
 
+    // Header Row 1: Questions and Total marks
+    setCell(singleTestSheet, 1, 0, { raw: '', v: '', s: { align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 1, { raw: '', v: '', s: { align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 2, { raw: 'Question No. -->', v: 'Question No. -->', s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 3, { raw: 1, v: 1, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 4, { raw: 2, v: 2, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 5, { raw: 3, v: 3, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 6, { raw: 4, v: 4, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 7, { raw: 'Total', v: 'Total', s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 8, { raw: `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes | Date : 08.08.26`, v: `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes | Date : 08.08.26`, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+
+    // Instructions and Questions with vertical merges spanning rows so student rows maintain clean uniform 24px height
     const testInstructions = `Instructions :\n1. Students must write answers only on the A4 answer sheets.\n2. Attempt to all 4 questions.\n3. This question paper carrying a total of 20 marks. Each question is of 5 marks.\n4. The time duration for this test is 50 minutes.\n5. Students must read all questions carefully before answering.\n6. Answers should be clear, neat and to the point.\n7. Use of unfair means is strictly prohibited.\n8. Write the question number clearly before answering each question.`;
     setCell(singleTestSheet, 2, 8, { raw: testInstructions, v: testInstructions, s: { align: 'left', wrap: true } });
+    const instrEndRow = Math.min(11, totalRows - 3);
+    if (instrEndRow > 2) {
+      singleTestSheet.merges.push({ s: { r: 2, c: 8 }, e: { r: instrEndRow, c: 8 } });
+    }
 
+    const qStartRow = instrEndRow + 1;
     const testQuestions = `Unit Test ${tNum} Questions :\n1. What is process control block draw and brief there block diagram.\n2. What is language process explain the all types of language processors.\n3. A program is a set of _______.\n4. Converts a program written in assembly language into its equivalent binary form.`;
-    setCell(singleTestSheet, 12, 8, { raw: testQuestions, v: testQuestions, s: { align: 'left', wrap: true } });
+    setCell(singleTestSheet, qStartRow, 8, { raw: testQuestions, v: testQuestions, s: { align: 'left', wrap: true } });
+    const qEndRow = Math.min(qStartRow + 8, totalRows - 3);
+    if (qEndRow > qStartRow) {
+      singleTestSheet.merges.push({ s: { r: qStartRow, c: 8 }, e: { r: qEndRow, c: 8 } });
+    }
 
     students.forEach((stu, idx) => {
       const r = idx + 2;
@@ -8577,6 +9037,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     frozenRows: 2,
     frozenCols: 3
   });
+  assignSheet.rowHeights[0] = 28;
+  assignSheet.rowHeights[1] = 24;
+  for (let r = 2; r < 2 + students.length; r++) {
+    assignSheet.rowHeights[r] = 24;
+  }
   assignSheet.colWidths[0] = 60;
   assignSheet.colWidths[1] = 130;
   assignSheet.colWidths[2] = 200;
@@ -8587,10 +9052,10 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   const assignHeaders = [
     'SR. NO.', 'ROLL NO.', 'STUDENT NAME',
     '1', '2', '3', '4', '5', 'Total (Average)',
-    'Assignment Details (Mode : OFFLINE, Posted in Google Classroom as classwork)'
+    'Assignment Details (Mode : OFFLINE, Posted in VidyaOS as classwork)'
   ];
   assignHeaders.forEach((h, c) => {
-    setCell(assignSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(assignSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
   });
 
   const assignMarks = ['Assignment No. -->', '', '', 10, 10, 10, 10, 10, 10, 'Continuous Assessment Coursework'];
@@ -8598,8 +9063,12 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(assignSheet, 1, c, { raw: m, v: m, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
   });
 
-  const assignDetailsText = `Assignment Details (Mode: OFFLINE & Google Classroom):\nAssignment 1: Data Structures Overview & Algorithm Complexity\nAssignment 2: Array Implementations and String Manipulation\nAssignment 3: Singly and Doubly Linked Lists Applications\nAssignment 4: Stack & Queue Memory Allocation and Polish Notation\nAssignment 5: Binary Search Trees & Graph Traversal Operations`;
+  const assignDetailsText = `Assignment Details (Mode: OFFLINE & VidyaOS):\nAssignment 1: Data Structures Overview & Algorithm Complexity\nAssignment 2: Array Implementations and String Manipulation\nAssignment 3: Singly and Doubly Linked Lists Applications\nAssignment 4: Stack & Queue Memory Allocation and Polish Notation\nAssignment 5: Binary Search Trees & Graph Traversal Operations`;
   setCell(assignSheet, 2, 9, { raw: assignDetailsText, v: assignDetailsText, s: { align: 'left', wrap: true } });
+  const assignEndRow = Math.min(10, totalRows - 3);
+  if (assignEndRow > 2) {
+    assignSheet.merges.push({ s: { r: 2, c: 9 }, e: { r: assignEndRow, c: 9 } });
+  }
 
   students.forEach((stu, idx) => {
     const r = idx + 2;
@@ -8640,18 +9109,23 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     frozenRows: 2,
     frozenCols: 3
   });
+  practicalSheet.rowHeights[0] = 34;
+  practicalSheet.rowHeights[1] = 24;
+  for (let r = 2; r < 2 + students.length; r++) {
+    practicalSheet.rowHeights[r] = 24;
+  }
   practicalSheet.colWidths[0] = 60;
   practicalSheet.colWidths[1] = 130;
   practicalSheet.colWidths[2] = 200;
   practicalSheet.colWidths[3] = 120;
-  practicalSheet.colWidths[4] = 140;
+  practicalSheet.colWidths[4] = 160;
   practicalSheet.colWidths[5] = 95;
   practicalSheet.colWidths[6] = 95;
   practicalSheet.colWidths[7] = 95;
 
   const practicalHeaders = ['SR. NO.', 'ROLL NO.', 'STUDENT NAME', 'Lab Record File', 'Creative Work (Model/Chart/Project)', 'Attendance', 'Viva Voce', 'TOTAL'];
   practicalHeaders.forEach((h, c) => {
-    setCell(practicalSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(practicalSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
   });
 
   const practicalMarks = ['Marks -->', '', '', 10, 10, 5, 5, 30];
@@ -8690,9 +9164,44 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
 
   EXCEL_WB.sheets.push(practicalSheet);
 
-  recalculateAllSheetFormulas(false);
+  EXCEL_WB.sheets.forEach(s => {
+    recalculateSheetFormulas(s);
+    autoFitSheetColumns(s);
+  });
   renderSheetTabs();
   renderExcelGrid(true);
+}
+
+function autoFitSheetColumns(sheet) {
+  if (!sheet || !sheet.cells) return;
+  if (!sheet.colWidths) sheet.colWidths = {};
+
+  const colMaxLen = {};
+  for (let c = 0; c < sheet.colsCount; c++) {
+    colMaxLen[c] = 0;
+  }
+
+  const sampleRows = Math.min(sheet.rowsCount || 50, 100);
+  for (let r = 0; r < sampleRows; r++) {
+    for (let c = 0; c < sheet.colsCount; c++) {
+      const cell = getCell(sheet, r, c);
+      const val = String(cell.v !== undefined && cell.v !== null ? cell.v : (cell.raw || ''));
+      if (!val) continue;
+      const effectiveLen = (r === 0 && val.length > 28) ? Math.ceil(val.length / 2) : (val.length > 40 ? 30 : val.length);
+      if (effectiveLen > colMaxLen[c]) {
+        colMaxLen[c] = effectiveLen;
+      }
+    }
+  }
+
+  for (let c = 0; c < sheet.colsCount; c++) {
+    const maxChars = colMaxLen[c] || 6;
+    let autoW = Math.max(70, Math.min(360, maxChars * 8.5 + 28));
+    if (c === 0) autoW = Math.max(autoW, 60); // SR. NO.
+    if (c === 1) autoW = Math.max(autoW, 120); // ROLL NO.
+    if (c === 2) autoW = Math.max(autoW, 190); // STUDENT NAME
+    sheet.colWidths[c] = Math.round(autoW);
+  }
 }
 
 function saveActiveSheetData(showToast = false) {
@@ -8762,14 +9271,319 @@ function toggleFormulaBarVisibility() {
   EXCEL_WB.formulaBarVisible = !EXCEL_WB.formulaBarVisible;
   const fb = document.getElementById('excel-formula-bar');
   if (fb) fb.style.display = EXCEL_WB.formulaBarVisible ? 'flex' : 'none';
+
+  const btn = document.getElementById('btn-toggle-formula-bar');
+  if (btn) {
+    btn.classList.toggle('active', Boolean(EXCEL_WB.formulaBarVisible));
+    const lbl = document.getElementById('btn-formula-label');
+    if (lbl) lbl.textContent = EXCEL_WB.formulaBarVisible ? 'Formula Bar: ON' : 'Formula Bar: OFF';
+  }
+
+  const viewBtn = document.getElementById('btn-toggle-formula-view');
+  if (viewBtn) {
+    viewBtn.classList.toggle('active', Boolean(EXCEL_WB.formulaBarVisible));
+  }
+}
+
+function makeBannerEditable() {
+  const instEl = document.getElementById('hdr-banner-inst');
+  const b2 = document.getElementById('hdr-banner-line2');
+  const cohortEl = document.getElementById('hdr-banner-cohort');
+  const segs = [instEl, b2, cohortEl].filter(Boolean);
+
+  segs.forEach(seg => {
+    seg.setAttribute('contenteditable', 'true');
+    seg.classList.add('is-editing');
+    seg.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveBannerEdits();
+      }
+    };
+  });
+
+  const onDocClick = (e) => {
+    const banner = document.getElementById('sheet-institutional-banner');
+    if (banner && !banner.contains(e.target)) {
+      document.removeEventListener('mousedown', onDocClick);
+      saveBannerEdits();
+    }
+  };
+  setTimeout(() => {
+    document.addEventListener('mousedown', onDocClick);
+  }, 50);
+
+  if (instEl) instEl.focus();
+  if (typeof showToast === 'function') {
+    showToast('Banner editing enabled. Press Enter or click outside to save.', 'info');
+  }
+}
+
+function saveBannerEdits() {
+  const instEl = document.getElementById('hdr-banner-inst');
+  const b2 = document.getElementById('hdr-banner-line2');
+  const cohortEl = document.getElementById('hdr-banner-cohort');
+  const segs = [instEl, b2, cohortEl].filter(Boolean);
+
+  let anyModified = false;
+  segs.forEach(seg => {
+    if (seg.getAttribute('contenteditable') === 'true') {
+      seg.setAttribute('contenteditable', 'false');
+      seg.classList.remove('is-editing');
+      anyModified = true;
+    }
+  });
+
+  if (anyModified) {
+    if (!EXCEL_WB.customBanner) EXCEL_WB.customBanner = {};
+    if (instEl) EXCEL_WB.customBanner.inst = instEl.innerText.trim();
+    if (b2) EXCEL_WB.customBanner.subject = b2.innerText.trim();
+    if (cohortEl) EXCEL_WB.customBanner.cohort = cohortEl.innerText.trim();
+
+    if (instEl) {
+      const sessionKey = (S.group && (S.group.academic_year_id || S.group.academic_year_label)) || '2026';
+      const sessionStoreKey = `vidyaos_inst_header_session_${String(sessionKey).replace(/[^a-zA-Z0-9]/g, '_')}`;
+      try {
+        localStorage.setItem(sessionStoreKey, instEl.innerText.trim());
+        localStorage.setItem('vidyaos_institution_marks_header', instEl.innerText.trim());
+      } catch (_) { }
+    }
+    if (cohortEl && S.groupId) {
+      try {
+        localStorage.setItem(`vidyaos_cohort_banner_${S.groupId}`, cohortEl.innerText.trim());
+      } catch (_) { }
+    }
+    markWorkbookUnsaved();
+    if (typeof showToast === 'function') {
+      showToast('Banner updated and saved!', 'success');
+    }
+  }
 }
 
 function toggleInstitutionalBanner() {
   EXCEL_WB.bannerVisible = !EXCEL_WB.bannerVisible;
   const banner = document.getElementById('sheet-institutional-banner');
   if (banner) banner.style.display = EXCEL_WB.bannerVisible ? 'block' : 'none';
-  const btn = document.getElementById('btn-toggle-banner-view');
-  if (btn) btn.textContent = `College Banner: ${EXCEL_WB.bannerVisible ? 'ON' : 'OFF'}`;
+
+  const btn = document.getElementById('btn-toggle-college-banner');
+  if (btn) {
+    btn.classList.toggle('active', Boolean(EXCEL_WB.bannerVisible));
+    const lbl = document.getElementById('btn-banner-label');
+    if (lbl) lbl.textContent = EXCEL_WB.bannerVisible ? 'College Banner: ON' : 'College Banner: OFF';
+  }
+
+  const viewBtn = document.getElementById('btn-toggle-banner-view');
+  if (viewBtn) {
+    viewBtn.classList.toggle('active', Boolean(EXCEL_WB.bannerVisible));
+    viewBtn.textContent = `College Banner: ${EXCEL_WB.bannerVisible ? 'ON' : 'OFF'}`;
+  }
+
+  if (S.autoFit) {
+    setTimeout(() => fitSheetToScreen(false), 40);
+  }
+}
+
+function toggleFreezePanesMenu(e) {
+  if (e) e.stopPropagation();
+  const m = document.getElementById('excel-freeze-menu');
+  if (m) m.style.display = m.style.display === 'none' ? 'flex' : 'none';
+}
+
+function freezeTopRow() {
+  const table = document.getElementById('excel-grid-table');
+  if (table) {
+    table.classList.add('freeze-top-row');
+    table.classList.remove('unfreeze-all');
+  }
+  const m = document.getElementById('excel-freeze-menu');
+  if (m) m.style.display = 'none';
+  showToast('Frozen top row header', 'info');
+}
+
+function freezeFirstColumn() {
+  const table = document.getElementById('excel-grid-table');
+  if (table) {
+    table.classList.add('freeze-first-col');
+    table.classList.remove('unfreeze-all');
+  }
+  const m = document.getElementById('excel-freeze-menu');
+  if (m) m.style.display = 'none';
+  showToast('Frozen first column', 'info');
+}
+
+function unfreezePanes() {
+  const table = document.getElementById('excel-grid-table');
+  if (table) {
+    table.classList.remove('freeze-top-row', 'freeze-first-col');
+    table.classList.add('unfreeze-all');
+  }
+  const m = document.getElementById('excel-freeze-menu');
+  if (m) m.style.display = 'none';
+  showToast('Unfrozen all panes', 'info');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REUSABLE FORMATTING TEMPLATES ENGINE
+   ══════════════════════════════════════════════════════════════ */
+const TEMPLATES_STORAGE_KEY = 'vidyaos_excel_formatting_templates';
+
+function getSavedTemplates() {
+  try {
+    const raw = localStorage.getItem(TEMPLATES_STORAGE_KEY);
+    if (!raw) {
+      const defaultTemplates = [
+        {
+          id: 'tmpl_gp_standard',
+          name: 'Government Polytechnic Nainital Standard',
+          createdAt: new Date().toISOString(),
+          colWidths: { 0: 55, 1: 105, 2: 180, 3: 95, 4: 95, 5: 95, 6: 95, 7: 85, 8: 95, 9: 95, 10: 85, 11: 85, 12: 85 },
+          rowHeights: { 0: 28, 1: 24, 2: 24 },
+          merges: [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },
+            { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } },
+            { s: { r: 0, c: 3 }, e: { r: 0, c: 7 } },
+            { s: { r: 0, c: 8 }, e: { r: 0, c: 12 } }
+          ],
+          cellsFormat: {
+            '0,0': { s: { bold: true, align: 'center', vAlign: 'middle', bg: 'var(--table-th-bg)' }, label: 'SR. NO.' },
+            '0,1': { s: { bold: true, align: 'center', vAlign: 'middle', bg: 'var(--table-th-bg)' }, label: 'ROLL NO.' },
+            '0,2': { s: { bold: true, align: 'center', vAlign: 'middle', bg: 'var(--table-th-bg)' }, label: 'STUDENT NAME' },
+            '0,3': { s: { bold: true, align: 'center', vAlign: 'middle', bg: 'var(--chip-faculty-bg)' }, label: 'THEORY EVALUATION' },
+            '0,8': { s: { bold: true, align: 'center', vAlign: 'middle', bg: 'var(--bg-surface-secondary)' }, label: 'PRACTICAL EVALUATION' }
+          }
+        }
+      ];
+      localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(defaultTemplates));
+      return defaultTemplates;
+    }
+    return JSON.parse(raw);
+  } catch (_) {
+    return [];
+  }
+}
+
+function openTemplateManagerModal() {
+  renderTemplateManagerList();
+  openModal('modal-template-manager');
+}
+
+function closeTemplateManagerModal() {
+  closeModal('modal-template-manager');
+}
+
+function renderTemplateManagerList() {
+  const container = document.getElementById('excel-template-list');
+  if (!container) return;
+  const templates = getSavedTemplates();
+  if (!templates.length) {
+    container.innerHTML = `<div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:0.8rem;">No saved templates yet. Create one by clicking "Save Current Layout".</div>`;
+    return;
+  }
+
+  container.innerHTML = templates.map(t => `
+    <div class="excel-template-card">
+      <div class="excel-template-info">
+        <span class="excel-template-title">${escapeHtml(t.name)}</span>
+        <span class="excel-template-meta">${Object.keys(t.colWidths || {}).length} Columns &bull; ${(t.merges || []).length} Merges &bull; Saved ${new Date(t.createdAt).toLocaleDateString()}</span>
+      </div>
+      <div class="excel-template-actions">
+        <button type="button" class="btn btn-primary btn-sm" onclick="applyFormattingTemplate('${t.id}')" style="font-weight:700;font-size:0.72rem;padding:0.25rem 0.6rem;">Apply</button>
+        <button type="button" class="btn btn-secondary btn-sm text-danger" onclick="deleteFormattingTemplate('${t.id}')" style="font-size:0.72rem;padding:0.25rem 0.5rem;" title="Delete template">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveActiveSheetAsTemplate() {
+  const nameInput = document.getElementById('new-template-name-input');
+  const name = nameInput?.value?.trim();
+  if (!name) {
+    alert('Please enter a template name.');
+    return;
+  }
+  const sheet = getActiveSheet();
+  if (!sheet) return;
+
+  const colWidths = { ...(sheet.colWidths || {}) };
+  const rowHeights = { ...(sheet.rowHeights || {}) };
+  const merges = JSON.parse(JSON.stringify(sheet.merges || []));
+  const cellsFormat = {};
+
+  for (const [key, cell] of Object.entries(sheet.cells || {})) {
+    const [r, c] = key.split(',').map(Number);
+    if (r <= 2 || cell.s) {
+      cellsFormat[key] = {
+        s: cell.s ? { ...cell.s } : undefined,
+        label: r <= 2 ? cell.raw : undefined
+      };
+    }
+  }
+
+  const newTemplate = {
+    id: 'tmpl_' + Date.now(),
+    name: name,
+    createdAt: new Date().toISOString(),
+    colWidths,
+    rowHeights,
+    merges,
+    cellsFormat
+  };
+
+  const list = getSavedTemplates();
+  list.unshift(newTemplate);
+  localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(list));
+  if (nameInput) nameInput.value = '';
+  renderTemplateManagerList();
+  showToast(`Saved template "${name}" successfully!`, 'success');
+}
+
+function applyFormattingTemplate(templateId) {
+  const templates = getSavedTemplates();
+  const tmpl = templates.find(t => t.id === templateId);
+  if (!tmpl) return;
+  const sheet = getActiveSheet();
+  if (!sheet) return;
+
+  pushUndoState(`Apply Template "${tmpl.name}"`);
+
+  if (tmpl.colWidths) {
+    sheet.colWidths = { ...sheet.colWidths, ...tmpl.colWidths };
+  }
+  if (tmpl.rowHeights) {
+    sheet.rowHeights = { ...sheet.rowHeights, ...tmpl.rowHeights };
+  }
+  if (Array.isArray(tmpl.merges)) {
+    sheet.merges = JSON.parse(JSON.stringify(tmpl.merges));
+  }
+  if (tmpl.cellsFormat) {
+    for (const [key, fmt] of Object.entries(tmpl.cellsFormat)) {
+      const [r, c] = key.split(',').map(Number);
+      const existing = getCell(sheet, r, c);
+      if (fmt.s) {
+        existing.s = { ...(existing.s || {}), ...fmt.s };
+      }
+      if (r <= 1 && fmt.label && (!existing.raw || existing.raw === '')) {
+        existing.raw = fmt.label;
+        existing.v = fmt.label;
+      }
+      setCell(sheet, r, c, existing);
+    }
+  }
+
+  renderExcelGrid(true);
+  markWorkbookUnsaved();
+  closeTemplateManagerModal();
+  showToast(`Applied template "${tmpl.name}"!`, 'success');
+}
+
+function deleteFormattingTemplate(templateId) {
+  if (!confirm('Are you sure you want to delete this template?')) return;
+  let list = getSavedTemplates();
+  list = list.filter(t => t.id !== templateId);
+  localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(list));
+  renderTemplateManagerList();
+  showToast('Template deleted', 'info');
 }
 
 function togglePrintSignatures() {

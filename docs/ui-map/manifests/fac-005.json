@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "da25317335da",
-  "last_scanned": "2026-11-19T11:10:20.695Z",
+  "content_hash": "a6ebc8e08622",
+  "last_scanned": "2026-11-19T15:43:10.966Z",
   "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -190,7 +190,7 @@
       },
       {
         "id": "modal-edit-total-marks",
-        "title": "Edit Total Marks &amp; Scheme",
+        "title": "Edit Total Marks &amp;\n              Scheme",
         "field_count": 0
       },
       {
@@ -252,6 +252,16 @@
         "id": "rename-sheet-input",
         "title": "Modal Dialog",
         "field_count": 1
+      },
+      {
+        "id": "modal-template-manager",
+        "title": "Spreadsheet Formatting\n              Templates",
+        "field_count": 0
+      },
+      {
+        "id": "new-template-name-input",
+        "title": "Modal Dialog",
+        "field_count": 1
       }
     ]
   },
@@ -264,62 +274,6 @@
         "class": "btn-icon-minimal excel-back-btn",
         "data_ui": null,
         "title": "Back to Classroom / Registers"
-      },
-      {
-        "id": "btn-quick-save",
-        "label": "Save",
-        "action": "saveActiveSheetData(true)",
-        "class": "btn btn-sm btn-quick-save",
-        "data_ui": null,
-        "title": "Save changes (Ctrl+S)"
-      },
-      {
-        "id": "btn-export-dropdown",
-        "label": "Export ▼",
-        "action": "toggleExportMenu(event)",
-        "class": "btn btn-secondary btn-sm studio-export-btn",
-        "data_ui": null,
-        "title": "Export active spreadsheet"
-      },
-      {
-        "id": null,
-        "label": ".XLSX Excel Spreadsheet Native Microsoft Excel workbook (.xlsx)",
-        "action": "exportCurrentSheet(",
-        "class": "export-menu-item",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": ".PDF Printable Document Institutional PDF for signature &amp; audit",
-        "action": "exportCurrentSheet(",
-        "class": "export-menu-item",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": ".DOC Word Document Editable formatted table (.doc)",
-        "action": "exportCurrentSheet(",
-        "class": "export-menu-item",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": ".CSV Raw Data Values Comma-separated tabular text (.csv)",
-        "action": "exportCurrentSheet(",
-        "class": "export-menu-item",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-edit-save-toggle",
-        "label": "Edit",
-        "action": "toggleEditSaveMode()",
-        "class": "btn-edit-save-toggle",
-        "data_ui": null,
-        "title": "Toggle Edit / Save Mode"
       },
       {
         "id": null,
@@ -379,7 +333,7 @@
       },
       {
         "id": null,
-        "label": "View",
+        "label": "Templates",
         "action": "switchRibbonTab(",
         "class": "excel-tab-btn",
         "data_ui": null,
@@ -387,7 +341,7 @@
       },
       {
         "id": null,
-        "label": "📄 New Sheet",
+        "label": "New Sheet",
         "action": "createNewWorksheet()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -395,7 +349,7 @@
       },
       {
         "id": null,
-        "label": "📂 Open / Import",
+        "label": "Open / Import",
         "action": "triggerExcelImport()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -403,7 +357,7 @@
       },
       {
         "id": null,
-        "label": "💾 Save",
+        "label": "Save",
         "action": "saveActiveSheetData(true)",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -411,7 +365,7 @@
       },
       {
         "id": null,
-        "label": "📥 Export .XLSX",
+        "label": "Export .XLSX",
         "action": "exportCurrentSheet(",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -419,7 +373,7 @@
       },
       {
         "id": null,
-        "label": "🖨️ Print",
+        "label": "Print",
         "action": "window.print()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -531,7 +485,7 @@
       },
       {
         "id": "btn-fill-color-picker",
-        "label": "🎨",
+        "label": "Fill Color",
         "action": "document.getElementById(",
         "class": "excel-icon-btn",
         "data_ui": null,
@@ -611,7 +565,7 @@
       },
       {
         "id": null,
-        "label": "⬌ Merge &amp; Center",
+        "label": "Merge &amp; Center",
         "action": "mergeAndCenter()",
         "class": "excel-menu-item",
         "data_ui": null,
@@ -619,7 +573,7 @@
       },
       {
         "id": null,
-        "label": "⇉ Merge Across",
+        "label": "Merge Across",
         "action": "mergeAcross()",
         "class": "excel-menu-item",
         "data_ui": null,
@@ -627,7 +581,7 @@
       },
       {
         "id": null,
-        "label": "⊞ Merge Cells",
+        "label": "Merge Cells",
         "action": "mergeCellsOnly()",
         "class": "excel-menu-item",
         "data_ui": null,
@@ -635,7 +589,7 @@
       },
       {
         "id": null,
-        "label": "↤↦ Unmerge Cells",
+        "label": "Unmerge Cells",
         "action": "unmergeSelectedCells()",
         "class": "excel-menu-item text-danger",
         "data_ui": null,
@@ -802,6 +756,78 @@
         "title": "Clear Contents (Delete)"
       },
       {
+        "id": "btn-home-toggle-gridlines",
+        "label": "Gridlines",
+        "action": "toggleGridlines()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Gridlines"
+      },
+      {
+        "id": "btn-home-toggle-formula-bar",
+        "label": "ƒx Formula Bar",
+        "action": "toggleFormulaBarVisibility()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Show/Hide Formula Bar"
+      },
+      {
+        "id": "btn-home-freeze-panes",
+        "label": "Freeze ▾",
+        "action": "toggleFreezePanesMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Freeze Panes / Rows / Columns"
+      },
+      {
+        "id": null,
+        "label": "Freeze Top Row",
+        "action": "freezeTopRow()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Freeze First Column",
+        "action": "freezeFirstColumn()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Unfreeze Panes",
+        "action": "unfreezePanes()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Zoom Out (−)",
+        "action": "zoomOut()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Zoom Out (−)"
+      },
+      {
+        "id": null,
+        "label": "Zoom In (+)",
+        "action": "zoomIn()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Zoom In (+)"
+      },
+      {
+        "id": "btn-home-autofit",
+        "label": "Auto-Fit",
+        "action": "toggleAutoFit()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Toggle Auto-Fit"
+      },
+      {
         "id": null,
         "label": "ƒx Insert Function",
         "action": "openInsertFunctionModal()",
@@ -811,7 +837,7 @@
       },
       {
         "id": null,
-        "label": "👤 Student Row",
+        "label": "Student Row",
         "action": "openAddRowModal()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -819,7 +845,7 @@
       },
       {
         "id": null,
-        "label": "📊 Column",
+        "label": "Column",
         "action": "openAddColumnModal()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -827,7 +853,7 @@
       },
       {
         "id": null,
-        "label": "🏛️ College Header",
+        "label": "College Header",
         "action": "toggleInstitutionalBanner()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -835,7 +861,7 @@
       },
       {
         "id": null,
-        "label": "✍️ Signatures",
+        "label": "Signatures",
         "action": "togglePrintSignatures()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -867,7 +893,7 @@
       },
       {
         "id": null,
-        "label": "📄 Print Sheet",
+        "label": "Print Sheet",
         "action": "window.print()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -923,7 +949,7 @@
       },
       {
         "id": null,
-        "label": "🔄 Calculate Sheet",
+        "label": "Calculate Sheet",
         "action": "recalculateAllSheetFormulas(true)",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -963,7 +989,7 @@
       },
       {
         "id": null,
-        "label": "⚡ Refresh Data",
+        "label": "Refresh Data",
         "action": "reloadGroupAcademicData()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -971,7 +997,7 @@
       },
       {
         "id": null,
-        "label": "⚖️ Audit Pass/Fail",
+        "label": "Audit Pass/Fail",
         "action": "auditSheetPassFail()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -979,7 +1005,7 @@
       },
       {
         "id": null,
-        "label": "🔒 Protect Sheet",
+        "label": "Protect Sheet",
         "action": "toggleEditSaveMode()",
         "class": "excel-action-btn-large",
         "data_ui": null,
@@ -987,47 +1013,55 @@
       },
       {
         "id": null,
-        "label": "−",
-        "action": "zoomOut()",
-        "class": "excel-icon-btn",
+        "label": "Browse Templates",
+        "action": "openTemplateManagerModal()",
+        "class": "excel-action-btn-large",
         "data_ui": null,
-        "title": "Zoom Out (−)"
+        "title": "Open Templates Library &amp; Management"
       },
       {
         "id": null,
-        "label": "+",
-        "action": "zoomIn()",
-        "class": "excel-icon-btn",
+        "label": "Save As Template",
+        "action": "openSaveTemplateDialog()",
+        "class": "excel-action-btn-large",
         "data_ui": null,
-        "title": "Zoom In (+)"
+        "title": "Save Current Spreadsheet Structure as Reusable Template"
       },
       {
         "id": null,
-        "label": "100%",
-        "action": "resetZoom()",
-        "class": "excel-tool-btn",
+        "label": "Polytechnic Master Eval",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
         "data_ui": null,
-        "title": null
+        "title": "Apply Standard Polytechnic Master Evaluation Template"
       },
       {
-        "id": "btn-desktop-autofit",
-        "label": "Auto-Fit",
-        "action": "toggleAutoFit()",
-        "class": "excel-tool-btn active",
+        "id": null,
+        "label": "Class Test (20M)",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
         "data_ui": null,
-        "title": null
+        "title": "Apply Unit Test (20 Marks) Format"
       },
       {
-        "id": "btn-toggle-formula-bar-view",
-        "label": "Formula Bar",
-        "action": "toggleFormulaBarVisibility()",
-        "class": "excel-tool-btn",
+        "id": null,
+        "label": "Assignments Roster",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
         "data_ui": null,
-        "title": null
+        "title": "Apply Coursework Assignment Assessment Format"
+      },
+      {
+        "id": null,
+        "label": "Practicals Lab",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
+        "data_ui": null,
+        "title": "Apply Lab Record &amp; Practicals Format"
       },
       {
         "id": "btn-formula-cancel",
-        "label": "✕",
+        "label": "Cancel (Esc)",
         "action": "cancelFormulaInput()",
         "class": "btn-formula-action cancel",
         "data_ui": null,
@@ -1035,7 +1069,7 @@
       },
       {
         "id": "btn-formula-accept",
-        "label": "✓",
+        "label": "Enter / Accept (Enter)",
         "action": "acceptFormulaInput()",
         "class": "btn-formula-action accept",
         "data_ui": null,
@@ -1050,12 +1084,76 @@
         "title": "Insert Function (fx)"
       },
       {
+        "id": "btn-toggle-college-banner",
+        "label": "College Banner",
+        "action": "toggleInstitutionalBanner()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide College Header Banner"
+      },
+      {
+        "id": "btn-toggle-formula-bar",
+        "label": "Formula Bar",
+        "action": "toggleFormulaBarVisibility()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide Formula Bar"
+      },
+      {
         "id": "btn-open-filter-modal",
         "label": "Filters 1",
         "action": "openSheetFilterModal()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
         "title": "Filters, Sorting &amp; Visibility"
+      },
+      {
+        "id": "btn-quick-save",
+        "label": "Save",
+        "action": "saveActiveSheetData(true)",
+        "class": "btn btn-sm btn-quick-save",
+        "data_ui": null,
+        "title": "Save changes (Ctrl+S)"
+      },
+      {
+        "id": "btn-export-dropdown",
+        "label": "Export ▼",
+        "action": "toggleExportMenu(event)",
+        "class": "btn btn-secondary btn-sm studio-export-btn",
+        "data_ui": null,
+        "title": "Export active spreadsheet"
+      },
+      {
+        "id": null,
+        "label": ".XLSX Excel Spreadsheet Native Microsoft Excel workbook (.xlsx)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".PDF Printable Document Institutional PDF for signature &amp; audit",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".DOC Word Document Editable formatted table (.doc)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".CSV Raw Data Values Comma-separated tabular text (.csv)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "btn-mode-dynamic",
@@ -1074,8 +1172,16 @@
         "title": null
       },
       {
+        "id": null,
+        "label": "Click or double-click to edit banner text",
+        "action": "makeBannerEditable()",
+        "class": "banner-edit-pencil-btn",
+        "data_ui": null,
+        "title": "Click or double-click to edit banner text"
+      },
+      {
         "id": "btn-sheet-nav-prev",
-        "label": "◀",
+        "label": "Scroll tabs left",
         "action": "scrollSheetTabs(-1)",
         "class": "excel-sheet-nav-btn",
         "data_ui": null,
@@ -1083,7 +1189,7 @@
       },
       {
         "id": "btn-sheet-nav-next",
-        "label": "▶",
+        "label": "Scroll tabs right",
         "action": "scrollSheetTabs(1)",
         "class": "excel-sheet-nav-btn",
         "data_ui": null,
@@ -1096,6 +1202,14 @@
         "class": "excel-add-sheet-btn",
         "data_ui": null,
         "title": "Insert new worksheet (+)"
+      },
+      {
+        "id": "excel-status-zoom-pct",
+        "label": "100%",
+        "action": "resetZoom()",
+        "class": "excel-status-zoom-pct",
+        "data_ui": null,
+        "title": "Reset to 100% (Click to reset)"
       },
       {
         "id": null,
@@ -1240,6 +1354,30 @@
         "class": "drawer-close-btn",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "−",
+        "action": "zoomOut()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Zoom Out (−)"
+      },
+      {
+        "id": null,
+        "label": "+",
+        "action": "zoomIn()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Zoom In (+)"
+      },
+      {
+        "id": null,
+        "label": "100%",
+        "action": "resetZoom()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Reset to 100%"
       },
       {
         "id": "btn-autofit",
@@ -1424,6 +1562,30 @@
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeTemplateManagerModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Current Layout",
+        "action": "saveActiveSheetAsTemplate()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeTemplateManagerModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -1474,6 +1636,14 @@
         "placeholder": "Search student name, roll, or cell text...",
         "handler": "onSheetSearch(this.value)",
         "class": "eval-search-input"
+      },
+      {
+        "id": "excel-bottom-zoom-slider",
+        "type": "range",
+        "name": null,
+        "placeholder": null,
+        "handler": "onZoomSliderInput(this.value)",
+        "class": "excel-status-zoom-slider"
       },
       {
         "id": "add-col-sheet-target",
@@ -1802,6 +1972,14 @@
         "placeholder": "e.g. Master Evaluation, UT Marks",
         "handler": null,
         "class": "form-input-field"
+      },
+      {
+        "id": "new-template-name-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Template name (e.g. Standard Evaluation Layout)...",
+        "handler": null,
+        "class": "form-input-field"
       }
     ],
     "dropdown_selectors": [
@@ -1918,7 +2096,7 @@
         ]
       },
       {
-        "id": "desktop-density-selector",
+        "id": "home-density-selector",
         "title": "Display Density",
         "onchange": "setDensity(this.value)",
         "class": "density-select",
@@ -1947,19 +2125,19 @@
         "sample_options": [
           {
             "value": "evaluation",
-            "text": "📋 1. Master Evaluation Sheet"
+            "text": "1. Master Evaluation Sheet"
           },
           {
             "value": "tests",
-            "text": "📝 2. Class Test Marksheet"
+            "text": "2. Class Test Marksheet"
           },
           {
             "value": "assignments",
-            "text": "📚 3. Assignment Marksheet"
+            "text": "3. Assignment Marksheet"
           },
           {
             "value": "practicals",
-            "text": "🔬 4. Practical &amp; Lab Work Marksheet"
+            "text": "4. Practical &amp; Lab Work Marksheet"
           }
         ]
       },
@@ -2117,7 +2295,7 @@
     },
     {
       "id": "modal-edit-total-marks",
-      "title": "Edit Total Marks &amp; Scheme",
+      "title": "Edit Total Marks &amp;\n              Scheme",
       "fields": [],
       "submit_action": null
     },
@@ -2198,6 +2376,20 @@
         "rename-sheet-input"
       ],
       "submit_action": null
+    },
+    {
+      "id": "modal-template-manager",
+      "title": "Spreadsheet Formatting\n              Templates",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "new-template-name-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "new-template-name-input"
+      ],
+      "submit_action": "saveActiveSheetAsTemplate()"
     }
   ],
   "companion_scripts": [
