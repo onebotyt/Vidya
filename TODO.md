@@ -53,6 +53,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Objective & Architectural Scope**:
   1. *Developer Roster & Contributor Profile Expansion*:
      - Onboarded Developer 4: `@Surendra-singh885` ([Surendra-singh885](https://github.com/Surendra-singh885)) as active full-stack contributor for VidyaOS.
+     - Designated Developer 3: `@onebotyt-mobile` ([onebotyt-mobile](https://github.com/onebotyt-mobile)) as Full-Stack & Mobile Contributor operating via Mobile Antigravity CLI and Termux workspace.
      - Updated ecosystem documentation across `MULTI_DEVELOPER_SETUP.md`, `AGENTS.md`, root `README.md`, `backend/README.md`, and `frontend/README.md`.
   2. *Branching & Anti-Collision Protocols*:
      - Integrated `dev4/*` branch convention across multi-repo automation tooling (`new-feature.ps1`, `push-feature.ps1`).

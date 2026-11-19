@@ -10,7 +10,7 @@ This guide describes how **multiple full-stack developers (Dev 1, Dev 2, Dev 3, 
 | :--- | :--- | :--- | :--- |
 | **Lead Architect (Dev 1)** | [@onebotyt](https://github.com/onebotyt) | Core Architecture, Deployments, Approvals | `main`, `feature/*` |
 | **Frontend Contributor (Dev 2)** | [@AkashK-Repo](https://github.com/AkashK-Repo) | UI Pages, Components, CSS Tokens, UIMS | `dev2/*` |
-| **Mobile Development (Dev 3)** | [@onebotyt-mobile](https://github.com/onebotyt-mobile) | Capacitor Android, Native Mobile, Termux Sync | `dev3/*` |
+| **Full-Stack & Mobile (Dev 3)** | [@onebotyt-mobile](https://github.com/onebotyt-mobile) | Full-Stack (Mobile Antigravity CLI), Capacitor, Termux Sync | `dev3/*` |
 | **Full-Stack Contributor (Dev 4)** | [@Surendra-singh885](https://github.com/Surendra-singh885) | Features, API Endpoints, UI & Integrations | `dev4/*` |
 
 ---
