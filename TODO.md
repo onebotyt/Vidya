@@ -49,6 +49,51 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 475: ESP32 Multi-Network Failover (Airtel_neer_3811 + vivot3lite), Dual-Server HTTP Fallback & Direct Enrollment Route Aliasing
+- **Objective & Architectural Scope**:
+  1. *Wi-Fi Multi-Network Failover Configuration*:
+     - Updated `config.h` with Main Wi-Fi (`Airtel_neer_3811` / `air56914`) and Fallback Wi-Fi (`vivot3lite` / `12345678`).
+     - Enhanced `initWifiManager()` in `VidyaOS_ESP32_Biometric_Node.ino`: first attempts `Airtel_neer_3811` (12s timeout); if unreachable, instantly switches and connects to `vivot3lite`.
+     - Populated MySQL `device_wifi_networks` table with both networks for `device_id: 1` (`Airtel_neer_3811` as Primary Default, `vivot3lite` as Secondary).
+  2. *Dual-Server HTTP Failover & USB Serial Commands*:
+     - Integrated `executeSinglePost()` in firmware: connects to local host (`http://192.168.1.9:3000/api/v1/devices/esp32`) with automatic fallback to Render HTTPS cloud (`https://vidyaos-backend.onrender.com/api/v1/devices/esp32`).
+     - Added interactive USB Serial commands in `loop()`: typing `'e'` triggers enrollment test, typing `'p'` triggers instant heartbeat ping.
+  3. *Backend Route Aliasing & Enrollment Fix*:
+     - Added direct HOD action aliases in `routes/devices.js`: `POST /hod/:device_id/enroll`, `POST /hod/:device_id/sync-templates`, `POST /hod/simulate-biometric`, and `DELETE /hod/template/:student_id`.
+     - Successfully compiled fresh `firmware.bin` (1.09 MB) with `arduino-cli` to `backend/uploads/firmware/firmware.bin`.
+     - Confirmed pending `ENROLL_STUDENT` command (ID #11) for student Amit Kumar (Roll #1, 2024IT011) ready in `esp32_command_queue`.
+
+### ✅ Milestone 474: HOD Department Scoping, Live OLED Console Screen Sync, Wireless OTA Firmware Updates, Live Connection Ping & Compact UI Overhaul
+- **Objective & Architectural Scope**:
+  1. *HOD Department Access Control & Virtual Column Integrity*:
+     - Enforced strict department scoping in `deviceController.js` (`getHodEsp32Overview` and `registerDevice`): non-admin HODs cannot view or add terminals belonging to other departments.
+     - Resolved virtual column write issue in MySQL `devices` (`device_uid` and `name` are generated virtual columns); updated `deviceModel.js`, `adminModel.js`, and `hodModel.js` to write directly to `device_uuid` and `device_name`.
+     - Repaired row 1 in `devices` with `device_uuid = 'ESP32-IT-LAB-01'` and `device_name = 'IT Lab Biometric Terminal 01'`, resolving empty `()` dropdown and blank UID.
+     - Disabled `#dept-switcher-select` and locked `#esp-dept-input` in UI for non-admin HOD users.
+  2. *Live ESP32 Hardware Console Screen Sync & 5V Buzzer Synthesis*:
+     - Integrated real-time digital clock ticking every 1 second (`HH:MM:SS AM/PM`) matching ESP32 firmware idle screen (`oled_buzzer_ui.h`).
+     - Added 6 interactive simulation mode buttons (`Standby Clock`, `Verified`, `Attendance Failed`, `Not Registered`, `Enroll Mode`, `Low Battery`) mapped 1:1 to hardware behaviors.
+     - Configured WebAudio synthesizer with exact tone profiles (2400 Hz 2s continuous beep, 3 short 1800 Hz beeps, 800 Hz rapid tone, 5 low battery beeps, and enrollment chimes).
+  3. *Modal Visibility & Instant Feedback on "+ Add ESP Terminal"*:
+     - Root-caused missing visual feedback: `.modal-backdrop` in `faculty-base.css` had `opacity: 0; pointer-events: none;`.
+     - Added CSS override in `esp32-devices.css` ensuring `.modal-backdrop.open`, `.modal-backdrop.active`, and `.modal-backdrop[style*="display: flex"]` render with `display: flex !important; opacity: 1 !important; pointer-events: auto !important;`.
+     - Updated `openRegisterDeviceModal` and `closeRegisterDeviceModal` to toggle `.open` class and added active button feedback.
+  4. *Over-The-Air (OTA) Wireless Firmware Updates & GitHub CI/CD*:
+     - Added `#include <Update.h>` and `performOtaUpdate()` in `VidyaOS_ESP32_Biometric_Node.ino`.
+     - Compiled local `firmware.bin` (1.09 MB) to `backend/uploads/firmware/firmware.bin` using `arduino-cli`.
+     - Created GitHub Actions CI/CD workflow `.github/workflows/compile-firmware.yml` for automated cloud binary builds on push.
+     - Added `#ota-update-modal` and `submitOtaUpdate` calling `POST /api/v1/devices/hod/:device_id/ota-update`.
+  5. *Live Hardware Ping Connection Check*:
+     - Added `checkDeviceConnection(deviceId)` on frontend calling `GET /api/v1/devices/hod/:device_id/ping`.
+     - Added `📡 Ping` button with `.radar-pulse` animation and instant round-trip latency/RSSI feedback.
+  6. *Wi-Fi Multi-Network Failover & Encoding Sanitization*:
+     - Updated `loadDeviceWifiNetworks` to defensively handle both object `{ networks, active_device }` and array responses.
+     - Fixed mojibake encoding issues by adding `charset=utf-8` to Express static file options and replacing raw multi-byte glyphs with clean HTML entities.
+     - Compacted padding, margins, and font sizes across KPI cards, terminal cards, and OLED enclosure for an executive dashboard.
+  7. *UIMS & Regression Suite Verification*:
+     - Re-extracted UI manifests via `extract-ui-manifest.js`; all 203 checks passed in `test-ui-manifest-sync.js` (100% parity).
+     - Verified theme token compliance in `test-theme-support.js` (84/84 passed).
+
 ### ✅ Milestone 473: Unified Classroom Academic Dossier, Dynamic Module Dropdown, Quick-Access Links & Combine-Export PDF Merge Engine
 - **Objective & Architectural Scope**:
   1. *Consolidation of Classroom Academic Dossiers (`/faculty/course-file/index.html`)*:

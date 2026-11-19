@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "b3b6776cbc32",
-  "last_scanned": "2026-11-19T03:45:19.127Z",
+  "content_hash": "ade40e572ed6",
+  "last_scanned": "2026-11-19T03:57:47.037Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -31,10 +31,6 @@
   "layout_structure": {
     "toolbars": [
       {
-        "id": "esp-loading-bar-wrap",
-        "class": "esp-loading-bar-wrap"
-      },
-      {
         "id": "esp-loading-bar-fill",
         "class": "esp-loading-bar-fill"
       }
@@ -44,10 +40,10 @@
         "id": "wifi-networks-table",
         "class": "esp-table",
         "headers": [
-          "Network SSID",
-          "Security / Type",
-          "Signal Strength (RSSI)",
-          "Priority / Default Status",
+          "SSID (Network Name)",
+          "Security Protocol",
+          "Signal Strength",
+          "Failover Role",
           "Added On",
           "Actions"
         ]
@@ -58,17 +54,17 @@
         "headers": [
           "Roll #",
           "Student Name",
-          "Enrollment / UBTER #",
+          "Enrollment #",
           "Cohort",
-          "Cloud Biometric Template (MySQL)",
-          "ESP32 Enrollment &amp; Test Actions"
+          "Cloud Template",
+          "Actions"
         ]
       }
     ],
     "modals": [
       {
         "id": "register-esp-modal",
-        "title": "Connect ESP32 Biometric Terminal",
+        "title": "Pair Department ESP32 Terminal",
         "field_count": 0
       },
       {
@@ -85,6 +81,11 @@
         "id": "add-wifi-modal",
         "title": "Add Wi-Fi Network Manually",
         "field_count": 0
+      },
+      {
+        "id": "ota-update-modal",
+        "title": "Wireless Firmware Update (OTA)",
+        "field_count": 0
       }
     ]
   },
@@ -92,7 +93,7 @@
     "action_buttons": [
       {
         "id": null,
-        "label": "↻ Refresh Telemetry",
+        "label": "&#8635; Refresh Telemetry",
         "action": "loadEsp32Overview()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -107,8 +108,56 @@
         "title": null
       },
       {
+        "id": "sim-btn-standby",
+        "label": "&#128994; Standby Clock",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-success",
+        "label": "&#9989; Verified",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-fail",
+        "label": "&#10060; Attendance Failed",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-unregistered",
+        "label": "&#9888;&#65039; Not Registered",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-enroll",
+        "label": "&#128274; Enroll Mode",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-low_batt",
+        "label": "&#129685; Low Battery",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "btn-scan-wifi",
-        "label": "🔍 Scan Nearby Wi-Fi",
+        "label": "&#128269; Scan Nearby Wi-Fi",
         "action": "triggerScanNearbyWifi()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -124,7 +173,7 @@
       },
       {
         "id": "btn-fallback-wifi",
-        "label": "🔄 Fallback to Default Wi-Fi",
+        "label": "&#128260; Fallback Default Wi-Fi",
         "action": "triggerWifiFallback()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -132,7 +181,7 @@
       },
       {
         "id": "btn-reset-wifi",
-        "label": "⚠️ Emergency Reset",
+        "label": "&#9888;&#65039; Emergency Reset",
         "action": "triggerWifiReset()",
         "class": "btn btn-danger btn-sm",
         "data_ui": null,
@@ -148,7 +197,7 @@
       },
       {
         "id": "btn-esp-detect-rescan",
-        "label": "↻ Rescan",
+        "label": "&#8635; Rescan",
         "action": "startEspDetectionScan()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -156,7 +205,7 @@
       },
       {
         "id": "btn-esp-detect-usb",
-        "label": "🔌 USB Serial",
+        "label": "&#128268; USB Serial",
         "action": "detectViaWebSerial()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -164,11 +213,11 @@
       },
       {
         "id": "btn-esp-detect-sim",
-        "label": "⚡ Detect Now",
+        "label": "&#9889; Detect Now",
         "action": "simulateEspDetection()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
-        "title": "Simulate detection of nearby ESP32 node"
+        "title": "Detect nearby ESP32 node immediately"
       },
       {
         "id": null,
@@ -228,7 +277,7 @@
       },
       {
         "id": null,
-        "label": "↻ Rescan",
+        "label": "&#8635; Rescan",
         "action": "triggerScanNearbyWifi(true)",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -273,6 +322,30 @@
         "class": "btn btn-primary",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeOtaUpdateModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeOtaUpdateModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-submit-ota",
+        "label": "Update Firmware Now (OTA)",
+        "action": null,
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -286,11 +359,11 @@
       },
       {
         "id": "search-bio-student",
-        "type": "search",
+        "type": "text",
         "name": null,
-        "placeholder": "Search name, roll #, reg...",
+        "placeholder": "Search student or roll #...",
         "handler": "renderStudentsBiometricTable()",
-        "class": "form-control"
+        "class": "form-control form-control-sm"
       },
       {
         "id": "esp-uid-input",
@@ -304,7 +377,7 @@
         "id": "esp-name-input",
         "type": "text",
         "name": null,
-        "placeholder": "e.g. IT Dept Smart Classroom Room 102",
+        "placeholder": "e.g. IT Lab Biometric Terminal 01",
         "handler": null,
         "class": "form-control"
       },
@@ -371,6 +444,14 @@
         "placeholder": null,
         "handler": null,
         "class": null
+      },
+      {
+        "id": "ota-custom-url",
+        "type": "url",
+        "name": null,
+        "placeholder": "http://192.168.1.15:3000/uploads/firmware/firmware.bin",
+        "handler": null,
+        "class": "form-control"
       }
     ],
     "dropdown_selectors": [
@@ -404,7 +485,7 @@
         "id": "filter-bio-year",
         "title": null,
         "onchange": "renderStudentsBiometricTable()",
-        "class": "form-select",
+        "class": "form-select form-select-sm",
         "options_count": 4,
         "sample_options": [
           {
@@ -429,7 +510,7 @@
         "id": "filter-bio-status",
         "title": null,
         "onchange": "renderStudentsBiometricTable()",
-        "class": "form-select",
+        "class": "form-select form-select-sm",
         "options_count": 3,
         "sample_options": [
           {
@@ -438,10 +519,10 @@
           },
           {
             "value": "ENROLLED",
-            "text": "Template Stored"
+            "text": "Enrolled (Template OK)"
           },
           {
-            "value": "NOT_ENROLLED",
+            "value": "PENDING",
             "text": "Not Enrolled"
           }
         ]
@@ -512,13 +593,34 @@
             "text": "Sem 6"
           }
         ]
+      },
+      {
+        "id": "ota-binary-source",
+        "title": null,
+        "onchange": "onOtaSourceChange(this.value)",
+        "class": "form-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "local",
+            "text": "Local Host Server (/uploads/firmware/firmware.bin)"
+          },
+          {
+            "value": "github",
+            "text": "GitHub Actions CI/CD Cloud Build"
+          },
+          {
+            "value": "custom",
+            "text": "Custom URL"
+          }
+        ]
       }
     ]
   },
   "modals_catalog": [
     {
       "id": "register-esp-modal",
-      "title": "Connect ESP32 Biometric Terminal",
+      "title": "Pair Department ESP32 Terminal",
       "fields": [],
       "submit_action": null
     },
@@ -537,6 +639,12 @@
     {
       "id": "add-wifi-modal",
       "title": "Add Wi-Fi Network Manually",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "ota-update-modal",
+      "title": "Wireless Firmware Update (OTA)",
       "fields": [],
       "submit_action": null
     }
@@ -566,6 +674,8 @@
     "loadEsp32Overview",
     "renderLoadError",
     "renderDevicesList",
+    "openOtaUpdateModal",
+    "closeOtaUpdateModal",
     "renderStudentsBiometricTable",
     "renderRecentScans",
     "renderCommandQueue",
@@ -573,8 +683,6 @@
     "closeRegisterDeviceModal",
     "closeEspConfigModal",
     "loadDeviceWifiNetworks",
-    "renderScannedWifiList",
-    "closeScanWifiModal",
-    "openAddWifiModal"
+    "renderScannedWifiList"
   ]
 }
