@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/register/",
   "source_file": "frontend/login/register/index.html",
-  "content_hash": "01bde5083416",
-  "last_scanned": "2026-11-19T00:53:36.145Z",
+  "content_hash": "69b2885f6481",
+  "last_scanned": "2026-11-19T01:25:02.246Z",
   "title": "Register — VidyaOS Campus Management",
   "purpose": "Student self-registration with branch/year onboarding",
   "shell": "Auth Shell (`register.css`)",
@@ -42,11 +42,6 @@
       "method": "POST",
       "endpoint": "/api/v1/auth/student/register",
       "type": "REST"
-    },
-    {
-      "method": "POST",
-      "endpoint": "/api/v1/auth/faculty/register",
-      "type": "REST"
     }
   ],
   "layout_structure": {
@@ -77,17 +72,9 @@
       },
       {
         "id": "tab-student",
-        "label": "Student",
-        "action": "switchRole(",
+        "label": "Student Registration",
+        "action": null,
         "class": "rs-btn active",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "tab-faculty",
-        "label": "Faculty &amp; HOD",
-        "action": "switchRole(",
-        "class": "rs-btn",
         "data_ui": null,
         "title": null
       },
@@ -110,30 +97,6 @@
       {
         "id": "stu-submit-btn",
         "label": "Submit Registration →",
-        "action": null,
-        "class": "btn-submit",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "fac-btn-role-teacher",
-        "label": "Faculty Member Department or Common Faculty",
-        "action": "setFacultyType(",
-        "class": "type-card active",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "fac-btn-role-hod",
-        "label": "Head of Department Department Leadership",
-        "action": "setFacultyType(",
-        "class": "type-card",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "fac-submit-btn",
-        "label": "Submit Application →",
         "action": null,
         "class": "btn-submit",
         "data_ui": null,
@@ -190,6 +153,14 @@
         "class": "inp mono"
       },
       {
+        "id": "stu-class-roll-no",
+        "type": "number",
+        "name": null,
+        "placeholder": "e.g. 15",
+        "handler": null,
+        "class": "inp"
+      },
+      {
         "id": "stu-email",
         "type": "email",
         "name": null,
@@ -218,46 +189,6 @@
         "type": "password",
         "name": null,
         "placeholder": "Re-enter password",
-        "handler": null,
-        "class": "inp"
-      },
-      {
-        "id": "fac-name",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. Dr. Ramesh Joshi",
-        "handler": null,
-        "class": "inp"
-      },
-      {
-        "id": "fac-email",
-        "type": "email",
-        "name": null,
-        "placeholder": "ramesh.joshi@gmail.com",
-        "handler": null,
-        "class": "inp"
-      },
-      {
-        "id": "fac-phone",
-        "type": "tel",
-        "name": null,
-        "placeholder": "10-digit mobile",
-        "handler": null,
-        "class": "inp"
-      },
-      {
-        "id": "fac-empid",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. FAC-2026-042",
-        "handler": null,
-        "class": "inp mono"
-      },
-      {
-        "id": "fac-password",
-        "type": "password",
-        "name": null,
-        "placeholder": "Min. 8 characters",
         "handler": null,
         "class": "inp"
       },
@@ -294,19 +225,6 @@
           {
             "value": "",
             "text": "— Select branch first —"
-          }
-        ]
-      },
-      {
-        "id": "fac-dept",
-        "title": null,
-        "onchange": "handleFacultyDeptChange()",
-        "class": "inp",
-        "options_count": 1,
-        "sample_options": [
-          {
-            "value": "",
-            "text": "— Loading departments…"
           }
         ]
       }

@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "2cf821dcd63b",
-  "last_scanned": "2026-11-19T00:53:35.887Z",
+  "content_hash": "db7b47511d68",
+  "last_scanned": "2026-11-19T01:25:02.033Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -134,7 +134,7 @@
       },
       {
         "id": "modal-marks-mobile",
-        "title": "Marks Details",
+        "title": "Marks\n            Details",
         "field_count": 0
       },
       {
@@ -647,7 +647,7 @@
     },
     {
       "id": "modal-marks-mobile",
-      "title": "Marks Details",
+      "title": "Marks\n            Details",
       "fields": [],
       "submit_action": null
     },

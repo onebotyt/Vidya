@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-19T00:53:36.146Z",
+  "generated_at": "2026-11-19T01:25:02.247Z",
   "total_pages": 31,
   "totals": {
-    "buttons": 546,
-    "modals": 161,
-    "inputs": 351,
+    "buttons": 545,
+    "modals": 162,
+    "inputs": 347,
     "apis": 178
   },
   "pages": [
@@ -119,7 +119,7 @@
       "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
       "title": "Student Academic Records & Dossiers — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-001.json",
-      "content_hash": "2cf821dcd63b",
+      "content_hash": "db7b47511d68",
       "counts": {
         "buttons": 18,
         "modals": 10,
@@ -390,14 +390,14 @@
     {
       "page_id": "PUB-002",
       "route": "/login/",
-      "title": "Sign In — VidyaOS Campus Management",
+      "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "387fb7f2d313",
+      "content_hash": "7e2232cb11c9",
       "counts": {
-        "buttons": 6,
-        "modals": 4,
-        "inputs": 4,
-        "apis": 4
+        "buttons": 9,
+        "modals": 5,
+        "inputs": 5,
+        "apis": 5
       }
     },
     {
@@ -405,12 +405,12 @@
       "route": "/login/register/",
       "title": "Register — VidyaOS Campus Management",
       "manifest_file": "docs/ui-map/manifests/pub-003.json",
-      "content_hash": "01bde5083416",
+      "content_hash": "69b2885f6481",
       "counts": {
-        "buttons": 12,
+        "buttons": 8,
         "modals": 1,
-        "inputs": 16,
-        "apis": 6
+        "inputs": 11,
+        "apis": 5
       }
     }
   ]

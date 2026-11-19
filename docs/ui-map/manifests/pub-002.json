@@ -4,9 +4,9 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "387fb7f2d313",
-  "last_scanned": "2026-11-19T00:53:36.139Z",
-  "title": "Sign In — VidyaOS Campus Management",
+  "content_hash": "7e2232cb11c9",
+  "last_scanned": "2026-11-19T01:25:02.243Z",
+  "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
   "states": "Desktop: centered card with brand illustration; Mobile: full-width card with numeric keypad support",
@@ -39,6 +39,11 @@
       "method": "POST",
       "endpoint": "/api/v1/auth/change-password",
       "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/google",
+      "type": "REST"
     }
   ],
   "layout_structure": {
@@ -64,6 +69,11 @@
         "id": "act-email",
         "title": "Modal Dialog",
         "field_count": 0
+      },
+      {
+        "id": "google-signin-modal",
+        "title": "Sign In with Google",
+        "field_count": 0
       }
     ]
   },
@@ -73,17 +83,17 @@
         "id": "google-signin-btn",
         "label": "Continue with Google",
         "action": "handleGoogleSignIn()",
-        "class": "btn-google",
+        "class": "google",
         "data_ui": null,
         "title": null
       },
       {
         "id": "pw-toggle-btn",
-        "label": "Show / hide password",
+        "label": "Icon Button",
         "action": "togglePw()",
-        "class": "pw-toggle",
+        "class": "eye",
         "data_ui": null,
-        "title": "Show / hide password"
+        "title": null
       },
       {
         "id": "force-login-btn",
@@ -105,15 +115,39 @@
         "id": "submit-btn",
         "label": "Sign In →",
         "action": null,
-        "class": "btn-submit",
+        "class": "signin",
         "data_ui": null,
         "title": null
       },
       {
         "id": "act-submit-btn",
-        "label": "Save & Enter Portal →",
+        "label": "Save &amp; Enter Portal →",
         "action": null,
-        "class": "btn-submit",
+        "class": "signin",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeGoogleSignInModal()",
+        "class": "google-card-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back",
+        "action": "showGoogleAccountList()",
+        "class": "google-btn-text",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sign In",
+        "action": "submitGoogleManualLogin()",
+        "class": "google-btn-blue",
         "data_ui": null,
         "title": null
       }
@@ -123,9 +157,9 @@
         "id": "identifier",
         "type": "text",
         "name": "identifier",
-        "placeholder": "e.g. student@gmail.com, prof.sharma, or 2024IT001",
+        "placeholder": "Enter Email, Phone or Enrollment No.",
         "handler": null,
-        "class": "field-input"
+        "class": null
       },
       {
         "id": "password",
@@ -133,7 +167,7 @@
         "name": "password",
         "placeholder": "Enter your password",
         "handler": null,
-        "class": "field-input has-addon"
+        "class": null
       },
       {
         "id": "act-new-pw",
@@ -141,7 +175,7 @@
         "name": null,
         "placeholder": "Create a strong password",
         "handler": null,
-        "class": "field-input"
+        "class": null
       },
       {
         "id": "act-confirm-pw",
@@ -149,7 +183,15 @@
         "name": null,
         "placeholder": "Re-enter your password",
         "handler": null,
-        "class": "field-input"
+        "class": null
+      },
+      {
+        "id": "google-manual-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@gmail.com",
+        "handler": null,
+        "class": "google-input-field"
       }
     ],
     "dropdown_selectors": []
@@ -178,6 +220,12 @@
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
+    },
+    {
+      "id": "google-signin-modal",
+      "title": "Sign In with Google",
+      "fields": [],
+      "submit_action": null
     }
   ],
   "companion_scripts": [
@@ -188,6 +236,8 @@
     "login/index.js"
   ],
   "exported_functions": [
-    "togglePw"
+    "togglePw",
+    "openGoogleSignInModal",
+    "closeGoogleSignInModal"
   ]
 }
