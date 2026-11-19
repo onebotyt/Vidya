@@ -3,6 +3,58 @@
 
 
 
+### 🏛️ Milestone 339: Complete Website Bug Reporting & Complaint Management System
+- **Status**: 🟢 Completed, Verified & Deployed
+- **User Request**:
+  - *"VidyaOS – Complete Website Bug Reporting & Complaint Management System: Available to both Students and Faculty, while the Admin will monitor, manage, review, and resolve all reported issues. Strictly for technical website issues, bugs, errors, and malfunctions."*
+- **Key Features Implemented**:
+  1. **Technical Issue Exclusivity & Guidance**:
+     - Prominently displays an alert banner explaining that the portal is dedicated solely to technical website bugs, errors, and system malfunctions (never for marks disputes, academic queries, or personal complaints).
+  2. **Student & Faculty Portals – 'Report a Bug' & 'My Bug Reports'**:
+     - Added "Report a Bug" navigation item with custom SVG insect vector in Student Mini-Rail/Drawer and Faculty Mini-Rail/Drawer.
+     - **Bug Reporting Form**:
+       1. Issue Title: Mandatory text field with character length validation.
+       2. Issue Category: Mandatory dropdown with all 12 specified categories (*Login / Authentication*, *Registration*, *Dashboard Error*, *Student Management*, *Faculty Management*, *Attendance Error*, *Assignment / Notes*, *File Upload / Download*, *Page Not Loading*, *Button / Functionality Not Working*, *UI / Design*, *Other Technical Issue*).
+       3. Describe the Problem: Mandatory detailed textarea with reproduction steps guidance.
+       4. Upload Screenshot: **Mandatory**, accepts PNG/JPG/JPEG up to 10MB, drag & drop + file picker, live image thumbnail preview, remove/replace controls, and explicit error validation.
+       5. Upload Screen Recording: Optional, accepts MP4/WebM up to 50MB, drag & drop + file picker, live video preview, remove controls.
+       6. Submit Bug Report: Loading state, celebrates with modal popup, automatically resets form, and switches to "My Bug Reports" tab.
+     - **Automatic User Data Collection**:
+       - Auto-resolves User Name, User ID, Role (Student/Faculty), Department Name & ID, and Email without manual input.
+     - **'My Bug Reports' Tab**:
+       - Filterable list of all submitted reports with sequential Report IDs (`BR-101`, `BR-102`...), issue title, category, formatted timestamp, and color-coded status badges (*New*, *Under Review*, *In Progress*, *Resolved*, *Rejected*).
+       - Interactive "View Details" modal with full description, clickable full-resolution screenshot, HTML5 video player for recordings, and administrative feedback boxes (Admin Response and Rejection Reason).
+  3. **Admin Dashboard – Bug Reports / Technical Complaints Management**:
+     - Added "Bug Reports / Complaints" navigation item with 3D isometric bug vector to Admin Mini-Rail and overlay drawer.
+     - **6 KPI Summary Metrics**:
+       - Total Reports, New Reports, Under Review, In Progress, Resolved, Rejected.
+       - Auto-calculated dynamically from live database aggregations.
+     - **Search & Filter Toolbar**:
+       - Debounced search input (by Report ID, Submitter Name, or Issue Title).
+       - Role filter (Student vs. Faculty).
+       - Category filter (12 standard categories).
+       - Status filter (New, Under Review, In Progress, Resolved, Rejected).
+       - Date range pickers (From Date & To Date).
+       - Reset filters button.
+     - **Comprehensive Reports Table & Pagination**:
+       - Paginated table with 20 items per page, user details, role pills, issue title previews, and "Review & Manage" button.
+     - **Admin Management Modal / Drawer**:
+       - Displays complete submitter profile, issue description, full screenshot, and video player.
+       - Status Change dropdown (*New*, *Under Review*, *In Progress*, *Resolved*, *Rejected*).
+       - Quick action buttons: "✓ Mark Resolved" and "✕ Mark Rejected".
+       - Admin Response / Resolution Note textarea.
+       - **Mandatory Rejection Reason**: Strictly validated whenever status is set to *Rejected*.
+  4. **Live In-App Notification Hub & Real-Time Polling**:
+     - Enhanced top headers across Faculty, Student, and Admin with dynamic bell badge count and notification popover list.
+     - Auto-notifies all active Administrators when a new bug report is submitted.
+     - Auto-notifies the submitter when an Admin updates status to *Under Review*, *In Progress*, *Resolved*, or *Rejected* (includes custom status messages, admin notes, or rejection reasons).
+     - 20-second background polling keeps unread counters and notification list synchronized without requiring manual page reloads.
+     - Clicking notification marks it as read and deep-links directly to the report in *My Bug Reports* via `?report_id=BR-xxx`.
+  5. **100% Theme Token Compliance**:
+     - All styles strictly utilize CSS custom properties (`var(--bg-card)`, `var(--bg-surface)`, `var(--text-main)`, `var(--text-muted)`, `var(--color-primary)`, `var(--status-absent)`, `var(--status-present)`) with zero hardcoded hex or RGB colors.
+  6. **Frozen Folder Protection**:
+     - Strict adherence to Rule 7; all 9 frozen frontend directories remain untouched.
+
 ### 🏛️ Milestone 338: Configured Mandatory Pre-Work Git Sync & Pre-Push Synchronization Protocol
 - **Status**: 🟢 Completed, Tested & Active Protocol
 - **User Request**:

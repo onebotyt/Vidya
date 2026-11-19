@@ -51,6 +51,7 @@ const indirectAssessmentRoutes = require('./src/routes/indirectAssessment');
 const assessmentProcessRoutes = require('./src/routes/assessmentProcess');
 const mediaRoutes = require('./src/routes/media');
 const ocrRoutes = require('./src/routes/ocr');
+const bugReportRoutes = require('./src/routes/bugReports');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -353,6 +354,7 @@ app.use('/api/v1/assessment-process', assessmentProcessRoutes);
 app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/search', mediaRoutes);
 app.use('/api/v1/ocr', ocrRoutes);
+app.use('/api/v1/bug-reports', bugReportRoutes);
 
 // Ensure all unhandled /api/* requests across all HTTP verbs return JSON, never HTML
 app.all('/api/*', (req, res) => {
