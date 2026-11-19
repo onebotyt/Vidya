@@ -5,6 +5,11 @@
 > 1. **IMMEDIATELY READ `TODO.md`** at the VidyaOS root: `e:/uiap/VidyaOS/TODO.md`.
 > 2. `TODO.md` contains the **single source of truth** regarding the current project state, active tasks, completed milestones, architectural rules, and test suites.
 > 3. **KEEP `TODO.md` SYNCHRONIZED:** Whenever you start a task, complete a task, or discover a bug/change in requirements, update `TODO.md` immediately.
+> 
+> 🛡️ **MANDATORY MULTI-DEV AI GIT LIFECYCLE & ZERO-BREAK INTEGRATION PROTOCOL:**
+> - **Pre-Work Check (Before Writing Code)**: Always run `.\pull-all.ps1` first to pull the latest GitHub commits across Frontend, Backend, and Monorepo, and check `git log -n 5` to inspect recent changes by other devs.
+> - **Post-Work Remote Drift Check (When Work Completes)**: Before pushing, check GitHub again for any new commits pushed by other devs during your session (`.\pull-all.ps1` or `git fetch`).
+> - **Zero-Break Integration Gatekeeper**: Never push broken code to `main`. Always verify combined code integrity (resolve conflicts cleanly, run `node scripts/test-ui-manifest-sync.js`, verify server syntax) before pushing!
 
 ---
 
@@ -46,15 +51,42 @@ git --git-dir="e:\uiap\VidyaOS\.git_standalone\frontend.git" --work-tree="e:\uia
 
 ---
 
-## 👥 Multi-Developer Collaboration (Dev 1, Dev 2, Dev 3)
-When collaborating with multiple developers:
-1. **GitHub Collaborators**: Each developer is added directly to `Vidya`, `VidyaOS`, and `VidyaOS_BackEnd`.
-2. **Branching & PR Workflow**:
-   - Always run `.\pull-all.ps1` before starting work.
-   - Use `.\new-feature.ps1 -BranchName dev<X>/<feature-name>` to create isolated feature branches across all 3 repos.
-   - Push with `.\push-feature.ps1 -Message "..."` and open Pull Requests on GitHub.
-   - For primary developer direct sync to `main`, use `.\push-all.ps1`.
-3. **Reference Guide**: Full onboarding details in [MULTI_DEVELOPER_SETUP.md](file:///e:/uiap/VidyaOS/MULTI_DEVELOPER_SETUP.md).
+## 👥 Multi-Developer Collaboration (Dev 1, Dev 2, Dev 3) & AI Dev Protocol
+
+When any developer or AI assistant starts work on any task, follow this strict 3-phase workflow:
+
+### Phase 1: Pre-Work Synchronization (Before Starting Any Task)
+1. **GitHub First**: Before writing or modifying any code, **always check GitHub commits and pull latest changes**:
+   ```powershell
+   cd e:\uiap\VidyaOS
+   powershell -ExecutionPolicy Bypass -File .\pull-all.ps1
+   ```
+2. **Review Recent Commits**: Check recent commits across all 3 repos (`git log -n 5 --oneline`) to see what other developers have completed.
+3. **Synchronize with `TODO.md`**: Confirm active tasks and current milestone to avoid duplicate work or overwriting concurrent dev changes.
+
+### Phase 2: Post-Work Remote Drift Check (When Work is Completed)
+1. **Check for Incoming Commits**: When your code changes are finished, **DO NOT push immediately**. Check if another dev or AI pushed new commits while you were working:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\pull-all.ps1
+   ```
+2. **Rebase & Merge Cleanly**: If remote changes exist, rebase and ensure your modifications integrate cleanly without overwriting any other developer's code.
+
+### Phase 3: Zero-Break Integration Verification (Before Pushing)
+1. **Check No Broken Code in Main**: Before pushing, verify that combining all dev code does not break the repository main code:
+   ```powershell
+   cd e:\uiap\VidyaOS\backend
+   node scripts/test-ui-manifest-sync.js
+   ```
+   If UI was edited, run `npm run ui:scan` and `npm run ui:verify` to guarantee 100% manifest and DOM parity.
+2. **Server & Syntax Sanity**: Ensure backend boots without error (`node -c server.js`) and no uncaught exceptions.
+3. **Push Verified Code**: Only after all checks pass 100%, push:
+   ```powershell
+   cd e:\uiap\VidyaOS
+   .\push-all.ps1 -Message "feat: your commit message"
+   ```
+   *(Or for feature branches: `.\push-feature.ps1 -Message "..."`)*
+
+- **Reference Guide**: Full onboarding details in [MULTI_DEVELOPER_SETUP.md](file:///e:/uiap/VidyaOS/MULTI_DEVELOPER_SETUP.md).
 
 ---
 

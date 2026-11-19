@@ -4,7 +4,10 @@
 > Whenever you start a conversation, **read this file first** to understand the latest completed work, active tasks, and architecture.
 > When finishing or updating any task, **update this file** to maintain a persistent record.
 > 
-> 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///e:/uiap/VidyaOS/TODO_AI_SYSTEM.md).
+> 🛡️ **MANDATORY DEV AI GIT PROTOCOL (BEFORE WORK & BEFORE PUSH)**:
+> 1. **Pre-Work Check**: Whenever any dev AI starts ANY work, it **MUST FIRST check GitHub commits and pull changes** (`powershell -ExecutionPolicy Bypass -File .\pull-all.ps1`). Inspect `git log -n 5` to see what other devs just merged.
+> 2. **Post-Work Remote Drift Check**: When work is completed, **check GitHub again** for new commits pushed by other devs during the session (`.\pull-all.ps1`).
+> 3. **Zero-Break Integration Gatekeeper**: Before pushing, the AI **MUST check that combining all dev code does NOT break repo main code**. Run `node backend/scripts/test-ui-manifest-sync.js`, ensure server boots cleanly (`node -c server.js`), and verify that all incoming changes from other devs are safely preserved!
 > 
 > 🤖 **DEDICATED AI SYSTEM TRACKER**: All task milestones, architecture invariants, and progress for the **VidyaAI Academic Intelligence System** (Tool Registry, Local Educational LLM, Document Photo Vision, Multi-Format Compilers, SyncTask) are maintained in [TODO_AI_SYSTEM.md](file:///e:/uiap/VidyaOS/TODO_AI_SYSTEM.md).
 
@@ -45,6 +48,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.sharma@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
+
+### ✅ Milestone 468: Mandatory Multi-Dev AI Git Lifecycle, Remote Commit Drift Check & Zero-Break Integration Verification
+- **Operational Requirement & Intent**:
+  - Whenever any developer or Dev AI begins work on any task, they must first check commits on GitHub and pull recent changes before coding.
+  - When work is completed, they must check GitHub again for new commits pushed by other developers during the session.
+  - Before pushing, the AI/developer must verify that combining all dev code does not break the repository main code.
+- **Architectural & Process Implementations**:
+  - **Global AI Anchors (`AGENTS.md` & `VidyaOS/AGENTS.md`)**:
+    - Embedded the mandatory 3-phase **Git Sync & Zero-Break Integration Protocol** into the top-priority memory anchor.
+    - Added explicit instructions for Pre-Work check (`.\pull-all.ps1`, `git log -n 5`), Post-Work drift check, and Zero-Break pre-push integration verification.
+  - **Multi-Developer Collaboration Guide (`MULTI_DEVELOPER_SETUP.md`)**:
+    - Formalized Phase 1 (Pre-Work Synchronization), Phase 4 (Post-Work Drift Check), Phase 5 (Zero-Break Verification Gate), and Phase 6 (Safe Push).
+  - **Tooling Enhancements (`pull-all.ps1` & `push-all.ps1`)**:
+    - `pull-all.ps1`: Added `--autostash` to `git pull --rebase` across Frontend, Backend, and Root repos to prevent aborted pulls on local working changes, and added automated display of the last 3 GitHub commits for each repo.
+    - `push-all.ps1`: Integrated automated pre-push validation gate that runs `test-ui-manifest-sync.js` and blocks any push to `main` if UI contracts or DOM parity are broken.
+  - **Test Suite Verification**:
+    - Ran `node backend/scripts/test-ui-manifest-sync.js` (200/200 Passed).
+    - Ran `pull-all.ps1` (All 3 repositories successfully rebased and verified).
 
 ### ✅ Milestone 467: ESP32 Firmware HTTPS TLS Handshake, Render Cold-Start Resilience & 32KB Template Deserialization
 - **Diagnostic & Root Cause Analysis**:

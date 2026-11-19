@@ -1,8 +1,10 @@
-param(
+﻿param(
     [Parameter(Mandatory=$false)]
     [string]$Message = "chore: sync latest updates across VidyaOS ecosystem",
     [Parameter(Mandatory=$false)]
-    [string]$Token = $env:GITHUB_PAT
+    [string]$Token = $env:GITHUB_PAT,
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipVerification
 )
 
 $RootDir = "E:\uiap\VidyaOS"
@@ -10,6 +12,25 @@ $env:PATH = "C:\Users\Lenovo\MinGit\cmd;$env:PATH"
 
 if (-not $Token -and $env:GITHUB_TOKEN) {
     $Token = $env:GITHUB_TOKEN
+}
+
+# Pre-Push Integration & Zero-Break Verification Gate
+if (-not $SkipVerification) {
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host "PRE-PUSH INTEGRATION & CODE INTEGRITY CHECK" -ForegroundColor Cyan
+    Write-Host "==========================================" -ForegroundColor Cyan
+    
+    $manifestTest = "$RootDir\backend\scripts\test-ui-manifest-sync.js"
+    if (Test-Path $manifestTest) {
+        Write-Host "Verifying UI Manifests, DOM Parity & API Contracts..." -ForegroundColor Yellow
+        $null = node $manifestTest
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Verification failed! test-ui-manifest-sync.js reported issues." -ForegroundColor Red
+            Write-Host "Aborting push to prevent broken code from merging into main." -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "✓ UI Manifests & Contract Integrity Passed!" -ForegroundColor Green
+    }
 }
 
 Write-Host "==========================================" -ForegroundColor Cyan
@@ -27,10 +48,10 @@ if (Test-Path $frontendGit) {
         git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" commit -m "$Message"
     }
     if ($Token) {
-        git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" pull --rebase "https://$($Token)@github.com/onebotyt/VidyaOS.git" main
+        git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" pull --rebase --autostash "https://$($Token)@github.com/onebotyt/VidyaOS.git" main
         git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" push "https://$($Token)@github.com/onebotyt/VidyaOS.git" main
     } else {
-        git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" pull --rebase origin main
+        git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" pull --rebase --autostash origin main
         git --git-dir="$frontendGit" --work-tree="$frontendWorkTree" push origin main
     }
     Write-Host "SUCCESS: Frontend pushed to https://github.com/onebotyt/VidyaOS.git" -ForegroundColor Green
@@ -47,10 +68,10 @@ if (Test-Path $backendGit) {
         git --git-dir="$backendGit" --work-tree="$backendWorkTree" commit -m "$Message"
     }
     if ($Token) {
-        git --git-dir="$backendGit" --work-tree="$backendWorkTree" pull --rebase "https://$($Token)@github.com/onebotyt/VidyaOS_BackEnd.git" main
+        git --git-dir="$backendGit" --work-tree="$backendWorkTree" pull --rebase --autostash "https://$($Token)@github.com/onebotyt/VidyaOS_BackEnd.git" main
         git --git-dir="$backendGit" --work-tree="$backendWorkTree" push "https://$($Token)@github.com/onebotyt/VidyaOS_BackEnd.git" main
     } else {
-        git --git-dir="$backendGit" --work-tree="$backendWorkTree" pull --rebase origin main
+        git --git-dir="$backendGit" --work-tree="$backendWorkTree" pull --rebase --autostash origin main
         git --git-dir="$backendGit" --work-tree="$backendWorkTree" push origin main
     }
     Write-Host "SUCCESS: Backend pushed to https://github.com/onebotyt/VidyaOS_BackEnd.git" -ForegroundColor Green
@@ -65,10 +86,10 @@ if ($st) {
     git commit -m "$Message"
 }
 if ($Token) {
-    git pull --rebase "https://$($Token)@github.com/onebotyt/Vidya.git" main
+    git pull --rebase --autostash "https://$($Token)@github.com/onebotyt/Vidya.git" main
     git push "https://$($Token)@github.com/onebotyt/Vidya.git" main
 } else {
-    git pull --rebase origin main
+    git pull --rebase --autostash origin main
     git push origin main
 }
 Write-Host "SUCCESS: Combined ecosystem pushed to https://github.com/onebotyt/Vidya.git" -ForegroundColor Green
