@@ -492,11 +492,17 @@ function isMarksRow(sheet, r) {
   const c1 = String(getCell(sheet, r, 1).v || getCell(sheet, r, 1).raw || '').toLowerCase();
   const c2 = String(getCell(sheet, r, 2).v || getCell(sheet, r, 2).raw || '').toLowerCase();
   const c3 = String(getCell(sheet, r, 3).v || getCell(sheet, r, 3).raw || '').toLowerCase();
-  return c0.includes('max') || c0.includes('marks') || c1.includes('max') || c2.includes('max') || c3.includes('max');
+  return c0.includes('marks') || c0.includes('question') || c0.includes('unit test no') || c0.includes('assignment no') || c0.includes('max') || c1.includes('max') || c2.includes('max') || c3.includes('max');
+}
+
+function isSignoffRow(sheet, r) {
+  if (!sheet || r < 0) return false;
+  const c0 = String(getCell(sheet, r, 0).v || getCell(sheet, r, 0).raw || '').toLowerCase();
+  return c0.includes('subject teacher') || c0.includes('teacher') || c0.includes('principal') || c0.includes('head of');
 }
 
 function checkRowMatchesFilters(sheet, r) {
-  if (!sheet || r === 0 || isMarksRow(sheet, r)) return true;
+  if (!sheet || r === 0 || isMarksRow(sheet, r) || isSignoffRow(sheet, r)) return true;
 
   // 1. Search Query Match (any cell in row)
   if (S.searchQuery) {
