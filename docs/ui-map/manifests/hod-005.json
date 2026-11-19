@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "ae0b471b0578",
-  "last_scanned": "2026-11-19T01:30:24.929Z",
+  "content_hash": "e4c5f5cd60cf",
+  "last_scanned": "2026-11-19T02:33:27.006Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -29,7 +29,16 @@
     }
   ],
   "layout_structure": {
-    "toolbars": [],
+    "toolbars": [
+      {
+        "id": "esp-loading-bar-wrap",
+        "class": "esp-loading-bar-wrap"
+      },
+      {
+        "id": "esp-loading-bar-fill",
+        "class": "esp-loading-bar-fill"
+      }
+    ],
     "tables": [
       {
         "id": "wifi-networks-table",
@@ -90,8 +99,8 @@
         "title": null
       },
       {
-        "id": null,
-        "label": "+ Connect New ESP32",
+        "id": "btn-add-esp-terminal",
+        "label": "+ Add ESP Terminal",
         "action": "openRegisterDeviceModal()",
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
@@ -138,6 +147,30 @@
         "title": null
       },
       {
+        "id": "btn-esp-detect-rescan",
+        "label": "↻ Rescan",
+        "action": "startEspDetectionScan()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-esp-detect-usb",
+        "label": "🔌 USB Serial",
+        "action": "detectViaWebSerial()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Detect ESP32 connected via USB cable"
+      },
+      {
+        "id": "btn-esp-detect-sim",
+        "label": "⚡ Detect Now",
+        "action": "simulateEspDetection()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Simulate detection of nearby ESP32 node"
+      },
+      {
         "id": null,
         "label": "Generate",
         "action": "generateRandomHexSecret()",
@@ -154,8 +187,8 @@
         "title": null
       },
       {
-        "id": null,
-        "label": "Pair ESP32 to Department",
+        "id": "btn-submit-pair-esp",
+        "label": "Add &amp; Pair ESP Terminal",
         "action": null,
         "class": "btn btn-primary",
         "data_ui": null,

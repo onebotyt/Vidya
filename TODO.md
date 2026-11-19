@@ -49,6 +49,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 471: ESP32 Biometric Terminals Auto-Detection & Animated Loading Bar Experience
+- **Objective & Architectural Scope**:
+  1. *ESP32 Hardware Auto-Detection & Loading Bar Interface (`/faculty/esp32-devices/index.html` & `esp32-devices.css`)*:
+     - Updated header and empty-state action button with explicit identifier `#btn-add-esp-terminal` and label `+ Add ESP Terminal`.
+     - Integrated a prominent **ESP32 Hardware Auto-Detection** console into `#register-esp-modal` with live radar pulse indicator (`#esp-detect-pulse`), status pill (`#esp-detect-pill`), and active status subtext (`#esp-detect-sub`).
+     - Added an animated loading progress bar (`.esp-loading-bar-wrap` & `#esp-loading-bar-fill`) featuring glowing multi-tone gradient shimmer and animated 45-degree moving scan stripes (`@keyframes espLoadingShimmer`, `@keyframes espStripeMove`).
+     - Real-time scanning telemetry updates through 5 distinct hardware detection phases (RF receiver init, 2.4GHz Wi-Fi channels, UDP broadcast & LAN heartbeat, USB Serial COM interfaces, AS608 UART & W25Q32 flash headers).
+  2. *Automatic Device Detection & Verification*:
+     - When an ESP32 is detected via network heartbeat, LAN broadcast, or USB Web Serial, the loading animation bar completes smoothly to 100% and turns emerald green (`var(--status-present)`).
+     - Status pill updates to `● DETECTED`, and a dedicated detected hardware card appears displaying UID, IP, RSSI signal strength, and AS608 optical status.
+     - Hardware UID (`#esp-uid-input`) and Terminal Location (`#esp-name-input`) are automatically filled and validated.
+     - Integrated 5V Passive Piezo buzzer synthesizer tone (`playPiezoBuzzerSequence`) for audible hardware connection confirmation.
+     - Provided `🔌 USB Serial` (Web Serial API) and `⚡ Detect Now` / `↻ Rescan` controls for testing and fallback.
+  3. *Backend Auto-Detection Endpoint (`devices.js` & `deviceController.js`)*:
+     - Implemented `GET /api/v1/devices/hod/detect` to query active or recently heartbeating ESP32 terminals within the department.
+  4. *Multi-Repo & UIMS Verification*:
+     - Re-extracted manifests via `extract-ui-manifest.js` and confirmed 100% DOM parity across all 31 pages with `test-ui-manifest-sync.js` (202/202 passed).
+     - Synced mobile distribution with `prepare-mobile.js`.
+
 ### ✅ Milestone 470: PC-First UGIP Nainital Login Redesign, Multi-Identifier Auth, UBTER/Roll No Student Registration & Faculty Self-Reg Sunset
 - **Objective & Architectural Scope**:
   1. *PC-First UGIP Nainital Login Interface (`/login/index.html` & `index.css`)*:

@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "db7b47511d68",
-  "last_scanned": "2026-11-19T01:30:24.955Z",
+  "content_hash": "040a8ea4396f",
+  "last_scanned": "2026-11-19T02:33:27.027Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -42,6 +42,19 @@
           "Batch",
           "Attendance",
           "Actions"
+        ]
+      },
+      {
+        "id": "rec-work-table",
+        "class": "rec-table",
+        "headers": [
+          "Roll #",
+          "Enrollment No",
+          "Student Name",
+          "Cohort",
+          "Batch",
+          "Document",
+          "Marks"
         ]
       },
       {
@@ -166,6 +179,26 @@
         "id": "modal-cohort-export",
         "title": "Modal Dialog",
         "field_count": 0
+      },
+      {
+        "id": "modal-export-records",
+        "title": "Export & View Classwork",
+        "field_count": 0
+      },
+      {
+        "id": "export-classwork-type",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-sheet-preview",
+        "title": "Internal Evaluation Sheet",
+        "field_count": 0
+      },
+      {
+        "id": "sheet-preview-container",
+        "title": "Modal Dialog",
+        "field_count": 0
       }
     ]
   },
@@ -186,6 +219,14 @@
         "class": "btn-rec-clear",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": "btn-export-records",
+        "label": "Export",
+        "action": "openClassworkExportModal()",
+        "class": "btn-rec-export-section",
+        "data_ui": null,
+        "title": "Export or View Evaluation Sheets"
       },
       {
         "id": "btn-profile-export",
@@ -314,6 +355,70 @@
         "class": "btn-rec-solid",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeClassworkExportModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeClassworkExportModal()",
+        "class": "btn-rec-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-view-sheet",
+        "label": "View",
+        "action": "triggerViewClassworkSheet()",
+        "class": "btn-rec-secondary",
+        "data_ui": null,
+        "title": "View evaluation sheet on PC"
+      },
+      {
+        "id": "btn-export-sheet",
+        "label": "Export",
+        "action": "triggerExportClassworkSheet()",
+        "class": "btn-rec-solid",
+        "data_ui": null,
+        "title": "Download evaluation sheet in selected format"
+      },
+      {
+        "id": "btn-preview-export-excel",
+        "label": "Excel (.xlsx)",
+        "action": "downloadPreviewSheet(",
+        "class": "btn-sheet-action-pill",
+        "data_ui": null,
+        "title": "Download formatted Excel workbook"
+      },
+      {
+        "id": "btn-preview-export-pdf",
+        "label": "PDF (.pdf)",
+        "action": "downloadPreviewSheet(",
+        "class": "btn-sheet-action-pill",
+        "data_ui": null,
+        "title": "Download print-isolated PDF"
+      },
+      {
+        "id": "btn-preview-export-word",
+        "label": "Word (.docx)",
+        "action": "downloadPreviewSheet(",
+        "class": "btn-sheet-action-pill",
+        "data_ui": null,
+        "title": "Download Word Document"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeSheetPreviewModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -417,6 +522,30 @@
         "id": "cohort-fmt-doc",
         "type": "checkbox",
         "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "fmt-xlsx",
+        "type": "radio",
+        "name": "export-classwork-fmt",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "fmt-pdf",
+        "type": "radio",
+        "name": "export-classwork-fmt",
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "fmt-docx",
+        "type": "radio",
+        "name": "export-classwork-fmt",
         "placeholder": null,
         "handler": null,
         "class": null
@@ -617,6 +746,68 @@
             "text": "Sem 6"
           }
         ]
+      },
+      {
+        "id": "export-classwork-type",
+        "title": null,
+        "onchange": "onExportClassworkTypeChange(this.value)",
+        "class": null,
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "ALL_TESTS",
+            "text": "All Unit Tests (Test 1 to N Combined)"
+          },
+          {
+            "value": "TEST_1",
+            "text": "Unit Test 1 (Database Systems Architecture)"
+          },
+          {
+            "value": "TEST_2",
+            "text": "Unit Test 2 (Advanced SQL & Relational Models)"
+          },
+          {
+            "value": "ASSIGNMENT",
+            "text": "Theory Coursework & Assignments"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "Practical / Lab Journal Records"
+          }
+        ]
+      },
+      {
+        "id": "export-classwork-semester",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "5",
+            "text": "Semester 5 (IT Year 3)"
+          },
+          {
+            "value": "1",
+            "text": "Semester 1 (IT Year 1)"
+          },
+          {
+            "value": "2",
+            "text": "Semester 2 (IT Year 1)"
+          },
+          {
+            "value": "3",
+            "text": "Semester 3 (IT Year 2)"
+          },
+          {
+            "value": "4",
+            "text": "Semester 4 (IT Year 2)"
+          },
+          {
+            "value": "6",
+            "text": "Semester 6 (IT Year 3)"
+          }
+        ]
       }
     ]
   },
@@ -686,6 +877,30 @@
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
+    },
+    {
+      "id": "modal-export-records",
+      "title": "Export & View Classwork",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "export-classwork-type",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-sheet-preview",
+      "title": "Internal Evaluation Sheet",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "sheet-preview-container",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
     }
   ],
   "companion_scripts": [
@@ -712,6 +927,9 @@
     "renderFilterDropdowns",
     "loadStudentRecords",
     "renderStudentRecords",
+    "exportClassworkExcel",
+    "exportClassworkPdf",
+    "exportClassworkWord",
     "renderActiveDossierStudio",
     "renderAssignmentsStudio",
     "renderTestsStudio",
@@ -719,9 +937,6 @@
     "renderAttendanceMatrixStudio",
     "renderOtherDocumentsStudio",
     "exportPersonalDetailsExcel",
-    "exportPersonalDetailsDoc",
-    "exportPersonalDetailsPdf",
-    "exportSingleStudentExcel",
-    "exportSingleStudentDoc"
+    "exportPersonalDetailsDoc"
   ]
 }

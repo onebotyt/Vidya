@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-19T01:30:25.135Z",
+  "generated_at": "2026-11-19T02:33:27.206Z",
   "total_pages": 31,
   "totals": {
-    "buttons": 545,
-    "modals": 162,
-    "inputs": 347,
+    "buttons": 557,
+    "modals": 166,
+    "inputs": 352,
     "apis": 178
   },
   "pages": [
@@ -106,9 +106,9 @@
       "route": "/faculty/esp32-devices.html",
       "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
       "manifest_file": "docs/ui-map/manifests/hod-005.json",
-      "content_hash": "ae0b471b0578",
+      "content_hash": "e4c5f5cd60cf",
       "counts": {
-        "buttons": 20,
+        "buttons": 23,
         "modals": 4,
         "inputs": 19,
         "apis": 3
@@ -119,11 +119,11 @@
       "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
       "title": "Student Academic Records & Dossiers — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-001.json",
-      "content_hash": "db7b47511d68",
+      "content_hash": "040a8ea4396f",
       "counts": {
-        "buttons": 18,
-        "modals": 10,
-        "inputs": 22,
+        "buttons": 27,
+        "modals": 14,
+        "inputs": 27,
         "apis": 3
       }
     },
