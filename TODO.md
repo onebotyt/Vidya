@@ -49,6 +49,38 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 494: Sheet Studio Master Evaluation Theory/Practical Split, Excel Merge Menu, Rich Help Box, & Score Preservation
+- **Objective & Architectural Scope**:
+  1. *Master Evaluation Theory & Practical 2-Tier Architecture (`ca64832f.png`)*:
+     - Implemented exact 2-tier header layout:
+       - Row 0: `SR. NO.`, `ROLL NO.`, `STUDENT NAME` (vertically merged R0..R1), `THEORY` (merged across cols 3..7: D..H), `PRACTICAL` (merged across cols 8..12: I..M).
+       - Row 1: Subheaders: `Assignment (10)`, `UTs Total (Best 4)`, `Attendance`, `Problem Solving Skills/`, `TOTAL` (30 max, styled with `var(--chip-faculty-bg)`), `Lab Record File`, `Creative Work (Model/Chart/Project)`, `Attendance`, `Viva Voce`, `TOTAL` (30 max, styled with `var(--chip-faculty-bg)`).
+       - Row 2: `Marks -->` (merged across cols 0..2: A..C), max marks: `10, 10, 5, 5, 30 | 10, 10, 5, 5, 30`.
+       - Row 3 onwards: Student records with formulas: Col 7 `=ROUND(D4 + E4 + F4 + G4, 2)` (Theory Total, 30 max, peach bg) and Col 12 `=ROUND(I4 + J4 + K4 + L4, 2)` (Practical Total, 30 max, peach bg).
+       - Signoffs at row `students.length + 5` (Subject Teacher, HOD, Principal).
+       - `frozenRows: 3`, `frozenCols: 3`.
+  2. *Score Preservation Engine (`extractExistingStudentScores`)*:
+     - Solved the bug where teachers edit marks first and later classwork/assignments are added to the classroom or data re-synced.
+     - Automatically scans existing loaded workbook or `localStorage` sheets to extract student scores across evaluation, tests, single-test papers, and assignments.
+     - Preserves all manual teacher entries when re-hydrating or adding classwork, guaranteeing zero data loss.
+  3. *Blank Question Templates*:
+     - Removed hardcoded dummy text from single test sheets (`testInstructions = ''`, `testQuestions = ''`) and assignment sheets (`assignDetailsText = ''`).
+     - Allows teachers to type or paste their own test questions and coursework topics without having to delete placeholder questions.
+  4. *Excel Merge & Center Dropdown Menu Integration (`76725d19.png`)*:
+     - Fixed menu overflow bug by ensuring `.excel-dropdown-menu` has `display: none !important;` by default and `display: flex !important;` when `.open`.
+     - Clicking Merge & Center cleanly reveals the 4 Excel actions: `Merge & Center`, `Merge Across`, `Merge Cells`, and `Unmerge Cells`.
+     - Automatically closes menu on option selection, clicking outside, or pressing Escape.
+  5. *Excel Rich Tooltip / Help Box Engine (`583e2a4c.png`)*:
+     - Added `#excel-rich-tooltip` overlay card with visual previews, descriptions, title, and "Tell me more" footer.
+     - Integrated for Wrap Text, Merge & Center, AutoSum, Gridlines, Formula Bar, College Banner, Freeze Panes, and more.
+  6. *UI Cleanup*:
+     - Removed `Total Scheme: 40 Marks` badge from `#subsheet-selector-container`.
+     - Removed `Showing 0 of 0 students` tally from `#sheet-visible-tally`.
+  7. *Zero-Break Regression & Contract Parity*:
+     - `test-ui-manifest-sync.js`: 203/203 tests passed.
+     - `test-theme-support.js`: 84/84 tests passed (zero hardcoded hex colors).
+     - `test-rbac-and-structure.js`: 38/38 tests passed.
+
 ### ✅ Milestone 493: Sheet Studio Cell Selection Box Zoom/Scroll Alignment & Uniform Student Row Height Architecture
 - **Objective & Architectural Scope**:
   1. *Zoom & Scroll-Aware Selection Box Positioning (`/faculty/sheets/sheets.js`)*:

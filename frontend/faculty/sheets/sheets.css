@@ -3619,23 +3619,23 @@ span.excel-hdr-num-badge {
 }
 
 .excel-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 2500;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
-  padding: 0.35rem 0;
-  min-width: 175px;
-  display: flex;
-  flex-direction: column;
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  left: 0 !important;
+  z-index: 2500 !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-sm, 4px) !important;
+  box-shadow: 0 8px 24px var(--shadow-lg, hsla(0, 0%, 0%, 0.18)) !important;
+  padding: 0.35rem 0 !important;
+  min-width: 175px !important;
+  display: none !important;
+  flex-direction: column !important;
 }
 
-.excel-dropdown-menu[style*="display: none"],
-.excel-dropdown-menu.hidden {
-  display: none !important;
+.excel-dropdown-menu.open,
+.excel-dropdown-menu.is-open {
+  display: flex !important;
 }
 
 .excel-menu-item {
@@ -4534,4 +4534,66 @@ span.excel-hdr-num-badge {
   line-height: 1.18 !important;
   text-align: center;
   vertical-align: middle;
+}
+
+/* Excel Rich Tooltip / Help Box */
+.excel-rich-tooltip {
+  position: fixed;
+  z-index: 99999;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 5px);
+  box-shadow: 0 6px 20px var(--shadow-lg, hsla(0, 0%, 0%, 0.18));
+  padding: 0.65rem 0.85rem;
+  width: 250px;
+  max-width: 280px;
+  pointer-events: none;
+  font-family: inherit;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  display: none;
+}
+
+.excel-rich-tooltip.visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.excel-rich-tooltip-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.4rem;
+}
+
+.excel-rich-tooltip-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 4px);
+  padding: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.excel-rich-tooltip-desc {
+  font-size: 0.73rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.excel-rich-tooltip-footer {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }

@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-19T15:43:11.261Z",
+  "generated_at": "2026-11-19T16:13:23.360Z",
   "total_pages": 31,
   "totals": {
     "buttons": 701,
@@ -158,7 +158,7 @@
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
       "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "a6ebc8e08622",
+      "content_hash": "03feca1f2ccc",
       "counts": {
         "buttons": 165,
         "modals": 26,

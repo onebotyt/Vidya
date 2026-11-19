@@ -5108,13 +5108,7 @@ function renderSubsheetControls() {
           </select>
         `;
   } else {
-    const totalMax = (S.evalData && S.evalData.scheme && S.evalData.scheme.total_max) || 40;
-    container.innerHTML = `
-          <div class="eval-scheme-badge" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 700; color: var(--text-main); background: var(--bg-surface-secondary); padding: 0.22rem 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);" title="Total evaluation scheme max marks (auto-calculated from header numbers row)">
-            <span style="color: var(--text-muted); font-size: 0.74rem;">Total Scheme:</span>
-            <strong id="scheme-grand-total-max" style="color: var(--color-primary); font-size: 0.88rem;">${totalMax} Marks</strong>
-          </div>
-        `;
+    container.innerHTML = '';
   }
 }
 
@@ -6916,14 +6910,20 @@ document.addEventListener('click', (e) => {
     closeExcelContextMenu();
   }
   if (!e.target.closest('.excel-dropdown-wrapper')) {
-    document.querySelectorAll('.excel-dropdown-menu').forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.excel-dropdown-menu').forEach(m => {
+      m.classList.remove('open');
+      m.style.display = 'none';
+    });
   }
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeExcelContextMenu();
-    document.querySelectorAll('.excel-dropdown-menu').forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.excel-dropdown-menu').forEach(m => {
+      m.classList.remove('open');
+      m.style.display = 'none';
+    });
   }
 });
 
@@ -7067,7 +7067,10 @@ function mergeAndCenter() {
   markWorkbookUnsaved();
   closeExcelContextMenu();
   const menu = document.getElementById('menu-merge-cells');
-  if (menu) menu.style.display = 'none';
+  if (menu) {
+    menu.classList.remove('open');
+    menu.style.display = 'none';
+  }
 }
 
 function mergeCellsOnly() {
@@ -7099,7 +7102,10 @@ function mergeCellsOnly() {
   markWorkbookUnsaved();
   closeExcelContextMenu();
   const menu = document.getElementById('menu-merge-cells');
-  if (menu) menu.style.display = 'none';
+  if (menu) {
+    menu.classList.remove('open');
+    menu.style.display = 'none';
+  }
 }
 
 function mergeAcross() {
@@ -7134,7 +7140,10 @@ function mergeAcross() {
   markWorkbookUnsaved();
   closeExcelContextMenu();
   const menu = document.getElementById('menu-merge-cells');
-  if (menu) menu.style.display = 'none';
+  if (menu) {
+    menu.classList.remove('open');
+    menu.style.display = 'none';
+  }
 }
 
 function unmergeSelectedCells() {
@@ -7159,14 +7168,28 @@ function unmergeSelectedCells() {
   markWorkbookUnsaved();
   closeExcelContextMenu();
   const menu = document.getElementById('menu-merge-cells');
-  if (menu) menu.style.display = 'none';
+  if (menu) {
+    menu.classList.remove('open');
+    menu.style.display = 'none';
+  }
 }
 
 function toggleMergeAndCenterMenu(e) {
-  if (e) e.stopPropagation();
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
   const menu = document.getElementById('menu-merge-cells');
   if (!menu) return;
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  const isAlreadyOpen = menu.classList.contains('open');
+  document.querySelectorAll('.excel-dropdown-menu.open').forEach(m => {
+    m.classList.remove('open');
+    m.style.display = 'none';
+  });
+  if (!isAlreadyOpen) {
+    menu.classList.add('open');
+    menu.style.display = 'flex';
+  }
 }
 
 function toggleMergeAndCenterDirect() {
@@ -8694,6 +8717,287 @@ function importCSVToSheet(csvText, sheetName) {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   EXCEL RICH TOOLTIP / HELP BOX ENGINE
+   ══════════════════════════════════════════════════════════════ */
+function initExcelRichTooltips() {
+  const tooltip = document.getElementById('excel-rich-tooltip');
+  if (!tooltip) return;
+
+  const titleEl = document.getElementById('rich-tooltip-title');
+  const previewEl = document.getElementById('rich-tooltip-preview');
+  const descEl = document.getElementById('rich-tooltip-desc');
+
+  const TOOLTIP_DATA = {
+    'btn-wrap-text': {
+      title: 'Wrap Text',
+      desc: 'Wrap extra-long text into multiple lines so you can see all of it.',
+      preview: `<svg width="140" height="65" viewBox="0 0 140 65" fill="none">
+        <rect x="10" y="4" width="120" height="22" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="16" y="19" font-size="10" fill="var(--text-main)" font-family="sans-serif">Microsoft E...</text>
+        <path d="M70 28 L70 38 M66 34 L70 38 L74 34" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
+        <rect x="10" y="40" width="120" height="24" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="16" y="51" font-size="9" fill="var(--text-main)" font-family="sans-serif">Microsoft</text>
+        <text x="16" y="61" font-size="9" fill="var(--text-main)" font-family="sans-serif">Excel</text>
+      </svg>`
+    },
+    'btn-merge-cells': {
+      title: 'Merge & Center',
+      desc: 'Combine and center the contents of selected cells in a new larger cell. Click the arrow to choose other merge options.',
+      preview: `<svg width="140" height="60" viewBox="0 0 140 60" fill="none">
+        <rect x="10" y="4" width="38" height="20" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <rect x="51" y="4" width="38" height="20" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <rect x="92" y="4" width="38" height="20" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <rect x="10" y="30" width="120" height="24" rx="2" fill="var(--bg-card)" stroke="var(--color-primary)" stroke-width="1.5"/>
+        <text x="70" y="46" font-size="10" font-weight="bold" fill="var(--color-primary)" text-anchor="middle" font-family="sans-serif">Merge &amp; Center</text>
+      </svg>`
+    },
+    'btn-autosum-dropdown': {
+      title: 'AutoSum (Σ)',
+      desc: 'Automatically add a quick formula like SUM, AVERAGE, COUNT, MAX, or MIN to the selected cells.',
+      preview: `<svg width="140" height="50" viewBox="0 0 140 50" fill="none">
+        <rect x="10" y="6" width="120" height="38" rx="3" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="20" y="24" font-size="12" font-weight="bold" fill="var(--color-primary)" font-family="sans-serif">Σ AutoSum</text>
+        <text x="20" y="38" font-size="10" fill="var(--text-muted)" font-family="monospace">=SUM(D4:G4)</text>
+      </svg>`
+    },
+    'btn-toggle-college-banner': {
+      title: 'Show / Hide College Banner',
+      desc: 'Toggle the institutional header block above the spreadsheet. Hidden by default for imported external workbooks.',
+      preview: `<svg width="140" height="50" viewBox="0 0 140 50" fill="none">
+        <rect x="10" y="6" width="120" height="18" rx="2" fill="var(--chip-faculty-bg)" stroke="var(--border-color)"/>
+        <text x="70" y="19" font-size="8" font-weight="bold" fill="var(--color-primary)" text-anchor="middle" font-family="sans-serif">Government Polytechnic</text>
+        <rect x="10" y="28" width="120" height="16" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="70" y="40" font-size="8" fill="var(--text-muted)" text-anchor="middle" font-family="sans-serif">Matrix Data Rows</text>
+      </svg>`
+    },
+    'btn-toggle-banner-view': {
+      title: 'Institutional Banner View',
+      desc: 'Toggle visibility of the official college department header.',
+      preview: `<svg width="140" height="40" viewBox="0 0 140 40" fill="none">
+        <rect x="10" y="5" width="120" height="30" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="70" y="24" font-size="9" font-weight="bold" fill="var(--color-primary)" text-anchor="middle" font-family="sans-serif">College Banner Header</text>
+      </svg>`
+    },
+    'btn-home-toggle-gridlines': {
+      title: 'Gridlines',
+      desc: 'Show or hide the gridlines between rows and columns in the sheet to customize readability.',
+      preview: `<svg width="140" height="50" viewBox="0 0 140 50" fill="none">
+        <rect x="10" y="6" width="120" height="38" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <line x1="50" y1="6" x2="50" y2="44" stroke="var(--border-color)" stroke-dasharray="2 2"/>
+        <line x1="90" y1="6" x2="90" y2="44" stroke="var(--border-color)" stroke-dasharray="2 2"/>
+        <line x1="10" y1="25" x2="130" y2="25" stroke="var(--border-color)" stroke-dasharray="2 2"/>
+      </svg>`
+    },
+    'btn-home-toggle-formula-bar': {
+      title: 'Formula Bar',
+      desc: 'Toggle the fx formula bar to view, enter, and edit cell formulas or values.',
+      preview: `<svg width="140" height="40" viewBox="0 0 140 40" fill="none">
+        <rect x="10" y="6" width="120" height="28" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="18" y="24" font-size="11" font-weight="bold" fill="var(--text-muted)" font-family="serif">fx</text>
+        <text x="36" y="24" font-size="10" fill="var(--text-main)" font-family="monospace">=AVERAGE(D4:G4)</text>
+      </svg>`
+    },
+    'btn-home-freeze-panes': {
+      title: 'Freeze Panes',
+      desc: 'Freeze rows and columns to keep them visible while scrolling through large student evaluation marksheets.',
+      preview: `<svg width="140" height="50" viewBox="0 0 140 50" fill="none">
+        <rect x="10" y="6" width="120" height="38" rx="2" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <line x1="10" y1="22" x2="130" y2="22" stroke="var(--color-primary)" stroke-width="2"/>
+        <line x1="50" y1="6" x2="50" y2="44" stroke="var(--color-primary)" stroke-width="2"/>
+      </svg>`
+    },
+    'btn-sort-asc': {
+      title: 'Sort Ascending (A → Z)',
+      desc: 'Sort student records from lowest to highest or alphabetically by student name.',
+      preview: null
+    },
+    'btn-sort-desc': {
+      title: 'Sort Descending (Z → A)',
+      desc: 'Sort student records from highest to lowest or reverse-alphabetically.',
+      preview: null
+    },
+    'btn-find-replace-open': {
+      title: 'Find & Replace',
+      desc: 'Search for specific student names, roll numbers, or score values and optionally replace them.',
+      preview: null
+    },
+    'btn-export-dropdown': {
+      title: 'Export Marksheet',
+      desc: 'Export this workbook as an Excel .XLSX spreadsheet or a printable PDF evaluation sheet.',
+      preview: null
+    }
+  };
+
+  let hoverTimeout = null;
+
+  function showTooltip(el, data) {
+    if (!titleEl || !descEl || !tooltip) return;
+    titleEl.textContent = data.title;
+    descEl.textContent = data.desc;
+    if (data.preview && previewEl) {
+      previewEl.innerHTML = data.preview;
+      previewEl.style.display = 'flex';
+    } else if (previewEl) {
+      previewEl.innerHTML = '';
+      previewEl.style.display = 'none';
+    }
+
+    const rect = el.getBoundingClientRect();
+    let top = rect.bottom + 8;
+    let left = rect.left;
+
+    if (left + 260 > window.innerWidth) {
+      left = window.innerWidth - 270;
+    }
+    if (top + 200 > window.innerHeight) {
+      top = rect.top - 200;
+    }
+
+    tooltip.style.top = `${Math.max(10, top)}px`;
+    tooltip.style.left = `${Math.max(10, left)}px`;
+    tooltip.classList.add('visible');
+    tooltip.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideTooltip() {
+    clearTimeout(hoverTimeout);
+    if (tooltip) {
+      tooltip.classList.remove('visible');
+      tooltip.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  Object.entries(TOOLTIP_DATA).forEach(([id, data]) => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.richTooltipBound === 'true') return;
+    el.dataset.richTooltipBound = 'true';
+    el.addEventListener('mouseenter', () => {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => showTooltip(el, data), 320);
+    });
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('click', hideTooltip);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCORE PRESERVATION HELPER
+   Extracts manual teacher marks from existing workbook so manual
+   edits are never lost when classwork/assignments are added later.
+   ══════════════════════════════════════════════════════════════ */
+function extractExistingStudentScores(sheets) {
+  const scoresMap = {};
+  if (!Array.isArray(sheets)) return scoresMap;
+
+  // 1. Check Master Evaluation sheet
+  const evalSheet = sheets.find(s => s && s.type === 'evaluation') || sheets[0];
+  if (evalSheet && evalSheet.cells) {
+    const isTwoTier = String(getCell(evalSheet, 0, 3)?.v || '').toUpperCase() === 'THEORY';
+    const startR = isTwoTier ? 3 : 2;
+    for (let r = startR; r < (evalSheet.rowsCount || 50); r++) {
+      const enroll = String(getCell(evalSheet, r, 1)?.v || getCell(evalSheet, r, 1)?.raw || '').trim();
+      const roll = String(getCell(evalSheet, r, 0)?.v || getCell(evalSheet, r, 0)?.raw || '').trim();
+      const name = String(getCell(evalSheet, r, 2)?.v || getCell(evalSheet, r, 2)?.raw || '').trim();
+      if (!enroll && !name && !roll) continue;
+
+      const keys = [enroll, roll, name, `idx_${r - startR}`].filter(Boolean);
+      const studentScoreObj = {
+        assignAvg: getCell(evalSheet, r, 3)?.v,
+        utAvg: getCell(evalSheet, r, 4)?.v,
+        attMarks: getCell(evalSheet, r, 5)?.v,
+        probSkills: getCell(evalSheet, r, 6)?.v,
+        labRecord: getCell(evalSheet, r, 8)?.v,
+        creativeWork: getCell(evalSheet, r, 9)?.v,
+        attMarks2: getCell(evalSheet, r, 10)?.v,
+        vivaVoce: getCell(evalSheet, r, 11)?.v
+      };
+
+      keys.forEach(k => {
+        scoresMap[k] = Object.assign(scoresMap[k] || {}, studentScoreObj);
+      });
+    }
+  }
+
+  // 2. Check Consolidated Unit Tests sheet
+  const testSheet = sheets.find(s => s && s.type === 'tests');
+  if (testSheet && testSheet.cells) {
+    for (let r = 2; r < (testSheet.rowsCount || 50); r++) {
+      const enroll = String(getCell(testSheet, r, 1)?.v || getCell(testSheet, r, 1)?.raw || '').trim();
+      const roll = String(getCell(testSheet, r, 0)?.v || getCell(testSheet, r, 0)?.raw || '').trim();
+      const name = String(getCell(testSheet, r, 2)?.v || getCell(testSheet, r, 2)?.raw || '').trim();
+      if (!enroll && !name && !roll) continue;
+
+      const examScores = [];
+      for (let t = 0; t < 10; t++) {
+        const val = getCell(testSheet, r, 3 + t)?.v;
+        if (val !== undefined && val !== null && val !== '') {
+          examScores[t] = Number(val);
+        }
+      }
+
+      const keys = [enroll, roll, name, `idx_${r - 2}`].filter(Boolean);
+      keys.forEach(k => {
+        scoresMap[k] = scoresMap[k] || {};
+        scoresMap[k].examScores = examScores;
+      });
+    }
+  }
+
+  // 3. Check Single Test sheets (UT1, UT2...)
+  sheets.filter(s => s && s.type === 'single-test').forEach(stSheet => {
+    const tNum = stSheet.testId || 1;
+    for (let r = 2; r < (stSheet.rowsCount || 50); r++) {
+      const enroll = String(getCell(stSheet, r, 1)?.v || getCell(stSheet, r, 1)?.raw || '').trim();
+      const roll = String(getCell(stSheet, r, 0)?.v || getCell(stSheet, r, 0)?.raw || '').trim();
+      const name = String(getCell(stSheet, r, 2)?.v || getCell(stSheet, r, 2)?.raw || '').trim();
+      if (!enroll && !name && !roll) continue;
+
+      const qMarks = [];
+      for (let q = 0; q < 4; q++) {
+        const val = getCell(stSheet, r, 3 + q)?.v;
+        if (val !== undefined && val !== null && val !== '') {
+          qMarks[q] = Number(val);
+        }
+      }
+
+      const keys = [enroll, roll, name, `idx_${r - 2}`].filter(Boolean);
+      keys.forEach(k => {
+        scoresMap[k] = scoresMap[k] || {};
+        scoresMap[k].singleTests = scoresMap[k].singleTests || {};
+        scoresMap[k].singleTests[tNum] = qMarks;
+      });
+    }
+  });
+
+  // 4. Check Assignments sheet
+  const assignSheet = sheets.find(s => s && s.type === 'assignments');
+  if (assignSheet && assignSheet.cells) {
+    for (let r = 2; r < (assignSheet.rowsCount || 50); r++) {
+      const enroll = String(getCell(assignSheet, r, 1)?.v || getCell(assignSheet, r, 1)?.raw || '').trim();
+      const roll = String(getCell(assignSheet, r, 0)?.v || getCell(assignSheet, r, 0)?.raw || '').trim();
+      const name = String(getCell(assignSheet, r, 2)?.v || getCell(assignSheet, r, 2)?.raw || '').trim();
+      if (!enroll && !name && !roll) continue;
+
+      const aScores = [];
+      for (let a = 0; a < 5; a++) {
+        const val = getCell(assignSheet, r, 3 + a)?.v;
+        if (val !== undefined && val !== null && val !== '') {
+          aScores[a] = Number(val);
+        }
+      }
+
+      const keys = [enroll, roll, name, `idx_${r - 2}`].filter(Boolean);
+      keys.forEach(k => {
+        scoresMap[k] = scoresMap[k] || {};
+        scoresMap[k].assignScores = aScores;
+      });
+    }
+  }
+
+  return scoresMap;
+}
+
+/* ══════════════════════════════════════════════════════════════
    ACADEMIC DATA HYDRATION (ACADEMIC DATA INTEGRATION)
    Hydrates: Master Evaluation, Class Tests, Assignments, Practicals
    ══════════════════════════════════════════════════════════════ */
@@ -8711,12 +9015,13 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
         const hasBrokenBannerInGrid = s0Text.includes('Polytechnic') || s0Text.includes('Institute') || s0Text.includes('Uttarakhand');
         const hasSingleTests = Array.isArray(parsed?.sheets) && parsed.sheets.some(s => s.type === 'single-test');
         const hasObsoleteGrade = s0 && (getCell(s0, 0, 7)?.v === 'Grade' || String(getCell(s0, 0, 3)?.v || '').includes('(10)'));
+        const isTwoTier = String(getCell(s0, 0, 3)?.v || '').toUpperCase() === 'THEORY';
         const hasStudentRow = s0 && (
-          Boolean(getCell(s0, 2, 2)?.v || getCell(s0, 2, 2)?.raw) ||
-          Boolean(getCell(s0, 2, 0)?.v || getCell(s0, 2, 0)?.raw)
+          Boolean(getCell(s0, 3, 2)?.v || getCell(s0, 3, 2)?.raw) ||
+          Boolean(getCell(s0, 3, 0)?.v || getCell(s0, 3, 0)?.raw)
         );
 
-        if (parsed && Array.isArray(parsed.sheets) && parsed.sheets.length >= 4 && !hasObsoleteGrade && !hasBrokenBannerInGrid && hasSingleTests && hasStudentRow) {
+        if (parsed && Array.isArray(parsed.sheets) && parsed.sheets.length >= 4 && !hasObsoleteGrade && !hasBrokenBannerInGrid && hasSingleTests && hasStudentRow && isTwoTier) {
           EXCEL_WB.name = parsed.name || EXCEL_WB.name;
           EXCEL_WB.sheets = parsed.sheets;
           EXCEL_WB.activeSheetIndex = 0;
@@ -8724,16 +9029,27 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
           renderSheetTabs();
           renderExcelGrid(true);
           updateStatusBarStats();
-
-          const tally = document.getElementById('sheet-visible-tally');
-          if (tally) {
-            const studentCount = parsed.sheets[0]?.rowsCount ? Math.max(0, parsed.sheets[0].rowsCount - 8) : 0;
-            tally.textContent = `Showing ${studentCount} of ${studentCount} students`;
-          }
+          initExcelRichTooltips();
           return;
         }
       }
     } catch (_) { }
+  }
+
+  // Extract any existing entered scores from local storage or memory before regenerating
+  let existingScoresMap = {};
+  try {
+    const rawSaved = localStorage.getItem(key);
+    if (rawSaved) {
+      const parsed = JSON.parse(rawSaved);
+      if (parsed && Array.isArray(parsed.sheets)) {
+        existingScoresMap = extractExistingStudentScores(parsed.sheets);
+      }
+    }
+  } catch (_) {}
+  if (EXCEL_WB.sheets && EXCEL_WB.sheets.length > 0) {
+    const memScores = extractExistingStudentScores(EXCEL_WB.sheets);
+    existingScoresMap = Object.assign(existingScoresMap, memScores);
   }
 
   // Retrieve authentic student roster from evaluation data or members
@@ -8760,60 +9076,107 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
 
   const students = sortStudentsList(studentList);
 
-  const tally = document.getElementById('sheet-visible-tally');
-  if (tally) {
-    tally.textContent = `Showing ${students.length} of ${students.length} students`;
-  }
-
   EXCEL_WB.sheets = [];
   const totalRows = Math.max(students.length + 8, 45);
-  const signoffR = students.length + 3;
   const teacherName = S.group?.teacher_name || S.group?.faculty_name || (typeof currentUser !== 'undefined' && currentUser?.name) || 'Subject Teacher';
 
   // ══════════════════════════════════════════════════════════════
-  // SHEET 1: Master Evaluation (Theory + Practical consolidated) — Image 4
+  // SHEET 1: Master Evaluation (Theory + Practical consolidated) — Image 1 (ca64832f.png)
   // ══════════════════════════════════════════════════════════════
   const evalSheet = createDefaultExcelSheet('Master Evaluation', {
     type: 'evaluation',
     rowsCount: totalRows,
     colsCount: 14,
-    frozenRows: 2,
+    frozenRows: 3,
     frozenCols: 3
   });
-  evalSheet.rowHeights[0] = 28;
-  evalSheet.rowHeights[1] = 24;
-  for (let r = 2; r < 2 + students.length; r++) {
+  evalSheet.rowHeights[0] = 26;
+  evalSheet.rowHeights[1] = 42;
+  evalSheet.rowHeights[2] = 22;
+  for (let r = 3; r < 3 + students.length; r++) {
     evalSheet.rowHeights[r] = 24;
   }
   evalSheet.colWidths[0] = 60;  // SR. NO.
   evalSheet.colWidths[1] = 130; // ROLL NO.
   evalSheet.colWidths[2] = 200; // STUDENT NAME
-  for (let c = 3; c <= 12; c++) evalSheet.colWidths[c] = 95;
+  evalSheet.colWidths[3] = 95;  // Assignment
+  evalSheet.colWidths[4] = 95;  // UTs Total
+  evalSheet.colWidths[5] = 85;  // Attendance
+  evalSheet.colWidths[6] = 105; // Problem Solving
+  evalSheet.colWidths[7] = 85;  // TOTAL (Theory)
+  evalSheet.colWidths[8] = 105; // Lab Record File
+  evalSheet.colWidths[9] = 135; // Creative Work
+  evalSheet.colWidths[10] = 85; // Attendance
+  evalSheet.colWidths[11] = 85; // Viva Voce
+  evalSheet.colWidths[12] = 85; // TOTAL (Practical)
 
-  const evalHeaders = [
-    'SR. NO.', 'ROLL NO.', 'STUDENT NAME',
-    'Assignment (Average)', 'UTs Total (Best 4 Average)', 'Attendance', 'Problem Solving Skills / Project', 'TOTAL',
-    'Lab Record File', 'Creative Work (Model/Chart/Project)', 'Attendance', 'Viva Voce', 'TOTAL'
+  // Header Row 0: SR. NO., ROLL NO., STUDENT NAME, THEORY (cols 3..7), PRACTICAL (cols 8..12)
+  setCell(evalSheet, 0, 0, { raw: 'SR. NO.', v: 'SR. NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 0, 1, { raw: 'ROLL NO.', v: 'ROLL NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 0, 2, { raw: 'STUDENT NAME', v: 'STUDENT NAME', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 0, 3, { raw: 'THEORY', v: 'THEORY', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  for (let c = 4; c <= 7; c++) {
+    setCell(evalSheet, 0, c, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  }
+  setCell(evalSheet, 0, 8, { raw: 'PRACTICAL', v: 'PRACTICAL', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  for (let c = 9; c <= 12; c++) {
+    setCell(evalSheet, 0, c, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  }
+
+  // Header Row 1: Subheaders for Theory and Practical
+  setCell(evalSheet, 1, 0, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 1, 1, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 1, 2, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 1, 3, { raw: 'Assignment\n(10)', v: 'Assignment\n(10)', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 4, { raw: 'UTs Total\n(Best 4)', v: 'UTs Total\n(Best 4)', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 5, { raw: 'Attendance', v: 'Attendance', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 6, { raw: 'Problem Solving\nSkills/', v: 'Problem Solving\nSkills/', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 7, { raw: 'TOTAL', v: 'TOTAL', s: { bold: true, align: 'center', bg: 'var(--chip-faculty-bg)', wrap: true } });
+  setCell(evalSheet, 1, 8, { raw: 'Lab Record\nFile', v: 'Lab Record\nFile', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 9, { raw: 'Creative Work\n(Model/Chart/Project)', v: 'Creative Work\n(Model/Chart/Project)', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 10, { raw: 'Attendance', v: 'Attendance', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 11, { raw: 'Viva Voce', v: 'Viva Voce', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
+  setCell(evalSheet, 1, 12, { raw: 'TOTAL', v: 'TOTAL', s: { bold: true, align: 'center', bg: 'var(--chip-faculty-bg)', wrap: true } });
+
+  // Header Row 2: Marks row
+  setCell(evalSheet, 2, 0, { raw: 'Marks -->', v: 'Marks -->', s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 1, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 2, { raw: '', v: '', s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 3, { raw: 10, v: 10, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 4, { raw: 10, v: 10, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 5, { raw: 5, v: 5, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 6, { raw: 5, v: 5, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 7, { raw: 30, v: 30, s: { bold: true, align: 'center', bg: 'var(--chip-faculty-bg)' } });
+  setCell(evalSheet, 2, 8, { raw: 10, v: 10, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 9, { raw: 10, v: 10, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 10, { raw: 5, v: 5, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 11, { raw: 5, v: 5, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+  setCell(evalSheet, 2, 12, { raw: 30, v: 30, s: { bold: true, align: 'center', bg: 'var(--chip-faculty-bg)' } });
+
+  // Merges for evaluation sheet
+  evalSheet.merges = [
+    { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // SR. NO. vertical merge
+    { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // ROLL NO. vertical merge
+    { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } }, // STUDENT NAME vertical merge
+    { s: { r: 0, c: 3 }, e: { r: 0, c: 7 } }, // THEORY horizontal merge
+    { s: { r: 0, c: 8 }, e: { r: 0, c: 12 } }, // PRACTICAL horizontal merge
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 2 } }  // Marks --> horizontal merge
   ];
-  evalHeaders.forEach((h, c) => {
-    setCell(evalSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
-  });
-
-  const evalMarks = ['Marks -->', '', '', 10, 10, 5, 5, 30, 10, 10, 5, 5, 30];
-  evalMarks.forEach((m, c) => {
-    setCell(evalSheet, 1, c, { raw: m, v: m, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
-  });
 
   students.forEach((stu, idx) => {
-    const r = idx + 2;
+    const r = idx + 3;
     const srNo = idx + 1;
     const roll = stu.class_roll_no || (idx + 1);
     const enroll = stu.official_enrollment_no || stu.enrollment_no || stu.enrollment_number || roll;
     const name = stu.full_name || stu.student_name || stu.name || '';
     const attPct = Math.round(Number(stu.attendance_percentage !== undefined && stu.attendance_percentage !== null ? stu.attendance_percentage : 0));
 
+    const preserved = existingScoresMap[enroll] || existingScoresMap[roll] || existingScoresMap[name] || existingScoresMap[`idx_${idx}`] || {};
+
     let assignAvg = 0;
-    if (stu.assignment_avg !== undefined && stu.assignment_avg !== null && stu.assignment_avg !== '') {
+    if (preserved.assignAvg !== undefined && preserved.assignAvg !== null && preserved.assignAvg !== '') {
+      assignAvg = Number(preserved.assignAvg);
+    } else if (stu.assignment_avg !== undefined && stu.assignment_avg !== null && stu.assignment_avg !== '') {
       assignAvg = Number(stu.assignment_avg);
     } else if (Array.isArray(stu.assignment_scores) && stu.assignment_scores.length) {
       const valid = stu.assignment_scores.filter(v => v !== '' && v !== null && !isNaN(v));
@@ -8821,18 +9184,44 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     }
 
     let utAvg = 0;
-    if (stu.exam_avg !== undefined && stu.exam_avg !== null && stu.exam_avg !== '') {
+    if (preserved.utAvg !== undefined && preserved.utAvg !== null && preserved.utAvg !== '') {
+      utAvg = Number(preserved.utAvg);
+    } else if (stu.exam_avg !== undefined && stu.exam_avg !== null && stu.exam_avg !== '') {
       utAvg = Math.round(Number(stu.exam_avg) * 0.1 * 100) / 100;
     } else if (Array.isArray(stu.exam_scores) && stu.exam_scores.length) {
       const valid = stu.exam_scores.filter(v => v !== '' && v !== null && !isNaN(v));
       if (valid.length) utAvg = Math.round((valid.reduce((a, b) => a + Number(b), 0) / valid.length) * 0.1 * 100) / 100;
     }
 
-    const attMarks = (attPct > 0) ? Math.min(5, Math.round((attPct / 20) * 10) / 10) : 0;
-    const probSkills = (stu.problem_solving_marks !== undefined && stu.problem_solving_marks !== null) ? Number(stu.problem_solving_marks) : 0;
-    const labRecord = (stu.lab_record_marks !== undefined && stu.lab_record_marks !== null) ? Number(stu.lab_record_marks) : 0;
-    const creativeWork = (stu.creative_work_marks !== undefined && stu.creative_work_marks !== null) ? Number(stu.creative_work_marks) : 0;
-    const vivaVoce = (stu.viva_voce_marks !== undefined && stu.viva_voce_marks !== null) ? Number(stu.viva_voce_marks) : 0;
+    let attMarks = (attPct > 0) ? Math.min(5, Math.round((attPct / 20) * 10) / 10) : 0;
+    if (preserved.attMarks !== undefined && preserved.attMarks !== null && preserved.attMarks !== '') {
+      attMarks = Number(preserved.attMarks);
+    }
+
+    let probSkills = (stu.problem_solving_marks !== undefined && stu.problem_solving_marks !== null) ? Number(stu.problem_solving_marks) : 0;
+    if (preserved.probSkills !== undefined && preserved.probSkills !== null && preserved.probSkills !== '') {
+      probSkills = Number(preserved.probSkills);
+    }
+
+    let labRecord = (stu.lab_record_marks !== undefined && stu.lab_record_marks !== null) ? Number(stu.lab_record_marks) : 0;
+    if (preserved.labRecord !== undefined && preserved.labRecord !== null && preserved.labRecord !== '') {
+      labRecord = Number(preserved.labRecord);
+    }
+
+    let creativeWork = (stu.creative_work_marks !== undefined && stu.creative_work_marks !== null) ? Number(stu.creative_work_marks) : 0;
+    if (preserved.creativeWork !== undefined && preserved.creativeWork !== null && preserved.creativeWork !== '') {
+      creativeWork = Number(preserved.creativeWork);
+    }
+
+    let attMarks2 = attMarks;
+    if (preserved.attMarks2 !== undefined && preserved.attMarks2 !== null && preserved.attMarks2 !== '') {
+      attMarks2 = Number(preserved.attMarks2);
+    }
+
+    let vivaVoce = (stu.viva_voce_marks !== undefined && stu.viva_voce_marks !== null) ? Number(stu.viva_voce_marks) : 0;
+    if (preserved.vivaVoce !== undefined && preserved.vivaVoce !== null && preserved.vivaVoce !== '') {
+      vivaVoce = Number(preserved.vivaVoce);
+    }
 
     setCell(evalSheet, r, 0, { raw: srNo, v: srNo, s: { align: 'center' } });
     setCell(evalSheet, r, 1, { raw: enroll, v: enroll, s: { align: 'center' } });
@@ -8842,20 +9231,21 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(evalSheet, r, 5, { raw: attMarks, v: attMarks, s: { align: 'center' } });
     setCell(evalSheet, r, 6, { raw: probSkills, v: probSkills, s: { align: 'center' } });
 
-    // Theory Total formula: =ROUND(D3 + E3 + F3 + G3, 2)
+    // Theory Total formula: =ROUND(D4 + E4 + F4 + G4, 2)
     const theoryFormula = `=ROUND(D${r + 1} + E${r + 1} + F${r + 1} + G${r + 1}, 2)`;
-    setCell(evalSheet, r, 7, { raw: theoryFormula, f: theoryFormula, s: { bold: true, align: 'center' } });
+    setCell(evalSheet, r, 7, { raw: theoryFormula, f: theoryFormula, s: { bold: true, align: 'center', bg: 'var(--chip-faculty-bg)' } });
 
     setCell(evalSheet, r, 8, { raw: labRecord, v: labRecord, s: { align: 'center' } });
     setCell(evalSheet, r, 9, { raw: creativeWork, v: creativeWork, s: { align: 'center' } });
-    setCell(evalSheet, r, 10, { raw: attMarks, v: attMarks, s: { align: 'center' } });
+    setCell(evalSheet, r, 10, { raw: attMarks2, v: attMarks2, s: { align: 'center' } });
     setCell(evalSheet, r, 11, { raw: vivaVoce, v: vivaVoce, s: { align: 'center' } });
 
-    // Practical Total formula: =ROUND(I3 + J3 + K3 + L3, 2)
+    // Practical Total formula: =ROUND(I4 + J4 + K4 + L4, 2)
     const practicalFormula = `=ROUND(I${r + 1} + J${r + 1} + K${r + 1} + L${r + 1}, 2)`;
-    setCell(evalSheet, r, 12, { raw: practicalFormula, f: practicalFormula, s: { bold: true, align: 'center' } });
+    setCell(evalSheet, r, 12, { raw: practicalFormula, f: practicalFormula, s: { bold: true, align: 'center', bg: 'var(--chip-faculty-bg)' } });
   });
 
+  const signoffR = students.length + 5;
   setCell(evalSheet, signoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
   setCell(evalSheet, signoffR, 7, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
   setCell(evalSheet, signoffR, 12, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
@@ -8900,13 +9290,17 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     const enroll = stu.official_enrollment_no || stu.enrollment_no || stu.enrollment_number || roll;
     const name = stu.full_name || stu.student_name || stu.name || '';
 
+    const preserved = existingScoresMap[enroll] || existingScoresMap[roll] || existingScoresMap[name] || existingScoresMap[`idx_${idx}`] || {};
+
     setCell(testSheet, r, 0, { raw: srNo, v: srNo, s: { align: 'center' } });
     setCell(testSheet, r, 1, { raw: enroll, v: enroll, s: { align: 'center' } });
     setCell(testSheet, r, 2, { raw: name, v: name, s: { bold: true, align: 'left' } });
 
     for (let tIdx = 0; tIdx < 10; tIdx++) {
       let mark = 0;
-      if (Array.isArray(stu.exam_scores) && stu.exam_scores[tIdx] !== undefined && stu.exam_scores[tIdx] !== '' && !isNaN(stu.exam_scores[tIdx])) {
+      if (preserved?.examScores?.[tIdx] !== undefined) {
+        mark = preserved.examScores[tIdx];
+      } else if (Array.isArray(stu.exam_scores) && stu.exam_scores[tIdx] !== undefined && stu.exam_scores[tIdx] !== '' && !isNaN(stu.exam_scores[tIdx])) {
         mark = Number(stu.exam_scores[tIdx]);
       }
       setCell(testSheet, r, 3 + tIdx, { raw: mark, v: mark, s: { align: 'center' } });
@@ -8916,9 +9310,10 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(testSheet, r, 13, { raw: best4Formula, f: best4Formula, s: { bold: true, align: 'center' } });
   });
 
-  setCell(testSheet, signoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
-  setCell(testSheet, signoffR, 6, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
-  setCell(testSheet, signoffR, 13, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
+  const testSignoffR = students.length + 3;
+  setCell(testSheet, testSignoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
+  setCell(testSheet, testSignoffR, 6, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
+  setCell(testSheet, testSignoffR, 13, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
 
   EXCEL_WB.sheets.push(testSheet);
 
@@ -8977,23 +9372,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(singleTestSheet, 1, 5, { raw: 3, v: 3, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
     setCell(singleTestSheet, 1, 6, { raw: 4, v: 4, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
     setCell(singleTestSheet, 1, 7, { raw: 'Total', v: 'Total', s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
-    setCell(singleTestSheet, 1, 8, { raw: `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes | Date : 08.08.26`, v: `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes | Date : 08.08.26`, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
+    setCell(singleTestSheet, 1, 8, { raw: `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes`, v: `UNIT TEST ${tNum} | Maximum Marks : 20 | Time : 50 minutes`, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
 
-    // Instructions and Questions with vertical merges spanning rows so student rows maintain clean uniform 24px height
-    const testInstructions = `Instructions :\n1. Students must write answers only on the A4 answer sheets.\n2. Attempt to all 4 questions.\n3. This question paper carrying a total of 20 marks. Each question is of 5 marks.\n4. The time duration for this test is 50 minutes.\n5. Students must read all questions carefully before answering.\n6. Answers should be clear, neat and to the point.\n7. Use of unfair means is strictly prohibited.\n8. Write the question number clearly before answering each question.`;
+    // Instructions and Questions left blank by default so teachers can enter their own content
+    const testInstructions = '';
     setCell(singleTestSheet, 2, 8, { raw: testInstructions, v: testInstructions, s: { align: 'left', wrap: true } });
-    const instrEndRow = Math.min(11, totalRows - 3);
-    if (instrEndRow > 2) {
-      singleTestSheet.merges.push({ s: { r: 2, c: 8 }, e: { r: instrEndRow, c: 8 } });
-    }
-
-    const qStartRow = instrEndRow + 1;
-    const testQuestions = `Unit Test ${tNum} Questions :\n1. What is process control block draw and brief there block diagram.\n2. What is language process explain the all types of language processors.\n3. A program is a set of _______.\n4. Converts a program written in assembly language into its equivalent binary form.`;
-    setCell(singleTestSheet, qStartRow, 8, { raw: testQuestions, v: testQuestions, s: { align: 'left', wrap: true } });
-    const qEndRow = Math.min(qStartRow + 8, totalRows - 3);
-    if (qEndRow > qStartRow) {
-      singleTestSheet.merges.push({ s: { r: qStartRow, c: 8 }, e: { r: qEndRow, c: 8 } });
-    }
 
     students.forEach((stu, idx) => {
       const r = idx + 2;
@@ -9002,14 +9385,16 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
       const enroll = stu.official_enrollment_no || stu.enrollment_no || stu.enrollment_number || roll;
       const name = stu.full_name || stu.student_name || stu.name || '';
 
+      const preserved = existingScoresMap[enroll] || existingScoresMap[roll] || existingScoresMap[name] || existingScoresMap[`idx_${idx}`] || {};
+
       setCell(singleTestSheet, r, 0, { raw: srNo, v: srNo, s: { align: 'center' } });
       setCell(singleTestSheet, r, 1, { raw: enroll, v: enroll, s: { align: 'center' } });
       setCell(singleTestSheet, r, 2, { raw: name, v: name, s: { bold: true, align: 'left' } });
 
-      const q1 = (Array.isArray(stu.question_marks) && stu.question_marks[0] !== undefined) ? Number(stu.question_marks[0]) : 0;
-      const q2 = (Array.isArray(stu.question_marks) && stu.question_marks[1] !== undefined) ? Number(stu.question_marks[1]) : 0;
-      const q3 = (Array.isArray(stu.question_marks) && stu.question_marks[2] !== undefined) ? Number(stu.question_marks[2]) : 0;
-      const q4 = (Array.isArray(stu.question_marks) && stu.question_marks[3] !== undefined) ? Number(stu.question_marks[3]) : 0;
+      const q1 = preserved?.singleTests?.[tNum]?.[0] !== undefined ? preserved.singleTests[tNum][0] : ((Array.isArray(stu.question_marks) && stu.question_marks[0] !== undefined) ? Number(stu.question_marks[0]) : 0);
+      const q2 = preserved?.singleTests?.[tNum]?.[1] !== undefined ? preserved.singleTests[tNum][1] : ((Array.isArray(stu.question_marks) && stu.question_marks[1] !== undefined) ? Number(stu.question_marks[1]) : 0);
+      const q3 = preserved?.singleTests?.[tNum]?.[2] !== undefined ? preserved.singleTests[tNum][2] : ((Array.isArray(stu.question_marks) && stu.question_marks[2] !== undefined) ? Number(stu.question_marks[2]) : 0);
+      const q4 = preserved?.singleTests?.[tNum]?.[3] !== undefined ? preserved.singleTests[tNum][3] : ((Array.isArray(stu.question_marks) && stu.question_marks[3] !== undefined) ? Number(stu.question_marks[3]) : 0);
 
       setCell(singleTestSheet, r, 3, { raw: q1, v: q1, s: { align: 'center' } });
       setCell(singleTestSheet, r, 4, { raw: q2, v: q2, s: { align: 'center' } });
@@ -9020,9 +9405,10 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
       setCell(singleTestSheet, r, 7, { raw: sumFormula, f: sumFormula, s: { bold: true, align: 'center' } });
     });
 
-    setCell(singleTestSheet, signoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
-    setCell(singleTestSheet, signoffR, 4, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
-    setCell(singleTestSheet, signoffR, 7, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
+    const singleSignoffR = students.length + 3;
+    setCell(singleTestSheet, singleSignoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
+    setCell(singleTestSheet, singleSignoffR, 4, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
+    setCell(singleTestSheet, singleSignoffR, 7, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
 
     EXCEL_WB.sheets.push(singleTestSheet);
   });
@@ -9063,12 +9449,8 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(assignSheet, 1, c, { raw: m, v: m, s: { bold: true, align: 'center', bg: 'var(--bg-surface)' } });
   });
 
-  const assignDetailsText = `Assignment Details (Mode: OFFLINE & VidyaOS):\nAssignment 1: Data Structures Overview & Algorithm Complexity\nAssignment 2: Array Implementations and String Manipulation\nAssignment 3: Singly and Doubly Linked Lists Applications\nAssignment 4: Stack & Queue Memory Allocation and Polish Notation\nAssignment 5: Binary Search Trees & Graph Traversal Operations`;
+  const assignDetailsText = '';
   setCell(assignSheet, 2, 9, { raw: assignDetailsText, v: assignDetailsText, s: { align: 'left', wrap: true } });
-  const assignEndRow = Math.min(10, totalRows - 3);
-  if (assignEndRow > 2) {
-    assignSheet.merges.push({ s: { r: 2, c: 9 }, e: { r: assignEndRow, c: 9 } });
-  }
 
   students.forEach((stu, idx) => {
     const r = idx + 2;
@@ -9077,13 +9459,17 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     const enroll = stu.official_enrollment_no || stu.enrollment_no || stu.enrollment_number || roll;
     const name = stu.full_name || stu.student_name || stu.name || '';
 
+    const preserved = existingScoresMap[enroll] || existingScoresMap[roll] || existingScoresMap[name] || existingScoresMap[`idx_${idx}`] || {};
+
     setCell(assignSheet, r, 0, { raw: srNo, v: srNo, s: { align: 'center' } });
     setCell(assignSheet, r, 1, { raw: enroll, v: enroll, s: { align: 'center' } });
     setCell(assignSheet, r, 2, { raw: name, v: name, s: { bold: true, align: 'left' } });
 
     for (let aIdx = 0; aIdx < 5; aIdx++) {
       let mark = 0;
-      if (Array.isArray(stu.assignment_scores) && stu.assignment_scores[aIdx] !== undefined && stu.assignment_scores[aIdx] !== '' && !isNaN(stu.assignment_scores[aIdx])) {
+      if (preserved?.assignScores?.[aIdx] !== undefined) {
+        mark = preserved.assignScores[aIdx];
+      } else if (Array.isArray(stu.assignment_scores) && stu.assignment_scores[aIdx] !== undefined && stu.assignment_scores[aIdx] !== '' && !isNaN(stu.assignment_scores[aIdx])) {
         mark = Number(stu.assignment_scores[aIdx]);
       }
       setCell(assignSheet, r, 3 + aIdx, { raw: mark, v: mark, s: { align: 'center' } });
@@ -9093,9 +9479,10 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(assignSheet, r, 8, { raw: avgFormula, f: avgFormula, s: { bold: true, align: 'center' } });
   });
 
-  setCell(assignSheet, signoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
-  setCell(assignSheet, signoffR, 5, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
-  setCell(assignSheet, signoffR, 8, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
+  const assignSignoffR = students.length + 3;
+  setCell(assignSheet, assignSignoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
+  setCell(assignSheet, assignSignoffR, 5, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
+  setCell(assignSheet, assignSignoffR, 8, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
 
   EXCEL_WB.sheets.push(assignSheet);
 
@@ -9140,11 +9527,30 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     const enroll = stu.official_enrollment_no || stu.enrollment_no || stu.enrollment_number || roll;
     const name = stu.full_name || stu.student_name || stu.name || '';
     const attPct = Math.round(Number(stu.attendance_percentage !== undefined && stu.attendance_percentage !== null ? stu.attendance_percentage : 0));
-    const attMarks = (attPct > 0) ? Math.min(5, Math.round((attPct / 20) * 10) / 10) : 0;
 
-    const labRecord = (stu.lab_record_marks !== undefined && stu.lab_record_marks !== null) ? Number(stu.lab_record_marks) : 0;
-    const creativeWork = (stu.creative_work_marks !== undefined && stu.creative_work_marks !== null) ? Number(stu.creative_work_marks) : 0;
-    const vivaVoce = (stu.viva_voce_marks !== undefined && stu.viva_voce_marks !== null) ? Number(stu.viva_voce_marks) : 0;
+    const preserved = existingScoresMap[enroll] || existingScoresMap[roll] || existingScoresMap[name] || existingScoresMap[`idx_${idx}`] || {};
+
+    let labRecord = (stu.lab_record_marks !== undefined && stu.lab_record_marks !== null) ? Number(stu.lab_record_marks) : 0;
+    if (preserved.labRecord !== undefined && preserved.labRecord !== null && preserved.labRecord !== '') {
+      labRecord = Number(preserved.labRecord);
+    }
+
+    let creativeWork = (stu.creative_work_marks !== undefined && stu.creative_work_marks !== null) ? Number(stu.creative_work_marks) : 0;
+    if (preserved.creativeWork !== undefined && preserved.creativeWork !== null && preserved.creativeWork !== '') {
+      creativeWork = Number(preserved.creativeWork);
+    }
+
+    let attMarks = (attPct > 0) ? Math.min(5, Math.round((attPct / 20) * 10) / 10) : 0;
+    if (preserved.attMarks2 !== undefined && preserved.attMarks2 !== null && preserved.attMarks2 !== '') {
+      attMarks = Number(preserved.attMarks2);
+    } else if (preserved.attMarks !== undefined && preserved.attMarks !== null && preserved.attMarks !== '') {
+      attMarks = Number(preserved.attMarks);
+    }
+
+    let vivaVoce = (stu.viva_voce_marks !== undefined && stu.viva_voce_marks !== null) ? Number(stu.viva_voce_marks) : 0;
+    if (preserved.vivaVoce !== undefined && preserved.vivaVoce !== null && preserved.vivaVoce !== '') {
+      vivaVoce = Number(preserved.vivaVoce);
+    }
 
     setCell(practicalSheet, r, 0, { raw: srNo, v: srNo, s: { align: 'center' } });
     setCell(practicalSheet, r, 1, { raw: enroll, v: enroll, s: { align: 'center' } });
@@ -9158,9 +9564,10 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     setCell(practicalSheet, r, 7, { raw: totalFormula, f: totalFormula, s: { bold: true, align: 'center' } });
   });
 
-  setCell(practicalSheet, signoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
-  setCell(practicalSheet, signoffR, 4, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
-  setCell(practicalSheet, signoffR, 7, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
+  const pracSignoffR = students.length + 3;
+  setCell(practicalSheet, pracSignoffR, 0, { raw: `${teacherName}\nSubject Teacher`, v: `${teacherName}\nSubject Teacher`, s: { bold: true, align: 'left', wrap: true } });
+  setCell(practicalSheet, pracSignoffR, 4, { raw: 'Head of the Department', v: 'Head of the Department', s: { bold: true, align: 'center' } });
+  setCell(practicalSheet, pracSignoffR, 7, { raw: 'Principal', v: 'Principal', s: { bold: true, align: 'right' } });
 
   EXCEL_WB.sheets.push(practicalSheet);
 
@@ -9170,6 +9577,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   });
   renderSheetTabs();
   renderExcelGrid(true);
+  initExcelRichTooltips();
 }
 
 function autoFitSheetColumns(sheet) {
@@ -9686,6 +10094,7 @@ window.addEventListener('click', (e) => {
 /* ── Hook Excel Engine into Page Startup ── */
 (function autoStartExcelStudio() {
   const launch = () => {
+    initExcelRichTooltips();
     setTimeout(() => {
       if (!EXCEL_WB.sheets || EXCEL_WB.sheets.length === 0) {
         hydrateAcademicSheetsFromGroup(false);
