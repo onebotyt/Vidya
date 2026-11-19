@@ -49,6 +49,44 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 481: ESP32 Smart Fingerprint Attendance with Automatic Hardware Deep Sleep, Touch-Wake & Background FreeRTOS Wi-Fi Synchronization
+- **Objective & Architectural Scope**:
+  1. *Automatic Hardware Deep Sleep & AS608 Touch Wake*:
+     - Inactivity watchdog: After 120 seconds of no fingerprint activity (`INACTIVITY_SLEEP_TIMEOUT_MS = 120000UL`), device enters ESP32 hardware deep sleep via `enterHardwareDeepSleep()`.
+     - Powers down peripherals (`SSD1306_DISPLAYOFF`, LEDs off, AS608 optical LED backlight off, Wi-Fi radio sleep).
+     - Configured external wake-up source via AS608 Touch/Wake pin (Pin 5) on GPIO 33 (`RTC_GPIO8`, active-HIGH): `esp_sleep_enable_ext0_wakeup((gpio_num_t)33, 1)`.
+     - Added 10-minute backup timer wakeup (`esp_sleep_enable_timer_wakeup(BACKUP_TIMER_SLEEP_SEC * 1000000ULL)`) for automated offline queue flush.
+  2. *Instant Wake-Up & Local Fingerprint Recognition (< 300ms)*:
+     - Biometric matching runs entirely independent of internet connectivity or server responses.
+     - On wake, AS608 optical sensor initializes immediately and begins matching against enrolled onboard database.
+     - Zero network latency or Wi-Fi dependencies during student attendance scan.
+  3. *FreeRTOS Decoupled Background Wi-Fi & Server Synchronization (Core 0)*:
+     - Pinned `backgroundWifiSyncTask` to FreeRTOS Core 0 with dedicated 10KB stack.
+     - Core 1 is 100% dedicated to AS608 UART, SPI flash logging, and OLED rendering with zero network stutter or freeze.
+     - Non-blocking Wi-Fi association with automatic dual-network failover (`Airtel_neer_3811` primary, `vivot3lite` secondary).
+     - Thread-safe W25Q32 SPI Flash queue management using FreeRTOS mutex (`flashMutex`).
+  4. *Persistent Local Attendance Storage & Duplicate Prevention*:
+     - Preserves recent scan cache across deep sleep in ESP32 RTC fast memory (`RTC_DATA_ATTR RecentScanRecord recentScans[32]`).
+     - Suppresses duplicate scans within 5-minute cooldown (`DUPLICATE_COOLDOWN_SEC = 300UL`).
+     - Upon valid match, immediately appends record to W25Q32 SPI Flash queue (or resilient non-volatile RAM fallback) and issues instant visual/audio feedback.
+  5. *Student-Friendly OLED Display States*:
+     - Removed all blocking Wi-Fi connecting or waiting for server banners from student scan workflow.
+     - Implemented standardized OLED screens:
+       - Waking up: `Ready / Scan Finger`
+       - Finger placed: `Scanning... Keep Finger Placed`
+       - Matched: `Attendance Marked Successfully` (with 2s 2400Hz confirmation chime & green LED)
+       - Unknown: `Fingerprint Not Recognized` (with 3 1800Hz error chimes)
+       - Duplicate: `Attendance Already Marked for Today`
+     - Added `waitForFingerRelease()` to prevent rapid re-triggers while finger remains placed.
+  6. *USB Flash & Live Telemetry Verification*:
+     - Successfully compiled firmware with `arduino-cli` (1.14 MB, 87% flash, 27% RAM).
+     - Directly flashed connected ESP32 on COM5 over USB with verified SHA256 checksum.
+     - Confirmed live heartbeat (`13:05:49`, RSSI `-69 dBm`, `192.168.1.36`, `7.85V / 73%`) and wireless OTA update parity in `backend/uploads/firmware/firmware.bin`.
+  7. *UIMS & Regression Suite Verification*:
+     - `test-ui-manifest-sync.js`: 203/203 passed with 100% hash parity.
+     - `test-theme-support.js`: 84/84 passed (zero hardcoded hex colors).
+     - `test-rbac-and-structure.js`: 38/38 passed.
+
 ### ✅ Milestone 479: ESP32 Wi-Fi Airwave Discovery Fix, Radar Scanning Animation, Browser Credential Autofill Suppression, and Student Biometric Vault Removal
 - **Objective & Architectural Scope**:
   1. *Real-Time ESP32 Wi-Fi Discovery & Mock Removal*:
