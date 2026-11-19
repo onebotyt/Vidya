@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "2cbb536b3191",
-  "last_scanned": "2026-11-19T02:33:27.100Z",
+  "content_hash": "bbc9ccf5aa84",
+  "last_scanned": "2026-11-19T02:35:30.452Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and permanent teacher document dossier access",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -43,6 +43,10 @@
       {
         "id": "",
         "class": "stu-toolbar"
+      },
+      {
+        "id": "trash-bulk-bar",
+        "class": "trash-bulk-bar"
       }
     ],
     "tables": [
@@ -76,6 +80,16 @@
       },
       {
         "id": "modal-bulk-csv",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-trash-confirm",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-bulk-success",
         "title": "Modal Dialog",
         "field_count": 0
       }
@@ -170,6 +184,30 @@
         "class": "btn-stu-outline btn-reindex",
         "data_ui": null,
         "title": "Re-index Roll Numbers"
+      },
+      {
+        "id": null,
+        "label": "Restore Selected",
+        "action": "confirmBulkRestore()",
+        "class": "btn-stu-compact btn-bulk-restore",
+        "data_ui": null,
+        "title": "Restore selected students to active roster"
+      },
+      {
+        "id": null,
+        "label": "Delete Permanently",
+        "action": "confirmBulkPermanentDelete()",
+        "class": "btn-stu-compact danger btn-bulk-delete",
+        "data_ui": null,
+        "title": "Permanently delete selected students"
+      },
+      {
+        "id": null,
+        "label": "Clear",
+        "action": "clearTrashSelection()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": null,
@@ -298,6 +336,38 @@
         "class": "btn-stu-compact",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeTrashConfirmModal()",
+        "class": "btn-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeTrashConfirmModal()",
+        "class": "btn-stu-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "trash-confirm-btn",
+        "label": "Confirm",
+        "action": null,
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "View Roster",
+        "action": "closeBulkSuccessModal()",
+        "class": "btn-stu-compact",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -316,6 +386,14 @@
         "placeholder": "Search by name, roll, enrollment...",
         "handler": null,
         "class": null
+      },
+      {
+        "id": "check-all-trash",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleSelectAllTrash(this.checked)",
+        "class": "stu-checkbox"
       },
       {
         "id": "doc-upload-title",
@@ -476,6 +554,18 @@
     },
     {
       "id": "modal-bulk-csv",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-trash-confirm",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-bulk-success",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null

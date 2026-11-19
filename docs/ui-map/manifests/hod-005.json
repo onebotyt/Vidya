@@ -5,7 +5,7 @@
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
   "content_hash": "e4c5f5cd60cf",
-  "last_scanned": "2026-11-19T02:33:27.006Z",
+  "last_scanned": "2026-11-19T02:35:30.259Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
