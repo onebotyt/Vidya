@@ -49,6 +49,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 489: Sheet Studio Separate Marks Row, Grade Column Elimination, Merge UI Fix & Header-Bounded Export/Import Engine
+- **Objective & Architectural Scope**:
+  1. *Separate Header Titles and Marks Row (`/faculty/sheets/sheets.js`)*:
+     - Separated header titles from max marks across all four academic sheets:
+       - **Master Evaluation Sheet**: Row 0 contains `Roll #`, `Enrollment No`, `Student Name`, `Assignment Avg`, `UT Avg`, `Attendance %`, `Total Marks`. Row 1 contains dedicated `Max Marks ->` row (`10`, `20`, `100%`, `40`).
+       - **Class Tests & Assignments Sheets**: Clean column titles without embedded `(10)` or `(20)`; dedicated Row 1 Max Marks row.
+     - Completely removed the obsolete `Grade` column from Master Evaluation to match academic institutional standards.
+     - Student rows begin cleanly on Row 2 with accurate formulas (`=ROUND(D3 + E3 + (F3 * 0.1), 1)`).
+     - Filtering, sorting (`sortSheetByMode`), and status counting (`updateFilterModalSummary`) accurately recognize and preserve the `Max Marks ->` row at Row 1.
+  2. *Floating Dropdown Menu UI Fix (`/faculty/sheets/sheets.css`)*:
+     - Fixed ribbon UI leak where `.excel-dropdown-menu` (`#menu-merge-cells`) stretched horizontally across the ribbon row.
+     - Defined floating absolute positioning (`top: calc(100% + 4px); z-index: 2500; min-width: 175px; box-shadow; border-radius;`) and styled `.excel-menu-item`, `.excel-menu-divider`, and `.text-danger` with theme CSS variables.
+  3. *Excel File Import Engine Fix (`/faculty/sheets/sheets.js`)*:
+     - Implemented `extractWorksheetMerges(worksheet)`: accurately extracts ranges from `worksheet.model.merges` and `worksheet._merges` into `sheetObj.merges`.
+     - Built `absorbedMap`: clears duplicate text on secondary/absorbed cells in merged ranges, preventing banner and header repetition across columns.
+     - Imports column widths and row heights into spreadsheet state.
+  4. *Header-Bounded Institutional Export Engine (`/faculty/sheets/sheets.js`)*:
+     - Fixed Excel (`.xlsx`), Word (`.doc`), and CSV export to always include the 3 institutional header banner rows at the top.
+     - Bounded merge range: header banner merges strictly from Column A (1) up to `maxDataCol` (the last column containing student evaluation data), matching user specifications.
+     - Auto-calculates column widths based on cell content, applies header fills, and applies uniform cell borders.
+  5. *Verification & Regression Suite*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js` with zero hardcoded hex colors.
+     - 100% RBAC guards and permanent redirects: 38/38 checks pass in `node backend/scripts/test-rbac-and-structure.js`.
+
 ### ✅ Milestone 488: Restored Multi-Sheet Switcher & Two-Way Excel Worksheet Synchronization
 - **Objective & Architectural Scope**:
   1. *Prominent Top Academic Sheet Switcher (`/faculty/sheets/index.html` & `sheets.css`)*:
