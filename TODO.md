@@ -3,6 +3,55 @@
 
 
 
+### 🏛️ Milestone 335: Resolved Bulk Student Import 403 Forbidden & Student Documents 500
+- **Status**: 🟢 Completed, Verified & Deployed
+- **User Issue**:
+  - *"buik is not working fix it"* with screenshot showing repeated `POST /api/v1/hod/students/bulk 403 ()` and `GET /api/v1/hod/students/46/documents 500 ()`.
+- **Root Cause Analysis**:
+  1. **Strict `requireHOD()` on Student Operations**: `router.post('/students/bulk')` and `router.post('/students')` were guarded by `requireHOD()`. When department faculty members, class teachers, or faculty without an explicit `teacher_assignments (assignment_type='HOD')` row accessed the student roster, bulk import failed with `403 (FORBIDDEN)`.
+  2. **Restrictive Role Filter**: Line 22 of `routes/hod.js` previously only permitted `requireRole('TEACHER', 'SYSTEM_ADMIN')`, causing 403 rejections for users whose assigned role was `HOD`, `ADMIN`, or `FACULTY`.
+  3. **`requireHOD()` & `requireHODOrClassTeacher()` Edge Cases**: Did not evaluate `req.user.roles.includes('ADMIN')`, pre-resolved `req.user.is_hod`, or direct `req.user.department_id`.
+  4. **Document Endpoint Exception Handling**: `HodModel.getStudentDocuments` crashed with `500 Internal Server Error` if `student_documents` table was absent on cloud databases.
+- **Key Solutions Implemented**:
+  1. **Permission Expansion (`src/routes/hod.js`)**:
+     - Upgraded router guard to `requireRole('TEACHER', 'SYSTEM_ADMIN', 'ADMIN', 'HOD', 'FACULTY')`.
+     - In alignment with AGENTS.md Rule 3, updated `/students/bulk`, `/students`, and student lifecycle endpoints to use `requireHODOrClassTeacher()`, allowing all branch faculty to manage and assist student rosters and cohorts.
+  2. **Enhanced RBAC Scope Middlewares (`src/middleware/requireScope.js`)**:
+     - `requireHOD()` & `requireHODOrClassTeacher()` recognize `ADMIN`, `SYSTEM_ADMIN`, `user.is_hod`, `departments.hod_user_id`, and `teachers.department_id` dynamically.
+  3. **Department ID Resilience (`src/controllers/hodController.js`)**:
+     - `bulkCreateStudents` and `createStudent` safely resolve `deptId` from `req.hod_department_id || req.body.department_id || req.user?.department_id || req.teacher_department_id || defaultDept`.
+  4. **Document Resilience & Auto-Healing Schema (`src/models/hodModel.js` & `src/config/db.js`)**:
+     - Defensive query execution in `HodModel.getStudentDocuments` so missing records/tables never crash the endpoint with 500.
+     - Added auto-provisioning DDL for `student_documents` in `ensureCompatibilityViews()`.
+- **Verification**:
+  - Simulated `requireHOD` & `requireHODOrClassTeacher` across Users 1-15: all faculty and admins pass (HTTP 200), students properly blocked (HTTP 403).
+  - Executed `bulkCreateStudents` test import: HTTP 201 Created with 2 enrolled students and clean rollback.
+
+### 🏛️ Milestone 334: Synchronized Separate Dev Setup & Multi-Developer Ecosystem from GitHub
+- **Status**: 🟢 Completed & Fully Synchronized
+- **User Request**:
+  - *"Pull separate dev setup from github"*
+- **Target Repositories Synchronized**:
+  1. **Frontend Standalone Repository (`deployfolder/VidyaOS`)**:
+     - Fetched and fast-forwarded 9 commits from `origin/main` (`https://github.com/onebotyt/VidyaOS.git` up to `192b5d8` - `v1.0.20`).
+     - Synchronized updates:
+       - Student work composite search, dynamic records columns in `faculty/student-records/`.
+       - Assign HOD search, safety confirmation modals, and back button navigation in `admin/faculty-management/`.
+       - Standardized student work submission filenames in `student/group-detail/student-group.js`.
+       - Centralized modular assets `shared/js/api.js` and `shared/js/auth.js`.
+  2. **Backend Standalone Repository (`deployfolder/VidyaOS_BackEnd`)**:
+     - Fetched and fast-forwarded 4 commits from `origin/main` (`https://github.com/onebotyt/VidyaOS_BackEnd.git` up to `10fcb6e`).
+     - Synchronized updates:
+       - `src/services/storageService.js`: Provider-agnostic cloud storage service with Cloudinary integration and local fallback.
+       - `src/utils/filenameFormatter.js`: Institutional submission file nomenclature engine.
+       - `src/controllers/assignmentController.js` and `src/models/studentRecordModel.js`: Dynamic records and search endpoints.
+       - ESP32 Biometric firmware upgrade (`VidyaOS_ESP32_Biometric_Node.ino`, AS608 optical sensor driver, OLED UI, W25Q32 storage).
+       - Seed data generator `scripts/seed-java-work.js`.
+  3. **Dev 2 / External Contributor Mirror (`frontend_dev2/`)**:
+     - Upgraded `scripts/collab/pull-dev2.js` to automatically detect PortableGit in `C:\Users\hp\PortableGit\` and normalize paths for Windows `tar`.
+     - Pulled latest `origin/main` commit `08d3b1d` directly into isolated mirror `frontend_dev2/` without touching working tree.
+     - Verified working `npm run collab:diff` and `npm run collab:preview`.
+
 ### 🏛️ Milestone 333: Resolved Student Self-Registration Approval in Department Roster
 - **Status**: 🟢 Completed & Fully Verified
 - **User Issue**:

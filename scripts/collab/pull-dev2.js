@@ -16,6 +16,13 @@ const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+// Ensure PortableGit is in PATH if present
+const portableGitCmd = 'C:\\Users\\hp\\PortableGit\\cmd';
+const portableGitUsr = 'C:\\Users\\hp\\PortableGit\\usr\\bin';
+if (fs.existsSync(portableGitCmd) && !process.env.PATH.includes(portableGitCmd)) {
+  process.env.PATH = `${portableGitCmd};${portableGitUsr};${process.env.PATH}`;
+}
+
 const rootDir = path.resolve(__dirname, '../..');
 const targetDir = path.join(rootDir, 'frontend_dev2');
 
@@ -84,8 +91,8 @@ try {
   fs.mkdirSync(targetDir, { recursive: true });
 
   // Extract frontend from the specified git reference without altering working tree
-  const isWindows = process.platform === 'win32';
-  const tarCmd = `git archive "${gitRef}" frontend | tar -x -C "${targetDir}" --strip-components=1`;
+  const normalizedTarget = targetDir.replace(/\\/g, '/');
+  const tarCmd = `git archive "${gitRef}" frontend | tar -x -C "${normalizedTarget}" --strip-components=1`;
   
   run(tarCmd);
 

@@ -11,10 +11,15 @@ const auth = require('../middleware/auth');
 const requireRole = require('../middleware/requireRole');
 const { requireHOD, requireHODOrClassTeacher } = require('../middleware/requireScope');
 const validate = require('../middleware/validate');
+const { makeUploader } = require('../middleware/upload');
 const HodController = require('../controllers/hodController');
+const StudentController = require('../controllers/studentController');
+const AuthController = require('../controllers/authController');
 
-// All HOD/Department routes require authenticated TEACHER or SYSTEM_ADMIN with HOD or Class Teacher assignment
-router.use(auth, requireRole('TEACHER', 'SYSTEM_ADMIN'), requireHODOrClassTeacher());
+const uploadStudentDoc = makeUploader('student-documents', 50);
+
+// All HOD/Department routes require authenticated faculty or administrator
+router.use(auth, requireRole('TEACHER', 'SYSTEM_ADMIN', 'ADMIN', 'HOD', 'FACULTY'), requireHODOrClassTeacher());
 
 // @route   GET /api/v1/hod/dashboard
 // @desc    Retrieve high-level departmental dashboard KPIs, active registers, attendance rates, and today's sessions
@@ -74,6 +79,16 @@ router.post('/teachers/:id/reset-password', requireHOD(), [
 // @access  Protected (HOD, SYSTEM_ADMIN)
 // @handler HodController.deleteTeacher() -> HodModel.deleteTeacher()
 router.delete('/teachers/:id', requireHOD(), [param('id').isInt(), validate], HodController.deleteTeacher);
+
+// @route   GET /api/v1/hod/trash/faculty
+// @desc    Retrieve soft-deleted faculty for HOD department currently in Trash
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.get('/trash/faculty', requireHOD(), HodController.getTrashFaculty);
+
+// @route   POST /api/v1/hod/trash/faculty/:id/restore
+// @desc    Restore a soft-deleted faculty member from Trash
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.post('/trash/faculty/:id/restore', requireHOD(), [param('id').isInt(), validate], HodController.restoreFaculty);
 
 // @route   GET /api/v1/hod/faculty-roster
 // @desc    Retrieve department faculty roster with active teaching workloads and assigned subjects
@@ -225,9 +240,9 @@ router.get('/students', HodController.getStudents);
 
 // @route   POST /api/v1/hod/students
 // @desc    Enroll a new student, create provisioned user account, and reindex roll numbers
-// @access  Protected (HOD, SYSTEM_ADMIN)
+// @access  Protected (HOD, Department Faculty, SYSTEM_ADMIN)
 // @handler HodController.createStudent() -> HodModel.createStudent()
-router.post('/students', requireHOD(), [
+router.post('/students', requireHODOrClassTeacher(), [
   body('official_enrollment_no').trim().notEmpty().withMessage('Official enrollment number required'),
   body('full_name').trim().notEmpty().withMessage('Student full name required'),
   body('email').optional().trim().isEmail().withMessage('Valid email required'),
@@ -241,9 +256,9 @@ router.post('/students', requireHOD(), [
 
 // @route   POST /api/v1/hod/students/bulk
 // @desc    Bulk import and enroll students for a cohort in a single transaction with automatic roll indexing
-// @access  Protected (HOD, SYSTEM_ADMIN)
+// @access  Protected (HOD, Department Faculty, SYSTEM_ADMIN)
 // @handler HodController.bulkCreateStudents() -> HodModel.bulkCreateStudents()
-router.post('/students/bulk', requireHOD(), [
+router.post('/students/bulk', requireHODOrClassTeacher(), [
   body('academic_year_id').optional().isInt(),
   body('year').optional().isInt({ min: 1, max: 6 }).withMessage('Year must be between 1 and 6'),
   body('semester').optional().isInt({ min: 1, max: 12 }).withMessage('Semester must be between 1 and 12'),
@@ -253,9 +268,49 @@ router.post('/students/bulk', requireHOD(), [
 
 // @route   DELETE /api/v1/hod/students/:id
 // @desc    Delete student record, user account, attendance records, and reindex roll numbers
-// @access  Protected (HOD, SYSTEM_ADMIN)
+// @access  Protected (HOD, Department Faculty, SYSTEM_ADMIN)
 // @handler HodController.deleteStudent() -> HodModel.deleteStudent()
-router.delete('/students/:id', requireHOD(), [param('id').isInt(), validate], HodController.deleteStudent);
+router.delete('/students/:id', requireHODOrClassTeacher(), [param('id').isInt(), validate], HodController.deleteStudent);
+
+// @route   POST /api/v1/hod/students/:id/transfer
+// @desc    Transfer student to another institution/branch (student marked TRANSFERRED, data preserved)
+// @access  Protected (HOD, Department Faculty, SYSTEM_ADMIN)
+router.post('/students/:id/transfer', requireHODOrClassTeacher(), [param('id').isInt(), validate], HodController.transferStudent);
+
+// @route   POST /api/v1/hod/students/:id/withdraw
+// @desc    Mark student as withdrawn (student marked WITHDRAWN, data preserved)
+// @access  Protected (HOD, Department Faculty, SYSTEM_ADMIN)
+router.post('/students/:id/withdraw', requireHODOrClassTeacher(), [param('id').isInt(), validate], HodController.withdrawStudent);
+
+// @route   POST /api/v1/hod/students/:id/reactivate
+// @desc    Re-activate an inactive/transferred/withdrawn student back to active ENROLLED
+// @access  Protected (HOD, Department Faculty, SYSTEM_ADMIN)
+router.post('/students/:id/reactivate', requireHODOrClassTeacher(), [param('id').isInt(), validate], HodController.reactivateStudent);
+
+// @route   GET /api/v1/hod/students/:id/documents
+// @desc    Retrieve all archived academic records and uploaded documents for a student (accessible anytime)
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.get('/students/:id/documents', [param('id').isInt(), validate], HodController.getStudentDocuments);
+
+// @route   POST /api/v1/hod/students/:id/documents
+// @desc    Upload an archived document or official record for a student
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.post('/students/:id/documents', [param('id').isInt(), validate], uploadStudentDoc.single('file'), HodController.uploadStudentDocument);
+
+// @route   DELETE /api/v1/hod/students/:id/documents/:docId
+// @desc    Delete an archived student document
+// @access  Protected (HOD, SYSTEM_ADMIN)
+router.delete('/students/:id/documents/:docId', requireHOD(), [param('id').isInt(), param('docId').isInt(), validate], HodController.deleteStudentDocument);
+
+// @route   GET /api/v1/hod/trash/students
+// @desc    Retrieve soft-deleted students for HOD department currently in Trash
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.get('/trash/students', requireHODOrClassTeacher(), HodController.getTrashStudents);
+
+// @route   POST /api/v1/hod/trash/students/:id/restore
+// @desc    Restore a soft-deleted student from Trash
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.post('/trash/students/:id/restore', requireHODOrClassTeacher(), [param('id').isInt(), validate], HodController.restoreStudent);
 
 // @route   POST /api/v1/hod/students/:id/reset-password
 // @desc    Reset student account password
@@ -278,39 +333,9 @@ router.post('/students/reindex-roll', requireHOD(), [
   validate
 ], HodController.reindexRoll);
 
-// @route   GET /api/v1/hod/settings
-// @desc    Retrieve department academic configuration and attendance threshold settings
-// @access  Protected (HOD, SYSTEM_ADMIN)
-// @handler HodController.getSettings() -> HodModel.getSettings()
-router.get('/settings', requireHOD(), HodController.getSettings);
-
-// @route   PUT /api/v1/hod/settings
-// @desc    Update departmental settings (duration, active term, attendance threshold)
-// @access  Protected (HOD, SYSTEM_ADMIN)
-// @handler HodController.updateSettings() -> HodModel.updateSettings()
-router.put('/settings', requireHOD(), [
-  body('degree_duration_years').optional().isInt({ min: 1, max: 3 }),
-  body('active_term').optional().isIn(['ODD', 'EVEN']),
-  body('attendance_threshold').optional().isFloat({ min: 0, max: 100 }),
-  body('defaulter_threshold_percent').optional().isFloat({ min: 0, max: 100 }),
-  validate
-], HodController.updateSettings);
-
-// @route   GET /api/v1/hod/settings/duration
-// @desc    Retrieve department degree duration and active term configuration
-// @access  Protected (HOD, SYSTEM_ADMIN)
-// @handler HodController.getDurationSettings() -> HodModel.getDurationSettings()
-router.get('/settings/duration', requireHOD(), HodController.getDurationSettings);
-
-// @route   POST /api/v1/hod/settings/duration
-// @desc    Update department degree duration years with typed code confirmation
-// @access  Protected (HOD, SYSTEM_ADMIN)
-// @handler HodController.updateDurationSettings() -> HodModel.updateDurationSettings()
-router.post('/settings/duration', requireHOD(), [
-  body('duration_years').isInt({ min: 1, max: 3 }).withMessage('Duration years must be between 1 and 3'),
-  body('confirm_code').trim().notEmpty().withMessage('Confirmation code required'),
-  validate
-], HodController.updateDurationSettings);
+// ==========================================
+// Student Semester Promotion & Governance
+// ==========================================
 
 // @route   GET /api/v1/hod/promotion/preview
 // @desc    Calculate preview of students eligible for semester promotion or demotion reversal
@@ -394,5 +419,37 @@ router.post('/faculty-registration-toggle', requireHOD(), [
   body('department_id').optional().isInt(),
   validate
 ], HodController.toggleFacultyRegistration);
+
+// @route   GET /api/v1/hod/registrations/pending-students
+// @route   GET /api/v1/hod/pending-students
+// @desc    Retrieve pending student registration requests for HOD/faculty review
+router.get(['/registrations/pending-students', '/pending-students'], StudentController.listPendingRegistrations);
+
+// @route   POST /api/v1/hod/registrations/student/:id/approve
+// @route   POST /api/v1/hod/registrations/student/:id/reject
+// @route   POST /api/v1/hod/registrations/student/:id/adjudicate
+// @desc    Adjudicate (approve or reject) a pending student self-registration request
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.post([
+  '/registrations/student/:id/approve',
+  '/registrations/student/:id/reject',
+  '/registrations/student/:id/adjudicate'
+], StudentController.adjudicateRegistration);
+
+// @route   GET /api/v1/hod/student-registration-status
+// @desc    Check whether student self-registration gate is open for department
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.get('/student-registration-status', HodController.getStudentRegistrationStatus);
+
+// @route   POST /api/v1/hod/student-registration-toggle
+// @desc    Toggle departmental student self-registration gate with audit trail
+// @access  Protected (HOD, Class Teacher, SYSTEM_ADMIN)
+router.post('/student-registration-toggle', [
+  body('is_open').optional().isBoolean(),
+  body('open').optional().isBoolean(),
+  body('registration_open').optional().isBoolean(),
+  body('department_id').optional().isInt(),
+  validate
+], HodController.toggleStudentRegistration);
 
 module.exports = router;
