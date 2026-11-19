@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "85915c22f12a",
-  "last_scanned": "2026-11-19T09:03:09.069Z",
+  "content_hash": "75aede122995",
+  "last_scanned": "2026-11-19T10:14:23.226Z",
   "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -429,7 +429,7 @@
         "id": "btn-ribbon-paste",
         "label": "Paste",
         "action": "excelPaste()",
-        "class": "excel-tool-btn",
+        "class": "excel-action-btn-large",
         "data_ui": null,
         "title": "Paste (Ctrl+V)"
       },
@@ -603,11 +603,43 @@
       },
       {
         "id": "btn-merge-cells",
-        "label": "Merge &amp; Center",
-        "action": "toggleMergeCells()",
+        "label": "Merge &amp; Center ▾",
+        "action": "toggleMergeAndCenterMenu(event)",
         "class": "excel-tool-btn",
         "data_ui": null,
-        "title": "Merge &amp; Center Selected Range"
+        "title": "Merge &amp; Center or Unmerge Selected Cells"
+      },
+      {
+        "id": null,
+        "label": "⬌ Merge &amp; Center",
+        "action": "mergeAndCenter()",
+        "class": "excel-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "⇉ Merge Across",
+        "action": "mergeAcross()",
+        "class": "excel-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "⊞ Merge Cells",
+        "action": "mergeCellsOnly()",
+        "class": "excel-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "↤↦ Unmerge Cells",
+        "action": "unmergeSelectedCells()",
+        "class": "excel-menu-item text-danger",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "btn-dec-increase",
@@ -883,6 +915,14 @@
       },
       {
         "id": null,
+        "label": "TODAY()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
         "label": "🔄 Calculate Sheet",
         "action": "recalculateAllSheetFormulas(true)",
         "class": "excel-action-btn-large",
@@ -891,19 +931,19 @@
       },
       {
         "id": null,
-        "label": "Sort A → Z",
+        "label": "Sort A &rarr; Z",
         "action": "sortActiveColumn(",
         "class": "excel-tool-btn",
         "data_ui": null,
-        "title": null
+        "title": "Sort Ascending A-Z"
       },
       {
         "id": null,
-        "label": "Sort Z → A",
+        "label": "Sort Z &rarr; A",
         "action": "sortActiveColumn(",
         "class": "excel-tool-btn",
         "data_ui": null,
-        "title": null
+        "title": "Sort Descending Z-A"
       },
       {
         "id": "btn-data-filter",
@@ -2193,8 +2233,8 @@
     "closeSheetFilterModal",
     "switchFilterCategory",
     "renderFilterModalColumns",
+    "toggleExcelColumnVisibility",
     "toggleAutoFit",
-    "toggleSheetViewMode",
-    "toggleFullscreen"
+    "toggleSheetViewMode"
   ]
 }

@@ -49,6 +49,59 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 487: Sheet Studio Ribbon UI Layout Optimization, Dynamic Spreadsheet Filtering & Sort Synchronization
+- **Objective & Architectural Scope**:
+  1. *Ribbon UI Layout Restructuring (`/faculty/sheets/index.html` & `sheets.css`)*:
+     - Fixed root cause of vertically stacked ribbon buttons across `panel-file`, `panel-insert`, `panel-page-layout`, `panel-formulas`, `panel-data`, `panel-review`, and `panel-view`.
+     - Organized tool buttons in horizontal `.excel-tool-content` and 2-row `.excel-tool-vgroup` flex containers so large action buttons sit side-by-side and compact buttons stack cleanly in two balanced rows.
+     - Enforced `overflow-y: hidden !important` on `.excel-ribbon-panels`, `.excel-ribbon-panel`, and `.excel-tool-group` to eliminate all unwanted vertical scrollbars and button clipping.
+  2. *Active Spreadsheet Filter & Search Engine (`/faculty/sheets/sheets.js`)*:
+     - Connected `#sheet-filter-modal` and `#sheet-search-input` directly to the active Excel worksheet (`EXCEL_WB.sheets[EXCEL_WB.activeSheetIndex]`).
+     - Implemented `checkRowMatchesFilters(sheet, r)`: evaluates search text matches across all row cells and checks student status filters (`ALL`, `TOP` >= 80%, `AVERAGE` 50-79%, `LOW` < 50%, `ATT_LOW` < 75%, and `ABSENT` / withheld / missing assessments).
+     - Implemented `applyExcelGridFilters()`: hides/shows student rows (`<tr>`) and columns (`<th>`, `<td>`) in the DOM based on active filters, search query, and column visibility.
+     - Implemented `sortSheetByMode(mode)`: sorts active worksheet rows by Roll # (`ROLL_ASC`, `ROLL_DESC`), Name (`NAME_ASC`, `NAME_DESC`), Total Marks (`MARKS_DESC`, `MARKS_ASC`), or Attendance (`ATT_DESC`, `ATT_ASC`), preserving formula cells and integrity.
+     - Implemented dynamic column visibility in filter modal (`renderFilterModalColumns`, `toggleExcelColumnVisibility`): generates checkboxes directly from the active sheet's header row and toggles column visibility in real time.
+  3. *Filter Modal Summary & Status Tally Accurate Counting*:
+     - Fixed "Showing 0 students" bug in `updateFilterModalSummary()`: accurately inspects student rows in the active worksheet and updates summary text (`Showing X of Y students`).
+     - Synchronized `#sheet-visible-tally` on the bottom status bar and `#filter-badge-indicator` with live filtered student counts.
+  4. *Verification & Regression Suite*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js` with zero hardcoded colors.
+     - 100% RBAC guards and permanent redirects: 38/38 checks pass in `node backend/scripts/test-rbac-and-structure.js`.
+
+### ✅ Milestone 486: Sheet Studio Complete Excel Integration, Scrolling, Merging & Dossier Polish
+- **Objective & Architectural Scope**:
+  1. *Automatic Subject-Wise Data Loading & Zero-Blank Guarantee (`/faculty/sheets/sheets.js`)*:
+     - Fixed root cause of blank spreadsheet: `loadGroupMetadata(groupId)` now fetches teaching group metadata, enrolled student members (`/teaching-groups/:id/members`), coursework assignments, tests, and comprehensive evaluation ledger (`/faculty/registers/:id/internal-evaluation`).
+     - Banner lines dynamically synchronize with the selected subject's name, code, semester, and department.
+     - `hydrateAcademicSheetsFromGroup(forceRefresh)` immediately populates the 4 worksheets (`Master Evaluation`, `Class Tests`, `Assignments`, `Practicals`) with real student records, roll numbers, enrollment numbers, attendance percentages, assignment averages, and test scores.
+     - Injected client-side formula computations for total score (`=ROUND(D2 + E2 + (F2 * 0.1), 1)`) and automatic grade evaluation (`=IF(G2>=30,"Distinction",IF(G2>=24,"First",IF(G2>=16,"Pass","Fail")))`).
+     - Even when a class has 0 enrolled students, Sheet Studio cleanly initializes 35 blank rows with standard headers and updates `#sheet-visible-tally` rather than displaying a blank or broken spreadsheet.
+     - Preserves subject data isolation: switching groups saves the active workbook state into subject-specific cache (`vidyaos_excel_wb_${groupId}`) and loads the target subject's independent workbook. Added a "Refresh Data" button to re-sync fresh from the campus database.
+  2. *Excel-Style Horizontal & Vertical Scrolling with Bounded Containment*:
+     - Applied `overscroll-behavior: contain; overflow: auto;` to `.excel-grid-workspace` and strict flex sizing to `.excel-viewport-wrap` and `.sheet-scale-wrapper` to prevent page jump and scroll trap.
+     - Column headers (`.excel-col-th`) remain sticky to top (`top: 0; z-index: 20;`), row numbers (`.excel-row-th`) remain sticky to left (`left: 0; z-index: 15;`), and corner cell (`.excel-corner-th`) remains pinned at `top: 0; left: 0; z-index: 35;`.
+     - Attached live `scroll` listener to `#excel-grid-workspace` to continuously update selection bounding box (`#excel-selection-box`) and auto-fill handle positions in real-time without scrolling drift.
+     - Added Shift+wheel listener on the workspace to support native horizontal mouse wheel scrolling.
+  3. *Merge Cells, Merge & Center, and Unmerge Architecture*:
+     - Supported genuine multi-cell merging in `renderExcelGrid`: computes `mergeMap`, applies `rowspan` and `colspan` to the primary top-left cell, and omits absorbed cells to preserve strict table layout integrity.
+     - Implemented `mergeAndCenter()`, `mergeCellsOnly()`, `mergeAcross()` (row-by-row horizontal merging), and `unmergeSelectedCells()` (removes overlapping merges and restores atomic cells).
+     - Bound merge actions to Home Ribbon Alignment dropdown menu and right-click context menu.
+     - `ExcelJS` binary export (`exportCurrentSheet('xlsx')`) passes all `sheet.merges` to output workbook (`worksheet.mergeCells(...)`).
+  4. *Native Spreadsheet Right-Click Context Menu*:
+     - Implemented `#excel-context-menu` triggered on right-click within `.excel-grid-workspace`.
+     - Provides standard Excel operations: Cut (Ctrl+X), Copy (Ctrl+C), Paste (Ctrl+V), Insert Row Above/Below, Delete Row, Insert Column Left/Right, Delete Column, Clear Contents (Del), Merge & Center / Unmerge, Sort A→Z, Sort Z→A, and Filter.
+     - Bounded within viewport window and automatically dismisses on outside click, option selection, or Escape key. Default browser right-click menu remains unmodified outside the spreadsheet workspace.
+  5. *Horizontal Ribbon Layout Polish*:
+     - Refactored Clipboard tool group in Ribbon Home tab: large vertical Paste button on left alongside stacked Cut and Copy buttons on right.
+     - Preserved all existing Ribbon panels (`File`, `Home`, `Insert`, `Page Layout`, `Formulas`, `Data`, `Review`, `View`).
+  6. *Student Academic Records & Dossiers Polish (`/faculty/student-records/index.html`)*:
+     - Removed Attendance column from the main student search results table header and rows, streamlining the student card and dossier action flow.
+  7. *Verification & UIMS Manifest Parity*:
+     - 100% manifest synchronization: 203/203 checks pass in `node backend/scripts/test-ui-manifest-sync.js`.
+     - 100% theme variable compliance: 84/84 checks pass in `node backend/scripts/test-theme-support.js` with zero hardcoded colors.
+     - Strict push embargo observed: all changes remain strictly local.
+
 ### ✅ Milestone 485: Professional Microsoft Excel-Like Spreadsheet Studio Upgrade
 - **Objective & Architectural Scope**:
   1. *Ribbon & Toolbar Navigation System (`/faculty/sheets/index.html` & `sheets.css`)*:
