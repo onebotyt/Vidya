@@ -3,6 +3,32 @@
 
 
 
+### 🏛️ Milestone 336: Added Trash Bin Checkboxes, Bulk Restore/Delete with Confirmation Modal & Import/Enroll Loading Animations
+- **Status**: 🟢 Completed, Verified & Deployed
+- **User Request**:
+  - *"add a check button in trash bin and bulk delete and bulk restore and a comrfation button befor delete and restore button and In bulk student improt add animation and successfully added pop up and when syudent added the import student butten will grey/unclickable do same at add student enroll student buton"*
+- **Key Features Implemented**:
+  1. **Trash Bin Selection & Master Checkbox**:
+     - Added row checkbox (`.trash-row-check`) to each trashed student with click/change listener.
+     - Added master header checkbox (`#check-all-trash`) with indeterminate/all-selected sync across filtered items.
+     - Added dynamic bulk actions bar (`#trash-bulk-bar`) showing selected counter, `Restore Selected`, `Delete Permanently`, and `Clear` buttons.
+  2. **Action Confirmation Dialog (`#modal-trash-confirm`)**:
+     - Intercepts single restore, single permanent delete, bulk restore, and bulk permanent delete operations.
+     - Displays contextual icon (`restore` in primary color vs. `danger` in warning red), title, description, and prominent warning for permanent purges.
+     - Executes actual restore or delete only upon user confirmation.
+  3. **Backend Endpoints for Trash Operations**:
+     - `POST /api/v1/hod/trash/students/bulk-restore`: Bulk restores students from trash.
+     - `POST /api/v1/hod/trash/students/bulk-delete`: Bulk permanently purges students and cascades removal across attendance, submissions, documents, and credentials with audit logs.
+     - `DELETE /api/v1/hod/trash/students/:id/permanent`: Single student permanent deletion endpoint.
+  4. **Bulk CSV Student Import Loading Animation & Success Popup**:
+     - During import submission, "Import Students" button is disabled, greyed out (`.btn-disabled-loading`), and displays a spinning SVG with `Importing Students...`.
+     - On successful import, closes CSV modal and triggers `#modal-bulk-success` celebratory modal with animated green checkmark circle, total imported count, and skipped duplicates summary.
+  5. **Add / Enroll Student Loading State**:
+     - During single enrollment submission, "Enroll Student" button is disabled and greyed out with spinner animation and `Enrolling Student...`.
+     - Triggers celebratory success popup upon enrollment and refreshes roster.
+  6. **100% Theme Token Compliance**:
+     - All new CSS additions strictly utilize CSS variables (`var(--color-primary)`, `var(--status-absent)`, `var(--status-present)`, `var(--bg-card)`, `var(--shadow-md)`) with zero hardcoded hex or RGB values.
+
 ### 🏛️ Milestone 335: Resolved Bulk Student Import 403 Forbidden & Student Documents 500
 - **Status**: 🟢 Completed, Verified & Deployed
 - **User Issue**:
