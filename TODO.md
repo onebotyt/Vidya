@@ -49,6 +49,38 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 469: Student Academic Records Composite Smart Search, Dynamic Work Matrix & Standardized Submission Filename Engine
+- **Objective & Architectural Scope**:
+  1. *Composite Multi-Attribute Search Engine (`/faculty/student-records/index.html`)*:
+     - Enabled composite freeform search parsing: roll number (e.g. `1`), student name/alias (e.g. `girdhardhami`), work type (`assignment`, `assinment`, `test`, `exam`, `lab`, `practical`, `finaldocs`), and subject (`java`, `dbms`, `webtech`, `os`).
+     - Example query `1 girdhardhami assinment java` matches Roll 1 student Girdhar Dhami, filters for Java assignments, and displays all matching assessment cards/rows.
+  2. *Dynamic View & Column Transformation*:
+     - **Default / Cohort Roster View**: Columns: `Roll #`, `Enrollment No`, `Student Name`, `Cohort`, `Batch`, `Attendance`, `Actions`.
+     - **Work Item Found View**: Dynamically switches table headers and rows to: `Roll #`, `Enrollment No`, `Student Name`, `Cohort`, `Batch`, `Document` (with In-Browser Modal "View" and direct file "Download"), and `Marks` (Mobile table breakdown modal `#modal-marks-mobile` and PC comprehensive Excel dossier studio).
+  3. *Standardized Student Submission Filename Engine*:
+     - Enforced institutional naming rule across all student work submissions:
+       `rollno_firstname_lastname_worktype_subject.ext`
+       Examples: `1_girdhar_dhami_assignment_java.pdf`, `1_girdhar_dhami_labrecord_java.pdf`, `1_girdhar_dhami_test_java.pdf`, `1_girdhar_dhami_vivaproject_java.pdf`.
+     - Integrated Required Documents Checklist parser:
+       - `Total Assignments PDF Records (Consolidated)` ➔ `assignment`
+       - `Class Test Records / Question Paper Solutions` ➔ `test`
+       - `Practical / Lab Journal Records & Implementation` ➔ `labrecord`
+       - `Viva Voce / Micro-Project Documentation` ➔ `vivaproject`
+       - Custom checklist items ➔ clean, short non-breaking slug.
+- **Components Modified & Delivered**:
+  - `backend/src/utils/filenameFormatter.js`: Core filename sanitizer, student name normalizer, checklist resolver, and subject keyword mapper.
+  - `backend/src/controllers/assignmentController.js`: Upgraded `submitAssignment`, `uploadDocument`, and `submitFinalDocs` to rename submitted files on disk and record standardized names in database and cloud storage.
+  - `backend/src/models/studentRecordModel.js`: Added `parseSearchQuery()` and `searchStudentWorkItems()` returning matching assessments, submission files, marks, and metadata.
+  - `backend/src/controllers/studentRecordController.js`: Augmented `getStudents()` to return `is_work_search`, `work_type`, `subject`, and `roll_no` in response metadata.
+  - `frontend/faculty/student-records/records.js` & `index.html`: Dynamic header switcher, View/Download actions, `#modal-document-preview`, and `#modal-marks-mobile`.
+  - `frontend/faculty/student-records/records.css`: Styled action buttons with 100% theme token compliance.
+  - `frontend/student/group-detail/student-group.js`: Updated submission state hydration with server-returned standardized filename.
+- **Verification Suites & Health Checks**:
+  - `test-smart-search.js`: Verified composite token parsing and multi-row assignment retrieval for `1 girdhardhami assinment java`.
+  - `test-ui-manifest-sync.js`: **201/201 passed** (100% manifest and DOM parity).
+  - `test-theme-support.js`: **84/84 passed** (zero hardcoded hex colors, theme tokens).
+  - `test-rbac-and-structure.js`: **38/38 passed** (RBAC and redirects).
+
 ### ✅ Milestone 468: Mandatory Multi-Dev AI Git Lifecycle, Remote Commit Drift Check & Zero-Break Integration Verification
 - **Operational Requirement & Intent**:
   - Whenever any developer or Dev AI begins work on any task, they must first check commits on GitHub and pull recent changes before coding.
