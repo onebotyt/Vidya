@@ -449,12 +449,18 @@ bool connectToNetwork(const String& ssid, const String& pass, uint32_t timeoutMs
 void initWifiManager() {
   Serial.println(F("[WiFi] Initializing Wi-Fi manager..."));
   wifiPrefs.begin(NVS_WIFI_NAMESPACE, false);
+  wifiPrefs.clear(); // Wipe any stale custom NVS keys so it never connects to Airtel_Ruby!
   
   // Store default credentials
   defaultWifiSsid = WIFI_SSID;
   defaultWifiPass = WIFI_PASSWORD;
   wifiPrefs.putString("def_ssid", defaultWifiSsid);
   wifiPrefs.putString("def_pass", defaultWifiPass);
+
+  // Erase any ESP-IDF cached credentials from old networks (e.g. Airtel_Ruby)
+  WiFi.persistent(false);
+  WiFi.disconnect(true, true);
+  delay(200);
 
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
@@ -465,14 +471,14 @@ void initWifiManager() {
   // 1. Attempt connection to Main Wi-Fi (Airtel_neer_3811)
   Serial.printf("[WiFi] Attempting connection to Main Wi-Fi: %s...\n", WIFI_SSID);
   ui.showBootScreen("CONNECTING WIFI", WIFI_SSID);
-  bool ok = connectToNetwork(WIFI_SSID, WIFI_PASSWORD, 12000);
+  bool ok = connectToNetwork(WIFI_SSID, WIFI_PASSWORD, 8000);
 
   // 2. If Main Wi-Fi fails or not reachable, attempt Fallback Wi-Fi (vivot3lite)
 #if defined(FALLBACK_WIFI_SSID)
   if (!ok) {
     Serial.printf("[WiFi][FAILOVER] Main Wi-Fi unreachable. Connecting to Fallback: %s...\n", FALLBACK_WIFI_SSID);
     ui.showBootScreen("WIFI FALLBACK", FALLBACK_WIFI_SSID);
-    ok = connectToNetwork(FALLBACK_WIFI_SSID, FALLBACK_WIFI_PASS, 12000);
+    ok = connectToNetwork(FALLBACK_WIFI_SSID, FALLBACK_WIFI_PASS, 8000);
   }
 #endif
 
