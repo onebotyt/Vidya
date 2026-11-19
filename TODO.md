@@ -11097,6 +11097,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 
 ### Backlog & Planned Features
 - [ ] **Automated Institutional Degree / Transcript Generation**: PDF generation with dynamic QR verification.
+- [x] **Milestone 476: ESP32 Hardware Flashing, NVS Wi-Fi Wipe, Multi-Network Failover & Portal Consolidation**:
+  - **Firmware Compilation & Physical USB Upload**:
+    - Recompiled `VidyaOS_ESP32_Biometric_Node.ino` with `arduino-cli` (1,138,592 bytes).
+    - Successfully flashed to physical ESP32 DevKit on `COM5` via `esptool.py` stub flasher at 921600 baud.
+    - Added `wifiPrefs.clear()` and `WiFi.disconnect(true, true)` on boot to purge any stale NVS credentials (erasing old `Airtel_Ruby`).
+    - Enforced primary connection to `Airtel_neer_3811` (8s timeout) with instant failover to `vivot3lite` and automatic alternating failover watchdog in `loop()`.
+  - **Backend Device & Heartbeat Fixes**:
+    - Fixed 500 error in `deviceService.js`: removed non-existent `academic_year_id` from `devices` table SELECT query.
+    - Fixed virtual generated column sync: updated `last_heartbeat = CURRENT_TIMESTAMP` so virtual column `last_heartbeat_at` updates automatically, maintaining real-time `is_online = true`.
+    - Real-time ESP32 node verified online: sending heartbeats every 10s to `http://192.168.1.9:3000` (`IP: 192.168.1.36`, `RSSI: -72 dBm`, `Battery: 7.85V (73%)`).
+  - **HOD ESP32 Portal UI/UX Upgrades (`/faculty/esp32-devices/`)**:
+    - **Live Connection Check**: Added top toolbar `📡 Check ESP Connected` button with latency measurement and instant status toast.
+    - **HOD Department Isolation**: Locked department selector and modal to HOD's assigned department (`Information Technology`).
+    - **Visual Feedback & Modals**: Added active button transitions, pre-filled suggested UIDs (`ESP32-IT-LAB-01`), and automatic 256-bit AES secret generator.
+    - **OLED Display Parity**: Matched simulated OLED matrix to physical SSD1306 display (yellow top bar with battery/RSSI, live ticking institutional clock, and slot-aware enrollment prompts).
+    - **Compact Layout**: Streamlined KPI cards, spacing, and mobile/desktop responsive design.
+  - **Verification Suite**:
+    - `node backend/scripts/test-ui-manifest-sync.js` (203/203 passed, 0 failures).
+    - `node backend/scripts/test-theme-support.js` (84/84 passed, 0 failures).
+
 - [ ] **Dedicated Institutional Parent Notification System (Future Plan)**:
   - Comprehensive multi-channel parent communication portal for publishing official college notices, circulars, fee reminders, exam schedules, and holiday announcements.
   - **Parent Attendance Defaulter Escalations**: Deferred from immediate MVP to be incorporated as a specialized module within this future parent notification hub.

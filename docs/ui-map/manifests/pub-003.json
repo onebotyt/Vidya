@@ -5,7 +5,7 @@
   "route": "/login/register/",
   "source_file": "frontend/login/register/index.html",
   "content_hash": "dd036e1f36dd",
-  "last_scanned": "2026-11-19T05:59:28.367Z",
+  "last_scanned": "2026-11-19T06:03:18.796Z",
   "title": "Register — VidyaOS Campus Management",
   "purpose": "Student self-registration with branch/year onboarding",
   "shell": "Auth Shell (`register.css`)",
