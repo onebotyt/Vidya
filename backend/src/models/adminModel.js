@@ -1496,7 +1496,7 @@ class AdminModel {
            VALUES (?, 'FACULTY_CREATED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
           [adminUserId, String(teacherId), JSON.stringify({ fullName, email: gmail, role, departmentId, employeeId })]
         );
-      } catch (_) {}
+      } catch (_) { }
 
       return { teacher_id: teacherId, user_id: userId, full_name: fullName.trim(), gmail, role, department_id: departmentId };
     });
@@ -1588,7 +1588,7 @@ class AdminModel {
            VALUES (?, 'FACULTY_UPDATED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
           [adminUserId, String(teacherId), JSON.stringify({ fullName, phone, employeeId, departmentId, status, role })]
         );
-      } catch (_) {}
+      } catch (_) { }
 
       return true;
     });
@@ -1614,7 +1614,7 @@ class AdminModel {
          VALUES (?, 'FACULTY_STATUS_TOGGLED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
         [adminUserId, String(teacherId), JSON.stringify({ oldStatus: currentStatus, newStatus })]
       );
-    } catch (_) {}
+    } catch (_) { }
 
     return { teacher_id: teacherId, status: newStatus };
   }
@@ -1641,7 +1641,7 @@ class AdminModel {
          VALUES (?, 'FACULTY_MOVED_TO_TRASH', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
         [adminUserId, String(teacherId), JSON.stringify({ name: tRows[0].full_name, purge_in_days: 30 })]
       );
-    } catch (_) {}
+    } catch (_) { }
 
     return {
       soft_deleted: true,
@@ -1659,11 +1659,11 @@ class AdminModel {
         `SELECT id, user_id FROM teachers WHERE deleted_at IS NOT NULL AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)`
       );
       for (const exp of expired) {
-        await query(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
-        await query(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => {});
-        await query(`DELETE FROM teachers WHERE id = ?`, [exp.id]).catch(() => {});
-        await query(`DELETE FROM user_roles WHERE user_id = ?`, [exp.user_id]).catch(() => {});
-        await query(`DELETE FROM users WHERE id = ?`, [exp.user_id]).catch(() => {});
+        await query(`DELETE FROM teacher_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => { });
+        await query(`DELETE FROM common_faculty_manager_assignments WHERE teacher_id = ?`, [exp.id]).catch(() => { });
+        await query(`DELETE FROM teachers WHERE id = ?`, [exp.id]).catch(() => { });
+        await query(`DELETE FROM user_roles WHERE user_id = ?`, [exp.user_id]).catch(() => { });
+        await query(`DELETE FROM users WHERE id = ?`, [exp.user_id]).catch(() => { });
       }
     } catch (e) {
       console.warn('Auto-purge check error:', e.message);
@@ -1700,7 +1700,7 @@ class AdminModel {
          VALUES (?, 'FACULTY_RESTORED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
         [adminUserId, String(teacherId), JSON.stringify({ name: tRows[0].full_name })]
       );
-    } catch (_) {}
+    } catch (_) { }
 
     return {
       success: true,
@@ -1730,7 +1730,7 @@ class AdminModel {
          VALUES (?, 'FACULTY_PERMANENTLY_PURGED', 'teachers', ?, ?, CURRENT_TIMESTAMP)`,
         [adminUserId, String(teacherId), JSON.stringify({ name: tRows[0].full_name })]
       );
-    } catch (_) {}
+    } catch (_) { }
 
     return { success: true, message: 'Faculty record permanently purged from database.' };
   }
@@ -1757,7 +1757,7 @@ class AdminModel {
     const allOpen = settings.some(s => s.setting_key === 'admin_reg_all_open' && (s.setting_value === '1' || s.setting_value === 'true'));
     const hodOpen = settings.some(s => s.setting_key === 'admin_reg_hod_open' && (s.setting_value === '1' || s.setting_value === 'true'));
     const commonOpen = settings.some(s => s.setting_key === 'admin_reg_common_faculty_open' && (s.setting_value === '1' || s.setting_value === 'true'));
-    
+
     let openDepts = [];
     const deptsSetting = settings.find(s => s.setting_key === 'admin_reg_open_departments');
     if (deptsSetting && deptsSetting.setting_value) {
@@ -1851,7 +1851,7 @@ class AdminModel {
          VALUES (?, 'REGISTRATION_GATES_UPDATED', 'system_settings', 'gates', ?, CURRENT_TIMESTAMP)`,
         [userId, JSON.stringify({ all_open: isAll, hod_open: isHod, common_faculty_open: isCommon, open_departments: depts })]
       );
-    } catch (_) {}
+    } catch (_) { }
 
     return {
       all_open: isAll,
@@ -1881,7 +1881,7 @@ class AdminModel {
          VALUES (?, 'REGISTRATION_GATE_TOGGLED', 'system_settings', ?, ?, CURRENT_TIMESTAMP)`,
         [userId, settingKey, JSON.stringify({ target, is_open: isOpen })]
       );
-    } catch (_) {}
+    } catch (_) { }
   }
 
   /**
