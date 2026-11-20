@@ -28,12 +28,12 @@ function purgeAllStoredAuth() {
       });
     } catch (_) { }
     if (typeof window !== 'undefined' && window.caches && window.caches.keys) {
-      window.caches.keys().then(names => names.forEach(name => window.caches.delete(name))).catch(() => { });
+      window.caches.keys().then(names => names.forEach(name => window.caches.delete(name))).catch(() => {});
     }
     if (savedTheme) {
-      try { localStorage.setItem('vidya_theme', savedTheme); } catch (_) { }
+      try { localStorage.setItem('vidya_theme', savedTheme); } catch (_) {}
     }
-  } catch (_) { }
+  } catch (_) {}
 }
 
 /* ── Redirect if already logged in ── */
@@ -722,7 +722,7 @@ async function loadDynamicCampusBanner() {
     if (cached.institution_banner_url || cached.banner_url) {
       applyBanner(cached.institution_banner_url || cached.banner_url);
     }
-  } catch (_) { }
+  } catch (_) {}
 
   // B. Fetch live settings from backend branding API
   try {
@@ -734,7 +734,7 @@ async function loadDynamicCampusBanner() {
         try {
           const prev = JSON.parse(localStorage.getItem('institutionSettings') || '{}');
           localStorage.setItem('institutionSettings', JSON.stringify({ ...prev, ...res.data }));
-        } catch (_) { }
+        } catch (_) {}
       }
     }
   } catch (_) {
@@ -744,7 +744,7 @@ async function loadDynamicCampusBanner() {
       if (res.success && res.data?.institution_banner_url) {
         applyBanner(res.data.institution_banner_url);
       }
-    } catch (_) { }
+    } catch (_) {}
   }
 }
 
