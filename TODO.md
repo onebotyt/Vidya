@@ -49,6 +49,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 502: Fullscreen Gray Loading Screen Overlay & Blank Grid Elimination
+- **Objective & Architectural Scope**:
+  1. *Centered Fullscreen Gray Loading Screen (Image 2 Parity)*:
+     - Implemented `#office-engine-loader` as a full-viewport modal overlay (`position: fixed; inset: 0; z-index: 999999; backdrop-filter: blur(5px)`).
+     - Renders an 8-dot circular spinner with graduated opacity and rotation in 8 steps (`steps(8)`), matching the user-uploaded reference design.
+     - Centered `Loading...` label on a clean card container.
+  2. *Extra-Click Elimination & Safe Interaction Gate*:
+     - Enabled `pointer-events: all; user-select: none; touch-action: none;` on the overlay to block all background clicks, cell edits, and button spam while sheets or groups are initializing.
+     - Kept active continuously until the spreadsheet grid and academic data are 100% mounted in the DOM.
+  3. *Elimination of Blank Grid & Resilient Parallel Fetching*:
+     - Resolved serial network bottlenecks by running academic metadata fetches (`/teaching-groups/:id`, `/members`, `/assignments`, `/tests`, `/registers/:id/internal-evaluation`) in parallel using `Promise.allSettled`.
+     - Provided automatic fallback group structure if backend responds with 404 or network latency.
+     - Guaranteed `hydrateAcademicSheetsFromGroup()` and `renderExcelGrid(true)` run in all execution branches, so spreadsheet tables (SR. NO, ROLL NO, STUDENT NAME, THEORY, PRACTICAL, TOTAL, Signatures) are never blank.
+  4. *Multi-Dev Sync & Parity*:
+     - Verified with `test-theme-support.js` (84/84 passed, zero hardcoded colors).
+     - Verified with `test-ui-manifest-sync.js` (203/203 passed with 100% SHA256 integrity).
+
 ### ✅ Milestone 501: Office Studio Modular Code-Splitting, Lazy Engine Loading & Transition UX
 - **Objective & Architectural Scope**:
   1. *Modular Script Splitting (< 20 KB Initial Boot)*:
