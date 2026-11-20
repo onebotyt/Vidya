@@ -5,7 +5,7 @@
   "route": "/student/attendance.html",
   "source_file": "frontend/student/attendance/index.html",
   "content_hash": "9ed047c1ab0e",
-  "last_scanned": "2026-11-20T12:20:45.994Z",
+  "last_scanned": "2026-11-20T12:22:18.408Z",
   "title": "My Attendance &amp; Calendar — Student Portal",
   "purpose": "Personal monthly attendance ledger, present/absent breakdown",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
