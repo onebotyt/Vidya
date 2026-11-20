@@ -15,9 +15,9 @@ const { query } = require('../config/db');
 
 // Institutional Palette
 const COLOR_BLUE_HEADER = 'FFB4C6E7'; // Soft institutional blue (Header rows 1-3)
-const COLOR_TAN_HEADER  = 'FFFFF2CC'; // Soft tan/gold (Table top headers)
-const COLOR_GRAY_BG     = 'FFF2F2F2'; // Subtle zebra/summary background
-const COLOR_ABSENT_RED  = 'FFFF0000'; // Bold red for absent students
+const COLOR_TAN_HEADER = 'FFFFF2CC'; // Soft tan/gold (Table top headers)
+const COLOR_GRAY_BG = 'FFF2F2F2'; // Subtle zebra/summary background
+const COLOR_ABSENT_RED = 'FFFF0000'; // Bold red for absent students
 const COLOR_BORDER_GRAY = 'FF000000'; // Standard black gridlines
 
 const THIN_BORDER = {
@@ -34,7 +34,7 @@ async function getDefaultInstitutionName() {
   try {
     const rows = await query("SELECT setting_value FROM system_settings WHERE setting_key = 'institution_name'");
     if (rows && rows[0]?.setting_value) return rows[0].setting_value;
-  } catch (e) {}
+  } catch (e) { }
   return 'Government Polytechnic';
 }
 
@@ -80,11 +80,11 @@ async function generateClassTestExcel(data) {
   const questions = Array.isArray(data.questions) && data.questions.length > 0
     ? data.questions
     : [
-        { num: 1, label: 'Q1', max: maxMarks / 4 },
-        { num: 2, label: 'Q2', max: maxMarks / 4 },
-        { num: 3, label: 'Q3', max: maxMarks / 4 },
-        { num: 4, label: 'Q4', max: maxMarks / 4 }
-      ];
+      { num: 1, label: 'Q1', max: maxMarks / 4 },
+      { num: 2, label: 'Q2', max: maxMarks / 4 },
+      { num: 3, label: 'Q3', max: maxMarks / 4 },
+      { num: 4, label: 'Q4', max: maxMarks / 4 }
+    ];
 
   const qCount = questions.length;
   // Columns: Col 1: SR NO, Col 2: ROLL NO, Col 3: REG. NO., Col 4: UBTER ROLL NO., Col 5: STUDENT NAME, Cols 6..(5+qCount): Questions, Col (6+qCount): Total, Col (7+qCount): Details Side Panel
@@ -213,15 +213,15 @@ async function generateClassTestExcel(data) {
   const rawInstructions = Array.isArray(data.instructions) && data.instructions.length > 0
     ? data.instructions
     : (typeof data.instructions === 'string' && data.instructions.trim().length > 0
-        ? data.instructions.split('\n').map(s => s.trim()).filter(Boolean)
-        : defaultInstructions);
+      ? data.instructions.split('\n').map(s => s.trim()).filter(Boolean)
+      : defaultInstructions);
 
   const cleanInstructions = rawInstructions
     .filter(i => !i.startsWith('Instructions'))
     .map((ins, i) => `${i + 1}. ${ins.replace(/^\d+\.\s*/, '')}`)
     .join('\n');
 
-  const cleanQuestions = questions.map(q => 
+  const cleanQuestions = questions.map(q =>
     `• ${q.label}: ${q.text ? q.text + ' ' : ''}Max ${q.max} marks`
   ).join('\n');
 
@@ -732,7 +732,7 @@ async function generateInternalEvaluationExcel(data) {
     const aFirstColLetter = ws.getColumn(assignStartCol).letter;
     const aLastColLetter = ws.getColumn(assignEndCol).letter;
     assignAvgCell.value = {
-      formula: `IFERROR(ROUND(${assignAvgMax}*(SUM(${aFirstColLetter}${currentRow}:${aLastColLetter}${currentRow})/SUMPRODUCT((${assignments.map((a,i) => ws.getColumn(assignStartCol+i).letter + currentRow + '<>""').join(',')})*{${assignments.map(a => a.max_marks || 25).join(',')}})),1),0)`,
+      formula: `IFERROR(ROUND(${assignAvgMax}*(SUM(${aFirstColLetter}${currentRow}:${aLastColLetter}${currentRow})/SUMPRODUCT((${assignments.map((a, i) => ws.getColumn(assignStartCol + i).letter + currentRow + '<>""').join(',')})*{${assignments.map(a => a.max_marks || 25).join(',')}})),1),0)`,
       result: computedAssignAvg
     };
     assignAvgCell.font = { name: 'Calibri', size: 9, bold: true };
@@ -785,7 +785,7 @@ async function generateInternalEvaluationExcel(data) {
     const uFirstColLetter = ws.getColumn(utStartCol).letter;
     const uLastColLetter = ws.getColumn(utEndCol).letter;
     utAvgCell.value = {
-      formula: `IFERROR(ROUND(${examAvgMax}*(SUMIF(${uFirstColLetter}${currentRow}:${uLastColLetter}${currentRow},"<>AB")/SUMPRODUCT((${exams.map((ex,i) => ws.getColumn(utStartCol+i).letter + currentRow + '<>"AB"').join(',')})*{${exams.map(ex => ex.max_marks || 25).join(',')}})),1),0)`,
+      formula: `IFERROR(ROUND(${examAvgMax}*(SUMIF(${uFirstColLetter}${currentRow}:${uLastColLetter}${currentRow},"<>AB")/SUMPRODUCT((${exams.map((ex, i) => ws.getColumn(utStartCol + i).letter + currentRow + '<>"AB"').join(',')})*{${exams.map(ex => ex.max_marks || 25).join(',')}})),1),0)`,
       result: computedUtAvg
     };
     utAvgCell.font = { name: 'Calibri', size: 9, bold: true };
@@ -1109,11 +1109,11 @@ function buildClassTestMarksheetHtml(data) {
   const questions = Array.isArray(data.questions) && data.questions.length > 0
     ? data.questions
     : [
-        { num: 1, label: 'Q1', max: maxMarks / 4 },
-        { num: 2, label: 'Q2', max: maxMarks / 4 },
-        { num: 3, label: 'Q3', max: maxMarks / 4 },
-        { num: 4, label: 'Q4', max: maxMarks / 4 }
-      ];
+      { num: 1, label: 'Q1', max: maxMarks / 4 },
+      { num: 2, label: 'Q2', max: maxMarks / 4 },
+      { num: 3, label: 'Q3', max: maxMarks / 4 },
+      { num: 4, label: 'Q4', max: maxMarks / 4 }
+    ];
 
   const qCount = questions.length;
   // Cols: SR, ROLL, REG, ENROLLMENT, NAME, Q1..QN, Total, Side Panel
@@ -1328,7 +1328,7 @@ async function getOrGenerateChartImages(data) {
     const pyScript = path.join(__dirname, '../utils/chartRenderer.py');
     if (!fs.existsSync(pyScript)) return { chartTrend, chartCohort };
     const py = spawn('python3', [pyScript]);
-    py.stdin.on('error', () => {});
+    py.stdin.on('error', () => { });
 
     let stdout = '';
     let stderr = '';
@@ -1377,7 +1377,7 @@ async function generateNativeExcelWithPython(data) {
   const pyScript = path.join(__dirname, '../utils/generateNativeExcelReport.py');
   if (!fs.existsSync(pyScript)) throw new Error('generateNativeExcelReport.py not found');
   const py = spawn('python3', [pyScript]);
-  py.stdin.on('error', () => {});
+  py.stdin.on('error', () => { });
 
   const chunks = [];
   let stderr = '';

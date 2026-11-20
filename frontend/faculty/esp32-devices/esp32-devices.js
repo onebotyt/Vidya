@@ -746,8 +746,8 @@ function renderStudentsBiometricTable() {
         <td data-label="Student Name">
           <div style="font-weight:700; color:var(--text-main);">${escHtml(st.full_name)}</div>
         </td>
-        <td data-label="Enrollment #">
-          <span style="font-family:var(--font-family-mono); font-size:0.8rem; font-weight:600; color:var(--color-primary);">${escHtml(st.official_enrollment_no || '—')}</span>
+        <td data-label="UBTER Roll #">
+          <span style="font-family:var(--font-family-mono); font-size:0.8rem; font-weight:600; color:var(--color-primary);">${escHtml(st.ubter_roll_no || st.official_enrollment_no || '—')}</span>
           ${st.registration_no ? `<div style="font-size:0.72rem; color:var(--text-muted);">UBTER: ${escHtml(st.registration_no)}</div>` : ''}
         </td>
         <td data-label="Cohort">

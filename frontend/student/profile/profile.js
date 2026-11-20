@@ -577,7 +577,7 @@ async function exportStudentDossier(format) {
           <hr/>
           <h3>1. Demographics</h3>
           <table>
-            <tr><td><strong>Name</strong></td><td>${escapeHtml(p.full_name || '')}</td><td><strong>Enrollment</strong></td><td>${escapeHtml(p.official_enrollment_no || '')}</td></tr>
+            <tr><td><strong>Name</strong></td><td>${escapeHtml(p.full_name || '')}</td><td><strong>UBTER Roll No</strong></td><td>${escapeHtml(p.ubter_roll_no || p.official_enrollment_no || '')}</td></tr>
             <tr><td><strong>Roll No</strong></td><td>${escapeHtml(p.class_roll_no ? String(p.class_roll_no) : '')}</td><td><strong>UBTER Reg</strong></td><td>${escapeHtml(p.registration_no || '')}</td></tr>
             <tr><td><strong>Father's Name</strong></td><td>${escapeHtml(p.father_name || '')}</td><td><strong>Mother's Name</strong></td><td>${escapeHtml(p.mother_name || '')}</td></tr>
             <tr><td><strong>DOB / Gender</strong></td><td>${escapeHtml(p.dob || '')} (${escapeHtml(p.gender || '')})</td><td><strong>Category</strong></td><td>${escapeHtml(p.category || '')}</td></tr>
