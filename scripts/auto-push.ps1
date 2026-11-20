@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Message = "update: synchronized latest changes to GitHub"
 )
 
@@ -78,10 +78,10 @@ if ($status) {
     Write-Host "Working tree is clean. Checking for pending commits..." -ForegroundColor Gray
 }
 
-# 4. Push to origin with authenticated token URL
+# 4. Pull remote changes and push to origin with authenticated token URL
 $authUrl = "https://${token}@github.com/onebotyt/Vidya.git"
-Write-Host "Pushing $branch to https://github.com/onebotyt/Vidya.git..." -ForegroundColor Yellow
-
+Write-Host "Syncing and pushing $branch to https://github.com/onebotyt/Vidya.git..." -ForegroundColor Yellow
+& $gitExe pull --rebase $authUrl $branch
 & $gitExe push $authUrl "${branch}:${branch}"
 $exitCode = $LASTEXITCODE
 

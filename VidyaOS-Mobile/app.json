@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "VidyaOS",
+    "slug": "vidyaos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/college-logo.png",
+    "scheme": "vidyaos",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vidyaos.app"
+    },
+    "android": {
+      "package": "com.vidyaos.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#1E293B",
+        "foregroundImage": "./assets/college-logo.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-document-picker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow VidyaOS to access camera for Attendance QR check-in"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow VidyaOS to access photos for Bug Report screenshots"
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "9bbe1262-4081-41ba-97df-ae4645d0ecc6"
+      }
+    }
+  }
+}

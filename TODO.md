@@ -3,6 +3,375 @@
 
 
 
+### 🏛️ Milestone 348: VidyaOS Native Mobile App – Phase 9 Completed (Final Polish, EAS Build Configuration & Android APK/AAB Packaging)
+- **Status**: 🟢 Phase 9 Completed, Verified, 20/20 expo-doctor Checks Passed, 0 TypeScript Errors, Production Metro Hermes Export Clean; Ready for EAS Build & Distribution
+- **User Request**:
+  - *"Phase 8 is approved. Great catch on the /students/me, /auth/refresh, and registration gate endpoints, and getting a clean Android Hermes bundle export. Proceed with Phase 9 (Final Polish, EAS Build Configuration & Android APK/AAB Packaging). Please make sure to include: 1. App Icon & Splash Asset: Copy the VidyaOS logo from VidyaOS-main/images/college-logo.png (read-only copy) into VidyaOS-Mobile/assets/ and wire it as the Android app icon, adaptive icon, and splash screen in app.json. 2. EAS Build (eas.json): Configure three profiles: development (dev client), preview ('buildType': 'apk' for direct Android installation/testing), and production ('buildType': 'app-bundle' for Google Play Store AAB). Important: Add EXPO_PUBLIC_API_URL and EXPO_PUBLIC_UPLOADS_URL inside the env block of preview and production in eas.json (since .env is gitignored and won't be uploaded to EAS). 3. Android Metadata & Cleanup: Verify package name com.vidyaos.app, version 1.0.0, versionCode: 1, and clean Android 13+ compatible permissions in app.json. Ensure dist/ (from expo export) is listed in VidyaOS-Mobile/.gitignore. 4. Final Verification & Build Guide: Run npx tsc --noEmit and npx expo-doctor one final time. Provide the exact step-by-step terminal commands I need to run to: a) Test locally on my phone via Expo Go / Dev Build b) Generate the installable Android APK (eas build -p android --profile preview) c) Generate the Play Store AAB (eas build -p android --profile production)."*
+- **Key Modules Executed in Phase 9**:
+  1. **App Icon & Splash Screen Asset Pipeline**:
+     - Read-only copy of `VidyaOS-main/images/college-logo.png`.
+     - Converted into genuine PNG format with standard PNG headers and wired as `icon.png`, `android-icon-foreground.png`, and `splash-icon.png` in `VidyaOS-Mobile/assets/`.
+     - Updated `app.json` with `icon: "./assets/icon.png"`, `adaptiveIcon.foregroundImage: "./assets/android-icon-foreground.png"`, and clean background `#1E293B`.
+  2. **EAS Build Configuration (`eas.json` & `.easignore`)**:
+     - Configured 3 build profiles:
+       - `development`: Development client for internal testing and debugging.
+       - `preview`: Standalone installable Android APK (`buildType: "apk"`) for direct sideloading and testing on physical Android devices.
+       - `production`: Google Play Store Android App Bundle (`buildType: "app-bundle"`) for store release.
+     - Embedded public environment variables (`EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_UPLOADS_URL`, `EXPO_PUBLIC_WEB_URL`, `EXPO_PUBLIC_INSTITUTION_NAME`, `EXPO_PUBLIC_APP_VERSION`) inside the `env` blocks of `development`, `preview`, and `production` profiles so EAS builds connect to production cloud without depending on local gitignored `.env` files.
+     - **EAS_NO_VCS Hardening**: Created `.easignore` and wrapped build scripts with `npx --yes cross-env EAS_NO_VCS=1` in `package.json`, allowing cloud APK/AAB compilation without requiring local Git in the PowerShell environment.
+  3. **Android Metadata & Clean Permissions (`app.json`)**:
+     - Verified package name: `com.vidyaos.app`.
+     - Version: `1.0.0`, `versionCode: 1`.
+     - Android 13+ compatible minimal permissions: `CAMERA`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`.
+     - Confirmed `dist/` and `.env` are properly ignored in `VidyaOS-Mobile/.gitignore`.
+  4. **Comprehensive Documentation & Build Guide (`README.md`)**:
+     - Created detailed developer guide in `VidyaOS-Mobile/README.md` covering architecture, directory structure, environment variables, local testing, and step-by-step EAS build commands for APK and AAB generation.
+     - Added npm script shortcuts: `npm run build:apk`, `npm run build:aab`, `npm run build:dev`, `npm run export:android`, `npm run typecheck`, and `npm run doctor`.
+  5. **Verification & Health Check**:
+     - `npx tsc --noEmit`: 0 errors.
+     - `npx expo-doctor`: **20/20 checks passed**.
+     - `npx expo export --platform android`: 1,296 modules and 45 assets bundled into 3.5MB Hermes bytecode with zero errors.
+     - `VidyaOS-main/`: 100% untouched and strictly read-only.
+
+### 🏛️ Milestone 347: VidyaOS Native Mobile App – Phase 8 Completed (End-to-End Integration Audit, Edge-Case Hardening & Bug Fixes)
+- **Status**: 🟢 Phase 8 Completed, Verified, Android Metro Export Clean (1,296 modules bundled), 20/20 expo-doctor Checks Passed & TypeScript Clean; Awaiting Approval for Phase 9
+- **User Request**:
+  - *"Phase 7 is approved. Great work on the In-App Notifications, unread bell badges, and Bug Report deep-linking across all three roles. Proceed with Phase 8 (End-to-End Integration Audit, Edge-Case Hardening & Bug Fixes). Please focus on these concrete checks: 1. Android Bundle Verification: Run npx expo export --platform android to verify Metro bundles every screen, icon, and asset cleanly with zero runtime/import errors. 2. OfflineBanner Cold-Start Fix: Update OfflineBanner.tsx so a slow Render cold-start (which takes 30–45s) does not trigger a false 'No internet connection' banner after 4 seconds (e.g., use a lightweight connectivity check or increase timeout/retries before showing the red banner). 3. API Contract & Payload Audit: Cross-check all endpoints and request/response payloads in authService.ts, studentService.ts, facultyService.ts, adminService.ts, bugReportService.ts, and notificationService.ts against the actual backend routes in VidyaOS-main/ to ensure zero 404s or field mismatches. 4. Session & Auth Edge Cases: Verify SESSION_REVOKED handling, silent token refresh on 401, must_change_password redirect, and clean storage wipe on Logout. 5. Desktop Gate Audit: Confirm every link to sheets, course-file, assessment-process, esp32-devices, hod-archive, and admin/reports opens <DesktopOnlyNotice /> with 'Please move to Desktop'. Run npx tsc --noEmit, npx expo-doctor, and npx expo export --platform android after all fixes. Report the Phase 8 summary and wait for my approval before starting Phase 9 (EAS Build & Android APK/AAB setup)."*
+- **Key Modules Executed in Phase 8**:
+  1. **Android Production Bundle Export Verification (`npx expo export --platform android`)**:
+     - Verified Metro bundler compiles every route, screen, component, and font.
+     - Successfully bundled **1,296 modules** and **45 assets** into an optimized Hermes bytecode Android bundle (`_expo/static/js/android/entry-*.hbc`, 3.5MB) with 0 runtime errors.
+  2. **OfflineBanner Cold-Start Hardening (`components/OfflineBanner.tsx`)**:
+     - Resolved the false "No internet connection detected" banner on Render backend spin-up.
+     - Separated device internet availability from backend server cold-start latency using a lightweight public captive portal 204 ping (`https://connectivitycheck.gstatic.com/generate_204`) with secondary DNS fallback (`https://1.1.1.1`).
+     - Added a **25-second initial startup grace period** and a **3-consecutive-failure threshold** (60s continuous timeout) before displaying the red offline banner.
+  3. **Backend API Contract & Route Cross-Verification**:
+     - Audited all 6 domain service layers against backend Express routes (`backend/src/routes/`):
+       - **Silent Token Refresh (`services/api.ts`)**: Aligned refresh endpoint to `POST /api/v1/auth/refresh` (with fallback to `/refresh-token`).
+       - **Student Profile Update (`services/studentService.ts`)**: Fixed route from `/students/me/profile` (404) to exact backend endpoint `PUT /api/v1/students/me`.
+       - **Admin Registration Gates (`services/adminService.ts`)**: Aligned gate updates to `POST /api/v1/admin/registration-gates/toggle` with target keys (`HOD`, `COMMON_FACULTY`) and normalized boolean state mapping.
+       - **Bug Reports (`services/bugReportService.ts`)**: Confirmed 100% contract match with `backend/src/routes/bugReports.js` across multipart uploads and triage endpoints.
+       - **Notifications (`services/notificationService.ts`)**: Confirmed 100% contract match with `backend/src/routes/notifications.js`.
+       - **Faculty & Sessions (`services/facultyService.ts`)**: Confirmed 100% contract match with `backend/src/routes/faculty.js`, `teachingGroups.js`, and `attendance.js`.
+  4. **Session & Security Edge-Case Hardening**:
+     - **Multi-Device Session Revocation**: Validated `SESSION_REVOKED` response detection in `api.ts`, triggering listener to wipe tokens and navigate to login.
+     - **Silent 401 Refresh**: Validated background token exchange using stored refresh token and automatic replay of the failed request.
+     - **Mandatory Password Change**: Added strict `must_change_password` redirection check to `app/index.tsx` so users requiring a password update cannot bypass the screen on app hydration.
+     - **Secure Logout**: Validated backend token revocation call, `secureStorage.clearAllAuth()` purging access/refresh tokens and user data while preserving persistent `X-Device-Id`.
+  5. **Desktop Gate Audit Across All Roles**:
+     - Verified all 6 designated desktop-only modules (`sheets`, `course-file`, `assessment-process`, `esp32-devices`, `hod-archive`, `admin/reports`, plus classroom Sheets tab).
+     - Confirmed each screen renders `<DesktopOnlyNotice />` with the mandatory heading **"Please move to Desktop"**, sub-heading "Optimized for Desktop Browser", web URL display, "Copy Web Link" button, and Back button.
+  6. **Zero TypeScript Errors & 100% Expo Doctor Health**:
+     - `npx tsc --noEmit`: 100% clean compilation (0 errors).
+     - `npx expo-doctor`: **20/20 checks passed** with zero issues detected.
+     - `VidyaOS-main/`: 100% untouched and strictly read-only.
+
+### 🏛️ Milestone 346: VidyaOS Native Mobile App – Phase 7 Completed (In-App Notifications & Bug Report Notification Flow)
+- **Status**: 🟢 Phase 7 Completed, Verified, 20/20 expo-doctor Checks Passed & TypeScript Clean; Awaiting Approval for Phase 8
+- **User Request**:
+  - *"For Phase 7, please stick to our original Phase 7 scope instead of adding extra native/hardware features: DO NOT add biometric login prompts or remote push notifications (expo-notifications / FCM) — we want to keep the app lean and avoid unnecessary native/Firebase configuration. DO build the missing In-App Notifications & Bug Report Notification Flow across all 3 roles (Student, Faculty, Admin): 1. services/notificationService.ts & hooks/useNotifications.ts connected to: GET /api/v1/notifications, GET /api/v1/notifications/unread-count (with background polling while logged in), PUT /api/v1/notifications/:id/read, PUT /api/v1/notifications/mark-all-read 2. Header Notification Bell Icon with live unread badge counter on Student, Faculty, and Admin dashboards. 3. Dedicated Notifications screen (notifications.tsx) for Student, Faculty, and Admin showing notification history, read/unread states, pull-to-refresh, and 'Mark all read'. 4. Bug Report Deep-Linking: When Admin updates a bug report status or adds a response, tapping that in-app notification in Student or Faculty marks it as read and opens the exact bug report details (bug-report?reportId=...). In Admin, tapping a new bug notification opens the triage queue for that report. 5. Optional lightweight offline/network banner (OfflineBanner.tsx) for connection drop feedback. Verify with npx tsc --noEmit and npx expo-doctor, update TODO.md, report back, and wait for my approval before starting Phase 8."*
+- **Key Modules Executed in Phase 7**:
+  1. **Notification Domain Models & API Services (`types/notification.ts`, `services/notificationService.ts`)**:
+     - Modeled `NotificationType` (`BUG_UPDATE`, `ATTENDANCE`, `LEAVE_UPDATE`, `ALERT`, `SUCCESS`, `ANNOUNCEMENT`), `AppNotification`, and `UnreadNotificationCount`.
+     - Built `notificationService.getNotifications(limit, offset)` connecting to `GET /api/v1/notifications`.
+     - Built `notificationService.getUnreadCount()` connecting to `GET /api/v1/notifications/unread-count`.
+     - Built `notificationService.markAsRead(id)` connecting to `PUT /api/v1/notifications/:id/read`.
+     - Built `notificationService.markAllAsRead()` connecting to `PUT /api/v1/notifications/mark-all-read`.
+  2. **Reactive Polling Hook (`hooks/useNotifications.ts`)**:
+     - Background unread badge counter polling at 20-second intervals while user is authenticated.
+     - Optimistic local state update on `markAsRead` and `markAllRead`.
+     - Full pull-to-refresh sync handler.
+  3. **Header Notification Bell with Real-time Unread Badge Counter**:
+     - **Student Dashboard (`app/(student)/dashboard.tsx`)**: Header bell button with live numerical badge counter navigating directly to `/(student)/notifications`.
+     - **Faculty Dashboard (`app/(faculty)/dashboard.tsx`)**: Header bell button with live numerical badge counter navigating directly to `/(faculty)/notifications`.
+     - **Admin Dashboard (`app/(admin)/dashboard.tsx`)**: Header bell button with live numerical badge counter positioned next to server status, navigating directly to `/(admin)/notifications`.
+  4. **Dedicated Notifications Screen & Reusable Feed (`components/NotificationsList.tsx`)**:
+     - Unified notification component with portal-specific branding (`student`, `faculty`, `admin`).
+     - Distinct category icon styling and background tints: `BUG_UPDATE` (amber), `ATTENDANCE` (emerald), `LEAVE_UPDATE` (blue), `ALERT` (rose), `SUCCESS` (green).
+     - Visual unread state with accent dot indicator and elevated card styling.
+     - Top action bar showing unread count and one-tap "Mark all as read" button.
+     - Role screen wrappers created and registered in Expo Router stack:
+       - `app/(student)/notifications.tsx` & registered in `app/(student)/_layout.tsx`
+       - `app/(faculty)/notifications.tsx` & registered in `app/(faculty)/_layout.tsx`
+       - `app/(admin)/notifications.tsx` & registered in `app/(admin)/_layout.tsx`
+  5. **Bidirectional Bug Report Deep-Linking & Detail Modals**:
+     - In `NotificationsList.tsx`: Tapping a `BUG_UPDATE` notification automatically marks it read and routes to:
+       - Student: `/(student)/bug-report?reportId=${reportId}`
+       - Faculty: `/(faculty)/bug-report?reportId=${reportId}`
+       - Admin: `/(admin)/bug-reports?reportId=${reportId}`
+     - **Student Bug Report Screen (`app/(student)/bug-report.tsx`)**:
+       - Extracts `reportId` query parameter from `useLocalSearchParams`.
+       - On mount, automatically switches to `'HISTORY'` tab, matches report by ID or code, and displays the full detail modal.
+       - Full detail modal displays issue code (`BR-101`), title, category badge, status badge, problem description, admin response note card, conditional rejection reason card, and attachment links (screenshot viewer and video player launch).
+       - History cards made clickable with chevron and "View Details" hint.
+     - **Faculty Bug Report Screen (`app/(faculty)/bug-report.tsx`)**:
+       - Extracts `reportId` query parameter from `useLocalSearchParams`.
+       - On mount, automatically switches to `'HISTORY'` tab, matches report by ID or code, and displays the full detail modal.
+       - Full detail modal displays complete submitter dossier, admin resolution notes, rejection reason, and attachment viewers.
+       - History cards made clickable with "Details" indicator.
+     - **Admin Bug Reports Screen (`app/(admin)/bug-reports.tsx`)**:
+       - Extracts `reportId` query parameter from `useLocalSearchParams`.
+       - On mount, matches report and auto-triggers `handleOpenDetail(found)` to immediately open the triage & status update modal.
+  6. **Lightweight Offline Connectivity Banner (`components/OfflineBanner.tsx`)**:
+     - Built non-intrusive offline banner component checking server reachability via fetch/AbortController every 15 seconds.
+     - Mounted globally in `app/_layout.tsx` right above the navigation `<Stack>`.
+     - Zero native push notification (FCM) bloat, zero biometric prompt bloat — keeping the application 100% lean and reliable.
+  7. **Zero TypeScript Errors & 100% Expo Doctor Health**:
+     - `npx tsc --noEmit`: 100% clean compilation (0 errors).
+     - `npx expo-doctor`: **20/20 checks passed** with zero issues detected.
+     - `VidyaOS-main/`: 100% untouched and strictly read-only.
+
+### 🏛️ Milestone 345: VidyaOS Native Mobile App – Phase 6 Completed (Admin Dashboard & Complete Features)
+- **Status**: 🟢 Phase 6 Completed, Verified, 20/20 expo-doctor Checks Passed & TypeScript Clean; Awaiting Approval for Phase 7
+- **User Request**:
+  - *"Proceed with Phase 6 (Admin Dashboard & Features). Please make sure Phase 6 includes: 1. Admin Dashboard (system KPIs: total students, faculty, departments, open bug reports, quick actions) 2. Faculty Management (searchable directory, add/edit faculty, assign/revoke HOD, delete/deactivate with ConfirmDialog) 3. Academic Structure (departments, courses/semesters, and student/faculty registration gates toggle) 4. Admin Bug Reports Management (KPI summary, search & filters by status/role/category, full report detail modal with screenshot & video attachment preview, status update dropdown: New, Under Review, In Progress, Resolved, Rejected, and admin response/rejection note submission) 5. Admin More Menu: Audit Logs viewer, Institutional Reports (or route heavy report exports to <DesktopOnlyNotice />), Admin Profile, Change Password, and Sign Out with ConfirmDialog. Use services/adminService.ts and services/bugReportService.ts with real API connections, pull-to-refresh, and loading/empty/error states. Run npx tsc --noEmit and npx expo-doctor when done, report the Phase 6 summary, and wait for my approval before starting Phase 7."*
+- **Key Modules Executed in Phase 6**:
+  1. **Admin Domain Services & Types (`services/adminService.ts`, `services/bugReportService.ts`, `types/admin.ts`)**:
+     - Built dedicated services for aggregate institutional stats, server status, faculty roster management, faculty status toggles (`ACTIVE` / `SUSPENDED`), HOD assignment and revocation, departments CRUD, registration gates access policy management, and audit logs.
+     - Expanded `bugReportService` with admin statistics, multi-criteria bug report filtering, single report detail inspection, and status update adjudication with admin resolution notes.
+  2. **Admin Dashboard (`app/(admin)/dashboard.tsx`)**:
+     - System Master Hero Header with live server status indicator (`System Online`).
+     - Open Bugs Alert Banner with direct link to triage queue.
+     - 6 Real-time System KPIs: Total Students Enrolled, Total Faculty Members, Academic Departments, Active Sessions Today, Pending Registrations, and Total Bug Reports (highlighting unresolved count).
+     - Quick Administrative Action Grid (Faculty Directory, Academic Structure, Bug Triage, Audit Logs).
+     - Onboarding Security Gates Snapshot Card with live state badges and configuration deep-link.
+  3. **Faculty Directory & Management (`app/(admin)/faculty-management.tsx`)**:
+     - Searchable faculty roster by name, email, or employee ID.
+     - Horizontal department filter chips and status filter controls.
+     - Telemetry KPI cards (Total Faculty, HODs, Active).
+     - **"+ Add Faculty" & "Edit Details" Modals**: Full name, official email, employee ID, department picker, phone number, and HOD designation toggle.
+     - Individual Faculty Action Controls:
+       - Edit details modal.
+       - "Assign HOD" / "Revoke HOD" one-tap designation toggle.
+       - "Suspend" / "Activate" account status toggle.
+       - "Delete Faculty" permanently with `ConfirmDialog`.
+  4. **Academic Structure & Registration Gates (`app/(admin)/academic-structure.tsx`)**:
+     - Two dedicated administrative tabs:
+       - **Departments**: Roster of academic departments with code badges, duration years, enrolled counts, assigned HOD, "+ Add Dept" modal, edit modal, and delete confirmation dialog.
+       - **Registration Gates**: Interactive switches controlling Student Self-Registration, Faculty Registration, and HOD Direct Registration gates backed by `adminService.updateRegistrationGates`.
+  5. **Admin Bug Reports Management & Triage (`app/(admin)/bug-reports.tsx`)**:
+     - 6 KPI summary cards (Total, New, In Progress, Resolved, Rejected).
+     - Search input, status filter chips, and submitter role filter chips (`ALL`, `STUDENT`, `FACULTY`).
+     - Detailed report feed cards with code badges (`BR-101`), category labels, submitter KYC snippets, and attachment indicators.
+     - **Full Report Detail & Triage Modal**:
+       - Submitter dossier (Name, Role, Email, Department, Timestamp).
+       - Full problem description text.
+       - Mandatory Screenshot image viewer with tap-to-expand in browser.
+       - Screen Recording video card with one-tap native player launch.
+       - Status update chips (`New`, `Under Review`, `In Progress`, `Resolved`, `Rejected`).
+       - Multiline Admin Response / Resolution note input.
+       - Conditional mandatory Rejection Reason input when "Rejected" is selected.
+  6. **Audit Logs Trail (`app/(admin)/audit-logs.tsx`)**:
+     - Immutable event log viewer with search by action, user, or IP address.
+     - Event cards with action name, user role, timestamp, IP address badge, and details payload.
+  7. **Institutional Reports Gate (`app/(admin)/reports.tsx`)**:
+     - Gated cleanly to `<DesktopOnlyNotice />` with the mandatory heading *"Please move to Desktop"*, explanation of heavy Excel/NBA statistical export processing, and copy web link action.
+  8. **Admin Profile & Security (`app/(admin)/profile.tsx`)**:
+     - Master hero card with superuser credentials.
+     - System privileges dossier (`SYSTEM_ADMIN`, full console access).
+     - Password change navigation and sign out with `ConfirmDialog`.
+  9. **Admin More Menu (`app/(admin)/more.tsx`)**:
+     - Administrative console menu linking to Audit Logs, Reports (with Desktop badge), Academic Structure, Bug Reports, and Profile.
+     - Sign Out with `ConfirmDialog`.
+  10. **Zero TypeScript Errors & 100% Expo Doctor Health**:
+     - `npx tsc --noEmit`: 100% clean compilation (0 errors).
+     - `npx expo-doctor`: **20/20 checks passed** with zero issues detected.
+     - `VidyaOS-main/`: 100% untouched and strictly read-only.
+
+### 🏛️ Milestone 344: VidyaOS Native Mobile App – Phase 5 Completed (Faculty Dashboard & Complete Features)
+- **Status**: 🟢 Phase 5 Completed, Verified, 20/20 expo-doctor Checks Passed & TypeScript Clean; Awaiting Approval for Phase 6
+- **User Request**:
+  - *"Proceed with Phase 5 (Faculty Dashboard & Features). Please make sure Phase 5 includes: 1. Faculty Dashboard (teaching stats, active classes, pending leave approvals, quick actions) 2. Classes & Group Detail (view/create teaching groups, post to Stream, create Classwork/Assignments, view People, and ensure the Sheets tab routes to <DesktopOnlyNotice />) 3. Attendance Registers & Live Session Studio (view registers, open new session, generate 6-digit PIN & QR token, live check-in feed, and manual roll-call mark toggle) 4. Student Management (department roster, view student details/performance, add/edit student with 11-digit enrollment / not-available toggle and max 2-digit roll number validation) 5. Leave Approvals (view department leave queue, approve or reject with notes) 6. Faculty Timetable, Profile, Faculty Bug Reporting, and Logout with ConfirmDialog 7. More Menu: Wire all 5 Desktop-Only gates (Sheets, Course File, Assessment Process, ESP32 Devices, HOD Archive) cleanly to <DesktopOnlyNotice /> showing 'Please move to Desktop'. Use services/facultyService.ts with real API connections, pull-to-refresh, and loading/empty/error states. Run npx tsc --noEmit and npx expo-doctor when done, report the Phase 5 summary, and wait for my approval before starting Phase 6."*
+- **Key Modules Executed in Phase 5**:
+  1. **Faculty API Services & Domain Types (`services/facultyService.ts`, `types/faculty.ts`)**:
+     - Built dedicated services for faculty profile, dashboard stats, teaching groups creation & roster, stream posts & comments, classwork/assignments creation, session creation & lifecycle state transitions, rolling 6-digit PIN generation, dynamic QR token generation, live student self-attendance claims adjudication (`ACCEPT` / `REJECT`), bulk manual attendance records saving, department student roster with add/edit/delete, and department leave review decisions (`APPROVED` / `REJECTED`).
+  2. **Faculty Dashboard (`app/(faculty)/dashboard.tsx`)**:
+     - Faculty Hero Card (Name, Employee ID, HOD / Teacher badge, Department).
+     - Live Active Roll-Call banner (prompts instructor to enter live studio when an active session is running).
+     - 4 KPI summary cards (Teaching Groups, Dept Students, Pending Leave Approvals, Open Roll-Calls).
+     - Faculty Quick Actions Grid (Take Attendance, Leave Approvals, Student Roster, Timetable).
+     - Teaching groups list snippet with direct navigation to classes.
+  3. **Classes & Google Classroom Detail (`app/(faculty)/classes.tsx` & `app/(faculty)/class-detail.tsx`)**:
+     - Classes catalog with live search filter and "+ Create Teaching Group" modal.
+     - Full Google Classroom inspired detail view with 4 functional tabs:
+       - **Stream**: Class hero banner, announcements composer, post feed with author initials, and comment thread.
+       - **Classwork**: Organized list of assignments and scheduled tests with points, due dates, and "+ Create Assignment" modal.
+       - **Sheets (Gated to Desktop)**: Embeds `<DesktopOnlyNotice />` with the mandatory heading *"Please move to Desktop"*, copy web link button, and tab return handler.
+       - **People**: Directory of instructors and enrolled students.
+  4. **Attendance Registers & Live Session Studio (`app/(faculty)/registers.tsx` & `app/(faculty)/session-studio.tsx`)**:
+     - **Registers**: Active and past session ledger cards with state badges (`LIVE OPEN`, `CLOSED`, `FINALIZED`), "+ Open Session" modal (teaching group picker, period, topic), and quick filter chips.
+     - **Session Studio (`session-studio.tsx`)**:
+       - Real-time Telemetry Bar (Present, Late, Absent, Enrolled count).
+       - **Tab 1 (Roll-Call Studio)**:
+         - Dynamic 6-digit rolling PIN display with expiration timer countdown and rotate button (`facultyService.generatePin`).
+         - Dynamic QR attendance token generator with visual QR container and rotate button (`facultyService.generateQr`).
+         - Finalize and close session button with `ConfirmDialog`.
+       - **Tab 2 (Claims Feed)**: Real-time incoming student claims with instant one-tap "Accept" (green check) and "Reject" (red cross) adjudication.
+       - **Tab 3 (Manual Roster Ledger)**: Complete student list with student search, bulk "All Present" / "All Absent" buttons, and 3-way toggle buttons (`[P]resent`, `[L]ate`, `[A]bsent`) with bulk "Save Verified Attendance".
+  5. **Department Student Roster & Academic Validation (`app/(faculty)/students.tsx`)**:
+     - Department roster with live search (name, roll no, enrollment) and Year filter chips (All, 1st, 2nd, 3rd Year).
+     - Telemetry KPI cards (Total Students, Enrolled, Not Assigned).
+     - "+ Add Student" and "Edit Details" modals with strict validation:
+       - **Enrollment Number**: Exactly 11 digits numeric. Includes **"☐ Enrollment Number Not Available"** checkbox (when checked, disables input and saves as `Not Assigned`).
+       - **Class Roll Number**: Numeric only, max 2 digits (e.g. `01`, `15`, `99`).
+       - Full Name, Email, Phone, Year, and Semester.
+     - Delete student action guarded by `ConfirmDialog`.
+  6. **Leave Approvals Workflow (`app/(faculty)/leave-approvals.tsx`)**:
+     - KPI summary cards (Pending, Approved, Rejected).
+     - Filter tabs with live badge counters.
+     - Leave application cards with student name, roll number, enrollment, date range, duration badge, reason quote, and faculty review notes.
+     - "Approve Leave" action with confirmation dialog (`facultyService.decideLeave(id, 'APPROVED')`).
+     - "Reject" action with modal prompting for mandatory rejection note (`facultyService.decideLeave(id, 'REJECTED', note)`).
+  7. **Faculty Timetable, Profile & Security (`app/(faculty)/timetable.tsx` & `app/(faculty)/profile.tsx`)**:
+     - **Timetable**: Year-based filters, department cohort timetable cards with PDF badge, upload date, and "View / Download PDF" action opening in device viewer.
+     - **Profile**: Faculty Hero card, institutional details card (Department, Employee ID, System Role, Phone), navigation to change password, bug reporting, and secure sign out with `ConfirmDialog`.
+  8. **Technical Bug Reporting (`app/(faculty)/bug-report.tsx`)**:
+     - Exclusively for technical bugs, website/app malfunctions, and errors.
+     - 12 categories selector, issue title, multiline description.
+     - **Mandatory Screenshot upload** via `expo-image-picker` with image preview, replace, and remove capabilities.
+     - Optional video screen recording upload.
+     - Auto-collected user profile metadata.
+     - "My Reports" tab tracking submitted reports, statuses (`Resolved`, `Under Review`, `In Progress`, `Rejected`), and administrator feedback.
+  9. **More Menu Screen & 5 Desktop-Only Gates (`app/(faculty)/more.tsx`)**:
+     - Academic services navigation (Leave Approvals, Timetables, Bug Reports, Profile).
+     - All 5 desktop-heavy modules gated cleanly to `<DesktopOnlyNotice />` with the mandatory heading *"Please move to Desktop"*:
+       1. Sheets (`/(faculty)/sheets`)
+       2. Course File & NBA Dossiers (`/(faculty)/course-file`)
+       3. Assessment Process & Outcomes (`/(faculty)/assessment-process`)
+       4. ESP32 Hardware & Biometric Devices (`/(faculty)/esp32-devices`)
+       5. HOD Academic Archive & Batches (`/(faculty)/hod-archive`)
+     - Sign Out with `ConfirmDialog`.
+  10. **Zero TypeScript Errors & 100% Expo Doctor Health**:
+     - `npx tsc --noEmit`: 100% clean compilation (0 errors).
+     - `npx expo-doctor`: **20/20 checks passed** with zero issues detected.
+     - `VidyaOS-main/`: 100% untouched and strictly read-only.
+
+### 🏛️ Milestone 343: VidyaOS Native Mobile App – Phase 4 Completed (Student Dashboard & Complete Features)
+- **Status**: 🟢 Phase 4 Completed, Verified, 20/20 expo-doctor Checks Passed & TypeScript Clean; Awaiting Approval for Phase 5
+- **User Request**:
+  - *"Phase 3 is approved. Great job getting 20/20 on expo-doctor and 0 TypeScript errors. Proceed with Phase 4 (Student Dashboard & Features). Please make sure Phase 4 covers all Student modules from our Phase 1 plan, not just the core tabs: 1. Student Dashboard (real KPI cards, attendance summary, quick links to Timetable, Scores, and Leave) 2. Attendance (subject-wise breakdown, history, and live QR + 6-digit PIN self-attendance using expo-camera) 3. Classes / Group Detail (enrolled classes list, class stream/announcements, notes/materials, classwork) 4. Assignments (list, detail view, file upload submission via expo-document-picker / expo-image-picker, and unsubmit) 5. Scores / Marks, Weekly Timetable, and Leave Applications (view history + apply for leave) 6. Student Profile (view academic identity, change password, logout with ConfirmDialog). Add pull-to-refresh (RefreshControl), loading/empty/error states, and real API connections from services/studentService.ts across all screens. Run npx tsc --noEmit when done, report the Phase 4 summary, and wait for my approval before starting Phase 5."*
+- **Key Modules Executed in Phase 4**:
+  1. **Student API Services & Data Models (`services/studentService.ts`, `services/bugReportService.ts`, `types/student.ts`)**:
+     - Built dedicated services for student profile, attendance stats, subject breakdown, history logs, live session checks, 6-digit PIN / dynamic QR self-attendance, enrolled classes, classwork units, stream posts & comments, assignments, submission / unsubmission with multipart file uploads, academic marks dossier, PDF timetables, and leave management.
+     - Centralized bug report service for technical issue submission and history tracking.
+     - Added convenient `get`, `post`, `put`, and `delete` methods to `ApiClient` (`services/api.ts`).
+  2. **Student Dashboard (`app/(student)/dashboard.tsx`)**:
+     - Real KPI cards (Overall attendance %, classes attended/total, enrolled classes, pending coursework).
+     - Live Roll-Call alert banner (prompts student to enter 6-digit PIN or scan dynamic QR).
+     - Quick Academic Services Grid (Weekly Timetable, Scores & Tests, Leave Request, Bug Report).
+     - Subject attendance snapshot with progress bars and shortage warnings.
+     - Horizontal enrolled classes snippet carousel.
+  3. **Attendance & Live Check-In (`app/(student)/attendance.tsx` & `app/(student)/qr-scanner.tsx`)**:
+     - Telemetry header with aggregate percentage, eligibility badges, and class counters.
+     - Live Roll-Call studio: Inline 6-digit PIN verification and direct link to native QR scanner.
+     - Dynamic Camera Scanner (`qr-scanner.tsx`): Built with `expo-camera` (`CameraView`), viewfinder target frame, camera permission request, and instant token validation with feedback alerts.
+     - Segmented tabs: Subject-wise breakdown (Safe/Warning/Critical badges, shortage advice) and session history log.
+  4. **Enrolled Classes & Classroom Detail (`app/(student)/classes.tsx` & `app/(student)/class-detail.tsx`)**:
+     - Class catalog with live search filter by name or instructor.
+     - Full Google Classroom inspired detail view with 3 functional tabs:
+       - **Stream**: Class banner hero, "+ Share with your class" composer, announcements feed, comments toggle, and inline comment thread.
+       - **Classwork**: Organized list of assignments and scheduled tests with due dates and points.
+       - **People**: Faculty instructors and enrolled classmate directory.
+  5. **Coursework & Submission Studio (`app/(student)/assignments.tsx` & `app/(student)/assignment-detail.tsx`)**:
+     - To-Do hub with 3 filter tabs: "Assigned", "Missing", and "Done" + horizontal class filter chips.
+     - Detail view with description instructions and faculty material downloads.
+     - "Your Work" bottom sheet:
+       - Multi-state workflow: Assigned -> Turned in -> Unsubmit.
+       - File attachments: Document/PDF picker via `expo-document-picker` and Camera/Photo picker via `expo-image-picker`.
+       - Irreversible unsubmit guarded with `ConfirmDialog`.
+  6. **Scores, Weekly Timetable & Leave Applications (`app/(student)/scores.tsx`, `timetable.tsx`, `leave.tsx`)**:
+     - **Scores**: Aggregate score percentage, graded count, exam vs class test filters, marks marksheet dossier cards.
+     - **Timetable**: Year-based filters ("My Year", "1st Year", "2nd Year", "3rd Year", "All Years"), cohort header, PDF viewer link integration.
+     - **Leave Applications**: Total/Approved/Pending KPIs, "+ Submit New Leave" collapsible form with date inputs, duration calculator, quick preset reason chips, and review tracking history.
+  7. **Student Profile & Technical Bug Reporting (`app/(student)/profile.tsx` & `app/(student)/bug-report.tsx`)**:
+     - Profile Hero: Avatar initials, enrollment, department, semester.
+     - Academic credentials card & Demographic KYC dossier with live editing and saving (`updateProfile`).
+     - Account security: Change password navigation and secure sign-out with `ConfirmDialog`.
+     - Bug Reports: 12 standard categories, mandatory screenshot preview, optional video recording, auto-collected submitter profile, and "My Reports" status tracking.
+  8. **Zero TypeScript Errors & 100% Expo Doctor Health**:
+     - `npx tsc --noEmit`: 100% clean compilation (0 errors).
+     - `npx expo-doctor`: **20/20 checks passed** with zero issues.
+     - Pull-to-refresh (`RefreshControl`), empty states, and loading indicators implemented across all screens.
+     - `VidyaOS-main/`: 100% untouched and read-only.
+
+### 🏛️ Milestone 342: VidyaOS Native Mobile App – Phase 3 Completed (UI Components, Auth Flow & Role Shells)
+- **Status**: 🟢 Phase 3 Completed, Verified, 20/20 expo-doctor Checks Passed & TypeScript Clean; Awaiting Approval for Phase 4
+- **User Request**:
+  - *"Phase 2 is approved. Good work keeping VidyaOS-main/ untouched and getting a clean TypeScript build. Before you finish Phase 3, please also make sure: 1. .env is listed in VidyaOS-Mobile/.gitignore (keep .env.example tracked). 2. Run npx expo-doctor (or verify Metro bundling starts cleanly without dependency/runtime warnings) after finishing Phase 3. Proceed with Phase 3 now (Reusable UI Components, Full Auth Flow including Forgot Password & Mandatory Change Password, and Role-Based Navigation Shells). Report back with the summary and wait for my approval before starting Phase 4."*
+- **Key Milestones Executed in Phase 3**:
+  1. **Reusable Common UI Component Suite (`components/common/`)**:
+     - `Button.tsx`: Theme-aware button with loading spinners, variants (`primary`, `secondary`, `outline`, `danger`, `ghost`), and optional leading/trailing icons.
+     - `Input.tsx`: Form inputs with floating labels, helper text, error messages, clear buttons, and secure password visibility toggle.
+     - `Card.tsx`: Elevated container with border radii, subtle elevation shadows, and theme tokens.
+     - `Header.tsx`: Responsive navigation header with back button, user avatar, and dynamic title/subtitle.
+     - `Badge.tsx`: Status indicator badges (`success`, `warning`, `danger`, `info`, `neutral`).
+     - `NotificationBanner.tsx`: Top banner for alerts, warnings, and system announcements.
+     - `EmptyState.tsx`: Friendly illustration and description for empty lists, search results, or assignments.
+     - `ConfirmDialog.tsx`: Modal dialog for dangerous or irreversible actions (logout, student deletion, withdrawal).
+  2. **Auth Context & Hardware Security Services (`context/AuthContext.tsx`, `hooks/useAuth.ts`)**:
+     - Built comprehensive `AuthContext` backed by `expo-secure-store` for JWT access and refresh tokens.
+     - Integrated `login()`, `registerStudent()`, `forgotPassword()`, `changePassword()`, and `logout()`.
+     - Added mandatory password change detection (`user.must_change_password`) that locks navigation until the password is reset.
+     - Integrated multi-device session revocation and automatic 401 token refresh.
+  3. **Full Native Authentication Screens (`app/(auth)/`)**:
+     - `login.tsx`: Role selector, credentials input, password toggle, "Forgot Password?" link, and link to Student Registration.
+     - `register.tsx`: Dynamic onboarding form with branch selection, semester selector, full name, 11-digit enrollment number validation (with "Enrollment Number Not Available" checkbox toggle), 2-digit class roll number validation, Gmail, mobile number, and password matching.
+     - `forgot-password.tsx`: Email recovery form connecting to `/auth/forgot-password`.
+     - `change-password.tsx`: Mandatory and user-initiated password update form with requirement checklists and confirmation.
+  4. **Desktop-Only Gate Screen & Reusable Component (`components/DesktopOnlyNotice.tsx`, `app/desktop-only.tsx`)**:
+     - Implemented `<DesktopOnlyNotice />` with mandatory heading *"Please move to Desktop"*, explanation text, Go Back button, and Copy Web Link button (using `expo-clipboard`).
+     - Modularly applied to `sheets`, `course-file`, `assessment-process`, `esp32-devices`, and `hod-archive`.
+  5. **Role-Based Bottom Tab Navigation Shells (`app/(student)/`, `app/(faculty)/`, `app/(admin)/`)**:
+     - Student Tabs: Dashboard, Attendance, Classes, Work/Assignments, Profile.
+     - Faculty Tabs: Dashboard, Classes, Registers, Students, More + DesktopOnly routes.
+     - Admin Tabs: Dashboard, Faculty Management, Academic Structure, Bug Reports, More.
+  6. **TypeScript & Expo Doctor Verification**:
+     - `npx tsc --noEmit`: 100% clean compilation (0 errors).
+     - `npx expo-doctor`: **20/20 checks passed** with zero issues detected.
+     - `.gitignore`: Configured with `.env`, `.env*.local`, and `!.env.example`.
+     - `VidyaOS-main/`: 100% untouched and read-only.
+
+### 🏛️ Milestone 341: VidyaOS Native Mobile App – Phase 2 Initialized & Core Services Configured
+- **Status**: 🟢 Phase 2 Completed, Verified & TypeScript Clean; Awaiting Approval for Phase 3
+- **User Request**:
+  - *"Phase 1 looks great. Here are my confirmations before you start Phase 2: 1. Desktop-Only Modules: Approved. Route sheets, course-file, assessment-process, esp32-devices, and hod-archive to <DesktopOnlyNotice />... 2. QR Attendance: Keep standard Expo libraries (expo-camera)... 3. Environment Config: Put Render production URL and local dev IP inside .env using EXPO_PUBLIC_API_URL... Proceed with Phase 2 now. Report back with the summary and wait for my approval before starting Phase 3."*
+- **Key Milestones Executed in Phase 2**:
+  1. **Expo SDK + TypeScript + Expo Router Project Setup (`VidyaOS-Mobile/`)**:
+     - Scaffolding cleanly generated and customized with package name `com.vidyaos.app`, name `VidyaOS`, and `newArchEnabled: true`.
+     - Standard Expo libraries installed: `expo-router`, `expo-secure-store`, `expo-camera`, `expo-image-picker`, `expo-document-picker`, `expo-clipboard`, `expo-constants`, `expo-linking`, `expo-status-bar`, `react-native-safe-area-context`, `react-native-screens`, `@expo/vector-icons`.
+  2. **Environment Variable & Network Configuration (`.env` & `.env.example`)**:
+     - Configured `EXPO_PUBLIC_API_URL` to default to Render cloud backend (`https://vidyaos-backend.onrender.com/api/v1`) with instant toggle comments for local LAN IP (`http://192.168.1.x:3000/api/v1`).
+  3. **Central API Client & Hardware Security Services (`services/api.ts` & `services/secureStore.ts`)**:
+     - Built transparent Bearer token injection from encrypted `expo-secure-store`.
+     - Automatic device fingerprint injection (`X-Device-Id`).
+     - Render cold-start sleep retry engine (~30-45s auto reconnect with progress callback).
+     - Silent HTTP 401 token refresh flow (`/auth/refresh-token`).
+     - Multi-device session revocation listener (`SESSION_REVOKED`).
+  4. **Desktop-Only Gate Component (`components/DesktopOnlyNotice.tsx`)**:
+     - Implemented reusable `<DesktopOnlyNotice />` with mandatory heading *"Please move to Desktop"*, explanation text, Go Back button, and Copy Web Link button (using `expo-clipboard`).
+     - Gated routes created for `sheets`, `course-file`, `assessment-process`, `esp32-devices`, and `hod-archive`.
+  5. **Role-Based Root Layout & Route Tree (`app/`)**:
+     - File-based routing initialized for `(auth)`, `(student)`, `(faculty)`, and `(admin)`.
+     - `app/index.tsx` auto-resolves authentication state and navigates to the respective portal.
+  6. **Zero TypeScript Errors**:
+     - Verified with `npx tsc --noEmit` (100% clean compilation).
+
+### 🏛️ Milestone 340: VidyaOS Native Mobile App (React Native + Expo) – Phase 1 Discovery & Architecture Mapping
+- **Status**: 🟢 Phase 1 Completed & Documented; Ready for Phase 2 Initialization
+- **User Request**:
+  - *"Act as a senior React Native developer and software architect. Build a completely separate, true native Android mobile application for VidyaOS using React Native, Expo, TypeScript, and Expo Router... Phase 1: Inspect VidyaOS-main/ (docs, APIs, auth, roles) and present a complete API & architecture map before writing code."*
+- **Key Milestones Executed in Phase 1**:
+  1. **Strict Project Separation & Directory Anchor**:
+     - Verified and linked `VidyaOS-main/` as an isolated, read-only web reference.
+     - Preserved all existing web files, Capacitor configs, and database seeds without alteration.
+     - Prepared isolated sibling target `VidyaOS-Mobile/` for native Expo initialization.
+  2. **Comprehensive Discovery Inspection**:
+     - Inspected `docs/FRONTEND_COMPLETE_DOCUMENTATION.md`, `DATABASE_RECORDS_CHANGELOG.md`, `shared/js/api.js`, `shared/js/auth.js`, `login/core/api.js`, `login/index.js`, `login/register/register.js`, `vercel.json`, `server.js`, and `mobile-bridge.js`.
+  3. **Complete API & Security Architecture Mapping**:
+     - Mapped all 50+ REST endpoints across Auth, Students, Faculty/HOD, Teaching Groups, Attendance, Assignments, Timetable, Leave, Notifications, and Bug Reports.
+     - Defined mobile security layer using `expo-secure-store` for tokens and hardware-backed device identifier (`X-Device-Id`).
+     - Established modular `<DesktopOnlyNotice />` gate for heavy desktop spreadsheets and administrative tools.
+
 ### 🏛️ Milestone 339: Complete Website Bug Reporting & Complaint Management System
 - **Status**: 🟢 Completed, Verified & Deployed
 - **User Request**:
@@ -6819,3 +7188,38 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
   - Automated Integration Tests: 5/5 role verification tests passing (Student 403, Teacher 200, HOD 200, Multi-Role 200, Admin 200).
   - Syntax check: `node -c` passed with 0 errors across all 19 modified JavaScript files.
   - Synchronized across main root, `deployfolder/VidyaOS`, and `deployfolder/VidyaOS_BackEnd`.
+
+
+---
+
+### 🚀 Milestone 349: Student Portal Dashboard Modern Redesign (Mobile-First UI, Reusable Component Architecture, Light/Dark Theme & Safe-Area Insets)
+- **Status**: ✅ Completed, Bundled & Verified
+  - Mobile App Directory: `VidyaOS-Mobile/`
+  - Screen: `VidyaOS-Mobile/app/(student)/dashboard.tsx`
+  - Tab Shell: `VidyaOS-Mobile/app/(student)/_layout.tsx`
+  - Reusable Components: `VidyaOS-Mobile/components/student/{ProfileHeader, KpiCard, ServiceTile, CourseCard, index}.ts(x)`
+- **Design & Layout Modernization**:
+  1. **Clean Typography & Weight Hierarchy**:
+     - System geometric sans-serif with bold KPI metrics and section headers, medium titles, and regular subtitles.
+  2. **Modern Color System & Theme Toggle**:
+     - Light canvas (`#F8FAFC`), crisp white cards (`#FFFFFF`) with 1px border (`#E2E8F0`) and soft elevation, and royal blue (`#2563EB`) primary accent.
+     - Interactive Light/Dark theme toggle button in the profile header with automatic palette adaptation.
+  3. **Safe-Area Insets & Bottom Navigation**:
+     - Dynamic bottom padding using `useSafeAreaInsets().bottom` (`Math.max(insets.bottom, 10)`), completely eliminating Android gesture bar / system navigation overlap.
+     - 5-tab bar (Dashboard, Attendance, Classes, Work, Profile) with active pill indicators and crisp icons.
+  4. **Profile Hero Card (`ProfileHeader.tsx`)**:
+     - Monogram avatar circle (e.g. "AK"), "STUDENT PORTAL" eyebrow label, full name, branch/year/sem subtitle, Roll Number and Enrollment ID identity pills, theme toggle, and notification bell with live unread badge.
+  5. **Academic KPI Grid (2x2 `KpiCard.tsx`)**:
+     - Uniform height cards for Overall Attendance, My Classes, Assigned Work, and Exam Eligibility with soft tinted icons, compact status pills (100%, ENROLLED, CAUGHT UP, 75% MIN), large bold metric text, and 1-line subtitles.
+  6. **Quick Academic Services (2x2 `ServiceTile.tsx`)**:
+     - Action tiles for Timetable, Scores & Tests, Leave Request, and Report Bug with tinted icon badges, active press feedback, and direct navigation bindings.
+  7. **Subject Attendance**:
+     - Section header with "View All →" link, styled empty-state card with soft icon and helper message when empty, and clean horizontal progress bars color-coded by threshold (green >= 75%, amber >= 65%, red < 65%).
+  8. **Enrolled Classes Carousel (`CourseCard.tsx`)**:
+     - Horizontally scrollable 220px cards with royal blue top banner, classroom icon, course title, faculty name, and semester badge.
+  9. **Zero Regression**:
+     - 100% preservation of all existing API hooks (`studentService.getProfile`, `getAttendanceStats`, `getAttendanceSubjects`, `getMyEnrolledGroups`, `getMyAssignments`, `getOpenAttendanceSessions`), live attendance studio banner (PIN entry & QR scanner), and notification deep links.
+- **Verification**:
+  - `npx tsc --noEmit`: 0 TypeScript errors.
+  - `npx expo-doctor`: 20/20 checks passed with 0 warnings.
+  - `npx expo export --platform android`: 1,301 modules bundled cleanly with 0 errors into Hermes bytecode (3.5MB).

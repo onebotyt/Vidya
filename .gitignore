@@ -88,3 +88,13 @@ frontend_backup_v1/
 frontend_temp_before_revert/
 
 .agents/
+
+
+# Expo mobile build artifacts
+.expo/
+VidyaOS-Mobile/.expo/
+
+
+# Mobile App Assets
+!VidyaOS-Mobile/assets/**
+VidyaOS-main/
