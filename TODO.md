@@ -49,6 +49,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 535: Silent Instant Fit-to-Screen & Toast Clutter Prevention (v19)
+- **Objective & Architectural Scope**:
+  1. *Silent Instant Fit-to-Screen*:
+     - Removed redundant, intrusive toast notification (`Columns fitted to screen (Total: 63px, Grand Total: 65px)!`) on clicking "Fit Screen" in `frontend/faculty/sheets/js/sheets-grid-stretching.js`.
+     - Clicking "Fit Screen" now executes cleanly, silently, and immediately without popping up notification dialogs over the spreadsheet matrix or zoom toolbar.
+  2. *Duplicate Toast Stacking Prevention (`faculty-ui.js`)*:
+     - Upgraded `showToast()` in `faculty-ui.js` to automatically detect and discard identical active toasts, preventing multi-bubble stacking when actions are triggered rapidly.
+     - Capped concurrent toast bubbles to a maximum of 2, auto-dismissing older items.
+  3. *Zero-Break UI Contract & Theme Token Compliance*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) and `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passing).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passing).
+
 ### ✅ Milestone 534: Dynamic Excel Row Height, A4 Landscape Word/PDF Scaling & Viewport-Anchored Screen Fit (v18)
 - **Objective & Architectural Scope**:
   1. *Excel Export Header Clipping Fix (`exportActiveWorkbook`)*:
