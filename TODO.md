@@ -49,6 +49,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 544: Enhance Biometric Enrollment Workflow Stepper, Status Callout & Action Controls (v27)
+- **Objective & Architectural Scope**:
+  1. *Segmented Process Stepper (`.esp-scanner-step-tracker`)*:
+     - Replaced primitive inline badges and raw HTML arrows (`&rarr;`) with a modern segmented process stepper (`1. Pick Student`, `2. Touch AS608`, `3. Cloud Stored`).
+     - Added circular step badges (`.step-num`), subtle SVG chevron dividers (`.step-connector`), and smooth active/completed progress transitions (`.active` with primary glow, `.completed` with green indicator).
+  2. *Interactive Assistant Guidance Callout (`#bio-scanner-callout`)*:
+     - Wrapped `#bio-scanner-msg` inside a dedicated assistant banner with a subtle SVG beacon/info icon, responsive typography, and state-reactive accent borders (`.success` for registered cloud templates, `.scanning` with pulsing blue accent for active sensor touch).
+  3. *Action Buttons Modernization (`.esp-scanner-actions`)*:
+     - Enhanced `#btn-enroll-selected-student` with inline SVG fingerprint icon, elevation, and high-contrast styling.
+     - Added SVG checkmark icon to `#btn-simulate-test-scan` and trash icon to `#btn-remove-selected-bio`.
+  4. *DOM & Script Synchronization*:
+     - Enhanced `onSelectEnrollStudent()` and `enrollCurrentSelectedStudent()` in `esp32-devices.js` to dynamically update callout states and step indicators.
+     - Bumped static cache buster to `?v=20261121g` in `frontend/faculty/esp32-devices/index.html` and `frontend/faculty/esp32-devices.html`.
+     - Mirrored updated assets to `frontend/www/faculty/esp32-devices/`.
+  5. *Zero-Break Verification & UIMS Parity*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 page manifests generated.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 theme token checks passed).
+     - Verified backend syntax sanity (`node -c server.js`).
+
 ### ✅ Milestone 543: Remove Hardware Spec Chips, Streamline Optical Viewfinder & Clean Industrial Bezel (v26)
 - **Objective & Architectural Scope**:
   1. *Removal of Peripheral Clutter Chips*:

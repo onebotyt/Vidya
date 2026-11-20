@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T20:50:49.499Z",
+  "generated_at": "2026-11-20T21:11:34.984Z",
   "total_pages": 32,
   "totals": {
     "buttons": 758,
@@ -106,7 +106,7 @@
       "route": "/faculty/esp32-devices.html",
       "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
       "manifest_file": "docs/ui-map/manifests/hod-005.json",
-      "content_hash": "4d54730db66b",
+      "content_hash": "e64bda30d216",
       "counts": {
         "buttons": 47,
         "modals": 5,

@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "4d54730db66b",
-  "last_scanned": "2026-11-20T20:50:49.230Z",
+  "content_hash": "e64bda30d216",
+  "last_scanned": "2026-11-20T21:11:34.728Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -226,7 +226,7 @@
         "id": "btn-enroll-selected-student",
         "label": "Enroll Fingerprint on ESP32",
         "action": "enrollCurrentSelectedStudent()",
-        "class": "btn btn-primary btn-sm",
+        "class": "btn btn-primary btn-sm esp-btn-enroll",
         "data_ui": null,
         "title": "Trigger AS608 biometric enrollment on active ESP32"
       },
@@ -234,7 +234,7 @@
         "id": "btn-simulate-test-scan",
         "label": "Test Scan",
         "action": "simulateCurrentSelectedStudent()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-secondary btn-sm esp-btn-test-scan",
         "data_ui": null,
         "title": "Simulate attendance verification scan"
       },
@@ -242,7 +242,7 @@
         "id": "btn-remove-selected-bio",
         "label": "Remove",
         "action": "removeCurrentSelectedStudentTemplate()",
-        "class": "btn btn-danger btn-sm",
+        "class": "btn btn-danger btn-sm esp-btn-remove-bio",
         "data_ui": null,
         "title": "Delete fingerprint template from cloud vault"
       },
