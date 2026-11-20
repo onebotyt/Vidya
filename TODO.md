@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 523: Dedicated Excel View Ribbon Tab & Compact 2-Row Styles Layout (v11)
+- **Objective & Architectural Scope**:
+  1. *Dedicated Excel View Ribbon Tab (`data-tab="view"`, `#panel-view`)*:
+     - Relocated Sheet Display, Viewport, and Freeze Panes controls out of `#panel-home` into their authentic Microsoft Excel home: the dedicated **View** tab.
+     - Added `<button class="excel-tab-btn" data-tab="view">View</button>` in `.excel-ribbon-tabs` between `Review` and `Templates`.
+     - Created `#panel-view` containing 3 dedicated tool groups:
+       - **Show / Hide**: Gridlines toggle (`#btn-toggle-gridlines`), Formula Bar toggle (`#btn-toggle-formula-view`), College Banner toggle (`#btn-toggle-banner-view`), Signatures Bar toggle (`#btn-toggle-signatures-bar`).
+       - **Zoom & Fit**: Zoom controls (`zoomOut()`, `#view-zoom-level-label`, `zoomIn()`, `resetZoom()`), Fit to Screen (`#btn-view-fit-screen`), and Display Density selector (`#view-density-selector`).
+       - **Window / Freeze Panes**: Freeze Panes dropdown (`#btn-view-freeze-panes`, Freeze Top Row, Freeze First Column, Unfreeze) and Scheme Weightage modal launcher.
+  2. *Compact 2-Row Vertical Styles Group Layout*:
+     - Restructured `.excel-styles-group` in `#panel-home` from a wide 1-row layout (~300px) into a sleek 2-row vertical layout (`.excel-tool-vgroup` with 2 `.excel-tool-row`s).
+     - Stacks `Conditional Formatting ▾` on row 1 and `Color Templates ▾` on row 2, shrinking the Styles group width to ~140px.
+     - Combined with removing the View & Display group from Home, reduced `#panel-home` width by over 400px, ensuring every Home tool fits comfortably without scrolling at 100% zoom.
+  3. *Synchronized View Controls in `sheets.js`*:
+     - Synchronized state updates for `btn-toggle-gridlines`, `label-view-gridlines`, `btn-toggle-formula-view`, `label-view-formula`, `btn-toggle-banner-view`, `label-view-banner`, `view-zoom-level-label`, and `btn-view-freeze-panes`.
+  4. *Asset Cache Busting (`?v=20261120_v11`)*:
+     - Bumped cache query strings across `editor.html`, `index.html`, and `office-home.js` to `?v=20261120_v11`.
+
 ### ✅ Milestone 522: True Last-Data-Column Dynamic Boundary Engine for Screen-Fit (v10)
 - **Objective & Architectural Scope**:
   1. *True Data-Boundary Detection (`findLastDataColumn()`)*:
