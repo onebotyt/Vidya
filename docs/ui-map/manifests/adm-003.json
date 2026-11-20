@@ -5,7 +5,7 @@
   "route": "/admin/dashboard.html",
   "source_file": "frontend/admin/dashboard/index.html",
   "content_hash": "bda52340123e",
-  "last_scanned": "2026-11-20T09:09:28.110Z",
+  "last_scanned": "2026-11-20T09:25:48.237Z",
   "title": "Admin Dashboard — VidyaOS Institutional Console",
   "purpose": "System-wide institutional KPIs, attendance averages, active sessions",
   "shell": "Admin Shell (`nav.css`, `nav.js`)",
