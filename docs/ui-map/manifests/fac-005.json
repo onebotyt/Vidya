@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "8cbf66a0478b",
-  "last_scanned": "2026-11-20T07:49:22.405Z",
+  "content_hash": "46005dac9243",
+  "last_scanned": "2026-11-20T08:00:53.653Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -341,27 +341,19 @@
       },
       {
         "id": "btn-office-open-file",
-        "label": "Open Other Workbooks",
+        "label": "Open File",
         "action": "triggerExcelImport()",
-        "class": "office-sidebar-action-btn",
+        "class": "btn btn-outline-secondary btn-sm",
         "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-office-continue-editor",
-        "label": "Return to Active Sheet",
-        "action": "closeOfficeHomeScreen()",
-        "class": "office-sidebar-action-btn",
-        "data_ui": null,
-        "title": null
+        "title": "Import XLSX / CSV from device"
       },
       {
         "id": null,
-        "label": "Go to Spreadsheet Editor →",
+        "label": "Spreadsheet Editor →",
         "action": "closeOfficeHomeScreen()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-primary btn-sm",
         "data_ui": null,
-        "title": "Close Home and return to spreadsheet editor"
+        "title": "Return to active spreadsheet editor"
       },
       {
         "id": null,
