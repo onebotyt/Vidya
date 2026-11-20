@@ -5,7 +5,7 @@
   "route": "/student/group-detail.html",
   "source_file": "frontend/student/group-detail/index.html",
   "content_hash": "e54c0546a40f",
-  "last_scanned": "2026-11-20T18:47:15.334Z",
+  "last_scanned": "2026-11-20T18:54:38.972Z",
   "title": "Classwork — Student Portal | VidyaOS",
   "purpose": "Enrolled course stream, teacher announcements, materials",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",

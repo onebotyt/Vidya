@@ -5,7 +5,7 @@
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
   "content_hash": "ee333a863ce8",
-  "last_scanned": "2026-11-20T18:47:15.198Z",
+  "last_scanned": "2026-11-20T18:54:38.825Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Hub",
   "purpose": "Office Studio Subjects & Documents Start Hub: Subject cards, recent workbooks list, quick templates, search, and deep-link routing",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
