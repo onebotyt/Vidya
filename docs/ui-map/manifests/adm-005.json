@@ -5,7 +5,7 @@
   "route": "/admin/reports.html",
   "source_file": "frontend/admin/reports/index.html",
   "content_hash": "ff045e8ad02f",
-  "last_scanned": "2026-11-20T15:41:46.100Z",
+  "last_scanned": "2026-11-20T16:14:56.787Z",
   "title": "Admin Console",
   "purpose": "Institutional attendance reports, accreditation extracts, Excel export",
   "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",

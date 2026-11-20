@@ -49,6 +49,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 524: Non-Overlapping Content-Aware Column Sizing & Export Button Bounds Fix (v12)
+- **Objective & Architectural Scope**:
+  1. *Export Dropdown Viewport Bounds & Inward Right-Alignment*:
+     - Fixed `openDropdownOverlay()` in `sheets.js`: accurately measures rendered menu dimensions using invisible render pre-pass.
+     - For right-aligned buttons like `Export ▾` on Studio Bar 3, aligns the menu's right edge with the button's right edge (`left = rect.right - menuWidth`), opening inwards instead of overflowing off-screen.
+     - Added strict viewport right-margin clamping (`left = Math.max(12, Math.min(left, window.innerWidth - menuWidth - 12))`).
+     - Set fixed `.studio-export-menu` width to 260px (`max-width: calc(100vw - 24px)`) in `sheets.css`.
+  2. *Zero-Overlap Content-Aware Column Sizing Engine*:
+     - Removed the restrictive `v.length < 40` text truncation trap from `autoFitSheetColumns()`.
+     - Integrated `getCellColSpan()` to distribute merged cell text across spanned columns while reserving full text width for unmerged data columns (such as Column 10: "Unit Test Details (Mode : OFFLINE, Posted in VidyaOS as well)").
+     - Established content-safe floor widths: SR. NO. (44px), ROLL NO. (50px), REG. NO. (82px), ENROLLMENT NO. (114px, avoiding 11-digit ellipsis), STUDENT NAME (165px–220px), Questions/Marks (50px), Totals (66px), and multiline details headers (up to 340px).
+     - **Invariance Rule**: When available screen width is narrower than total required content width, columns NEVER crush below their minimum readable width, guaranteeing zero overlap across all columns.
+     - Wired `autoFitSheetColumns(sheet)` into `switchWorksheet()` so every tab switch immediately calculates non-overlapping column widths.
+  3. *Asset Cache Busting (`?v=20261120_v12`)*:
+     - Bumped cache tokens across `editor.html`, `index.html`, and `office-home.js` to `?v=20261120_v12`.
+
 ### ✅ Milestone 523: Dedicated Excel View Ribbon Tab & Compact 2-Row Styles Layout (v11)
 - **Objective & Architectural Scope**:
   1. *Dedicated Excel View Ribbon Tab (`data-tab="view"`, `#panel-view`)*:
