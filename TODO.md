@@ -49,6 +49,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 539: Content-Aware Column Sizing & Clean Header Space Reallocation (v22)
+- **Objective & Architectural Scope**:
+  1. *Content-Based Column Width Measurement (`autoFitSheetColumns`)*:
+     - Scans all data cells (rows >= 2) across every active column to identify the maximum text length and number of characters.
+     - Student Name column is now strictly dimensioned to the longest actual student name (`Math.min(150, Math.round(nameChars * 7.2 + 20))`), eliminating excessive empty gap space on the right of student names.
+  2. *Clean Header Width Reallocation*:
+     - Analyzes header lines and words across rows 0–2 for multiline/word-heavy columns (e.g., `Assignment (10)`, `Attendance`, `Creative Work (Model/Chart/Project)`, `Problem Solving Skills/`, `Lab Record File`, `Viva Voce`).
+     - Detects available viewport space and preferentially distributes extra room to columns whose headers would otherwise awkwardly break or hyphenate words (such as `Assignmen-t` and `Attendan-ce`).
+  3. *Invariants Maintained*:
+     - Total remains strictly fixed at `63px`.
+     - Grand Total remains strictly fixed at `65px`.
+     - Sum of all active columns + corner header (44px) strictly fits within container width without horizontal scrolling.
+  4. *Zero-Break UI Contract & Theme Token Compliance*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) and `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Bumped script query versions to `?v=20261121_v22`.
+
 ### ✅ Milestone 538: Wi-Fi Card Promotion to Command Center, Quick Cohort Filtering & Enhanced Compact Layout
 - **Objective & Architectural Scope**:
   1. *Promotion of Wi-Fi Connectivity & Failover into Top Command Center*:

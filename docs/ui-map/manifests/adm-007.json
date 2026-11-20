@@ -5,7 +5,7 @@
   "route": "/admin/profile.html",
   "source_file": "frontend/admin/profile/index.html",
   "content_hash": "aab4b517d68c",
-  "last_scanned": "2026-11-20T19:23:53.035Z",
+  "last_scanned": "2026-11-20T19:29:04.737Z",
   "title": "Administrator Profile &amp; Security — VidyaOS Admin Console",
   "purpose": "Administrator credentials, password rotation, active device sessions",
   "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",

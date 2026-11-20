@@ -5,7 +5,7 @@
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
   "content_hash": "f0c3c2896f7a",
-  "last_scanned": "2026-11-20T19:23:53.180Z",
+  "last_scanned": "2026-11-20T19:29:04.868Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and student profile dossier modal",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
