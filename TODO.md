@@ -49,6 +49,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 528: ESP32 Studio Redesign Preview Sandbox Integration & Bidirectional Navigation
+- **Objective & Architectural Scope**:
+  1. *ESP32 Redesign Studio Sandbox Provisioning*:
+     - Extracted uploaded design archive (`VidyaOS_Fingerprint_Attendance_WiFi_Webpage (2).zip`) to `frontend/faculty/esp32-preview/`.
+     - Preserved full interactive mockup suite: Quick Action KPI tiles, Graphical Fingerprint Visualizer with CSS pulse and corner brackets, Simulated Roster, Biometric Vault, Terminal Management, and Wi-Fi Network Studio with CSV Export.
+     - Included high-resolution campus background asset (`frontend/faculty/esp32-preview/assets/campus-daylight.png`).
+  2. *Bidirectional Navigation & Context Preservation*:
+     - Added institutional top bar on `/faculty/esp32-preview/index.html` with direct `← Return to Live Hardware Console` link to `/faculty/esp32-devices/index.html`.
+     - Added prominent `🎨 Preview Redesign Studio` action button (`#btn-preview-redesign`) on the live production page `/faculty/esp32-devices/index.html`.
+  3. *UIMS & Ecosystem Synchronization*:
+     - Registered page `HOD-006` in `docs/ui-map/pages.md`.
+     - Extracted UI manifest `docs/ui-map/manifests/hod-006.json` (32 buttons, 3 modals) and updated `manifest-index.json`.
+     - Ran `test-ui-manifest-sync.js` (214/214 passed with 100% hash parity).
+     - Ran `test-theme-support.js` (84/84 passed).
+     - Verified backend HTTP route `http://localhost:3000/faculty/esp32-preview/index.html` returning HTTP 200.
+
 ### ✅ Milestone 527: Directional Row/Col Insert Buttons & Row 2 Height Fix (v15)
 - **Objective & Architectural Scope**:
   1. *Directional Row & Column Insert Ribbon Tools*:
