@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/editor.html",
   "source_file": "frontend/faculty/sheets/editor.html",
-  "content_hash": "75b78af9830d",
-  "last_scanned": "2026-11-20T16:51:02.190Z",
+  "content_hash": "b2271b36fa95",
+  "last_scanned": "2026-11-20T17:00:41.244Z",
   "title": "Spreadsheet Studio — Institutional Excel Workspace",
   "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -739,27 +739,35 @@
       },
       {
         "id": "btn-insert-row",
-        "label": "+ Row",
+        "label": "+ Row ↑",
         "action": "insertRowAtActive(true)",
         "class": "excel-tool-btn",
         "data_ui": null,
-        "title": "Insert Row Above"
+        "title": "Insert Row Above (Up)"
+      },
+      {
+        "id": "btn-insert-row-down",
+        "label": "+ Row ↓",
+        "action": "insertRowAtActive(false)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Insert Row Below (Down)"
       },
       {
         "id": "btn-insert-col",
-        "label": "+ Col",
+        "label": "+ Col ←",
         "action": "insertColAtActive(true)",
         "class": "excel-tool-btn",
         "data_ui": null,
         "title": "Insert Column Left"
       },
       {
-        "id": null,
-        "label": "+ Student",
-        "action": "openAddRowModal()",
+        "id": "btn-insert-col-right",
+        "label": "+ Col →",
+        "action": "insertColAtActive(false)",
         "class": "excel-tool-btn",
         "data_ui": null,
-        "title": "Add Enrolled Student Row"
+        "title": "Insert Column Right"
       },
       {
         "id": "btn-delete-row",
@@ -778,7 +786,15 @@
         "title": "Delete Selected Column"
       },
       {
-        "id": null,
+        "id": "btn-add-student-row",
+        "label": "+ Student",
+        "action": "openAddRowModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Add Enrolled Student Row"
+      },
+      {
+        "id": "btn-open-roster-form",
         "label": "Roster Form",
         "action": "openEditStudentRosterModal()",
         "class": "excel-tool-btn",

@@ -49,6 +49,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 527: Directional Row/Col Insert Buttons & Row 2 Height Fix (v15)
+- **Objective & Architectural Scope**:
+  1. *Directional Row & Column Insert Ribbon Tools*:
+     - Upgraded the `.excel-cells-group` in `editor.html` to provide explicit directional controls:
+       - `+ Row ↑` (`#btn-insert-row`, `onclick="insertRowAtActive(true)"`, title: "Insert Row Above (Up)").
+       - `+ Row ↓` (`#btn-insert-row-down`, `onclick="insertRowAtActive(false)"`, title: "Insert Row Below (Down)").
+       - `+ Col ←` (`#btn-insert-col`, `onclick="insertColAtActive(true)"`, title: "Insert Column Left").
+       - `+ Col →` (`#btn-insert-col-right`, `onclick="insertColAtActive(false)"`, title: "Insert Column Right").
+       - `− Row` (`#btn-delete-row`, `onclick="deleteActiveRow()"`).
+       - `− Col` (`#btn-delete-col`, `onclick="deleteActiveCol()"`).
+       - `+ Student` (`#btn-add-student-row`, `onclick="openAddRowModal()"`).
+       - `Roster Form` (`#btn-open-roster-form`, `onclick="openEditStudentRosterModal()"`).
+     - Balanced symmetrical 4x2 button grid fitting cleanly in `#panel-home`.
+  2. *Row 2 Excessive Height Root-Cause Elimination*:
+     - Diagnosed cause of Row 2 (`r = 1`) vertical stretching: CSS selector `.excel-cell[rowspan]` matched single-row merged cells (`rowSpan: 1`, `colSpan: 5`) that were receiving `rowspan="1"`.
+     - In `renderExcelGrid()`, only outputs `rowspan="${mInfo.rowSpan}"` when `mInfo.rowSpan > 1`, and only adds `.excel-cell-multiroow` class for genuine multi-row spans.
+     - Scoped multi-row styling strictly to `.excel-cell.excel-cell-multiroow` and removed artificial `min-height: 48px`, restoring Row 2 to its intended crisp `24px` height.
+     - Reduced `evalSheet.rowHeights[1]` from 42px to 26px and `practicalSheet.rowHeights[0]` from 34px to 28px.
+  3. *Asset Cache Busting (`?v=20261120_v15`)*:
+     - Bumped query tokens in `editor.html` to `?v=20261120_v15`.
+     - Re-extracted UI manifest (`docs/ui-map/manifests/fac-017.json`) and verified 100% parity across 84 theme checks and 208+ manifest assertions.
+
 ### ✅ Milestone 526: Column & Row Structure Operations (Insert/Delete) Architecture Hardening (v14)
 - **Objective & Architectural Scope**:
   1. *Dynamic Merge Range Shifting & Expansion*:
