@@ -49,6 +49,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 537: Elimination of Phantom Columns, Single Authoritative Auto-Fit Engine & Viewport Proportional Distribution (v21)
+- **Objective & Architectural Scope**:
+  1. *Elimination of Phantom Columns in DOM (`renderExcelGrid`)*:
+     - Replaced legacy fallback `Math.max(findLastDataColumn(sheet) + 1, 16)` in `frontend/faculty/sheets/sheets.js` with dynamic `activeCols = typeof findLastDataColumn === 'function' ? Math.max(1, findLastDataColumn(sheet) + 1) : 16`.
+     - Eliminated 5-6 phantom empty columns (L, M, N, O, P) from being rendered on institutional sheets with fewer columns (e.g. UT1 with 11 columns A–K, Practicals with 10 columns A–J, Assignments with 12 columns A–L), removing 350px–500px of artificial table width and completely banishing persistent horizontal scrollbars.
+  2. *Single Authoritative Engine & Elimination of Duplicate Code*:
+     - Removed 110 lines of duplicate, obsolete `autoFitSheetColumns` in `sheets.js` that was overriding `sheets-grid-stretching.js` and breaking "+ Col" column additions.
+     - Delegated all auto-fit calls to `window.sheetStretchingAutoFit` defined in `sheets-grid-stretching.js`.
+  3. *Dynamic Column Detection & "+ Col" Robustness*:
+     - Replaced hardcoded column index assumptions (`c === 4` as student name) with dynamic header text scanning across rows 0–2 for Name, Roll No, Reg No, Enrollment No, Details, Questions, and Totals.
+     - Anchored Total strictly to `63px` and Grand Total strictly to `65px`.
+     - In `triggerFitColumnsToScreen()`, added `requestAnimationFrame` to verify actual rendered table width against container visible width, applying smooth viewport zoom scaling fallback if display resolution or Windows DPI scaling is constrained.
+  4. *Stale LocalStorage Phantom Column Cleanup*:
+     - Upgraded `hydrateAcademicSheetsFromGroup` to re-scan `findLastDataColumn(s)` and run `autoFitSheetColumns(s, true)` on sheets restored from `localStorage`, immediately cleaning up any phantom columns or stale widths saved in previous browser sessions.
+  5. *Zero-Break UI Contract & Theme Token Compliance*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) and `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passing).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passing).
+     - Bumped script query strings to `?v=20261121_v21`.
+
 ### ✅ Milestone 536: ESP32 Biometric Station UI Polish — Zero Emojis, Compact Spacing & Overflow Fix
 - **Objective & Architectural Scope**:
   1. *Complete Elimination of Emojis Across UI*:
