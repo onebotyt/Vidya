@@ -53,7 +53,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 - **Objective & Architectural Scope**:
   1. *Fullscreen Gray Loading Overlay Modal (Prevents Extra Clicks)*:
      - Designed centered rounded loading card (`.office-loader-card`, 16px border-radius, soft elevation shadow) on a blurred dark-gray backdrop (`backdrop-filter: blur(8px)`, hsla background) with rotating 8-dots circular spinner and crisp "Loading..." typography (`Inter`, 15px).
-     - Fixed race conditions: eliminated premature 1200ms and 2500ms hide timeouts; loader stays visible throughout group metadata and live database student roster hydration until grid rendering is 100% complete.
+     - Fixed race conditions & hanging scripts: resolved bug in `loadScript()` where existing DOM scripts never fired a `'load'` event. Added instant resolution when script is executed in DOM, wrapped group metadata sync in a 3.5s `Promise.race()`, reduced hard ceiling to 4s, and enabled click-to-dismiss and Escape key listeners so the screen can never get stuck on loading.
   2. *Complete Purge of Mock Data & Clean Placeholder Empty Rows*:
      - Scanned entire `frontend/faculty/sheets/` folder and purged all mock/fallback student names (`fallbackNames`, `Girdhar Dhami`, `Aditi Verma`, etc.).
      - Invalidate any stale cached workbooks from localStorage on startup that lack `REG. NO.` or contain obsolete formulas (`ROUND(D...`, `ROUND(I...`).

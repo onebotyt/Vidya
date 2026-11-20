@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T11:53:31.664Z",
+  "generated_at": "2026-11-20T12:01:43.736Z",
   "total_pages": 31,
   "totals": {
     "buttons": 720,
@@ -158,7 +158,7 @@
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
       "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "34a5fa39671b",
+      "content_hash": "8a17d7a363c9",
       "counts": {
         "buttons": 184,
         "modals": 26,
