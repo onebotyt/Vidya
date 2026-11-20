@@ -49,6 +49,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 522: True Last-Data-Column Dynamic Boundary Engine for Screen-Fit (v10)
+- **Objective & Architectural Scope**:
+  1. *True Data-Boundary Detection (`findLastDataColumn()`)*:
+     - Replaced rigid column assumptions with a dynamic reverse-scanning content inspector (`findLastDataColumn()`).
+     - Scans from rightmost column to leftmost column across all data rows to find the exact last column containing non-empty cells or headers (ignoring full-width merged college banners).
+     - Does not assume or stop at "Total": whether a sheet has 6 columns, 10 columns, 16 columns, columns with no total, or data columns following a total, the viewport fit is strictly bounded to the true last column of actual data (`lastDataCol`).
+  2. *Adaptive Screen-Width Distribution*:
+     - In both `sheets-grid-stretching.js` and `sheets.js`, columns `0` through `lastDataCol` are proportioned to fit 100% within the available screen width (`availWidth = screenW - 58px`).
+     - Distributes remaining width across data columns (prioritizing student name and component marks), while empty unused columns beyond `lastDataCol` default to a compact 55px in the overflow margin without stealing screen space.
+  3. *Asset Cache Busting (`?v=20261120_v10`)*:
+     - Bumped query strings across `editor.html`, `index.html`, and `office-home.js` to `?v=20261120_v10`.
+
 ### ✅ Milestone 521: Compact Tool Ribbon, College Banner Toggle Fix, and Screen-Fit Column Auto-Sizing (v9)
 - **Objective & Architectural Scope**:
   1. *Compact Sleek Tool Ribbon Layout*:
