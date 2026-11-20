@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 525: Unit Test Subsheet Merged Details Side-Panel & Classroom Questions/Instructions Sync (v13)
+- **Objective & Architectural Scope**:
+  1. *Merged Unit Test Details Side-Panel Column (`Column 10 / Column K`)*:
+     - In single unit test subsheets (`UT1`, `UT2`, `UT3`, etc.) under Column 10 (Header: `Unit Test Details (Mode : OFFLINE, Posted in VidyaOS as well)`):
+     - Dynamically merges all student rows vertically from `r = 2` down to the final student record `lastStudentRow = Math.max(2, students.length + 1)`.
+     - Subordinate rows (`r = 3 .. lastStudentRow`) in Column 10 are cleared so cells merge cleanly without DOM collision.
+     - Added CSS rules for `.excel-cell[rowspan]` across `sheets-grid.css` and `sheets.css` (`height: auto`, `min-height: 48px`, `white-space: pre-wrap`, `vertical-align: top`, `padding: 8px 10px`, `line-height: 1.4`).
+  2. *Classroom Post Questions & Examination Instructions Binding*:
+     - Integrated multi-tier fallback resolution for test questions and instructions:
+       - Tier 1: Authentic test data from `activeTest.questions` and `activeTest.instructions` posted by faculty via VidyaOS Classroom or scheduled via the Exam/Classwork Manager.
+       - Tier 2: Real-time custom state from `S.currentTestState` or local storage `test_sheet_custom_${groupId}_${testId}`.
+       - Tier 3: Standard institutional academic examination instructions and structured question scheme.
+     - Formats questions cleanly with question numbers and marks (`Q1 (5M): ...`) and numbered instructions (`1. ...`).
+     - Includes Mode (`OFFLINE` / `ONLINE`), duration, and classroom synchronization status badge.
+  3. *Spreadsheet Text Wrapping & Multi-Line Editing*:
+     - Enhanced `buildCellInlineStyle()`: wraps wrapped text with `white-space: pre-wrap` so manual line breaks (`\n`) are preserved accurately in the table DOM.
+     - Enhanced inline textarea editor keydown handler: pressing `Shift+Enter`, `Alt+Enter`, or `Ctrl+Enter` inserts newlines directly within the multi-line test details cell without prematurely committing or closing the editor.
+  4. *Asset Cache Busting (`?v=20261120_v13`)*:
+     - Bumped query tokens in `editor.html` to `?v=20261120_v13`.
+     - Re-extracted UI manifest (`docs/ui-map/manifests/fac-017.json`) and verified 100% parity with zero errors across 84 theme checks and 208+ manifest assertions.
+
 ### ✅ Milestone 524: Non-Overlapping Content-Aware Column Sizing & Export Button Bounds Fix (v12)
 - **Objective & Architectural Scope**:
   1. *Export Dropdown Viewport Bounds & Inward Right-Alignment*:
