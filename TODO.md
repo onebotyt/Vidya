@@ -49,6 +49,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 542: Layout Realignment: Biometric Station to Right, Remove Status Cards, Modernize Student Dropdown (v25)
+- **Objective & Architectural Scope**:
+  1. *Studio Grid Layout Swap (Biometric Station to Right)*:
+     - Realighed `.esp-studio-grid` 2-column command center:
+       - **Column 1 (Left Side)**: `Connected Department ESP32 Terminals` (`#section-esp-terminals`) stacked cleanly on top of `Wi-Fi Networks & Failover` (`#section-esp-wifi`).
+       - **Column 2 (Right Side)**: `Biometric Registration Station` (`#section-bio-enrollment`) featuring the integrated physical hardware bezel (OLED 0.96", AS608 optical sensor, LEDs, buzzer toggle, spec chips, and simulation modes) alongside modern student enrollment controls.
+  2. *Status Cards & Telemetry Banner Removal*:
+     - Removed the vertical clutter of `.esp-telemetry-banner` (4 KPI boxes) and `.esp-quick-grid` (4 quick action cards) so the page immediately displays the high-density command studio without dead vertical space.
+     - Preserved all telemetry element IDs in a hidden data-binding layer so background JS polling and statistics never encounter null pointers.
+  3. *Modernized Student Selection Dropdown & Profile Chip*:
+     - Redesigned `#enroll-student-select` with modern custom SaaS styling: custom SVG dropdown chevron, 38px touch target, rounded corners (`8px`), subtle focus elevation, and high-contrast typography.
+     - Cleaned up student option text formatting in `esp32-devices.js` (`filterEnrollStudentDropdown`) from robotic `[Pending] #10 - NAME` to clean `#10 • NAME (Pending — Sem 1)`.
+     - Upgraded `#enroll-student-chip` with an enhanced gradient avatar (`linear-gradient(135deg, var(--color-primary), #8253ed)`), bold typography, and clear status badges.
+  4. *Clean Wi-Fi Card & Form Cleanup*:
+     - Removed the redundant inline input row (`studio-quick-ssid`, `studio-quick-password`) that was triggering false password manager autofills in Chrome (`misr.navneet@gmail.com`).
+     - Kept official modal-driven network management (`+ Add Network` and `Scan Nearby`).
+  5. *Static Asset Cache Invalidation & Parity*:
+     - Updated stylesheet and script cache query parameters to `?v=20261121e` across both `frontend/faculty/esp32-devices/index.html` and `frontend/faculty/esp32-devices.html`.
+     - Mirrored changes to `frontend/www/faculty/esp32-devices/`.
+  6. *Zero-Break UI Contracts & Verification*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 manifests and 758 action buttons cataloged.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Verified backend syntax sanity (`node -c server.js`).
+
 ### ✅ Milestone 541: Fix ESP32 Bezel CSS Syntax & Runtime Class Collision, Bust Static Cache (v24)
 - **Objective & Architectural Scope**:
   1. *Root-Cause Fix for Bezel Overlap & Visual Collision*:

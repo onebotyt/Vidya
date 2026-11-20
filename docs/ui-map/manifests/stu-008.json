@@ -5,7 +5,7 @@
   "route": "/student/profile.html",
   "source_file": "frontend/student/profile/index.html",
   "content_hash": "8a8b5a5269af",
-  "last_scanned": "2026-11-20T20:28:49.740Z",
+  "last_scanned": "2026-11-20T20:41:16.422Z",
   "title": "Student Profile & Academic Credentials — College Attendance System",
   "purpose": "Academic credentials, PRN, branch, semester, active devices",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
