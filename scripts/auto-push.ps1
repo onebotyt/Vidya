@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Message = "update: synchronized latest changes to GitHub"
 )
 
