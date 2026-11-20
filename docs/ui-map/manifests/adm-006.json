@@ -5,7 +5,7 @@
   "route": "/admin/settings.html",
   "source_file": "frontend/admin/settings/index.html",
   "content_hash": "0e31cddd497a",
-  "last_scanned": "2026-11-20T09:25:48.294Z",
+  "last_scanned": "2026-11-20T09:26:59.175Z",
   "title": "Institution Settings — Admin Console",
   "purpose": "Institutional policies, academic terms, attendance minimum thresholds",
   "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",
