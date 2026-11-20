@@ -5,7 +5,7 @@
   "route": "/faculty/faculty/index.html",
   "source_file": "frontend/faculty/faculty/index.html",
   "content_hash": "2a9971732c4a",
-  "last_scanned": "2026-11-20T11:06:48.282Z",
+  "last_scanned": "2026-11-20T11:30:20.078Z",
   "title": "Faculty Management — VidyaOS",
   "purpose": "Department faculty roster, instructor onboarding, self-registration toggle, credentials",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",

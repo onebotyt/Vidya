@@ -49,6 +49,45 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 506: Comprehensive 5-Column Student Identity Architecture (Roll No, Reg No, Enrollment No, Student Name)
+- **Objective & Architectural Scope**:
+  1. *Dedicated Student Identity Columns in Office Studio*:
+     - Previously, the spreadsheet grid bundled enrollment number into the `ROLL NO.` column and omitted `REG. NO.` entirely, discarding the student's true `class_roll_no`.
+     - Upgraded all 5 spreadsheet layouts in `frontend/faculty/sheets/sheets.js` to feature dedicated 5-column identity schemas:
+       - **Col 0 (A)**: `SR. NO.` (Serial Index: 1, 2, 3...)
+       - **Col 1 (B)**: `ROLL NO.` (Class Roll No: `stu.class_roll_no || idx + 1`)
+       - **Col 2 (C)**: `REG. NO.` (State Registration No: `stu.registration_no || '—'`)
+       - **Col 3 (D)**: `ENROLLMENT NO.` (Institutional Enrollment No: `stu.official_enrollment_no || '—'`)
+       - **Col 4 (E)**: `STUDENT NAME` (Full Name: `stu.full_name || ''`)
+  2. *Formula Recalculation & Coordinate Offsets*:
+     - Shifted theory, practical, exam, and assignment metrics by +2 columns across all 5 sheets.
+     - **Master Evaluation (`evalSheet`)**:
+       - `colsCount: 16`, `frozenCols: 5`, `frozenRows: 3`.
+       - Theory Total (Col J / 9): `=ROUND(F${r + 1} + G${r + 1} + H${r + 1} + I${r + 1}, 2)` (Cols F..I: Assignment, UT Total, Attendance, Problem Solving).
+       - Practical Total (Col O / 14): `=ROUND(K${r + 1} + L${r + 1} + M${r + 1} + N${r + 1}, 2)` (Cols K..N: Lab Record, Creative Work, Attendance, Viva Voce).
+       - Grand Total (Col P / 15): `=ROUND(J${r + 1} + O${r + 1}, 2)` (Col J + Col O).
+     - **Consolidated Unit Tests (`testSheet`)**:
+       - `colsCount: 16`, `frozenCols: 5`, `frozenRows: 2`.
+       - Best 4 Avg (Col P / 15): `=ROUND(AVERAGE(F${r + 1}:I${r + 1}) * 0.5, 2)` (Cols F..I: Best 4 tests).
+     - **Single Unit Tests (`singleTestSheet`)**:
+       - `colsCount: 11`, `frozenCols: 5`, `frozenRows: 2`.
+       - Total (Col J / 9): `=SUM(F${r + 1}:I${r + 1})` (Cols F..I: Q1..Q4).
+     - **Assignments (`assignSheet`)**:
+       - `colsCount: 12`, `frozenCols: 5`, `frozenRows: 2`.
+       - Total Average (Col K / 10): `=ROUND(AVERAGE(F${r + 1}:J${r + 1}), 1)` (Cols F..J: A1..A5).
+     - **Practicals (`practicalSheet`)**:
+       - `colsCount: 10`, `frozenCols: 5`, `frozenRows: 2`.
+       - Total (Col J / 9): `=ROUND(F${r + 1} + G${r + 1} + H${r + 1} + I${r + 1}, 2)` (Cols F..I: Lab Record, Creative Work, Attendance, Viva Voce).
+  3. *Dynamic Migration & Score Preservation*:
+     - Upgraded `extractExistingStudentScores()` to dynamically detect 5-column vs legacy 3-column workbooks and preserve manually entered scores indexed across `enroll`, `reg`, `roll`, and `name`.
+     - Invalidation of legacy 3-column cached workbooks to ensure immediate hydration of the new 5-column architecture.
+     - Updated `autoFitSheetColumns()` with minimum width constraints for Cols 0..4 (55px, 75px, 125px, 125px, 190px).
+     - Upgraded `applyExcelGridFilters()`, `isMarksRow()`, and `sortSheetByMode()` for robust 5-column DOM searching and sorting.
+  4. *Zero-Break UIMS Parity & Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Backend server syntax validated clean (`node -c backend/server.js`).
+
 ### ✅ Milestone 505: Complete Eradication of LocalStorage Mock Caches & Multi-Tier Live Database Roster Hydration
 - **Objective & Architectural Scope**:
   1. *Complete Eradication of Mock LocalStorage Caches*:
