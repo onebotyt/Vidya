@@ -5,7 +5,7 @@
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
   "content_hash": "659107af43de",
-  "last_scanned": "2026-11-20T12:44:18.512Z",
+  "last_scanned": "2026-11-20T12:53:40.561Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",

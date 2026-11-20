@@ -5,7 +5,7 @@
   "route": "/faculty/dashboard.html",
   "source_file": "frontend/faculty/dashboard/index.html",
   "content_hash": "c90c223e7bf6",
-  "last_scanned": "2026-11-20T12:44:18.411Z",
+  "last_scanned": "2026-11-20T12:53:40.484Z",
   "title": "Faculty Dashboard — VidyaOS",
   "purpose": "Faculty home console, class groups, today's schedule, pending tasks",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
