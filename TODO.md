@@ -49,6 +49,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 500: Compact Subject Cards & Tactile Click Visual Feedback Architecture
+- **Objective & Architectural Scope**:
+  1. *Ultra-Compact Subject Card Layout*:
+     - Constrained `.office-subjects-grid` to responsive columns (`repeat(auto-fill, minmax(280px, 340px))`) preventing solitary cards from ballooning across the screen.
+     - Reduced internal card padding (`0.55rem 0.75rem`), integrated subject code (`.office-code-chip`) and semester (`.office-sem-chip`) into a streamlined header.
+     - Compacted worksheet buttons (`.office-sheet-btn`) to tight pills (`padding: 0.32rem 0.45rem; font-size: 0.70rem; gap: 0.35rem`) with slim 14px icons.
+  2. *Interactive Click Visual Feedback & Toast Alerts*:
+     - Added global tactile ripple listener across all `.office-sheet-btn`, `.office-template-card`, `.office-recent-item`, and action buttons (`@keyframes officeClickPulse` with active scale `0.96` and pulse ring).
+     - Enhanced `selectSubjectAndSheet(groupId, sheetKey, clickedEl)` with immediate active highlight (`.office-btn-pulse`) and informative toast notification (`Opening Master Evaluation Sheet...`).
+     - Enhanced `createNewWorksheetFromHome(clickedEl)` and `openBlankWorkbookFromHome(clickedEl)` with tactile feedback and toast triggers.
+  3. *Zero-Break Regression & Contract Parity*:
+     - `test-ui-manifest-sync.js`: 203/203 tests passed.
+     - `test-theme-support.js`: 84/84 tests passed (zero hardcoded hex colors).
+     - `sheets.js` syntax check: 100% clean.
+
 ### ✅ Milestone 499: Modern Native VidyaOS Office Studio Start Screen & Strictly Bounded SVG Architecture
 - **Objective & Architectural Scope**:
   1. *Elimination of Foreign Green Sidebar*:
