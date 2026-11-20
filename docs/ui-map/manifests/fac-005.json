@@ -4,9 +4,9 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "946eb9e47359",
-  "last_scanned": "2026-11-20T07:20:49.175Z",
-  "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
+  "content_hash": "8cbf66a0478b",
+  "last_scanned": "2026-11-20T07:49:22.405Z",
+  "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
   "states": "Desktop: high-density Excel-style grid with auto-fit, zoom, and multi-tier sticky headers; Mobile: responsive table with touch pinch zoom & sliding bottom tools drawer",
@@ -17,7 +17,8 @@
     "groupId",
     "group_id",
     "id",
-    "sheet"
+    "sheet",
+    "view"
   ],
   "api_contracts": [
     {
@@ -114,6 +115,10 @@
       {
         "id": "pc-screen-toolbar",
         "class": "pc-screen-toolbar"
+      },
+      {
+        "id": "excel-signatures-bar",
+        "class": "excel-signatures-bar"
       },
       {
         "id": "excel-bottom-bar",
@@ -287,6 +292,14 @@
         "title": "Back to Classroom / Registers"
       },
       {
+        "id": "btn-office-home",
+        "label": "Office Studio Home &amp; Subjects Hub",
+        "action": "toggleOfficeHomeScreen()",
+        "class": "btn-icon-minimal header-office-home-btn",
+        "data_ui": null,
+        "title": "Office Studio Home &amp; Subjects Hub"
+      },
+      {
         "id": "theme-toggle-btn",
         "label": "Toggle Dark/Light Mode",
         "action": "toggleAppTheme()",
@@ -325,6 +338,30 @@
         "class": "profile-dropdown-item dropdown-logout-btn",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": "btn-office-open-file",
+        "label": "Open Other Workbooks",
+        "action": "triggerExcelImport()",
+        "class": "office-sidebar-action-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-office-continue-editor",
+        "label": "Return to Active Sheet",
+        "action": "closeOfficeHomeScreen()",
+        "class": "office-sidebar-action-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Go to Spreadsheet Editor →",
+        "action": "closeOfficeHomeScreen()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Close Home and return to spreadsheet editor"
       },
       {
         "id": null,
@@ -397,6 +434,14 @@
         "class": "ribbon-scroll-btn ribbon-scroll-left",
         "data_ui": null,
         "title": "Scroll Ribbon Left"
+      },
+      {
+        "id": "btn-ribbon-home",
+        "label": "Home",
+        "action": "openOfficeHomeScreen()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Office Studio Home &amp; Subjects Hub"
       },
       {
         "id": null,
@@ -656,7 +701,7 @@
       },
       {
         "id": "btn-dec-increase",
-        "label": ".00→",
+        "label": ".0+",
         "action": "adjustDecimals(1)",
         "class": "excel-icon-btn",
         "data_ui": null,
@@ -664,7 +709,7 @@
       },
       {
         "id": "btn-dec-decrease",
-        "label": "←.0",
+        "label": "-.0",
         "action": "adjustDecimals(-1)",
         "class": "excel-icon-btn",
         "data_ui": null,
@@ -1167,6 +1212,14 @@
         "title": "Show/Hide Formula Bar"
       },
       {
+        "id": "btn-toggle-signatures-bar",
+        "label": "Signatures: ON",
+        "action": "toggleSignatureBarVisibility()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide Institutional Signatures Bar"
+      },
+      {
         "id": "btn-open-filter-modal",
         "label": "Filters 1",
         "action": "openSheetFilterModal()",
@@ -1656,6 +1709,14 @@
       }
     ],
     "input_controls": [
+      {
+        "id": "office-subject-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search your subjects, classes, or templates...",
+        "handler": "filterOfficeSubjects(this.value)",
+        "class": null
+      },
       {
         "id": "excel-name-box",
         "type": "text",
@@ -2150,15 +2211,15 @@
           },
           {
             "value": "currency",
-            "text": "Currency (₹ 0.00)"
+            "text": "Currency (₹)"
           },
           {
             "value": "percent",
-            "text": "Percentage (0.0%)"
+            "text": "Percentage (%)"
           },
           {
             "value": "date",
-            "text": "Short Date (YYYY-MM-DD)"
+            "text": "Short Date"
           }
         ]
       },

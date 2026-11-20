@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T07:20:49.344Z",
+  "generated_at": "2026-11-20T07:49:22.661Z",
   "total_pages": 31,
   "totals": {
-    "buttons": 709,
+    "buttons": 715,
     "modals": 183,
-    "inputs": 385,
+    "inputs": 386,
     "apis": 261
   },
   "pages": [
@@ -156,13 +156,13 @@
     {
       "page_id": "FAC-005",
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
-      "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
+      "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "946eb9e47359",
+      "content_hash": "8cbf66a0478b",
       "counts": {
-        "buttons": 173,
+        "buttons": 179,
         "modals": 26,
-        "inputs": 61,
+        "inputs": 62,
         "apis": 16
       }
     },

@@ -49,6 +49,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 498: Office Studio Branding, Excel-Style Start / Home Screen with Subject Quick Access Hub, Detached Signatures Bar & Compact Number Ribbon
+- **Objective & Architectural Scope**:
+  1. *Office Studio Portal Branding*:
+     - Renamed module from "Sheet Studio" to **Office Studio** (`/faculty/sheets/index.html`) to establish the institutional documents foundation for upcoming Office suite applications.
+     - Updated HTML document title, branding tooltips, navigation buttons, and theme headers.
+  2. *Microsoft Excel Start / Home Screen & Teaching Subjects Hub*:
+     - Implemented `#office-home-screen` modal overlay matching Microsoft Excel start screen architecture (`media_1795159763025_c0b35f4c.jpg`):
+       - Left green sidebar: Office Studio branding, Recent Workbooks list (`#office-recent-list` with `localStorage` persistence and time grouping), and "Open Other Workbooks" trigger.
+       - Right main area: Real-time subject/class search filter (`#office-subject-search`), Quick Start Template cards (Blank workbook, Master Evaluation, Class Tests, Assignments, Practicals), and Teaching Subject Quick Access Cards (`#office-subjects-grid`).
+       - Each subject card renders 5 instant worksheet action triggers: Master Evaluation, Class Tests (UT1..UT10), Coursework & Assignments, Practicals & Lab Work, and Blank Worksheet.
+     - Added `#btn-office-home` in top header and `#btn-ribbon-home` in File ribbon tab to switch between Home Screen and Spreadsheet Editor on demand.
+     - Added URL parameter detection (`view=home` or landing without active group/sheet) to launch the Home Screen automatically.
+  3. *Institutional Signature Bar Outside Spreadsheet Grid Cells*:
+     - Removed all programmatic cell-based signoff insertions (`setCell(..., signoffR, ...)`) from `evalSheet`, `testSheet`, `singleTestSheet`, `assignSheet`, and `practicalSheet` that previously caused cell size distortion, column auto-fit errors, and formula misalignments across rows A20:M20.
+     - Implemented `#excel-signatures-bar` as a dedicated institutional footer element below the grid workspace (`Subject Teacher`, `Head of the Department`, `Principal`).
+     - Added `#btn-toggle-signatures-bar` in Studio Bar 3 with `toggleSignatureBarVisibility()` to show/hide the signature bar (`Signatures: ON/OFF`) dynamically with zero impact on grid columns or student roster cells.
+     - Dynamic teacher name binding: Automatically populates from active teaching group or authenticated teacher profile (`#sig-teacher-name`).
+  4. *Compact Number Formatting Ribbon Group*:
+     - Restyled Home ribbon Number group to fit `.00`, `-.0`, `₹`, `%` icons and `#number-format-select` compactly side-by-side with zero horizontal wrapping on standard desktop viewports.
+  5. *Zero-Break Regression & Contract Parity*:
+     - `test-ui-manifest-sync.js`: 203/203 tests passed.
+     - `test-theme-support.js`: 84/84 tests passed (zero hardcoded hex colors).
+     - `node -c sheets.js`: 100% clean.
+
 ### ✅ Milestone 497: Sheet Studio Header Consolidation, Ribbon Overflow Chevrons, & Dropdown Overlay Architecture
 - **Objective & Architectural Scope**:
   1. *Elimination of Redundant Command Bar (`#studio-bar-1`)*:
