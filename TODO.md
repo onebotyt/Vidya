@@ -49,6 +49,69 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 516: Color Tools Body-Root Relocation, Sticky Dropdown Headers, and Asset Cache Busting (v6)
+- **Objective & Architectural Scope**:
+  1. *Complete Ancestor Overflow Immunization*:
+     - Relocated all 4 color formatting floating popups (`#palette-fill-color`, `#palette-font-color`, `#excel-conditional-menu`, and `#excel-templates-menu`) directly under `<body>` at the root of `frontend/faculty/sheets/index.html`.
+     - Completely eliminated any possibility of clipping or container trap by `.excel-ribbon-panels` (`overflow-x: auto; max-height: 84px;`) across any browser rendering engine.
+  2. *Sticky Header & Footer UX for Sheet Color Templates*:
+     - In `sheets-color-tools.css`, configured `.excel-templates-header` as `position: sticky; top: 0; background: var(--bg-card); z-index: 10;` so "Sheet Color Templates" title and subtitle remain permanently visible.
+     - Configured `.template-reset-btn` as `position: sticky; bottom: 0; background: var(--bg-card); z-index: 10;` so "Clear Template / Plain White" is always pinned at the bottom.
+     - Added sleek custom scrollbars (`::-webkit-scrollbar` 6px with rounded thumb).
+  3. *Viewport-Aware Dynamic Positioning & Microtask Scroll Reset*:
+     - Enhanced `positionFloatingDropdown` in `sheets-color-tools.js` with boundary detection, upward flipping when bottom room is < 250px, and `requestAnimationFrame(() => { popup.scrollTop = 0; })` ensuring templates always open scrolled to top (Executive Navy & Forest Emerald visible).
+  4. *Multi-Tier Asset Cache Busting (`?v=20261120_v6`)*:
+     - Updated all stylesheet links and script tags in `index.html` and script loaders in `office-home.js` to `?v=20261120_v6`.
+  5. *Zero-Break Regression Suite*:
+     - `test-ui-manifest-sync.js`: 203/203 Passed (100% parity).
+     - `test-theme-support.js`: 84/84 Passed.
+     - `node -c backend/server.js`: Passed with zero syntax errors.
+
+### ✅ Milestone 515: Zero-Bug Comprehensive Logout Session & Browser Cache Purge Architecture
+- **Objective & Architectural Scope**:
+  1. *Complete Multi-Tier Client Storage & Cache Eradication*:
+     - Upgraded `clearAuthSession()` in `frontend/shared/js/auth.js` (and synchronized across `admin`, `faculty`, `student`, and `login` core modules):
+       - **Local Storage**: Full `localStorage.clear()` eliminating all cached rosters, active sheets, classroom IDs, and session tokens while preserving user UI theme preferences (`vidya_theme`).
+       - **Session Storage**: Full `sessionStorage.clear()`.
+       - **Cookies**: Iterative expiration of all session and authentication cookies across root path `/` and current domain.
+       - **CacheStorage API (`window.caches`)**: Programmatic inspection and deletion of all CacheStorage caches, preventing service worker and browser HTTP cache from serving stale protected routes or API responses.
+       - **IndexedDB**: Enumerated and purged all lingering application IndexedDB databases.
+  2. *Back-Forward Cache (bfcache) Session Resurrection Prevention*:
+     - Added `pageshow` listener detecting `event.persisted`: if a user navigates backwards after logout, the browser immediately wipes residual state and executes `window.location.replace('/login/index.html?reason=session_ended')`.
+  3. *W3C Clear-Site-Data & Anti-Caching Backend Response Headers*:
+     - Enhanced `clearAuthCookies(res)` in `backend/src/controllers/authController.js` on `/api/v1/auth/logout`:
+       - `Clear-Site-Data: "cache", "cookies", "storage"` — modern browser native directive instructing immediate wipe of origin caches and storage.
+       - `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate`, `Pragma: no-cache`, `Expires: 0`.
+  4. *Zero-Break UIMS Parity & Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Clean JavaScript and server syntax verification (`node -c`).
+
+### ✅ Milestone 514: Institutional Program Duration Enforcement (3-Year Engineering / 2-Year Pharmacy) & Compact Student Detail Dossier Alignment
+- **Objective & Architectural Scope**:
+  1. *Institutional Academic Program Duration Rules*:
+     - Enforced strict institutional duration constraints across the student management subsystem:
+       - **All Engineering Departments (IT, CS, Civil, Electrical, Mechanical, Electronics)**: Maximum 3 Years, 6 Semesters (Sem 1 to Sem 6).
+       - **Pharmacy Department (D.Pharm / Pharma)**: Maximum 2 Years, 4 Semesters (Sem 1 to Sem 4).
+       - **Complete Year 4 Purge**: Removed obsolete Sem 7 & Sem 8 options across all forms and selectors.
+     - Implemented dynamic program detection (`isPharmaDept`) and reactive semester generator (`updateSemesterOptions(selectEl, deptName, selectedVal)`).
+     - Filter Bar Synchronization: Pharmacy rosters automatically hide the `3rd Year` pill, displaying exclusively 1st and 2nd Year cohorts.
+  2. *Detail Modal (`#modal-student-details`) Unified Compact Architecture*:
+     - Re-architected `#modal-student-details` in `frontend/faculty/students/` to identically mirror the modern compact layout of `#modal-edit-student`.
+     - Header: Dynamic title `Student Profile: [Full Name]` (`#detail-stu-name`) with close button.
+     - Navigation Tabs: Horizontal tab bar (`Profile Info` [active], `Academic Record`, `Attendance`, `Contact & Status`). Added `switchDetailTab(tabName)` tab controller.
+     - Left Column: Labeled "Photo" with rounded square avatar box (`#detail-stu-avatar`).
+     - Right Column:
+       - Name Display: Sleek read-only tile (`#detail-stu-display-name`).
+       - Dual ID Row: Official Enrollment # (`#detail-stu-enroll`) & UBTER Reg. # (`#detail-stu-reg`).
+     - Bottom Row: Program (`#detail-stu-cohort`), Roll # (`#detail-stu-roll`), and Status chip (`#detail-stu-status-badge`).
+     - Secondary Panels: Academic Cohort, Department, Board, Attendance Standing %, Threshold (75%), Email, Phone, and Data Retention rules.
+     - Action Footer: Zero-clipping management cluster (Remove Student, Reset Password, Close, Transfer, Withdraw, Re-Activate, Edit Student).
+  3. *Zero-Break UIMS Parity & Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Clean JavaScript and server syntax verification (`node -c`).
+
 ### ✅ Milestone 513: DOM Portal Migration & Full Dropdown Visibility Rectification (Zero Ribbon Overflow Clipping)
 - **Objective & Architectural Scope**:
   1. *DOM Portal Migration for Floating Tools*:

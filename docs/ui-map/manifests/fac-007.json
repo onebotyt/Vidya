@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "46e87aa3139d",
-  "last_scanned": "2026-11-20T12:55:35.046Z",
+  "content_hash": "a4d32cee53c6",
+  "last_scanned": "2026-11-20T13:15:29.878Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and student profile dossier modal",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -77,11 +77,16 @@
     "modals": [
       {
         "id": "modal-student-details",
+        "title": "Student Profile: Student",
+        "field_count": 0
+      },
+      {
+        "id": "detail-modal-tabs",
         "title": "Modal Dialog",
         "field_count": 0
       },
       {
-        "id": "detail-stu-enroll",
+        "id": "detail-stu-avatar",
         "title": "Modal Dialog",
         "field_count": 0
       },
@@ -238,6 +243,38 @@
         "class": "btn-modal-close",
         "data_ui": null,
         "title": "Close details"
+      },
+      {
+        "id": null,
+        "label": "Profile Info",
+        "action": "switchDetailTab(",
+        "class": "stu-modal-tab active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Academic Record",
+        "action": "switchDetailTab(",
+        "class": "stu-modal-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Attendance",
+        "action": "switchDetailTab(",
+        "class": "stu-modal-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Contact &amp; Status",
+        "action": "switchDetailTab(",
+        "class": "stu-modal-tab",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "detail-btn-delete",
@@ -560,7 +597,7 @@
         "title": null,
         "onchange": null,
         "class": "stu-compact-input stu-compact-select",
-        "options_count": 8,
+        "options_count": 6,
         "sample_options": [
           {
             "value": "1",
@@ -585,14 +622,6 @@
           {
             "value": "6",
             "text": "Sem 6 (Year 3)"
-          },
-          {
-            "value": "7",
-            "text": "Sem 7 (Year 4)"
-          },
-          {
-            "value": "8",
-            "text": "Sem 8 (Year 4)"
           }
         ]
       },
@@ -655,12 +684,18 @@
   "modals_catalog": [
     {
       "id": "modal-student-details",
+      "title": "Student Profile: Student",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "detail-modal-tabs",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
     },
     {
-      "id": "detail-stu-enroll",
+      "id": "detail-stu-avatar",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
