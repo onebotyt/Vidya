@@ -5,7 +5,7 @@
   "route": "/faculty/classes/index.html",
   "source_file": "frontend/faculty/classes/index.html",
   "content_hash": "eef9ad8abbf8",
-  "last_scanned": "2026-11-19T16:13:23.192Z",
+  "last_scanned": "2026-11-20T07:20:49.216Z",
   "title": "My Teaching Classes — VidyaOS",
   "purpose": "Teaching Classes Overview: 3 KPI status cards, classroom cards with uniform 6-module action grid (Theory Classes, Laboratory, NBA, Student Performance, Direct Assessment, Indirect Assessment), 3-dot kebab menu (Edit Class, Move to Trash), Create Class modal, Broadcast Notice modal with Year cohort filter and media upload, and Trash Bin navigation with live count badge",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -25,6 +25,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     },
     {

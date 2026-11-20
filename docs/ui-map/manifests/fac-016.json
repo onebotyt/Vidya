@@ -5,7 +5,7 @@
   "route": "/faculty/classes/trash.html",
   "source_file": "frontend/faculty/classes/trash.html",
   "content_hash": "8231dfdf1c35",
-  "last_scanned": "2026-11-19T16:13:23.207Z",
+  "last_scanned": "2026-11-20T07:20:49.220Z",
   "title": "Classroom Trash Bin — VidyaOS",
   "purpose": "Classroom Trash Bin & Recovery Studio: 30-day retention countdown, auto-purge policy banner, Restore Class back to active teaching, and Permanent Deletion dialog with TYPE-TO-CONFIRM safety check",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -25,6 +25,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     },
     {

@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 497: Sheet Studio Header Consolidation, Ribbon Overflow Chevrons, & Dropdown Overlay Architecture
+- **Objective & Architectural Scope**:
+  1. *Elimination of Redundant Command Bar (`#studio-bar-1`)*:
+     - Consolidated all top controls directly into `<header id="faculty-header" class="faculty-top-header admin-top-header sheets-top-header">`.
+     - In `.header-left`: Integrated `#faculty-nav-toggle`, Back button (`#btn-back-bar1`), brand link (`#header-brand-link`), brand logo, XLS badge, editable filename (`#excel-workbook-title`), save/cloud status pill (`#excel-save-status` & `#excel-sync-text`), and subject/group dropdown (`#group-switcher-select`).
+     - In `.header-right`: Integrated Cloud Synced badge, theme toggle (`#theme-toggle-btn`), notification bell & dropdown (`#header-bell-btn`), and user avatar profile with sign-out popover (`#header-user-profile`).
+     - Preserved 100% of action IDs and contracts, while reclaiming ~42px of vertical viewport height for the ribbon and sheet grid.
+  2. *Responsive Ribbon Layout & Horizontal Scroll Navigation*:
+     - Compacted Home ribbon tool padding, button gaps (from 0.6rem to 0.35rem), and select dropdown widths so all 8 tool groups fit comfortably on 1366px desktop viewports without horizontal scroll.
+     - Wrapped `.excel-ribbon-panels` in `.excel-ribbon-panels-container` with smooth scroll chevrons (`#btn-ribbon-scroll-left`, `#btn-ribbon-scroll-right`) for viewports below 1366px (1280px, 1024px, 768px).
+     - Added dynamic scroll listeners and window resize handlers to toggle navigation chevrons automatically when overflow exists.
+  3. *Portal / Fixed Positioning Dropdown Overlay Engine*:
+     - Solved dropdown clipping caused by parent `overflow-y: hidden !important` and `max-height: 88px` on `.excel-ribbon-panels`, `.excel-ribbon-panel`, and `.excel-tool-group`.
+     - Standardized `.excel-dropdown-menu`, `.excel-mini-menu`, and `.studio-export-menu` with `position: fixed !important; z-index: 999999 !important;`.
+     - Implemented `openDropdownOverlay(menu, triggerBtn)`: dynamically computes trigger button's viewport bounding rect (`getBoundingClientRect()`), anchors menu to `rect.bottom + 4`, and clamps within screen boundaries with auto-scroll.
+     - Added global outside click, Escape key, ribbon scroll, and window resize listeners to dismiss open overlays cleanly.
+  4. *Zero-Break Regression & Contract Parity*:
+     - `test-ui-manifest-sync.js`: 203/203 tests passed.
+     - `test-theme-support.js`: 84/84 tests passed (zero hardcoded hex colors).
+     - `server.js` and `sheets.js` syntax verification: 100% clean.
+
 ### ✅ Milestone 494: Sheet Studio Master Evaluation Theory/Practical Split, Excel Merge Menu, Rich Help Box, & Score Preservation
 - **Objective & Architectural Scope**:
   1. *Master Evaluation Theory & Practical 2-Tier Architecture (`ca64832f.png`)*:

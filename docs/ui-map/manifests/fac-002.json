@@ -5,7 +5,7 @@
   "route": "/faculty/dashboard.html",
   "source_file": "frontend/faculty/dashboard/index.html",
   "content_hash": "c90c223e7bf6",
-  "last_scanned": "2026-11-19T16:13:22.965Z",
+  "last_scanned": "2026-11-20T07:20:49.113Z",
   "title": "Faculty Dashboard — VidyaOS",
   "purpose": "Faculty home console, class groups, today's schedule, pending tasks",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -27,6 +27,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     },
     {

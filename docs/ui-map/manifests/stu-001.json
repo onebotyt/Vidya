@@ -5,7 +5,7 @@
   "route": "/student/dashboard.html",
   "source_file": "frontend/student/dashboard/index.html",
   "content_hash": "4ac9037799a7",
-  "last_scanned": "2026-11-19T16:13:23.241Z",
+  "last_scanned": "2026-11-20T07:20:49.233Z",
   "title": "Student Classroom Dashboard — VidyaOS",
   "purpose": "Student classroom dashboard, enrolled courses, attendance progress",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -30,6 +30,21 @@
     {
       "method": "POST",
       "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     }
   ],
@@ -499,6 +514,7 @@
     "exportToCsv",
     "exportTableToRealXlsx",
     "toggleStudentDrawer",
+    "toggleStudentNotifications",
     "toggleStudentApps",
     "toggleStudentProfile",
     "toggleStudentTheme",
@@ -518,7 +534,6 @@
     "openCameraQrModal",
     "closeCameraQrModal",
     "loadInstitutionBranding",
-    "toggleStudentFabMenu",
-    "openStudentJoinModal"
+    "toggleStudentFabMenu"
   ]
 }

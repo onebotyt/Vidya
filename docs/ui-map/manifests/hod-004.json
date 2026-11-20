@@ -5,7 +5,7 @@
   "route": "/faculty/faculty/index.html",
   "source_file": "frontend/faculty/faculty/index.html",
   "content_hash": "2a9971732c4a",
-  "last_scanned": "2026-11-19T16:13:22.905Z",
+  "last_scanned": "2026-11-20T07:20:49.081Z",
   "title": "Faculty Management — VidyaOS",
   "purpose": "Department faculty roster, instructor onboarding, self-registration toggle, credentials",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -25,6 +25,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     },
     {

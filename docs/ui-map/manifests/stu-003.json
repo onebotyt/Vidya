@@ -5,7 +5,7 @@
   "route": "/student/assignments.html",
   "source_file": "frontend/student/assignments/index.html",
   "content_hash": "70e96b658e4c",
-  "last_scanned": "2026-11-19T16:13:23.269Z",
+  "last_scanned": "2026-11-20T07:20:49.252Z",
   "title": "To-do — Student Portal | VidyaOS Classroom",
   "purpose": "To-do assignments, submitted tasks, graded coursework",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -30,6 +30,21 @@
     {
       "method": "POST",
       "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     }
   ],
@@ -103,6 +118,7 @@
     "exportToCsv",
     "exportTableToRealXlsx",
     "toggleStudentDrawer",
+    "toggleStudentNotifications",
     "toggleStudentApps",
     "toggleStudentProfile",
     "toggleStudentTheme",
@@ -122,7 +138,6 @@
     "toggleSectionAccordion",
     "switchTodoTab",
     "toggleAppsLauncher",
-    "toggleUserProfile",
-    "toggleTheme"
+    "toggleUserProfile"
   ]
 }

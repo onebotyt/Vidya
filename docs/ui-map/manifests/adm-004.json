@@ -5,7 +5,7 @@
   "route": "/admin/audit-logs.html",
   "source_file": "frontend/admin/audit-logs/index.html",
   "content_hash": "b81e5c1d9f9b",
-  "last_scanned": "2026-11-19T16:13:22.847Z",
+  "last_scanned": "2026-11-20T07:20:49.039Z",
   "title": "Institutional Audit Trail — Admin Console",
   "purpose": "Compliance audit trail, login attempts, grade changes, ledger edits",
   "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",
@@ -25,6 +25,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     }
   ],
@@ -267,6 +282,7 @@
     "closeSidebar",
     "toggleNotifications",
     "closeAdminLogoutModal",
+    "toggleAdminNotifications",
     "toggleAdminProfileMenu",
     "toggleDashboardTheme",
     "openModal",

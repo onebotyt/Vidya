@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "03feca1f2ccc",
-  "last_scanned": "2026-11-19T16:13:23.046Z",
+  "content_hash": "946eb9e47359",
+  "last_scanned": "2026-11-20T07:20:49.175Z",
   "title": "Unified Sheets Studio — Institutional Marks &amp; Evaluation Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -33,6 +33,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     },
     {
@@ -88,18 +103,6 @@
   ],
   "layout_structure": {
     "toolbars": [
-      {
-        "id": "studio-bar-1",
-        "class": "studio-bar studio-bar-1 sheets-top-command-bar excel-title-bar"
-      },
-      {
-        "id": "",
-        "class": "studio-bar-left excel-bar-left"
-      },
-      {
-        "id": "",
-        "class": "studio-bar-right excel-bar-right"
-      },
       {
         "id": "excel-formula-bar",
         "class": "excel-formula-bar"
@@ -268,12 +271,60 @@
   "ui_elements": {
     "action_buttons": [
       {
+        "id": "faculty-nav-toggle",
+        "label": "=769&&typeof toggleDesktopSidebar==='function'){toggleDesktopSidebar();}else if(typeof toggleSidebar==='function'){toggleSidebar();}\" aria-label=\"Toggle Navigation Menu\" title=\"Toggle Navigation Menu\">",
+        "action": null,
+        "class": "header-nav-toggle-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "btn-back-bar1",
         "label": "Back to Classroom / Registers",
         "action": "navigateBackFromSheets()",
-        "class": "btn-icon-minimal excel-back-btn",
+        "class": "btn-icon-minimal header-back-btn excel-back-btn",
         "data_ui": null,
         "title": "Back to Classroom / Registers"
+      },
+      {
+        "id": "theme-toggle-btn",
+        "label": "Toggle Dark/Light Mode",
+        "action": "toggleAppTheme()",
+        "class": "header-icon-btn header-theme-toggle",
+        "data_ui": null,
+        "title": "Toggle Dark/Light Mode"
+      },
+      {
+        "id": "header-bell-btn",
+        "label": "0",
+        "action": "toggleNotifications(event)",
+        "class": "header-icon-btn header-bell-btn",
+        "data_ui": null,
+        "title": "Notifications"
+      },
+      {
+        "id": null,
+        "label": "Mark all read",
+        "action": "markAllNotificationsAsRead(event)",
+        "class": "notif-mark-all-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "header-user-profile",
+        "label": "RS",
+        "action": "toggleUserProfile(event)",
+        "class": "header-profile-round-btn gc-user-avatar",
+        "data_ui": null,
+        "title": "Account Profile"
+      },
+      {
+        "id": null,
+        "label": "Sign Out",
+        "action": "if(typeof confirmFacultyLogout===",
+        "class": "profile-dropdown-item dropdown-logout-btn",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": null,
@@ -338,6 +389,14 @@
         "class": "excel-tab-btn",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": "btn-ribbon-scroll-left",
+        "label": "Scroll Ribbon Left",
+        "action": "scrollRibbon(-220)",
+        "class": "ribbon-scroll-btn ribbon-scroll-left",
+        "data_ui": null,
+        "title": "Scroll Ribbon Left"
       },
       {
         "id": null,
@@ -1058,6 +1117,14 @@
         "class": "excel-action-btn",
         "data_ui": null,
         "title": "Apply Lab Record &amp; Practicals Format"
+      },
+      {
+        "id": "btn-ribbon-scroll-right",
+        "label": "Scroll Ribbon Right",
+        "action": "scrollRibbon(220)",
+        "class": "ribbon-scroll-btn ribbon-scroll-right",
+        "data_ui": null,
+        "title": "Scroll Ribbon Right"
       },
       {
         "id": "btn-formula-cancel",

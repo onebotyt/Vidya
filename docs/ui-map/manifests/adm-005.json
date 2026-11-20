@@ -5,7 +5,7 @@
   "route": "/admin/reports.html",
   "source_file": "frontend/admin/reports/index.html",
   "content_hash": "ff045e8ad02f",
-  "last_scanned": "2026-11-19T16:13:22.860Z",
+  "last_scanned": "2026-11-20T07:20:49.051Z",
   "title": "Admin Console",
   "purpose": "Institutional attendance reports, accreditation extracts, Excel export",
   "shell": "Admin Shell (`admin-nav.css`, `admin-nav.js`)",
@@ -25,6 +25,21 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     }
   ],
@@ -224,6 +239,7 @@
     "closeSidebar",
     "toggleNotifications",
     "closeAdminLogoutModal",
+    "toggleAdminNotifications",
     "toggleAdminProfileMenu",
     "toggleDashboardTheme",
     "openModal",

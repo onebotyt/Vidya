@@ -5,7 +5,7 @@
   "route": "/student/scores.html",
   "source_file": "frontend/student/scores/index.html",
   "content_hash": "bb32fad670f6",
-  "last_scanned": "2026-11-19T16:13:23.297Z",
+  "last_scanned": "2026-11-20T07:20:49.272Z",
   "title": "My Test Scores &amp; Marks — Student Portal",
   "purpose": "Class test scores, mid-term results, faculty feedback",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -30,6 +30,21 @@
     {
       "method": "POST",
       "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
     }
   ],
@@ -158,6 +173,7 @@
     "exportToCsv",
     "exportTableToRealXlsx",
     "toggleStudentDrawer",
+    "toggleStudentNotifications",
     "toggleStudentApps",
     "toggleStudentProfile",
     "toggleStudentTheme",
