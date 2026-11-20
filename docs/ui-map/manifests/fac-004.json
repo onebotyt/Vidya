@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
-  "content_hash": "3cd12d2a499e",
-  "last_scanned": "2026-11-20T19:55:56.948Z",
+  "content_hash": "b998b1a47ed3",
+  "last_scanned": "2026-11-20T20:01:16.890Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -334,7 +334,7 @@
         "headers": [
           "Roll",
           "Student Name",
-          "Enrollment No",
+          "UBTER Roll No",
           "Scan Time"
         ]
       },
@@ -359,7 +359,7 @@
         "headers": [
           "Roll",
           "Student Name",
-          "Enrollment No",
+          "UBTER Roll No",
           "Action"
         ]
       }
@@ -1117,7 +1117,7 @@
         "action": "addStudentByEnroll()",
         "class": "add-student-submit-btn",
         "data_ui": null,
-        "title": "Add student by enrollment number"
+        "title": "Add student by UBTER roll number"
       },
       {
         "id": null,
@@ -1701,7 +1701,7 @@
         "action": "toggleMarksColFilterMenu(event)",
         "class": "btn btn-secondary btn-sm btn-tool-minimal",
         "data_ui": null,
-        "title": "Filter columns: Show/Hide SR. NO., Enrollment No., Registration No."
+        "title": "Filter columns: Show/Hide SR. NO., UBTER Roll No., Registration No."
       },
       {
         "id": "btn-marks-export",
@@ -2189,7 +2189,7 @@
         "id": "add-enroll-input",
         "type": "text",
         "name": null,
-        "placeholder": "Enrollment No. to add…",
+        "placeholder": "UBTER Roll No. to add…",
         "handler": null,
         "class": "add-student-input"
       },
@@ -2661,7 +2661,7 @@
         "id": "search-unenrolled-input",
         "type": "text",
         "name": null,
-        "placeholder": "Search by name, roll, or enrollment no...",
+        "placeholder": "Search by name, roll, or UBTER roll no...",
         "handler": "filterUnenrolledStudents()",
         "class": null
       },

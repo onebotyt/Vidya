@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T19:55:57.132Z",
+  "generated_at": "2026-11-20T20:01:17.241Z",
   "total_pages": 32,
   "totals": {
     "buttons": 763,
@@ -145,7 +145,7 @@
       "route": "/faculty/group-detail.html",
       "title": "Teaching Group Classroom - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-004.json",
-      "content_hash": "3cd12d2a499e",
+      "content_hash": "b998b1a47ed3",
       "counts": {
         "buttons": 180,
         "modals": 54,
@@ -210,7 +210,7 @@
       "route": "/faculty/course-file.html",
       "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-012.json",
-      "content_hash": "1afbddcb5e36",
+      "content_hash": "02c3a30b05a0",
       "counts": {
         "buttons": 23,
         "modals": 24,
@@ -405,7 +405,7 @@
       "route": "/login/",
       "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "a4728b395d12",
+      "content_hash": "85a8780c9c77",
       "counts": {
         "buttons": 11,
         "modals": 4,
@@ -418,7 +418,7 @@
       "route": "/login/register/",
       "title": "Register — VidyaOS Campus Management",
       "manifest_file": "docs/ui-map/manifests/pub-003.json",
-      "content_hash": "eae25f9eaf41",
+      "content_hash": "573f249be4e9",
       "counts": {
         "buttons": 5,
         "modals": 0,

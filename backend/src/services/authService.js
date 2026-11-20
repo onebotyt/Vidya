@@ -512,7 +512,7 @@ class AuthService {
   }
 
   // ─────────────────────────────────────────────────────────
-  // STUDENT LOGIN (Gmail, Phone, Enrollment No, or UBTER Reg No)
+  // STUDENT LOGIN (Gmail, Phone, UBTER Roll No, or UBTER Reg No)
   // ─────────────────────────────────────────────────────────
   async studentLogin(credential, password, clientInfo = {}) {
     const cred = parseLoginCredential(credential, false);

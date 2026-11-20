@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/course-file.html",
   "source_file": "frontend/faculty/course-file/index.html",
-  "content_hash": "1afbddcb5e36",
-  "last_scanned": "2026-11-20T19:55:56.993Z",
+  "content_hash": "02c3a30b05a0",
+  "last_scanned": "2026-11-20T20:01:16.973Z",
   "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
   "purpose": "NBA/NAAC course compliance file compilation",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -110,7 +110,7 @@
         "class": "data-table",
         "headers": [
           "Roll No",
-          "Enrollment No",
+          "UBTER Roll No",
           "Student Full Name",
           "Email Address",
           "Attended",
@@ -155,7 +155,7 @@
         "class": "data-table",
         "headers": [
           "Roll No",
-          "Enrollment No",
+          "UBTER Roll No",
           "Full Name",
           "Attendance",
           "Diagnostic Status &amp; Mentoring Action"
