@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T11:30:20.629Z",
+  "generated_at": "2026-11-20T11:53:31.664Z",
   "total_pages": 31,
   "totals": {
-    "buttons": 714,
+    "buttons": 720,
     "modals": 183,
-    "inputs": 386,
+    "inputs": 388,
     "apis": 252
   },
   "pages": [
@@ -158,11 +158,11 @@
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
       "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "3663bfdbe6bb",
+      "content_hash": "34a5fa39671b",
       "counts": {
-        "buttons": 178,
+        "buttons": 184,
         "modals": 26,
-        "inputs": 62,
+        "inputs": 64,
         "apis": 7
       }
     },
@@ -171,7 +171,7 @@
       "route": "/faculty/students/index.html",
       "title": "Students Management — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-007.json",
-      "content_hash": "85783028eb5a",
+      "content_hash": "e2030eb016d9",
       "counts": {
         "buttons": 38,
         "modals": 7,

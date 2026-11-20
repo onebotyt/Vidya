@@ -65,22 +65,26 @@ function loadScript(src) {
 }
 
 function showOfficeScreenLoader(msg = 'Loading...') {
+  if (typeof window.showOfficeScreenLoader === 'function' && window.showOfficeScreenLoader !== showOfficeScreenLoader) {
+    return window.showOfficeScreenLoader(msg);
+  }
   const loader = document.getElementById('office-engine-loader');
   const txt = document.getElementById('office-loader-status');
   if (txt) txt.textContent = msg;
   if (loader) {
     loader.style.display = 'flex';
     loader.classList.remove('hidden');
-    // Clear any previous timer
     if (window._officeLoaderTimer) clearTimeout(window._officeLoaderTimer);
-    // Hard safety ceiling: loader can NEVER stay visible for more than 2500ms under any circumstance
     window._officeLoaderTimer = setTimeout(() => {
       hideOfficeScreenLoader();
-    }, 2500);
+    }, 15000);
   }
 }
 
 function hideOfficeScreenLoader() {
+  if (typeof window.hideOfficeScreenLoader === 'function' && window.hideOfficeScreenLoader !== hideOfficeScreenLoader) {
+    return window.hideOfficeScreenLoader();
+  }
   const loader = document.getElementById('office-engine-loader');
   if (loader) {
     loader.style.display = 'none';
@@ -114,6 +118,7 @@ async function loadSpreadsheetEngine(onReady) {
 
     // 2. Load the modular tools and main Sheets Studio engine
     await loadScript('/faculty/sheets/js/sheets-color-tools.js?v=20261120_real');
+    await loadScript('/faculty/sheets/js/sheets-grid-stretching.js?v=20261120_real');
     await loadScript('/faculty/sheets/sheets.js?v=20261120_real');
 
     window.__OFFICE_ENGINE_LOADED = true;
@@ -121,11 +126,6 @@ async function loadSpreadsheetEngine(onReady) {
     if (typeof onReady === 'function') {
       await onReady();
     }
-
-    // Safety fallback to hide loader quickly so buttons never freeze
-    setTimeout(() => {
-      hideOfficeScreenLoader();
-    }, 1200);
   } catch (err) {
     console.error('Fatal error loading spreadsheet engine:', err);
     hideOfficeScreenLoader();

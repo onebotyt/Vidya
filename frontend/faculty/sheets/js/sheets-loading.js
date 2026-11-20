@@ -12,10 +12,10 @@ function showOfficeScreenLoader(msg = 'Loading...') {
     loader.style.display = 'flex';
     loader.classList.remove('hidden');
     if (_officeLoaderTimer) clearTimeout(_officeLoaderTimer);
-    // Hard safety timeout: loader never stays stuck for more than 2500ms
+    // Hard safety timeout: loader never stays stuck for more than 15000ms
     _officeLoaderTimer = setTimeout(() => {
       hideOfficeScreenLoader();
-    }, 2500);
+    }, 15000);
   }
 }
 

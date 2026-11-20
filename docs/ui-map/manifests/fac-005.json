@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "3663bfdbe6bb",
-  "last_scanned": "2026-11-20T11:30:20.248Z",
+  "content_hash": "34a5fa39671b",
+  "last_scanned": "2026-11-20T11:53:31.396Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -536,19 +536,67 @@
       },
       {
         "id": "btn-fill-color-picker",
-        "label": "Fill Color",
-        "action": "document.getElementById(",
+        "label": "Fill Color (Background)",
+        "action": "toggleColorPalette(",
         "class": "excel-icon-btn",
         "data_ui": null,
-        "title": "Fill Color"
+        "title": "Fill Color (Background)"
+      },
+      {
+        "id": null,
+        "label": "✕",
+        "action": "selectFillColor(",
+        "class": "color-swatch no-fill",
+        "data_ui": null,
+        "title": "No Fill / Clear"
+      },
+      {
+        "id": null,
+        "label": "White",
+        "action": "selectFillColor(",
+        "class": "color-swatch",
+        "data_ui": null,
+        "title": "White"
+      },
+      {
+        "id": null,
+        "label": "Pass (≥ 75%)",
+        "action": "applyPresetFormatting(",
+        "class": "palette-preset-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Average (50-74%)",
+        "action": "applyPresetFormatting(",
+        "class": "palette-preset-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Low / At Risk (&lt; 50%)",
+        "action": "applyPresetFormatting(",
+        "class": "palette-preset-btn",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "btn-font-color-picker",
         "label": "A",
-        "action": "document.getElementById(",
+        "action": "toggleColorPalette(",
         "class": "excel-icon-btn",
         "data_ui": null,
-        "title": "Font Color"
+        "title": "Font Color (Text)"
+      },
+      {
+        "id": null,
+        "label": "Default Dark",
+        "action": "selectFontColor(",
+        "class": "color-swatch",
+        "data_ui": null,
+        "title": "Default Dark"
       },
       {
         "id": "btn-valign-top",
@@ -1665,6 +1713,22 @@
         "class": null
       },
       {
+        "id": "input-fill-color",
+        "type": "color",
+        "name": null,
+        "placeholder": null,
+        "handler": "selectFillColor(this.value)",
+        "class": null
+      },
+      {
+        "id": "input-font-color",
+        "type": "color",
+        "name": null,
+        "placeholder": null,
+        "handler": "selectFontColor(this.value)",
+        "class": null
+      },
+      {
         "id": "excel-name-box",
         "type": "text",
         "name": null,
@@ -2474,6 +2538,9 @@
     "faculty/components/faculty-ui.js",
     "faculty/components/header/header.js",
     "faculty/components/sidebar/sidebar.js",
+    "faculty/sheets/js/sheets-loading.js",
+    "faculty/sheets/js/sheets-color-tools.js",
+    "faculty/sheets/js/sheets-grid-stretching.js",
     "faculty/sheets/office-home.js"
   ],
   "exported_functions": [
@@ -2489,6 +2556,8 @@
     "toggleDesktopSidebar",
     "toggleSidebar",
     "closeSidebar",
+    "toggleColorPalette",
+    "closeAllColorPalettes",
     "loadScript",
     "loadSpreadsheetEngine",
     "renderOfficeRecentList",

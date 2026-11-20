@@ -49,6 +49,51 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 508: Fullscreen Gray Loading Overlay Modal, Modular Office Architecture, Mock Data Purge, Ribbon Color Tools, and Auto-Fit Width Distribution
+- **Objective & Architectural Scope**:
+  1. *Fullscreen Gray Loading Overlay Modal (Prevents Extra Clicks)*:
+     - Designed centered rounded loading card (`.office-loader-card`, 16px border-radius, soft elevation shadow) on a blurred dark-gray backdrop (`backdrop-filter: blur(8px)`, hsla background) with rotating 8-dots circular spinner and crisp "Loading..." typography (`Inter`, 15px).
+     - Fixed race conditions: eliminated premature 1200ms and 2500ms hide timeouts; loader stays visible throughout group metadata and live database student roster hydration until grid rendering is 100% complete.
+  2. *Complete Purge of Mock Data & Clean Placeholder Empty Rows*:
+     - Scanned entire `frontend/faculty/sheets/` folder and purged all mock/fallback student names (`fallbackNames`, `Girdhar Dhami`, `Aditi Verma`, etc.).
+     - Invalidate any stale cached workbooks from localStorage on startup that lack `REG. NO.` or contain obsolete formulas (`ROUND(D...`, `ROUND(I...`).
+     - When classroom has 0 students enrolled, generates clean empty placeholder rows with serial numbers 1..20 and blank student fields with active formulas, never injecting fake names.
+  3. *Multi-Option Ribbon Color Formatting Tool*:
+     - Added Home ribbon color tools: Fill Color popup (`#palette-fill-color`) with 16 cell fill colors, no-fill reset, custom hex picker, and 3 quick conditional formatting presets (Pass $\ge$ 75% in emerald, Average 50–74% in amber, Low/At Risk $<$ 50% in red).
+     - Added Font Color popup (`#palette-font-color`) with 12 text colors and custom hex picker.
+  4. *Modular CSS & JS File Decomposition*:
+     - Extracted single-responsibility modules:
+       - `frontend/faculty/sheets/css/sheets-loading.css`: Loading overlay modal, spinner dots, and toasts.
+       - `frontend/faculty/sheets/css/sheets-color-tools.css`: Palette dropdowns, color swatches, and custom pickers.
+       - `frontend/faculty/sheets/css/sheets-grid.css`: Compact cell padding (2px 6px), section header badges, total highlights, and zebra striping.
+       - `frontend/faculty/sheets/css/sheets-ribbon.css`: Ribbon tabs, tool buttons, and formula bar.
+       - `frontend/faculty/sheets/js/sheets-loading.js`: `showOfficeScreenLoader()`, `hideOfficeScreenLoader()`, and `showToast()`.
+       - `frontend/faculty/sheets/js/sheets-color-tools.js`: Palette toggles, fill/font color selectors, and preset formatting.
+       - `frontend/faculty/sheets/js/sheets-grid-stretching.js`: `autoFitSheetColumns()` and width distribution.
+  5. *Elimination of Right-Side Empty Void & Compact Styling*:
+     - Upgraded `autoFitSheetColumns(sheet)` to dynamically distribute remaining container width across sheet columns, eliminating large white space voids on wide desktop screens.
+     - Styled `THEORY` section header with soft blue badge (`var(--badge-primary-bg)`), `PRACTICAL` header with soft emerald badge (`var(--status-present-bg)`), and `TOTAL` columns with subtle highlight (`var(--chip-faculty-bg)`).
+  6. *Zero-Break UIMS Parity & Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Backend server syntax validated clean (`node -c backend/server.js`).
+
+### ✅ Milestone 507: Department Students Roster Registration No Column & Pre-Roll Profile Avatar Architecture
+- **Objective & Architectural Scope**:
+  1. *Profile Avatar Column Before Roll Number*:
+     - Integrated a dedicated Avatar column (`.col-avatar`, `#th-avatar`) positioned directly before `Roll #` across all roster views in `frontend/faculty/students/` (`index.html`, `students.js`, `students.css`).
+     - Rendered sleek, theme-compliant initials avatar badge (`.stu-avatar`) using `getInitials(name)` with photo image fallback (`st.profile_photo`) and direct click trigger to view student profile dossiers (`viewStudentDetails(studentId)`).
+     - Scaled avatar presentation responsively (32px on PC, 26px on mobile <= 768px) with zero viewport overflow.
+  2. *Registration Number Column in PC View*:
+     - Added dedicated Registration Number column (`.col-reg`, `#th-reg`) in PC view between `Roll #` and `Enrollment`.
+     - Formatted state/university registration codes via `formatRegistrationDisplay(st.registration_no)` (`.stu-code-mono` for active numbers, `.stu-sub-mono` for unassigned placeholders).
+     - Applied mobile suppression (`@media (max-width: 768px) { .col-reg { display: none !important; } }`) to preserve ultra-compact mobile layout.
+     - Handled clean switching across Active, Trash, and Pending enrollment application tabs.
+  3. *Zero-Break UIMS Parity & Theme Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Backend server and frontend scripts validated clean (`node -c backend/server.js`, `node -c frontend/faculty/students/students.js`).
+
 ### ✅ Milestone 506: Comprehensive 5-Column Student Identity Architecture (Roll No, Reg No, Enrollment No, Student Name)
 - **Objective & Architectural Scope**:
   1. *Dedicated Student Identity Columns in Office Studio*:
