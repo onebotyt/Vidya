@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "f0c3c2896f7a",
-  "last_scanned": "2026-11-20T20:41:16.261Z",
+  "content_hash": "28b746bbe4a7",
+  "last_scanned": "2026-11-20T20:50:49.325Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and student profile dossier modal",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -67,7 +67,7 @@
           "Avatar",
           "Roll #",
           "Registration No",
-          "Enrollment",
+          "UBTER Roll No",
           "Student Name",
           "Retention",
           "Actions"
@@ -432,7 +432,7 @@
         "id": "student-search",
         "type": "search",
         "name": null,
-        "placeholder": "Search by name, roll, enrollment...",
+        "placeholder": "Search by name, roll, UBTER roll no...",
         "handler": null,
         "class": null
       },
@@ -512,7 +512,7 @@
         "id": "add-stu-enroll",
         "type": "text",
         "name": null,
-        "placeholder": "2024IT001",
+        "placeholder": "24011090008",
         "handler": null,
         "class": null
       },

@@ -49,6 +49,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 543: Remove Hardware Spec Chips, Streamline Optical Viewfinder & Clean Industrial Bezel (v26)
+- **Objective & Architectural Scope**:
+  1. *Removal of Peripheral Clutter Chips*:
+     - Removed the five developer-centric hardware specification chips (`AS608 UART2 (57600)`, `SSD1306 OLED (128×64)`, `W25Q32 4MB SPI`, `Piezo GPIO14`, `2S Li-ion ADC34`) from the physical console display.
+  2. *Streamlined Optical Sensor Viewfinder (`.esp-sensor-unit`)*:
+     - Replaced the crowded double-sensor graphics with a unified, high-density optical fingerprint target featuring a radial glow pad (`.esp-sensor-glow-pad`), corner reticle viewfinders, glowing active touch ring, and crisp `AS608 OPTICAL SENSOR` typography.
+     - Preserved interactive pulse and color morph animations on scanning (`bioPulse`) and verified states.
+  3. *Refined Industrial Hardware Bezel & Simulation Toolbar*:
+     - Compacted the 6 simulation mode buttons into a low-profile segmented control bar (`.oled-sim-controls`) with border top separation, translucent buttons, and active accent-blue glow.
+     - Streamlined bezel LED status indicators (`OK`, `ALERT`, `ENROLL / SYNC`) with clean spacing and subtle labels.
+     - Softer, modern button styles in the Wi-Fi card footer (`btn-outline-danger` for emergency reset).
+  4. *Static Asset Cache Invalidation & Parity*:
+     - Bumped stylesheet and script cache query parameters to `?v=20261121f` across both `frontend/faculty/esp32-devices/index.html` and `frontend/faculty/esp32-devices.html`.
+     - Mirrored updated files to `frontend/www/faculty/esp32-devices/`.
+  5. *Zero-Break UI Contracts & Verification*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 manifests cataloged.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Verified backend syntax sanity (`node -c server.js`).
+
 ### ✅ Milestone 542: Layout Realignment: Biometric Station to Right, Remove Status Cards, Modernize Student Dropdown (v25)
 - **Objective & Architectural Scope**:
   1. *Studio Grid Layout Swap (Biometric Station to Right)*:

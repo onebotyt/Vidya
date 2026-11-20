@@ -1294,7 +1294,7 @@
       btnEl.textContent = 'Approving...';
     }
     try {
-      const payload = officialEnrollmentNo ? { official_enrollment_no: officialEnrollmentNo } : {};
+      const payload = officialEnrollmentNo ? { ubter_roll_no: officialEnrollmentNo, official_enrollment_no: officialEnrollmentNo } : {};
       const res = await api(`/hod/registrations/student/${id}/approve`, {
         method: 'POST',
         body: JSON.stringify(payload)
