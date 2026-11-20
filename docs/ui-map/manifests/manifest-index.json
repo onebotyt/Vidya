@@ -1,10 +1,10 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T14:31:21.370Z",
+  "generated_at": "2026-11-20T14:59:42.344Z",
   "total_pages": 32,
   "totals": {
-    "buttons": 741,
+    "buttons": 744,
     "modals": 181,
     "inputs": 387,
     "apis": 270
@@ -158,7 +158,7 @@
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
       "title": "Office Studio — Institutional Spreadsheets &amp; Documents Hub",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "eae970e7e74f",
+      "content_hash": "eb0586c7deb8",
       "counts": {
         "buttons": 8,
         "modals": 0,
@@ -275,9 +275,9 @@
       "route": "/faculty/sheets/editor.html",
       "title": "Spreadsheet Studio — Institutional Excel Workspace",
       "manifest_file": "docs/ui-map/manifests/fac-017.json",
-      "content_hash": "1e3c385fd096",
+      "content_hash": "7e154ac794c8",
       "counts": {
-        "buttons": 200,
+        "buttons": 203,
         "modals": 26,
         "inputs": 63,
         "apis": 17

@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/editor.html",
   "source_file": "frontend/faculty/sheets/editor.html",
-  "content_hash": "1e3c385fd096",
-  "last_scanned": "2026-11-20T14:31:21.232Z",
+  "content_hash": "7e154ac794c8",
+  "last_scanned": "2026-11-20T14:59:42.079Z",
   "title": "Spreadsheet Studio — Institutional Excel Workspace",
   "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -778,6 +778,14 @@
         "title": "Open Scores Form Modal"
       },
       {
+        "id": "btn-ribbon-fit-screen",
+        "label": "Fit Screen",
+        "action": "triggerFitColumnsToScreen()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Fit all columns to screen width without scrolling"
+      },
+      {
         "id": "btn-autosum-dropdown",
         "label": "Σ AutoSum ▾",
         "action": "toggleAutoSumMenu(event)",
@@ -992,6 +1000,14 @@
         "class": "excel-tool-btn",
         "data_ui": null,
         "title": "Edit Total Marks &amp; Scheme"
+      },
+      {
+        "id": "btn-layout-fit-screen",
+        "label": "Fit Columns to Screen",
+        "action": "triggerFitColumnsToScreen()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Auto-Fit All Columns to Screen Width"
       },
       {
         "id": null,
@@ -1216,6 +1232,14 @@
         "class": "btn btn-secondary btn-sm active",
         "data_ui": null,
         "title": "Show/Hide Institutional Signatures Bar"
+      },
+      {
+        "id": "btn-fit-columns-screen",
+        "label": "Fit to Screen",
+        "action": "triggerFitColumnsToScreen()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Fit all columns to screen width without scrolling"
       },
       {
         "id": "btn-open-filter-modal",
