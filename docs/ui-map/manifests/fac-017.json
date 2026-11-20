@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/editor.html",
   "source_file": "frontend/faculty/sheets/editor.html",
-  "content_hash": "410f9539b9f7",
-  "last_scanned": "2026-11-20T14:16:13.652Z",
+  "content_hash": "1e3c385fd096",
+  "last_scanned": "2026-11-20T14:31:21.232Z",
   "title": "Spreadsheet Studio — Institutional Excel Workspace",
   "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -716,7 +716,7 @@
       {
         "id": "btn-conditional-formatting",
         "label": "Conditional Formatting ▾",
-        "action": "toggleConditionalFormattingMenu(event)",
+        "action": "toggleConditionalFormattingMenu(event, this)",
         "class": "excel-tool-btn",
         "data_ui": null,
         "title": "Excel Conditional Formatting & Color Scales"
@@ -724,7 +724,7 @@
       {
         "id": "btn-color-templates",
         "label": "Color Templates ▾",
-        "action": "toggleColorTemplatesMenu(event)",
+        "action": "toggleColorTemplatesMenu(event, this)",
         "class": "excel-tool-btn",
         "data_ui": null,
         "title": "Sheet Color Templates & Table Themes"
@@ -2728,10 +2728,10 @@
     "toggleDesktopSidebar",
     "toggleSidebar",
     "closeSidebar",
+    "closeAllColorPalettes",
     "toggleColorPalette",
     "toggleConditionalFormattingMenu",
     "toggleColorTemplatesMenu",
-    "closeAllColorPalettes",
     "loadTeacherGroupsList",
     "renderGroupSwitcherOptions",
     "renderSheetSelectorDropdownOptions",

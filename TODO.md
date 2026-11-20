@@ -49,6 +49,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 520: Fix Color Templates & Formatting Dropdowns Toggle, Mutual Exclusion, and CSS Specificity Conflict (v8)
+- **Objective & Architectural Scope**:
+  1. *Eradicate CSS Specificity Conflict*:
+     - In `sheets-color-tools.css`, removed rogue `display: flex !important;` from `.excel-templates-dropdown`. Added explicit `.is-open { display: flex !important; }` state classes for `.excel-color-palette-popup`, `.excel-conditional-dropdown`, and `.excel-templates-dropdown`.
+     - Previously, `display: flex !important;` in the stylesheet prevented inline `display: none` from hiding the dropdown, leaving `#excel-templates-menu` permanently visible from initial load and unable to close.
+  2. *Single-Active Dropdown Mutual Exclusion & Robust Toggle*:
+     - In `sheets-color-tools.js`, introduced `isPopupOpen()` and unified `closeAllColorPalettes()` to remove `.is-open` and set `display: none !important;` across all 4 floating popups (`palette-fill-color`, `palette-font-color`, `excel-conditional-menu`, `excel-templates-menu`).
+     - Toggling any dropdown cleanly closes all others first. Re-clicking an open button closes it instantly (true toggle behavior).
+     - Added global `Escape` key dismissal to immediately close any active floating palette or dropdown.
+  3. *Explicit Trigger Element Binding (`this`)*:
+     - Updated button click handlers in `editor.html` (`btn-conditional-formatting`, `btn-color-templates`, `btn-fill-color-picker`, `btn-font-color-picker`) to pass `this` directly, guaranteeing flawless bounding rect measurement without DOM traversal fallbacks.
+     - In `positionFloatingDropdown()`, temporarily sets `visibility: hidden` while measuring `offsetWidth` and `offsetHeight` to eliminate 0-dimension miscalculations and prevent positioning jump.
+  4. *Asset Cache Busting (`?v=20261120_v8`)*:
+     - Bumped script and stylesheet asset cache versions across `editor.html`, `index.html`, and `office-home.js` to `?v=20261120_v8`.
+
 ### ✅ Milestone 519: Dedicated 2-Page Decoupled Architecture for Office Studio (`index.html` & `editor.html`)
 - **Objective & Architectural Scope**:
   1. *Physical Separation of Office Start Hub & Excel Studio*:
