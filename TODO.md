@@ -49,6 +49,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 533: Compact ESP32 Station Redesign & Dedicated Student Biometric Registration Section (v1)
+- **Objective & Architectural Scope**:
+  1. *Dedicated Student Biometric Registration Station*:
+     - Created a dedicated, interactive "Student Biometric Registration Station" card on `/faculty/esp32-devices/index.html` allowing HOD/Faculty to select any department student directly from a dropdown or roster, inspect their biometric status (Enrolled vs Pending), and trigger one-click enrollment.
+     - Interactive Biometric Scanner Console: Added SVG fingerprint scanner visual with animated pulse rings (`bioPulse`), live 3-step progress tracking (`1. Select` -> `2. Place Finger on AS608` -> `3. MySQL Cloud Stored`), and prompt messages for sensor touch.
+     - One-Click Enrollment from Vault: Clicking "Enroll Biometric" on any student in the vault table auto-selects that student in the registration station, smoothly scrolls up, highlights the card, and initiates the AS608 enrollment cycle.
+  2. *Ultra-Compact, High-Density Redesign*:
+     - Compact Page Header: Integrated department selector and quick action buttons (`👆 Register Biometric`, `📡 Check ESP Connected`, `+ Add ESP Terminal`) in a single streamlined row with reduced vertical padding.
+     - Streamlined 4-KPI Metric Strip: Compact 4-card telemetry bar with hardware node status, cloud biometric coverage percentage, 2S battery voltage telemetry, and W25Q32 flash queue count.
+     - Horizontal Tabbed Workspace (`📇 Department Student Biometric Vault`, `📶 Wi-Fi & Failover`, `⚡ Live Attendance Feed`, `📋 Remote ESP32 System Logs`): Replaced lengthy continuous scrolling with instant client-side tab switching to maintain a high-density, viewport-optimized layout.
+  3. *Zero-Break UI Contract & Theme Token Compliance*:
+     - Full theme token adherence (zero hardcoded `#hex` colors in CSS/HTML).
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) and `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passing).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passing).
+
 ### ✅ Milestone 532: Total (63px) & Grand Total (65px) Column Proportions & A4 Paper Export Synchronization (v17)
 - **Objective & Architectural Scope**:
   1. *Total (63px) and Grand Total (65px) Proportions Across Sheets*:

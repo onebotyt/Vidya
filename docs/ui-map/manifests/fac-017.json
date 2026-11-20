@@ -5,7 +5,7 @@
   "route": "/faculty/sheets/editor.html",
   "source_file": "frontend/faculty/sheets/editor.html",
   "content_hash": "fb1622946e29",
-  "last_scanned": "2026-11-20T18:11:58.686Z",
+  "last_scanned": "2026-11-20T18:20:21.898Z",
   "title": "Spreadsheet Studio — Institutional Excel Workspace",
   "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
