@@ -10118,11 +10118,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     evalSheet.colWidths[c] = defaultEvalWidths[c];
   }
 
-  // Header Row 0: SR. NO., ROLL NO., REG. NO., ENROLLMENT NO., STUDENT NAME, THEORY (cols 5..9), PRACTICAL (cols 10..14), GRAND TOTAL (col 15)
+  // Header Row 0: SR. NO., ROLL NO., REG. NO., UBTER ROLL NO., STUDENT NAME, THEORY (cols 5..9), PRACTICAL (cols 10..14), GRAND TOTAL (col 15)
   setCell(evalSheet, 0, 0, { raw: 'SR. NO.', v: 'SR. NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
   setCell(evalSheet, 0, 1, { raw: 'ROLL NO.', v: 'ROLL NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
   setCell(evalSheet, 0, 2, { raw: 'REG. NO.', v: 'REG. NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
-  setCell(evalSheet, 0, 3, { raw: 'ENROLLMENT NO.', v: 'ENROLLMENT NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+  setCell(evalSheet, 0, 3, { raw: 'UBTER ROLL NO.', v: 'UBTER ROLL NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
   setCell(evalSheet, 0, 4, { raw: 'STUDENT NAME', v: 'STUDENT NAME', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
   setCell(evalSheet, 0, 5, { raw: 'THEORY', v: 'THEORY', s: { bold: true, align: 'center', bg: 'var(--badge-primary-bg, var(--chip-faculty-bg))', color: 'var(--color-primary)' } });
   for (let c = 6; c <= 9; c++) {
@@ -10175,7 +10175,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // SR. NO. vertical merge
     { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // ROLL NO. vertical merge
     { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } }, // REG. NO. vertical merge
-    { s: { r: 0, c: 3 }, e: { r: 1, c: 3 } }, // ENROLLMENT NO. vertical merge
+    { s: { r: 0, c: 3 }, e: { r: 1, c: 3 } }, // UBTER ROLL NO. vertical merge
     { s: { r: 0, c: 4 }, e: { r: 1, c: 4 } }, // STUDENT NAME vertical merge
     { s: { r: 0, c: 5 }, e: { r: 0, c: 9 } }, // THEORY horizontal merge (cols 5..9)
     { s: { r: 0, c: 10 }, e: { r: 0, c: 14 } }, // PRACTICAL horizontal merge (cols 10..14)
@@ -10292,12 +10292,12 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   testSheet.colWidths[0] = 42;  // SR. NO.
   testSheet.colWidths[1] = 50;  // ROLL NO.
   testSheet.colWidths[2] = 76; // REG. NO.
-  testSheet.colWidths[3] = 102; // ENROLLMENT NO.
+  testSheet.colWidths[3] = 102; // UBTER ROLL NO.
   testSheet.colWidths[4] = 145; // STUDENT NAME
   for (let c = 5; c <= 14; c++) testSheet.colWidths[c] = 48;
   testSheet.colWidths[15] = 65; // Final Total (Grand Total)
 
-  const testHeaders = ['SR. NO.', 'ROLL NO.', 'REG. NO.', 'ENROLLMENT NO.', 'STUDENT NAME', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Final Total (Best 4 Avg)'];
+  const testHeaders = ['SR. NO.', 'ROLL NO.', 'REG. NO.', 'UBTER ROLL NO.', 'STUDENT NAME', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Final Total (Best 4 Avg)'];
   testHeaders.forEach((h, c) => {
     setCell(testSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
   });
@@ -10369,7 +10369,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     singleTestSheet.colWidths[0] = 42;  // SR. NO.
     singleTestSheet.colWidths[1] = 50;  // ROLL NO.
     singleTestSheet.colWidths[2] = 76; // REG. NO.
-    singleTestSheet.colWidths[3] = 102; // ENROLLMENT NO.
+    singleTestSheet.colWidths[3] = 102; // UBTER ROLL NO.
     singleTestSheet.colWidths[4] = 145; // STUDENT NAME
     singleTestSheet.colWidths[5] = 48;
     singleTestSheet.colWidths[6] = 48;
@@ -10432,7 +10432,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
         'All questions are compulsory.',
         'Marks are indicated against each question.',
         'Scientific calculator is permitted. Cell phones and unauthorized digital devices are strictly prohibited.',
-        'Candidates must write their Roll No. & Enrollment No. clearly on the answer script.'
+        'Candidates must write their Roll No. & UBTER Roll No. clearly on the answer script.'
       ];
     }
 
@@ -10514,11 +10514,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
       ];
     }
 
-    // Header Row 0: SR. NO., ROLL NO., REG. NO., ENROLLMENT NO., STUDENT NAME, Unit Test (Total Marks: 20) [merged 5..9], Details
+    // Header Row 0: SR. NO., ROLL NO., REG. NO., UBTER ROLL NO., STUDENT NAME, Unit Test (Total Marks: 20) [merged 5..9], Details
     setCell(singleTestSheet, 0, 0, { raw: 'SR. NO.', v: 'SR. NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
     setCell(singleTestSheet, 0, 1, { raw: 'ROLL NO.', v: 'ROLL NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
     setCell(singleTestSheet, 0, 2, { raw: 'REG. NO.', v: 'REG. NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
-    setCell(singleTestSheet, 0, 3, { raw: 'ENROLLMENT NO.', v: 'ENROLLMENT NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
+    setCell(singleTestSheet, 0, 3, { raw: 'UBTER ROLL NO.', v: 'UBTER ROLL NO.', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
     setCell(singleTestSheet, 0, 4, { raw: 'STUDENT NAME', v: 'STUDENT NAME', s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
     setCell(singleTestSheet, 0, 5, { raw: `Unit Test ${tNum} (Total Marks : ${testTotalMax})`, v: `Unit Test ${tNum} (Total Marks : ${testTotalMax})`, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)' } });
     for (let c = 6; c <= 9; c++) {
@@ -10626,14 +10626,14 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   assignSheet.colWidths[0] = 42;  // SR. NO.
   assignSheet.colWidths[1] = 50;  // ROLL NO.
   assignSheet.colWidths[2] = 76; // REG. NO.
-  assignSheet.colWidths[3] = 102; // ENROLLMENT NO.
+  assignSheet.colWidths[3] = 102; // UBTER ROLL NO.
   assignSheet.colWidths[4] = 145; // STUDENT NAME
   for (let c = 5; c <= 9; c++) assignSheet.colWidths[c] = 48;
   assignSheet.colWidths[10] = 63; // Total (Average)
   assignSheet.colWidths[11] = 180;
 
   const assignHeaders = [
-    'SR. NO.', 'ROLL NO.', 'REG. NO.', 'ENROLLMENT NO.', 'STUDENT NAME',
+    'SR. NO.', 'ROLL NO.', 'REG. NO.', 'UBTER ROLL NO.', 'STUDENT NAME',
     '1', '2', '3', '4', '5', 'Total (Average)',
     'Assignment Details (Mode : OFFLINE, Posted in VidyaOS as classwork)'
   ];
@@ -10700,7 +10700,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   practicalSheet.colWidths[0] = 42;  // SR. NO.
   practicalSheet.colWidths[1] = 50;  // ROLL NO.
   practicalSheet.colWidths[2] = 76; // REG. NO.
-  practicalSheet.colWidths[3] = 102; // ENROLLMENT NO.
+  practicalSheet.colWidths[3] = 102; // UBTER ROLL NO.
   practicalSheet.colWidths[4] = 145; // STUDENT NAME
   practicalSheet.colWidths[5] = 75; // Lab Record File
   practicalSheet.colWidths[6] = 105; // Creative Work (Model/Chart/Project)
@@ -10708,7 +10708,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   practicalSheet.colWidths[8] = 65;  // Viva Voce
   practicalSheet.colWidths[9] = 63;  // TOTAL
 
-  const practicalHeaders = ['SR. NO.', 'ROLL NO.', 'REG. NO.', 'ENROLLMENT NO.', 'STUDENT NAME', 'Lab Record File', 'Creative Work (Model/Chart/Project)', 'Attendance', 'Viva Voce', 'TOTAL'];
+  const practicalHeaders = ['SR. NO.', 'ROLL NO.', 'REG. NO.', 'UBTER ROLL NO.', 'STUDENT NAME', 'Lab Record File', 'Creative Work (Model/Chart/Project)', 'Attendance', 'Viva Voce', 'TOTAL'];
   practicalHeaders.forEach((h, c) => {
     setCell(practicalSheet, 0, c, { raw: h, v: h, s: { bold: true, align: 'center', bg: 'var(--table-th-bg)', wrap: true } });
   });
