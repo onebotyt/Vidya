@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "e64bda30d216",
-  "last_scanned": "2026-11-20T21:12:34.406Z",
+  "content_hash": "340bc3f1c9a6",
+  "last_scanned": "2026-11-20T21:18:11.321Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -64,18 +64,6 @@
           "UBTER Roll #",
           "Cohort",
           "Cloud Template",
-          "Actions"
-        ]
-      },
-      {
-        "id": "wifi-networks-table",
-        "class": "esp-table",
-        "headers": [
-          "SSID (Network Name)",
-          "Security Protocol",
-          "Signal Strength",
-          "Failover Role",
-          "Added On",
           "Actions"
         ]
       }
@@ -255,14 +243,6 @@
         "title": null
       },
       {
-        "id": "tab-btn-wifi",
-        "label": "Wi-Fi Networks &amp; Failover 0",
-        "action": "switchEspTab(",
-        "class": "esp-tab-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
         "id": "tab-btn-feed",
         "label": "Live Attendance Feed LIVE",
         "action": "switchEspTab(",
@@ -275,38 +255,6 @@
         "label": "Remote ESP32 System Logs",
         "action": "switchEspTab(",
         "class": "esp-tab-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-tab-scan-wifi",
-        "label": "Scan Nearby Wi-Fi",
-        "action": "triggerScanNearbyWifi()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-tab-add-wifi",
-        "label": "+ Add Wi-Fi Manually",
-        "action": "openAddWifiModal()",
-        "class": "btn btn-primary btn-sm",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-tab-fallback-wifi",
-        "label": "Fallback Default Wi-Fi",
-        "action": "triggerWifiFallback()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-tab-reset-wifi",
-        "label": "Emergency Reset",
-        "action": "triggerWifiReset()",
-        "class": "btn btn-danger btn-sm",
         "data_ui": null,
         "title": null
       },

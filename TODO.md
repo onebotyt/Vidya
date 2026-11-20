@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 545: Remove Duplicate Bottom Wi-Fi Tab & Panel, Unify Wi-Fi Management in Main Console (v28)
+- **Objective & Architectural Scope**:
+  1. *Elimination of Redundant Bottom Wi-Fi Panel (`#panel-wifi` & `#tab-btn-wifi`)*:
+     - Removed the duplicate bottom tab button `Wi-Fi Networks & Failover` and its full-width table section (`#panel-wifi`, `#wifi-networks-table`, `#btn-tab-scan-wifi`, `#btn-tab-add-wifi`, `#btn-tab-fallback-wifi`, `#btn-tab-reset-wifi`).
+     - Consolidated all Wi-Fi management operations cleanly into the primary top card (`#section-esp-wifi` in the left stack below `Connected ESP32 Terminals`).
+  2. *Enhanced Compact Wi-Fi Item Management*:
+     - Updated `renderDeviceWifiTable` / `loadDeviceWifiNetworks` in `esp32-devices.js` to render the complete list of networks directly inside `.esp-wifi-card-list` with scrollable overflow.
+     - Added quick inline removal (`&times;`) and connect action buttons alongside live RSSI signal bars for each stored credential.
+     - Updated `switchEspTab()` to manage `['vault', 'feed', 'logs']`.
+  3. *DOM & Static Cache Synchronization*:
+     - Bumped asset cache query parameters to `?v=20261121h` in `index.html` and `esp32-devices.html`.
+     - Mirrored updated files to `frontend/www/faculty/esp32-devices/`.
+  4. *Zero-Break Verification & UIMS Parity*:
+     - Re-scanned and synchronized all 32 UI manifests via `extract-ui-manifest.js` (HOD-005 button count cleanly reduced from 47 to 42).
+     - Passed `test-ui-manifest-sync.js` (208 / 208 checks passed).
+     - Passed `test-theme-support.js` (84 / 84 checks passed).
+     - Verified backend syntax sanity (`node -c server.js`).
+
 ### ✅ Milestone 544: Enhance Biometric Enrollment Workflow Stepper, Status Callout & Action Controls (v27)
 - **Objective & Architectural Scope**:
   1. *Segmented Process Stepper (`.esp-scanner-step-tracker`)*:

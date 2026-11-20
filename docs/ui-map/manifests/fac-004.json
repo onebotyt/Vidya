@@ -5,7 +5,7 @@
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
   "content_hash": "b998b1a47ed3",
-  "last_scanned": "2026-11-20T21:12:34.469Z",
+  "last_scanned": "2026-11-20T21:18:11.392Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
