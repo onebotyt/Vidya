@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "11ca21deb8cd",
-  "last_scanned": "2026-11-20T20:04:22.573Z",
+  "content_hash": "9d4e5c578111",
+  "last_scanned": "2026-11-20T20:11:20.415Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -45,6 +45,10 @@
   ],
   "layout_structure": {
     "toolbars": [
+      {
+        "id": "",
+        "class": "esp-hw-top-toolbar"
+      },
       {
         "id": "esp-loading-bar-fill",
         "class": "esp-loading-bar-fill"
@@ -171,6 +175,54 @@
         "title": null
       },
       {
+        "id": "sim-btn-standby",
+        "label": "Clock",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-success",
+        "label": "Verified",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-fail",
+        "label": "Failed",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-unregistered",
+        "label": "Not Registered",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-enroll",
+        "label": "Enroll Mode",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "sim-btn-low_batt",
+        "label": "Low Battery",
+        "action": "setOledSimMode(",
+        "class": "oled-sim-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "btn-enroll-selected-student",
         "label": "Enroll Fingerprint on ESP32",
         "action": "enrollCurrentSelectedStudent()",
@@ -233,54 +285,6 @@
         "class": "btn btn-danger btn-sm",
         "data_ui": null,
         "title": "Emergency clear saved Wi-Fi"
-      },
-      {
-        "id": "sim-btn-standby",
-        "label": "Clock",
-        "action": "setOledSimMode(",
-        "class": "oled-sim-btn active",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "sim-btn-success",
-        "label": "Verified",
-        "action": "setOledSimMode(",
-        "class": "oled-sim-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "sim-btn-fail",
-        "label": "Failed",
-        "action": "setOledSimMode(",
-        "class": "oled-sim-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "sim-btn-unregistered",
-        "label": "Not Registered",
-        "action": "setOledSimMode(",
-        "class": "oled-sim-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "sim-btn-enroll",
-        "label": "Enroll Mode",
-        "action": "setOledSimMode(",
-        "class": "oled-sim-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "sim-btn-low_batt",
-        "label": "Low Battery",
-        "action": "setOledSimMode(",
-        "class": "oled-sim-btn",
-        "data_ui": null,
-        "title": null
       },
       {
         "id": "tab-btn-vault",
@@ -525,6 +529,14 @@
     ],
     "input_controls": [
       {
+        "id": "chk-buzzer-audio",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
         "id": "studio-quick-ssid",
         "type": "text",
         "name": null,
@@ -539,14 +551,6 @@
         "placeholder": "Password...",
         "handler": null,
         "class": "form-control form-control-sm"
-      },
-      {
-        "id": "chk-buzzer-audio",
-        "type": "checkbox",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": null
       },
       {
         "id": "search-bio-student",

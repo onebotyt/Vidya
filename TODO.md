@@ -1556,6 +1556,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `test-theme-support.js`: **88/88 passed** (0 hardcoded hex colors).
     - Verified admin API authentication: `admin@gmail.com` returns `role: "SYSTEM_ADMIN"`, `is_admin: true`, and accesses `/api/v1/admin/stats` with status 200.
 
+### ✅ Milestone 466: Integrated Live OLED Display & AS608 Optical Sensor Hardware Station & Cohort Navigation
+- **User Challenge & UI/UX Bottlenecks Identified**:
+  1. *Isolated Hardware Console*: Previously, the live 0.96" SSD1306 OLED hardware simulation was isolated in an awkward full-width card at the bottom of the page, while the Biometric Registration Station above had a separate animated graphic.
+  2. *Physical Device Representation*: On real physical ESP32 attendance hardware, the OLED display and the AS608 optical sensor are housed in the exact same physical terminal enclosure.
+  3. *Student Dropdown Clutter*: Native select dropdown with 87 options produced an overwhelming list covering adjacent controls.
+- **Architectural & UI/UX Solutions Delivered**:
+  - **Embedded Physical Hardware Enclosure (`.esp-hardware-bezel`)**:
+    - Relocated the live 0.96" SSD1306 OLED display (128x64 Yellow/Blue zone) directly into the Biometric Registration Station card (`#section-bio-enrollment`) where the animated graphic was previously located.
+    - Designed a unified physical enclosure housing the AS608 Optical Fingerprint Sensor (`.esp-sensor-unit`) on the left and the Live OLED Display (`.oled-screen`) on the right.
+    - Integrated multi-color status LEDs (Green OK, Red Alert, Blue Enroll/Sync) and 5V Piezo Buzzer toggle (`#chk-buzzer-audio`) directly into the hardware top toolbar.
+    - Embedded physical hardware spec chips (`AS608 UART2`, `SSD1306 I2C`, `W25Q32 4MB SPI`, `Piezo GPIO14`, `2S Li-ion ADC34`) and interactive simulation mode buttons (*Clock*, *Verified*, *Failed*, *Not Registered*, *Enroll Mode*, *Low Battery*) inside the bezel.
+    - Eliminated the redundant bottom console card, balancing the height of Column 1 (Biometrics) and Column 2 (Terminals & Wi-Fi) to ~480px each.
+  - **Structured Cohort Navigation (`<optgroup>`)**:
+    - Grouped student dropdown options by cohort/year (`<optgroup label="Year 1 Cohort">`, etc.) so the list is clean, navigable, and avoids visual clutter.
+  - **Theme Token & Manifest Synchronization**:
+    - 100% theme token compliant with zero hardcoded hex colors.
+    - Re-scanned and verified UI contracts: `node backend/scripts/test-ui-manifest-sync.js` (208/208 passed).
+    - `node backend/scripts/test-theme-support.js` (84/84 passed).
+
 ### ✅ Milestone 465: Resolved Students Trash Check RBAC 403 Forbidden & Complete Database Account Purge Engine
 - **Root-Cause Analysis of Trash Check Error & Incomplete Deletion**:
   1. *RBAC Redundancy Triggering 403 Forbidden*:
