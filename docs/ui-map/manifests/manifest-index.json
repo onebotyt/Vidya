@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T17:00:41.387Z",
-  "total_pages": 32,
+  "generated_at": "2026-11-20T17:32:46.663Z",
+  "total_pages": 33,
   "totals": {
-    "buttons": 745,
-    "modals": 181,
-    "inputs": 387,
+    "buttons": 777,
+    "modals": 184,
+    "inputs": 402,
     "apis": 270
   },
   "pages": [
@@ -106,12 +106,25 @@
       "route": "/faculty/esp32-devices.html",
       "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
       "manifest_file": "docs/ui-map/manifests/hod-005.json",
-      "content_hash": "4c0a61d92f43",
+      "content_hash": "7156c2068cf2",
       "counts": {
         "buttons": 35,
         "modals": 5,
         "inputs": 22,
         "apis": 6
+      }
+    },
+    {
+      "page_id": "HOD-006",
+      "route": "/faculty/esp32-preview/index.html",
+      "title": "VidyaOS • Fingerprint Attendance & Wi-Fi",
+      "manifest_file": "docs/ui-map/manifests/hod-006.json",
+      "content_hash": "eec5008f1bee",
+      "counts": {
+        "buttons": 32,
+        "modals": 3,
+        "inputs": 15,
+        "apis": 0
       }
     },
     {
@@ -275,7 +288,7 @@
       "route": "/faculty/sheets/editor.html",
       "title": "Spreadsheet Studio — Institutional Excel Workspace",
       "manifest_file": "docs/ui-map/manifests/fac-017.json",
-      "content_hash": "b2271b36fa95",
+      "content_hash": "1e291c592115",
       "counts": {
         "buttons": 204,
         "modals": 26,

@@ -1,0 +1,535 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "HOD-006",
+  "role": "HOD / Faculty",
+  "route": "/faculty/esp32-preview/index.html",
+  "source_file": "frontend/faculty/esp32-preview/index.html",
+  "content_hash": "eec5008f1bee",
+  "last_scanned": "2026-11-20T17:32:45.369Z",
+  "title": "VidyaOS • Fingerprint Attendance & Wi-Fi",
+  "purpose": "Interactive ESP32 Attendance & Wi-Fi Studio Redesign Preview Sandbox",
+  "shell": "Standalone Glassmorphism Sandbox (`index.html`, `campus-daylight.png`)",
+  "states": "Desktop: 2-column workspace + glassmorphism panels; Mobile: responsive stacked layout",
+  "url_parameters": [],
+  "api_contracts": [],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "page-toolbar"
+      },
+      {
+        "id": "",
+        "class": "page-toolbar"
+      },
+      {
+        "id": "",
+        "class": "page-toolbar"
+      },
+      {
+        "id": "",
+        "class": "page-toolbar"
+      },
+      {
+        "id": "",
+        "class": "page-toolbar"
+      },
+      {
+        "id": "",
+        "class": "page-toolbar"
+      },
+      {
+        "id": "",
+        "class": "page-toolbar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
+          "#",
+          "Student Name",
+          "ID",
+          "Date & Time",
+          "Status"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
+          "Roll",
+          "Name",
+          "Enrollment",
+          "Branch",
+          "Year",
+          "Fingerprint",
+          "Action"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
+          "#",
+          "Name",
+          "Student ID",
+          "Time",
+          "Status",
+          "Method"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
+          "Name",
+          "Enrollment",
+          "Branch",
+          "Status",
+          "Action"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "wifi-connect-modal",
+        "title": "Connect to Wi-Fi",
+        "field_count": 1
+      },
+      {
+        "id": "wifi-connect-feedback",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "terminal-modal",
+        "title": "Register ESP32 Terminal",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": null,
+        "label": "⌂ Dashboard",
+        "action": null,
+        "class": "active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "♟ Students",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "▦ Attendance",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "⌁ Wi-Fi Manager",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "▣ ESP32 Terminals",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "♧ Biometric Vault",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "☷ Activity & Logs",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "👤",
+        "action": "toast(",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "View Students →",
+        "action": "switchPage(",
+        "class": "btn primary small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Enroll Fingerprint →",
+        "action": "switchPage(",
+        "class": "btn purple small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Scan Now →",
+        "action": "focusScanner()",
+        "class": "btn green small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Manage Wi-Fi →",
+        "action": "switchPage(",
+        "class": "btn orange small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "scan-button",
+        "label": "Start Scan",
+        "action": "scanFingerprint()",
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "⟳ Scan Networks",
+        "action": "scanWifi()",
+        "class": "btn primary small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add",
+        "action": "addWifi()",
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "View All →",
+        "action": "switchPage(",
+        "class": "btn small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Export CSV",
+        "action": "exportAttendance()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "⟳ Refresh scan",
+        "action": "scanWifi()",
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add Network",
+        "action": "addWifiFull()",
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "＋ Add ESP Terminal",
+        "action": "openModal(",
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Clear logs",
+        "action": "clearLogs()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Settings",
+        "action": "saveSettings()",
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Set default Wi-Fi",
+        "action": "setDefaultWifiFromSettings()",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Connect",
+        "action": null,
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Register Demo Terminal",
+        "action": null,
+        "class": "btn primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "${s.enrolled?'View':'Enroll Finger'}",
+        "action": "enroll(${s.id})",
+        "class": "btn small ${s.enrolled?",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "${s.enrolled?'View Template':'Start Enrollment'}",
+        "action": "enroll(${s.id})",
+        "class": "btn small purple",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Connect",
+        "action": "requestWifiConnect(",
+        "class": "btn small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Success signal",
+        "action": "simulateTerminal(",
+        "class": "btn small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Error signal",
+        "action": "simulateTerminal(",
+        "class": "btn small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Enroll mode",
+        "action": "simulateTerminal(",
+        "class": "btn small",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "manual-ssid",
+        "type": "text",
+        "name": null,
+        "placeholder": "Network name (SSID)",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": "manual-pass",
+        "type": "password",
+        "name": null,
+        "placeholder": "Password",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": "student-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search name, enrollment, branch...",
+        "handler": "renderStudents()",
+        "class": "input search"
+      },
+      {
+        "id": "wifi-add-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "Add network SSID",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": "wifi-add-pass",
+        "type": "password",
+        "name": null,
+        "placeholder": "Password",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": "vault-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search student...",
+        "handler": "renderVault()",
+        "class": "input search"
+      },
+      {
+        "id": "wifi-connect-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Enter Wi-Fi password",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": "wifi-set-default",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "text",
+        "name": "uid",
+        "placeholder": "ESP32-IT-01",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": null,
+        "type": "text",
+        "name": "name",
+        "placeholder": "IT Lab Entrance",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": null,
+        "type": "text",
+        "name": "dept",
+        "placeholder": "Information Technology",
+        "handler": null,
+        "class": "input"
+      },
+      {
+        "id": null,
+        "type": "text",
+        "name": "key",
+        "placeholder": "Device pairing key",
+        "handler": null,
+        "class": "input"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "scan-student",
+        "title": null,
+        "onchange": null,
+        "class": "select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Select enrolled student"
+          }
+        ]
+      },
+      {
+        "id": "default-wifi-select",
+        "title": null,
+        "onchange": null,
+        "class": "select",
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "motion-select",
+        "title": null,
+        "onchange": null,
+        "class": "select",
+        "options_count": 2,
+        "sample_options": [
+          {
+            "value": "normal",
+            "text": "Normal animations"
+          },
+          {
+            "value": "reduced",
+            "text": "Reduced motion"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "wifi-connect-modal",
+      "title": "Connect to Wi-Fi",
+      "fields": [
+        "wifi-connect-password"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "wifi-connect-feedback",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "terminal-modal",
+      "title": "Register ESP32 Terminal",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [],
+  "exported_functions": []
+}
