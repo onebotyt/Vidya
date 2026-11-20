@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T18:54:39.018Z",
+  "generated_at": "2026-11-20T19:10:30.059Z",
   "total_pages": 32,
   "totals": {
     "buttons": 754,
@@ -106,7 +106,7 @@
       "route": "/faculty/esp32-devices.html",
       "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
       "manifest_file": "docs/ui-map/manifests/hod-005.json",
-      "content_hash": "765706dd35db",
+      "content_hash": "317577283f2c",
       "counts": {
         "buttons": 43,
         "modals": 5,
@@ -275,7 +275,7 @@
       "route": "/faculty/sheets/editor.html",
       "title": "Spreadsheet Studio — Institutional Excel Workspace",
       "manifest_file": "docs/ui-map/manifests/fac-017.json",
-      "content_hash": "7e64644e4c2b",
+      "content_hash": "8bbbd4b2f416",
       "counts": {
         "buttons": 205,
         "modals": 26,

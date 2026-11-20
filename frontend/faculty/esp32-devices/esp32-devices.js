@@ -363,7 +363,7 @@ function renderLoadError(msg) {
       <div class="esp-empty-box" style="border-color:var(--status-absent, #dc2626);">
         <div style="font-weight:700; font-size:0.95rem; margin-bottom:0.35rem; color:var(--status-absent, #dc2626);">Unable to Load Department ESP32 Data</div>
         <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.85rem;">${escHtml(msg || 'Server did not respond with device telemetry.')}</div>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="loadEsp32Overview()">↻ Retry Loading</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="loadEsp32Overview()">Retry Loading</button>
       </div>
     `;
   }
@@ -571,7 +571,7 @@ async function checkDeviceConnection(deviceId) {
     const btn = event?.currentTarget;
     if (btn) {
       btn.disabled = true;
-      btn.textContent = '⏳ Pinging...';
+      btn.textContent = 'Pinging...';
     }
     const t0 = performance.now();
     const res = await fetchApi(`/devices/hod/${deviceId}/ping`);
@@ -680,7 +680,7 @@ async function submitOtaUpdate(e) {
   const btn = document.getElementById('btn-submit-ota');
   if (btn) {
     btn.disabled = true;
-    btn.textContent = '⏳ Queuing OTA Update...';
+    btn.textContent = 'Queuing OTA Update...';
   }
 
   try {
@@ -1433,7 +1433,7 @@ async function submitRegisterEspDevice(e) {
   const btn = document.getElementById('btn-submit-pair-esp');
   if (btn) {
     btn.disabled = true;
-    btn.textContent = '⏳ Pairing Terminal...';
+    btn.textContent = 'Pairing Terminal...';
   }
 
   try {

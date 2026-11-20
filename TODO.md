@@ -49,6 +49,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 536: ESP32 Biometric Station UI Polish — Zero Emojis, Compact Spacing & Overflow Fix
+- **Objective & Architectural Scope**:
+  1. *Complete Elimination of Emojis Across UI*:
+     - Removed all emojis from `frontend/faculty/esp32-devices/index.html`, `frontend/faculty/esp32-devices.html`, and `frontend/faculty/esp32-devices/esp32-devices.js`.
+     - Replaced with clean text, badges, and SVG icons (`+ Register Biometric`, `Check ESP Connected`, `Refresh`, `Enroll Fingerprint on ESP32`, `Test Scan`, `Remove`, `Clock`, `Verified`, `Failed`, `Not Registered`, `Enroll Mode`, `Low Battery`, `Student Biometric Vault`, `Wi-Fi Networks & Failover`, `Live Attendance Feed`, `Remote ESP32 System Logs`, `Scan Nearby Wi-Fi`, `Fallback Default Wi-Fi`, `Emergency Reset`, `USB Serial`, `Detect Now`, `Rescan`).
+  2. *Card Overflow Fix in Biometric Registration Station*:
+     - Replaced 2-column `.esp-enroll-form-grid` with `.esp-enroll-stack` flex column.
+     - Student `<select>` dropdown now occupies line 1 full width, and `.esp-selected-student-chip` occupies line 2 full width with `box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; min-width: 0;`.
+     - Completely prevents horizontal blowout and overlapping over the OLED Display Simulator in the third card.
+  3. *High-Density Compact Spacing*:
+     - Tightened `.esp-top-split` grid gap to `0.5rem` and margin-bottom to `0.55rem`.
+     - Reduced card padding to `0.6rem 0.75rem` across terminals, biometric enrollment, and OLED simulator.
+     - Reduced OLED simulator body height to `74px` with compact padding `0.35rem 0.45rem`.
+     - Compacted `.esp-scanner-interactive-box` padding to `0.5rem 0.65rem`.
+  4. *Zero-Break UI Contract & Vercel CleanUrls Synchronization*:
+     - Re-generated manifests via `node backend/scripts/extract-ui-manifest.js` (UIMS).
+     - Verified 100% contract parity via `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Synchronized `frontend/faculty/esp32-devices.html` with `esp32-devices/index.html` to guarantee Vercel deployment consistency.
+
 ### ✅ Milestone 535: Silent Instant Fit-to-Screen & Toast Clutter Prevention (v19)
 - **Objective & Architectural Scope**:
   1. *Silent Instant Fit-to-Screen*:

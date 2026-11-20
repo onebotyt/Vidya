@@ -449,7 +449,7 @@
                 <option value="WARN">WARN</option>
                 <option value="ERROR">ERROR</option>
               </select>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="loadDeviceRemoteLogs()" title="Refresh logs from cloud">↻ Refresh</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="loadDeviceRemoteLogs()" title="Refresh logs from cloud">Refresh</button>
               <button type="button" class="btn btn-secondary btn-sm" onclick="clearDeviceRemoteLogs()" title="Clear remote logs">Clear</button>
               <span class="esp-status-pill online" id="esp-log-status-pill">● LIVE CLOUD FEED</span>
             </div>
@@ -495,13 +495,13 @@
           <span class="esp-detect-stat-text" id="esp-detect-stat-text">0% &bull; Initializing RF receiver...</span>
           <div class="esp-detect-actions">
             <button type="button" class="btn btn-secondary btn-sm" id="btn-esp-detect-rescan"
-              onclick="startEspDetectionScan()" style="display:none; font-size:0.75rem; padding:0.2rem 0.55rem;">↻ Rescan</button>
+              onclick="startEspDetectionScan()" style="display:none; font-size:0.75rem; padding:0.2rem 0.55rem;">Rescan</button>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-esp-detect-usb"
               onclick="detectViaWebSerial()" style="font-size:0.75rem; padding:0.2rem 0.55rem;"
-              title="Detect ESP32 connected via USB cable">🔌 USB Serial</button>
+              title="Detect ESP32 connected via USB cable">USB Serial</button>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-esp-detect-sim"
               onclick="simulateEspDetection()" style="font-size:0.75rem; padding:0.2rem 0.55rem;"
-              title="Detect nearby ESP32 node immediately">⚡ Detect Now</button>
+              title="Detect nearby ESP32 node immediately">Detect Now</button>
           </div>
         </div>
 
@@ -609,7 +609,7 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
         <span style="font-size:0.76rem; font-weight:700; color:var(--text-muted);">DETECTED ACCESS POINTS:</span>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="triggerScanNearbyWifi(true)">↻ Rescan</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="triggerScanNearbyWifi(true)">Rescan</button>
       </div>
 
       <div id="scanned-wifi-list" class="scanned-wifi-grid">

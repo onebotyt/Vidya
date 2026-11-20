@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "765706dd35db",
-  "last_scanned": "2026-11-20T18:54:38.724Z",
+  "content_hash": "317577283f2c",
+  "last_scanned": "2026-11-20T19:10:29.649Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -108,7 +108,7 @@
     "action_buttons": [
       {
         "id": "btn-quick-register-bio",
-        "label": "👆 Register Biometric",
+        "label": "+ Register Biometric",
         "action": "focusBiometricEnrollmentSection()",
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
@@ -116,7 +116,7 @@
       },
       {
         "id": "btn-check-esp-connect",
-        "label": "📡 Check ESP Connected",
+        "label": "Check ESP Connected",
         "action": "checkActiveEspConnection()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -132,7 +132,7 @@
       },
       {
         "id": null,
-        "label": "↻ Refresh",
+        "label": "Refresh",
         "action": "loadEsp32Overview()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -140,7 +140,7 @@
       },
       {
         "id": "btn-enroll-selected-student",
-        "label": "👆 Enroll Fingerprint on ESP32",
+        "label": "Enroll Fingerprint on ESP32",
         "action": "enrollCurrentSelectedStudent()",
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
@@ -148,7 +148,7 @@
       },
       {
         "id": "btn-simulate-test-scan",
-        "label": "✓ Test Scan",
+        "label": "Test Scan",
         "action": "simulateCurrentSelectedStudent()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -156,7 +156,7 @@
       },
       {
         "id": "btn-remove-selected-bio",
-        "label": "🗑️ Remove",
+        "label": "Remove",
         "action": "removeCurrentSelectedStudentTemplate()",
         "class": "btn btn-danger btn-sm",
         "data_ui": null,
@@ -164,7 +164,7 @@
       },
       {
         "id": "sim-btn-standby",
-        "label": "🟢 Clock",
+        "label": "Clock",
         "action": "setOledSimMode(",
         "class": "oled-sim-btn active",
         "data_ui": null,
@@ -172,7 +172,7 @@
       },
       {
         "id": "sim-btn-success",
-        "label": "✅ Verified",
+        "label": "Verified",
         "action": "setOledSimMode(",
         "class": "oled-sim-btn",
         "data_ui": null,
@@ -180,7 +180,7 @@
       },
       {
         "id": "sim-btn-fail",
-        "label": "❌ Failed",
+        "label": "Failed",
         "action": "setOledSimMode(",
         "class": "oled-sim-btn",
         "data_ui": null,
@@ -188,7 +188,7 @@
       },
       {
         "id": "sim-btn-unregistered",
-        "label": "⚠️ Unregistered",
+        "label": "Not Registered",
         "action": "setOledSimMode(",
         "class": "oled-sim-btn",
         "data_ui": null,
@@ -196,7 +196,7 @@
       },
       {
         "id": "sim-btn-enroll",
-        "label": "🔒 Enroll Mode",
+        "label": "Enroll Mode",
         "action": "setOledSimMode(",
         "class": "oled-sim-btn",
         "data_ui": null,
@@ -204,7 +204,7 @@
       },
       {
         "id": "sim-btn-low_batt",
-        "label": "🪫 Low Battery",
+        "label": "Low Battery",
         "action": "setOledSimMode(",
         "class": "oled-sim-btn",
         "data_ui": null,
@@ -212,7 +212,7 @@
       },
       {
         "id": "tab-btn-vault",
-        "label": "📇 Department Student Biometric Vault 0",
+        "label": "Student Biometric Vault 0",
         "action": "switchEspTab(",
         "class": "esp-tab-btn active",
         "data_ui": null,
@@ -220,7 +220,7 @@
       },
       {
         "id": "tab-btn-wifi",
-        "label": "📶 Wi-Fi &amp; Failover 0",
+        "label": "Wi-Fi Networks &amp; Failover 0",
         "action": "switchEspTab(",
         "class": "esp-tab-btn",
         "data_ui": null,
@@ -228,7 +228,7 @@
       },
       {
         "id": "tab-btn-feed",
-        "label": "⚡ Live Attendance Feed LIVE",
+        "label": "Live Attendance Feed LIVE",
         "action": "switchEspTab(",
         "class": "esp-tab-btn",
         "data_ui": null,
@@ -236,7 +236,7 @@
       },
       {
         "id": "tab-btn-logs",
-        "label": "📋 Remote ESP32 System Logs",
+        "label": "Remote ESP32 System Logs",
         "action": "switchEspTab(",
         "class": "esp-tab-btn",
         "data_ui": null,
@@ -244,7 +244,7 @@
       },
       {
         "id": "btn-scan-wifi",
-        "label": "🔍 Scan Nearby Wi-Fi",
+        "label": "Scan Nearby Wi-Fi",
         "action": "triggerScanNearbyWifi()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -260,7 +260,7 @@
       },
       {
         "id": "btn-fallback-wifi",
-        "label": "🔄 Fallback Default Wi-Fi",
+        "label": "Fallback Default Wi-Fi",
         "action": "triggerWifiFallback()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -268,7 +268,7 @@
       },
       {
         "id": "btn-reset-wifi",
-        "label": "⚠️ Emergency Reset",
+        "label": "Emergency Reset",
         "action": "triggerWifiReset()",
         "class": "btn btn-danger btn-sm",
         "data_ui": null,
@@ -276,7 +276,7 @@
       },
       {
         "id": null,
-        "label": "↻ Refresh",
+        "label": "Refresh",
         "action": "loadDeviceRemoteLogs()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -300,7 +300,7 @@
       },
       {
         "id": "btn-esp-detect-rescan",
-        "label": "↻ Rescan",
+        "label": "Rescan",
         "action": "startEspDetectionScan()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -308,7 +308,7 @@
       },
       {
         "id": "btn-esp-detect-usb",
-        "label": "🔌 USB Serial",
+        "label": "USB Serial",
         "action": "detectViaWebSerial()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -316,7 +316,7 @@
       },
       {
         "id": "btn-esp-detect-sim",
-        "label": "⚡ Detect Now",
+        "label": "Detect Now",
         "action": "simulateEspDetection()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -380,7 +380,7 @@
       },
       {
         "id": null,
-        "label": "↻ Rescan",
+        "label": "Rescan",
         "action": "triggerScanNearbyWifi(true)",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
