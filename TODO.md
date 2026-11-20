@@ -49,6 +49,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 526: Column & Row Structure Operations (Insert/Delete) Architecture Hardening (v14)
+- **Objective & Architectural Scope**:
+  1. *Dynamic Merge Range Shifting & Expansion*:
+     - Fixed critical layout breaking bug in `insertColAtActive()`, `deleteActiveCol()`, `insertRowAtActive()`, and `deleteActiveRow()` in `sheets.js`.
+     - Previously, inserting or deleting columns/rows only updated raw cell keys (`${r},${c}`), leaving `sheet.merges` frozen at stale coordinates, causing misaligned merges that swallowed headers, shifted student data, and corrupted vertical side-panels.
+     - Implemented coordinate-aware merge transformation:
+       - Merges entirely to the right / below the target shift by +1 or -1 (`minC >= targetCol ? c + 1 : c`).
+       - Merges that span across the target point dynamically expand (`m.e.c++` / `m.e.r++`).
+       - Collapsed or deleted merges are safely pruned from `sheet.merges`.
+  2. *Column Width & Row Height Coordinate Synchronization*:
+     - Shifted `sheet.colWidths` and `sheet.rowHeights` synchronously with inserted and deleted indices.
+     - Automatically invokes `autoFitSheetColumns(sheet, true)` upon insertion/deletion to preserve non-overlapping viewport proportionality and eliminate broken layouts.
+  3. *Formula Reference Adjustment*:
+     - Implemented `adjustFormulaOnInsertCol()`, `adjustFormulaOnDeleteCol()`, `adjustFormulaOnInsertRow()`, and `adjustFormulaOnDeleteRow()` to rewrite formulas (`=SUM(...)`, etc.) pointing to shifted ranges.
+  4. *Undo/Redo State Invariant Preservation*:
+     - Upgraded `pushUndoState()`, `excelUndo()`, and `excelRedo()` to snapshot and restore `sheet.merges`, `sheet.colWidths`, and `sheet.rowHeights`, guaranteeing 100% layout fidelity on `Ctrl+Z` / `Ctrl+Y`.
+  5. *Asset Cache Busting (`?v=20261120_v14`)*:
+     - Bumped query tokens in `editor.html` to `?v=20261120_v14`.
+     - Re-extracted UI manifest (`docs/ui-map/manifests/fac-017.json`) and verified 100% parity across 84 theme checks and 208+ manifest assertions.
+
 ### ✅ Milestone 525: Unit Test Subsheet Merged Details Side-Panel & Classroom Questions/Instructions Sync (v13)
 - **Objective & Architectural Scope**:
   1. *Merged Unit Test Details Side-Panel Column (`Column 10 / Column K`)*:

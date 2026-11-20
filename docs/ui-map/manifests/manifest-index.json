@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T16:32:28.956Z",
+  "generated_at": "2026-11-20T16:51:02.309Z",
   "total_pages": 32,
   "totals": {
     "buttons": 743,
@@ -275,7 +275,7 @@
       "route": "/faculty/sheets/editor.html",
       "title": "Spreadsheet Studio — Institutional Excel Workspace",
       "manifest_file": "docs/ui-map/manifests/fac-017.json",
-      "content_hash": "f8b3a4139a31",
+      "content_hash": "75b78af9830d",
       "counts": {
         "buttons": 202,
         "modals": 26,
