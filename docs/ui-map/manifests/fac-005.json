@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "9481052ae487",
-  "last_scanned": "2026-11-20T12:22:18.168Z",
+  "content_hash": "659107af43de",
+  "last_scanned": "2026-11-20T12:44:18.512Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -787,6 +787,86 @@
         "label": "✕ Clear Rules from Entire Sheet",
         "action": "clearFormattingRules(",
         "class": "cond-menu-item text-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-color-templates",
+        "label": "Color Templates ▾",
+        "action": "toggleColorTemplatesMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Sheet Color Templates & Table Themes"
+      },
+      {
+        "id": null,
+        "label": "Header Total Executive Navy",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Forest Emerald",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Royal Cobalt",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Slate Charcoal",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Warm Amber",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Royal Purple",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Modern Teal",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Crimson Wine",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Clear Template / Plain White",
+        "action": "applySheetColorTemplate(",
+        "class": "template-reset-btn",
         "data_ui": null,
         "title": null
       },
@@ -2622,6 +2702,7 @@
     "closeSidebar",
     "toggleColorPalette",
     "toggleConditionalFormattingMenu",
+    "toggleColorTemplatesMenu",
     "closeAllColorPalettes",
     "loadScript",
     "loadSpreadsheetEngine",

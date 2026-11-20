@@ -49,6 +49,54 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 512: Sheet Color Templates Suite (Non-Conditional Table Styles & Curated Themes) & Theme Swatch Sizing Rectification
+- **Objective & Architectural Scope**:
+  1. *Swatch Sizing & Border Rectification (Resolved Blank / Collapsed Swatches)*:
+     - Fixed issue where `.excel-theme-cell` and `.excel-standard-cell` were collapsing to 0px × 0px due to missing dimension rules in CSS.
+     - Added explicit dimensions (`20px × 18px`), `display: block`, borders, and hover magnification (`scale(1.28)`) with primary outline to `sheets-color-tools.css`.
+     - Reconfigured `.excel-theme-matrix` to a clean 10-column CSS Grid (`repeat(10, 20px)`), rendering the 10×6 theme matrix and 10 standard swatches with perfect spacing.
+  2. *Conditional Formatting Menu Visual Fidelity*:
+     - Styled `.cond-scale-bar` with distinct linear gradients: `.cond-scale-gyr` (Green-Yellow-Red), `.cond-scale-ryg` (Red-Yellow-Green), and `.cond-scale-bwr` (Blue-White-Red).
+     - Styled `.cond-icon` badges (`.cond-green`, `.cond-yellow`, `.cond-red`, `.cond-gray`) for clear rule indicators.
+  3. *Sheet Color Templates & Table Themes Tool (Non-Conditional)*:
+     - Added `#btn-color-templates` ("Color Templates ▾") and floating dropdown `#excel-templates-menu` to the Home ribbon Styles group.
+     - Curated 8 professional institutional color templates:
+       - Executive Navy, Forest Emerald, Royal Cobalt, Slate Charcoal, Warm Amber, Royal Purple, Modern Teal, Crimson Wine.
+       - Each card shows a visual mini-preview (header bar, alternating data rows, summary total row).
+     - Implemented `applySheetColorTemplate(templateKey)` in `sheets-color-tools.js`:
+       - Automatically identifies headers, data rows, and summary/total columns.
+       - Styles headers with primary brand color, bold text, and crisp contrast.
+       - Applies zebra striping across data rows (`whiteBg` / `stripeBg`).
+       - Highlights summary/total columns and rows with secondary accent colors.
+       - Includes instant "Clear Template / Plain White" reset action.
+  4. *Zero-Break UIMS Parity & Verification*:
+     - Passed `test-theme-support.js` with 100% token consistency (0 hardcoded colors in stylesheets).
+     - Passed `test-ui-manifest-sync.js` (203/203 passed with 0 failures).
+     - Clean syntax check on `backend/server.js`.
+
+### ✅ Milestone 511: Ultra-Compact Modern Student Profile Editor & Dossier Modal (Exact Reference Alignment)
+- **Objective & Architectural Scope**:
+  1. *Ultra-Compact Modern Profile Modal Architecture (`#modal-edit-student`)*:
+     - Re-architected `#modal-edit-student` in `frontend/faculty/students/` (`index.html`, `students.css`, `students.js`) to match the user's reference design (`media_1795178073343_d71c30f0.png`).
+     - Header: Dynamic title format `Edit Student Profile: [Full Name]` (`#edit-stu-title-name`) with clean modal close button.
+     - Sub-Navigation Tabs: Horizontal tab bar (`Profile Info` [active], `Academic Record`, `Attendance`, `Status`). Integrated `switchEditTab(tabName)` tab controller with zero-flicker panel toggling.
+     - Left Column: Compact photo column with label "Photo" and rounded square avatar container (`#edit-stu-photo-box`, `#edit-stu-avatar`).
+     - Right Column:
+       - Top: Full Name input (`#edit-stu-name`) with compact label.
+       - Bottom: Side-by-side dual inputs for Official Enrollment # (`#edit-stu-enroll` + compact "Not Avail." toggle `#edit-chk-enroll-not-available`) and UBTER Registration # (`#edit-stu-reg`).
+     - Bottom Row (3-Columns):
+       - Program / Semester dropdown (`#edit-stu-sem`).
+       - Class Roll Number input (`#edit-stu-roll`, max 2 digits).
+       - Status dropdown (`#edit-stu-status`, Active / Transferred / Withdrawn).
+     - Footer: Right-aligned outline `Cancel` button (`closeEditStudentModal()`) and primary `Save Changes` button (`#btn-save-edit-student`).
+  2. *Theme Token Compliance & Zero Hardcoded Colors*:
+     - 100% Theme token compliant using `var(--bg-card)`, `var(--bg-surface)`, `var(--border-color)`, `var(--color-primary)`, `var(--text-main)`, and `var(--text-muted)`.
+     - Verified zero hardcoded hex colors (`test-theme-support.js`: 84/84 passed).
+  3. *Zero-Break UIMS Parity & Verification*:
+     - Re-generated manifests via `extract-ui-manifest.js` updating `fac-007.json` and `manifest-index.json`.
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Verified JS syntax clean (`node -c frontend/faculty/students/students.js`, `node -c backend/server.js`).
+
 ### ✅ Milestone 510: Excel-Grade Color Formatting Suite, Floating Viewport Popups (Zero Clipping / Z-Index Fix) & Ribbon Styles Group
 - **Objective & Architectural Scope**:
   1. *Floating Viewport Dropdowns & Popups (Zero Clipping / Z-Index Low Fix)*:
