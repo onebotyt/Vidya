@@ -9046,7 +9046,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
         existingScoresMap = extractExistingStudentScores(parsed.sheets);
       }
     }
-  } catch (_) {}
+  } catch (_) { }
   if (EXCEL_WB.sheets && EXCEL_WB.sheets.length > 0) {
     const memScores = extractExistingStudentScores(EXCEL_WB.sheets);
     existingScoresMap = Object.assign(existingScoresMap, memScores);
