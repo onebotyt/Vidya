@@ -112,7 +112,8 @@ async function loadSpreadsheetEngine(onReady) {
       await loadScript('/faculty/components/core/exceljs.min.js');
     }
 
-    // 2. Load the main Sheets Studio engine
+    // 2. Load the modular tools and main Sheets Studio engine
+    await loadScript('/faculty/sheets/js/sheets-color-tools.js?v=20261120_real');
     await loadScript('/faculty/sheets/sheets.js?v=20261120_real');
 
     window.__OFFICE_ENGINE_LOADED = true;
@@ -466,7 +467,11 @@ async function initOfficePortal() {
         if (!k) continue;
         if (k.startsWith('vidyaos_excel_wb') || k.startsWith('vidyaos_inst_header') || k === 'vidyaos_institution_marks_header') {
           const val = localStorage.getItem(k);
-          if (val && (val.includes('24011F') || val.includes('HARSHIT JOSHI') || val.includes('KAPIL BISHT') || val.includes('MANISH TIWARI') || val.includes('8.3') || val.includes('1.82'))) {
+          if (val && (
+            val.includes('24011F') || val.includes('HARSHIT JOSHI') || val.includes('KAPIL BISHT') || val.includes('MANISH TIWARI') ||
+            val.includes('8.3') || val.includes('1.82') ||
+            !val.includes('REG. NO.') || val.includes('ROUND(D') || val.includes('ROUND(I')
+          )) {
             keysToRemove.push(k);
           }
         }

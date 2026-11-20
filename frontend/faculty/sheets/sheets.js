@@ -218,7 +218,11 @@ async function initSheetsStudio() {
         if (!k) continue;
         if (k.startsWith('vidyaos_excel_wb') || k.startsWith('vidyaos_inst_header') || k === 'vidyaos_institution_marks_header') {
           const val = localStorage.getItem(k);
-          if (val && (val.includes('24011F') || val.includes('HARSHIT JOSHI') || val.includes('KAPIL BISHT') || val.includes('MANISH TIWARI') || val.includes('8.3') || val.includes('1.82'))) {
+          if (val && (
+            val.includes('24011F') || val.includes('HARSHIT JOSHI') || val.includes('KAPIL BISHT') || val.includes('MANISH TIWARI') ||
+            val.includes('8.3') || val.includes('1.82') ||
+            !val.includes('REG. NO.') || val.includes('ROUND(D') || val.includes('ROUND(I')
+          )) {
             keysToRemove.push(k);
           }
         }
@@ -9255,7 +9259,11 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     try {
       const saved = localStorage.getItem(key);
       if (saved) {
-        if (saved.includes('24011F') || saved.includes('HARSHIT JOSHI') || saved.includes('KAPIL BISHT') || saved.includes('MANISH TIWARI') || saved.includes('8.3')) {
+        if (
+          saved.includes('24011F') || saved.includes('HARSHIT JOSHI') || saved.includes('KAPIL BISHT') || saved.includes('MANISH TIWARI') ||
+          saved.includes('8.3') || saved.includes('1.82') ||
+          !saved.includes('REG. NO.') || saved.includes('ROUND(D') || saved.includes('ROUND(I')
+        ) {
           localStorage.removeItem(key);
         } else {
           const parsed = JSON.parse(saved);
@@ -9293,7 +9301,7 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
   let existingScoresMap = {};
   try {
     const rawSaved = localStorage.getItem(key);
-    if (rawSaved && !rawSaved.includes('24011F') && !rawSaved.includes('HARSHIT JOSHI') && !rawSaved.includes('KAPIL BISHT') && !rawSaved.includes('MANISH TIWARI')) {
+    if (rawSaved && !rawSaved.includes('24011F') && !rawSaved.includes('HARSHIT JOSHI') && !rawSaved.includes('KAPIL BISHT') && !rawSaved.includes('MANISH TIWARI') && rawSaved.includes('REG. NO.')) {
       const parsed = JSON.parse(rawSaved);
       if (parsed && Array.isArray(parsed.sheets)) {
         existingScoresMap = extractExistingStudentScores(parsed.sheets);
@@ -9317,22 +9325,9 @@ function hydrateAcademicSheetsFromGroup(forceRefresh = false) {
     studentList = window.S.allStudents;
   }
 
-  // If classroom does not have members enrolled yet, supply clean blank rows with ZERO scores
+  // If classroom does not have members enrolled yet, do NOT inject fake students!
   if (!studentList || studentList.length === 0) {
-    const fallbackNames = [
-      'Girdhar Dhami', 'Aditi Verma', 'Akash Patel', 'Ananya Gupta',
-      'Arjun Rao', 'Bhavya Nair', 'Chirag Joshi', 'Deepika Singh',
-      'Rohan Kulkarni', 'Sneha Patil'
-    ];
-    studentList = fallbackNames.map((name, i) => ({
-      class_roll_no: i + 1,
-      registration_no: `UBTER2026${String(i + 1).padStart(3, '0')}`,
-      official_enrollment_no: `2024IT${String(i + 1).padStart(3, '0')}`,
-      full_name: name,
-      attendance_percentage: 0,
-      assignment_scores: [0, 0, 0, 0, 0],
-      exam_scores: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    }));
+    studentList = [];
   }
 
   const students = sortStudentsList(studentList);
