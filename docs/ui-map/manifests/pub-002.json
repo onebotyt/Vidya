@@ -4,14 +4,15 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "fe87e27f3b62",
-  "last_scanned": "2026-11-20T13:56:24.294Z",
+  "content_hash": "a4728b395d12",
+  "last_scanned": "2026-11-20T13:57:21.883Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
   "states": "Desktop: centered card with brand illustration; Mobile: full-width card with numeric keypad support",
   "url_parameters": [
     "reason",
+    "preview",
     "pending",
     "google_pending",
     "status",
@@ -39,6 +40,11 @@
       "method": "POST",
       "endpoint": "/api/v1/auth/change-password",
       "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "https://vidyaos-backend.onrender.com/api/v1/auth/google/url",
+      "type": "INTERNAL"
     },
     {
       "method": "POST",
@@ -78,11 +84,6 @@
       {
         "id": "act-email",
         "title": "Modal Dialog",
-        "field_count": 0
-      },
-      {
-        "id": "google-signin-modal",
-        "title": "Sign In with Google",
         "field_count": 0
       }
     ]
@@ -130,18 +131,42 @@
         "title": null
       },
       {
+        "id": null,
+        "label": "Get Started",
+        "action": "showMobileLoginView()",
+        "class": "m-btn-get-started",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Go back",
+        "action": "handleMobileBack()",
+        "class": "m-back-circle-btn",
+        "data_ui": null,
+        "title": "Go back"
+      },
+      {
         "id": "m-togglePassword",
         "label": "Icon Button",
         "action": null,
-        "class": "m-toggle-password",
+        "class": "m-toggle-eye-btn",
         "data_ui": null,
         "title": null
       },
       {
         "id": "m-submit-btn",
-        "label": "Sign In",
+        "label": "Login Now",
         "action": null,
-        "class": "m-sign-in",
+        "class": "m-btn-login-now",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "m-google-btn",
+        "label": "Sign In with Google",
+        "action": "handleGoogleSignIn()",
+        "class": "m-btn-google-signin",
         "data_ui": null,
         "title": null
       },
@@ -150,30 +175,6 @@
         "label": "Save &amp; Enter Portal →",
         "action": null,
         "class": "signin",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "&times;",
-        "action": "closeGoogleSignInModal()",
-        "class": "google-card-close",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Back",
-        "action": "showGoogleAccountList()",
-        "class": "google-btn-text",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sign In",
-        "action": "submitGoogleManualLogin()",
-        "class": "google-btn-blue",
         "data_ui": null,
         "title": null
       }
@@ -199,7 +200,7 @@
         "id": "m-identifier",
         "type": "text",
         "name": "identifier",
-        "placeholder": "e.g. student@ugipnainital.ac.in",
+        "placeholder": "business.abineshjiro@gmail.com",
         "handler": null,
         "class": null
       },
@@ -207,9 +208,17 @@
         "id": "m-password",
         "type": "password",
         "name": "password",
-        "placeholder": "Enter your password",
+        "placeholder": "Password",
         "handler": null,
         "class": null
+      },
+      {
+        "id": "m-remember",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "m-checkbox-input"
       },
       {
         "id": "act-new-pw",
@@ -226,14 +235,6 @@
         "placeholder": "Re-enter your password",
         "handler": null,
         "class": null
-      },
-      {
-        "id": "google-manual-email",
-        "type": "email",
-        "name": null,
-        "placeholder": "student@gmail.com",
-        "handler": null,
-        "class": "google-input-field"
       }
     ],
     "dropdown_selectors": []
@@ -260,12 +261,6 @@
     {
       "id": "act-email",
       "title": "Modal Dialog",
-      "fields": [],
-      "submit_action": null
-    },
-    {
-      "id": "google-signin-modal",
-      "title": "Sign In with Google",
       "fields": [],
       "submit_action": null
     }

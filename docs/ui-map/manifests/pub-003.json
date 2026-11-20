@@ -4,14 +4,13 @@
   "role": "Public",
   "route": "/login/register/",
   "source_file": "frontend/login/register/index.html",
-  "content_hash": "8dd5aad9e8e2",
-  "last_scanned": "2026-11-20T13:56:24.304Z",
+  "content_hash": "eae25f9eaf41",
+  "last_scanned": "2026-11-20T13:57:21.886Z",
   "title": "Register — VidyaOS Campus Management",
   "purpose": "Student self-registration with branch/year onboarding",
   "shell": "Auth Shell (`register.css`)",
   "states": "Desktop: guided 3-step card wizard; Mobile: full-screen step flow with sticky next button",
   "url_parameters": [
-    "mock",
     "role",
     "google_email",
     "google_name",
@@ -39,6 +38,11 @@
       "type": "REST"
     },
     {
+      "method": "GET",
+      "endpoint": "https://vidyaos-backend.onrender.com/api/v1/auth/google/url",
+      "type": "INTERNAL"
+    },
+    {
       "method": "POST",
       "endpoint": "/api/v1/auth/student/register",
       "type": "REST"
@@ -52,13 +56,7 @@
       }
     ],
     "tables": [],
-    "modals": [
-      {
-        "id": "google-signin-modal",
-        "title": "Register with Google",
-        "field_count": 0
-      }
-    ]
+    "modals": []
   },
   "ui_elements": {
     "action_buttons": [
@@ -82,7 +80,7 @@
         "id": "google-signup-btn",
         "label": "Sign up with Google (Auto-Fill)",
         "action": "initiateGoogleSignUp()",
-        "class": "btn-google",
+        "class": "btn-google-action",
         "data_ui": null,
         "title": null
       },
@@ -90,39 +88,15 @@
         "id": null,
         "label": "Icon Button",
         "action": "togglePwVisibility(",
-        "class": "pw-eye",
+        "class": "field-eye-btn",
         "data_ui": null,
         "title": null
       },
       {
         "id": "stu-submit-btn",
-        "label": "Submit Registration →",
+        "label": "Register Now →",
         "action": null,
         "class": "btn-submit",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Icon Button",
-        "action": "closeGoogleCard()",
-        "class": "google-card-close",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Back",
-        "action": "showGoogleAccountList()",
-        "class": "google-btn-text",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "google-submit-manual-btn",
-        "label": "Next",
-        "action": "submitGoogleEmail()",
-        "class": "google-btn-blue",
         "data_ui": null,
         "title": null
       }
@@ -134,7 +108,23 @@
         "name": null,
         "placeholder": "e.g. Aarav Sharma",
         "handler": null,
-        "class": "inp"
+        "class": "field-input"
+      },
+      {
+        "id": "stu-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@gmail.com",
+        "handler": null,
+        "class": "field-input"
+      },
+      {
+        "id": "stu-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "10-digit mobile number",
+        "handler": null,
+        "class": "field-input"
       },
       {
         "id": "chk-enroll-not-available",
@@ -150,39 +140,7 @@
         "name": null,
         "placeholder": "11-digit numeric enrollment",
         "handler": null,
-        "class": "inp mono"
-      },
-      {
-        "id": "stu-ubter",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. 24101054 (max 8 digits)",
-        "handler": null,
-        "class": "inp mono"
-      },
-      {
-        "id": "stu-class-roll-no",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. 15 (max 2 digits)",
-        "handler": null,
-        "class": "inp mono"
-      },
-      {
-        "id": "stu-email",
-        "type": "email",
-        "name": null,
-        "placeholder": "student@gmail.com",
-        "handler": null,
-        "class": "inp"
-      },
-      {
-        "id": "stu-phone",
-        "type": "tel",
-        "name": null,
-        "placeholder": "10-digit mobile",
-        "handler": null,
-        "class": "inp"
+        "class": "field-input mono"
       },
       {
         "id": "stu-password",
@@ -190,23 +148,39 @@
         "name": null,
         "placeholder": "Min. 8 characters",
         "handler": "checkStrength(",
-        "class": "inp"
+        "class": "field-input"
       },
       {
         "id": "stu-confirm",
         "type": "password",
         "name": null,
-        "placeholder": "Re-enter password",
+        "placeholder": "Retype password",
         "handler": null,
-        "class": "inp"
+        "class": "field-input"
       },
       {
-        "id": "google-manual-email",
-        "type": "email",
+        "id": "stu-ubter",
+        "type": "text",
         "name": null,
-        "placeholder": "Email or phone",
+        "placeholder": "e.g. 24101054",
         "handler": null,
-        "class": "google-input-field"
+        "class": "field-input mono"
+      },
+      {
+        "id": "stu-class-roll-no",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 15",
+        "handler": null,
+        "class": "field-input mono"
+      },
+      {
+        "id": "reg-terms-chk",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
       }
     ],
     "dropdown_selectors": [
@@ -214,7 +188,7 @@
         "id": "stu-dept",
         "title": null,
         "onchange": "handleStudentDeptChange()",
-        "class": "inp",
+        "class": "field-select",
         "options_count": 1,
         "sample_options": [
           {
@@ -227,7 +201,7 @@
         "id": "stu-sem",
         "title": null,
         "onchange": "handleStudentSemChange()",
-        "class": "inp",
+        "class": "field-select",
         "options_count": 1,
         "sample_options": [
           {
@@ -238,14 +212,7 @@
       }
     ]
   },
-  "modals_catalog": [
-    {
-      "id": "google-signin-modal",
-      "title": "Register with Google",
-      "fields": [],
-      "submit_action": null
-    }
-  ],
+  "modals_catalog": [],
   "companion_scripts": [
     "login/register/register.js"
   ],
