@@ -49,6 +49,19 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 531: ESP32 Preview Sandbox Decommissioning & Return to Main Hardware Console
+- **Objective & Architectural Scope**:
+  1. *Clean Decommissioning of Preview Sandbox*:
+     - Safely removed temporary preview sandbox directory (`frontend/faculty/esp32-preview/`).
+     - Removed preview button link (`#btn-preview-redesign`) from the main production terminal page (`frontend/faculty/esp32-devices/index.html`).
+     - Removed `HOD-006` page entry from `docs/ui-map/pages.md` and deleted `docs/ui-map/manifests/hod-006.json`.
+  2. *UIMS & Registry Integrity*:
+     - Re-extracted manifests via `extract-ui-manifest.js` (32 core pages cataloged, 745 buttons, 181 modals).
+     - Verified 100% manifest and DOM parity via `test-ui-manifest-sync.js` (208/208 passed).
+     - Verified theme token compliance via `test-theme-support.js` (84/84 passed).
+  3. *Main Page Focus*:
+     - Restored primary development focus exclusively to the production ESP32 hardware console at `frontend/faculty/esp32-devices/index.html`.
+
 ### ✅ Milestone 530: Spreadsheet Studio Cross-Format Export Color, Typography & Layout Fidelity (v16)
 - **Objective & Architectural Scope**:
   1. *Color & Style Preservation Engine Across Excel, PDF & Word*:
