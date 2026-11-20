@@ -49,6 +49,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 532: Total (63px) & Grand Total (65px) Column Proportions & A4 Paper Export Synchronization (v17)
+- **Objective & Architectural Scope**:
+  1. *Total (63px) and Grand Total (65px) Proportions Across Sheets*:
+     - Standardized column widths for all Total columns to exactly `63px` (`colWidths = 63`) and Grand Total to `65px` (`colWidths = 65`) across Master Evaluation (`evalSheet`), Class Tests Combined (`testSheet`), Single Unit Tests (`singleTestSheet`), Coursework Assignments (`assignSheet`), and Practical Worksheets (`practicalSheet`).
+     - Upgraded `autoFitSheetColumns()` in `sheets-grid-stretching.js` to automatically recognize Total and Grand Total headers, anchoring them strictly to 63px and 65px and excluding them from proportional screen stretching inflation.
+  2. *Excel Export Scientific Notation Fix & Subheader Height*:
+     - In `exportActiveWorkbook()`, resolved student enrollment and registration numbers converting to scientific notation (`2.4011E+10`) by assigning long numeric strings as text cells with explicit `@` formatting (`excelCell.numFmt = '@'`).
+     - Increased Excel subheader row height (`r === 1`) from 20pt to 38pt with `wrapText = true`, preventing multiline headers like `Creative Work (Model/Chart/Project)` from cutting off vertically.
+     - Enforced ExcelJS column width mapping for Total (`63 / 7.2 ≈ 9`) and Grand Total (`65 / 7.2 ≈ 9`).
+  3. *A4 Landscape Paper Alignment for Word (.doc) and PDF*:
+     - Wrapped Word document (`.doc`) exports in authentic Microsoft Word XML markup with explicit `@page Section1 { size: 297mm 210mm; mso-page-orientation: landscape; margin: 8mm 6mm; }`, forcing Microsoft Word to open in A4 Landscape without right-side clipping.
+     - Added `<colgroup>` percentage-based proportional column distribution to both Word and PDF exports, replacing rigid `min-width` pixel definitions with `table-layout: fixed; width: 100%; max-width: 100%;`.
+     - In PDF print styles (`exportSheetToPdf`), set `@page { size: A4 landscape; margin: 6mm 4mm; }` with compact padding and `7.5pt` font scaling for 16-column evaluation sheets, ensuring columns O (TOTAL) and P (GRAND TOTAL) fit 100% on A4 paper with zero cutoff.
+  4. *Asset Cache Busting & Validation (`?v=20261120_v17`)*:
+     - Bumped script and stylesheet query strings in `frontend/faculty/sheets/editor.html` to `?v=20261120_v17`.
+     - Verified with `node scripts/test-ui-manifest-sync.js` (208/208 passed) and `node scripts/test-theme-support.js` (84/84 passed).
+
 ### ✅ Milestone 531: ESP32 Preview Sandbox Decommissioning & Return to Main Hardware Console
 - **Objective & Architectural Scope**:
   1. *Clean Decommissioning of Preview Sandbox*:
