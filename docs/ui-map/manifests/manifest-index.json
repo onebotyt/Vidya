@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T17:32:46.663Z",
+  "generated_at": "2026-11-20T17:41:34.835Z",
   "total_pages": 33,
   "totals": {
-    "buttons": 777,
+    "buttons": 773,
     "modals": 184,
     "inputs": 402,
-    "apis": 270
+    "apis": 276
   },
   "pages": [
     {
@@ -117,14 +117,14 @@
     {
       "page_id": "HOD-006",
       "route": "/faculty/esp32-preview/index.html",
-      "title": "VidyaOS • Fingerprint Attendance & Wi-Fi",
+      "title": "VidyaOS • Fingerprint Attendance &amp; Wi-Fi Studio",
       "manifest_file": "docs/ui-map/manifests/hod-006.json",
-      "content_hash": "eec5008f1bee",
+      "content_hash": "09808790c169",
       "counts": {
-        "buttons": 32,
+        "buttons": 28,
         "modals": 3,
         "inputs": 15,
-        "apis": 0
+        "apis": 6
       }
     },
     {

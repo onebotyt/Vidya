@@ -4,14 +4,45 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-preview/index.html",
   "source_file": "frontend/faculty/esp32-preview/index.html",
-  "content_hash": "eec5008f1bee",
-  "last_scanned": "2026-11-20T17:32:45.369Z",
-  "title": "VidyaOS • Fingerprint Attendance & Wi-Fi",
+  "content_hash": "09808790c169",
+  "last_scanned": "2026-11-20T17:41:34.350Z",
+  "title": "VidyaOS • Fingerprint Attendance &amp; Wi-Fi Studio",
   "purpose": "Interactive ESP32 Attendance & Wi-Fi Studio Redesign Preview Sandbox",
   "shell": "Standalone Glassmorphism Sandbox (`index.html`, `campus-daylight.png`)",
   "states": "Desktop: 2-column workspace + glassmorphism panels; Mobile: responsive stacked layout",
   "url_parameters": [],
-  "api_contracts": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
+      "type": "REST"
+    }
+  ],
   "layout_structure": {
     "toolbars": [
       {
@@ -51,7 +82,7 @@
           "#",
           "Student Name",
           "ID",
-          "Date & Time",
+          "Date &amp; Time",
           "Status"
         ]
       },
@@ -114,9 +145,17 @@
     "action_buttons": [
       {
         "id": null,
+        "label": "Export CSV",
+        "action": "exportAttendance()",
+        "class": "btn primary small",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
         "label": "⌂ Dashboard",
         "action": null,
-        "class": "active",
+        "class": "preview-nav-tab active",
         "data_ui": null,
         "title": null
       },
@@ -124,7 +163,7 @@
         "id": null,
         "label": "♟ Students",
         "action": null,
-        "class": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
@@ -132,7 +171,7 @@
         "id": null,
         "label": "▦ Attendance",
         "action": null,
-        "class": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
@@ -140,7 +179,7 @@
         "id": null,
         "label": "⌁ Wi-Fi Manager",
         "action": null,
-        "class": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
@@ -148,7 +187,7 @@
         "id": null,
         "label": "▣ ESP32 Terminals",
         "action": null,
-        "class": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
@@ -156,55 +195,23 @@
         "id": null,
         "label": "♧ Biometric Vault",
         "action": null,
-        "class": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "☷ Activity & Logs",
+        "label": "☷ Activity &amp; Logs",
         "action": null,
-        "class": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "👤",
-        "action": "toast(",
-        "class": "btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "View Students →",
-        "action": "switchPage(",
-        "class": "btn primary small",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Enroll Fingerprint →",
-        "action": "switchPage(",
-        "class": "btn purple small",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Scan Now →",
-        "action": "focusScanner()",
-        "class": "btn green small",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Manage Wi-Fi →",
-        "action": "switchPage(",
-        "class": "btn orange small",
+        "label": "⚙ Settings",
+        "action": null,
+        "class": "preview-nav-tab",
         "data_ui": null,
         "title": null
       },
@@ -234,17 +241,9 @@
       },
       {
         "id": null,
-        "label": "View All →",
+        "label": "View All &rarr;",
         "action": "switchPage(",
         "class": "btn small",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Export CSV",
-        "action": "exportAttendance()",
-        "class": "btn",
         "data_ui": null,
         "title": null
       },
@@ -322,15 +321,15 @@
       },
       {
         "id": null,
-        "label": "${s.enrolled?'View':'Enroll Finger'}",
+        "label": "${s.enrolled ? 'View' : 'Enroll Finger'}",
         "action": "enroll(${s.id})",
-        "class": "btn small ${s.enrolled?",
+        "class": "btn small ${s.enrolled ? ",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "${s.enrolled?'View Template':'Start Enrollment'}",
+        "label": "${s.enrolled ? 'View Template' : 'Start Enrollment'}",
         "action": "enroll(${s.id})",
         "class": "btn small purple",
         "data_ui": null,
@@ -346,7 +345,7 @@
       },
       {
         "id": null,
-        "label": "Success signal",
+        "label": "Success Signal",
         "action": "simulateTerminal(",
         "class": "btn small",
         "data_ui": null,
@@ -354,7 +353,7 @@
       },
       {
         "id": null,
-        "label": "Error signal",
+        "label": "Error Signal",
         "action": "simulateTerminal(",
         "class": "btn small",
         "data_ui": null,
@@ -362,7 +361,7 @@
       },
       {
         "id": null,
-        "label": "Enroll mode",
+        "label": "Enroll Mode",
         "action": "simulateTerminal(",
         "class": "btn small",
         "data_ui": null,
@@ -530,6 +529,26 @@
       "submit_action": null
     }
   ],
-  "companion_scripts": [],
-  "exported_functions": []
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar"
+  ]
 }

@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 529: ESP32 Studio Horizontal Top Navigation, VidyaOS Institutional Shell & Status Cards Removal
+- **Objective & Architectural Scope**:
+  1. *VidyaOS Institutional Shell Integration*:
+     - Integrated `faculty-app-layout`, `faculty-main-wrap`, and mounted the standard VidyaOS Faculty Header (`header.js`, `header.css`) and Sidebar (`sidebar.js`, `sidebar.css`, `faculty-base.css`) on `/faculty/esp32-preview/index.html`.
+     - Ensured full navigation compatibility, user identity synchrony, notification tray, and institutional theme compliance.
+  2. *Horizontal Top Navigation Bar (Replaced Left Mock Sidebar)*:
+     - Relocated all 8 module navigation tabs (`Dashboard`, `Students`, `Attendance`, `Wi-Fi Manager`, `ESP32 Terminals`, `Biometric Vault`, `Activity & Logs`, `Settings`) into a sleek horizontal glassmorphism tab bar (`.preview-nav-tabs`) across the top of the workspace.
+     - Preserved active tab switching, smooth hover transitions, and mobile scrollability.
+  3. *Removal of Redundant Status Cards*:
+     - Removed the 4 `.quick-grid` status cards from `#page-dashboard` (Student Directory, Fingerprint Enrollment, Attendance Scanner, Wi-Fi Manager).
+     - Dashboard now starts directly with the core interactive modules: the Fingerprint Scanner Visualizer on the left and the Wi-Fi Networks Manager on the right, followed by the Attendance Log and Student Details.
+  4. *Browser Credential Autofill Suppression*:
+     - Added `autocomplete="off"` to the Wi-Fi SSID input fields and `autocomplete="new-password"` to the Wi-Fi password inputs to prevent browser managers from automatically injecting email credentials into network names.
+  5. *UIMS & Regression Suite Verification*:
+     - Re-extracted manifest `docs/ui-map/manifests/hod-006.json` (28 buttons, 3 modals, 6 APIs) and updated `manifest-index.json`.
+     - Ran `test-ui-manifest-sync.js` (214/214 passed with 100% hash parity).
+     - Ran `test-theme-support.js` (84/84 passed).
+
 ### ✅ Milestone 528: ESP32 Studio Redesign Preview Sandbox Integration & Bidirectional Navigation
 - **Objective & Architectural Scope**:
   1. *ESP32 Redesign Studio Sandbox Provisioning*:
