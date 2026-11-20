@@ -5,7 +5,7 @@
   "route": "/faculty/esp32-preview/index.html",
   "source_file": "frontend/faculty/esp32-preview/index.html",
   "content_hash": "09808790c169",
-  "last_scanned": "2026-11-20T17:41:34.350Z",
+  "last_scanned": "2026-11-20T17:46:27.813Z",
   "title": "VidyaOS • Fingerprint Attendance &amp; Wi-Fi Studio",
   "purpose": "Interactive ESP32 Attendance & Wi-Fi Studio Redesign Preview Sandbox",
   "shell": "Standalone Glassmorphism Sandbox (`index.html`, `campus-daylight.png`)",

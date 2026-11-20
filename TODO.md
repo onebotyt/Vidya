@@ -49,6 +49,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 530: Spreadsheet Studio Cross-Format Export Color, Typography & Layout Fidelity (v16)
+- **Objective & Architectural Scope**:
+  1. *Color & Style Preservation Engine Across Excel, PDF & Word*:
+     - Created `resolveColorToHex(colorStr, fallbackHex)` and `resolveColorToArgb(colorStr, defaultArgb)` to dynamically resolve CSS theme tokens (`var(--...)`), `rgb()`, `rgba()`, color names, and standard 3/6/8-digit hex codes.
+     - Implemented full solid pattern fills (`excelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ... } }`) in ExcelJS (`exportActiveWorkbook`), replacing the previous bug where data cells were hardcoded to `#f8fafc`.
+     - Preserved all custom cell background colors, sheet Color Templates (Executive Navy, Forest Emerald, Royal Cobalt, Slate Charcoal, Warm Amber, Royal Purple, Modern Teal, Crimson Wine), Conditional Formatting highlight rules (High Distinction, Average, At Risk, Absent), and continuous Heatmap Color Scales.
+  2. *Typography, Alignment & Text Wrapping Preservation*:
+     - Synchronized cell text colors (`excelCell.font.color`), bold flags, italic styles, underline styles, font families, and font sizes into ExcelJS, PDF print views, and Word `.doc` outputs.
+     - Enabled automatic multiline text wrapping (`wrapText: true`, `white-space: pre-wrap; word-break: break-word`) and vertical/horizontal alignment across all export formats, ensuring merged question instructions and header details do not clip.
+  3. *Dynamic Dimension Mapping & Merged Layout Fidelity*:
+     - Scaled active sheet column widths (`sheet.colWidths`) from pixels to Excel character units (`Math.max(6, Math.round(wsData.colWidths[c] / 7.2))`) and row heights (`sheet.rowHeights`) to Excel points (`Math.round(wsData.rowHeights[r] * 0.75)`).
+     - Added comprehensive coordinate-aware merge mapping (`mergeMap`) to Word `.doc` export, matching PDF and ExcelJS merge architectures.
+  4. *Asset Cache Busting & Ecosystem Sync (`?v=20261120_v16`)*:
+     - Bumped script and stylesheet query strings in `frontend/faculty/sheets/editor.html` to `?v=20261120_v16`.
+     - Re-extracted UI manifest (`docs/ui-map/manifests/fac-017.json`) and verified 100% hash parity with `node scripts/test-ui-manifest-sync.js` (214/214 passed) and `node scripts/test-theme-support.js` (84/84 passed).
+
 ### ✅ Milestone 529: ESP32 Studio Horizontal Top Navigation, VidyaOS Institutional Shell & Status Cards Removal
 - **Objective & Architectural Scope**:
   1. *VidyaOS Institutional Shell Integration*:
