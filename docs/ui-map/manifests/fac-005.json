@@ -4,21 +4,21 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "fb1445775284",
-  "last_scanned": "2026-11-20T08:11:29.356Z",
+  "content_hash": "9ce9baf4f6ab",
+  "last_scanned": "2026-11-20T08:40:41.780Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
   "states": "Desktop: high-density Excel-style grid with auto-fit, zoom, and multi-tier sticky headers; Mobile: responsive table with touch pinch zoom & sliding bottom tools drawer",
   "url_parameters": [
-    "registerId",
-    "register_id",
-    "register",
     "groupId",
     "group_id",
     "id",
-    "sheet",
-    "view"
+    "registerId",
+    "register_id",
+    "register",
+    "view",
+    "sheet"
   ],
   "api_contracts": [
     {
@@ -54,51 +54,6 @@
     {
       "method": "GET",
       "endpoint": "/teaching-groups",
-      "type": "REST"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/teaching-groups/:id",
-      "type": "REST"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/student-records/filters",
-      "type": "INTERNAL"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/teaching-groups/:id/members",
-      "type": "REST"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/teaching-groups/:id/assignments",
-      "type": "REST"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/teaching-groups/:id/tests",
-      "type": "REST"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/faculty/registers/:id/internal-evaluation",
-      "type": "REST"
-    },
-    {
-      "method": "GET",
-      "endpoint": "/teaching-groups/:id/tests/:id/scores",
-      "type": "REST"
-    },
-    {
-      "method": "POST",
-      "endpoint": "/teaching-groups/:id/tests/:id/scores",
-      "type": "REST"
-    },
-    {
-      "method": "POST",
-      "endpoint": "/api/v1/faculty/export/table-to-excel",
       "type": "REST"
     }
   ],
@@ -2519,8 +2474,7 @@
     "faculty/components/faculty-ui.js",
     "faculty/components/header/header.js",
     "faculty/components/sidebar/sidebar.js",
-    "faculty/components/core/exceljs.min.js",
-    "faculty/sheets/sheets.js"
+    "faculty/sheets/office-home.js"
   ],
   "exported_functions": [
     "toggleAppTheme",
@@ -2535,18 +2489,14 @@
     "toggleDesktopSidebar",
     "toggleSidebar",
     "closeSidebar",
-    "loadTeacherGroupsList",
-    "renderGroupSwitcherOptions",
-    "renderSheetSelectorDropdownOptions",
-    "loadGroupMetadata",
-    "switchSheetTab",
-    "loadSheetData",
-    "openSheetFilterModal",
-    "closeSheetFilterModal",
-    "switchFilterCategory",
-    "renderFilterModalColumns",
-    "toggleExcelColumnVisibility",
-    "toggleAutoFit",
-    "toggleSheetViewMode"
+    "loadScript",
+    "loadSpreadsheetEngine",
+    "renderOfficeRecentList",
+    "renderOfficeSubjectsGrid",
+    "openOfficeHomeScreen",
+    "closeOfficeHomeScreen",
+    "toggleOfficeHomeScreen",
+    "openBlankWorkbookFromHome",
+    "openSubjectSheetDirect"
   ]
 }

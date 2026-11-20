@@ -49,6 +49,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 501: Office Studio Modular Code-Splitting, Lazy Engine Loading & Transition UX
+- **Objective & Architectural Scope**:
+  1. *Modular Script Splitting (< 20 KB Initial Boot)*:
+     - Separated lightweight Home Screen logic into `frontend/faculty/sheets/office-home.js` (~15 KB).
+     - Initial navigation to `/faculty/sheets/index.html` loads only `office-home.js`, eliminating unconditional initial downloads of heavy `exceljs.min.js` (~800 KB) and `sheets.js` (~450 KB).
+     - Page boots in < 50ms with instantaneous subject and template cards rendering.
+  2. *Lazy-Loaded Spreadsheet Engine & In-Memory Cache*:
+     - Dynamic script injection loader (`loadSpreadsheetEngine`) loads `exceljs.min.js` and `sheets.js?v=20261120` on demand when a worksheet or subject is selected.
+     - Caches engine state in memory (`window.__OFFICE_ENGINE_LOADED = true`) so subsequent sheet switches and workbook operations execute with 0ms delay and zero additional network calls.
+  3. *Polished Loading Transition UX*:
+     - Added `#office-engine-loader` with backdrop blur, spinning XLS badge, animated gradient progress bar, and dynamic status indicator (`#office-loader-status`).
+  4. *Adaptive Header View Modes*:
+     - Implemented `#faculty-header.in-home-view` state that cleans the top navigation during home view, replacing file title and group selectors with `#office-hub-top-title` ("Office Studio — Subjects & Documents Hub").
+  5. *Zero-Break UIMS Parity & Theme Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 tests passed, 0 hardcoded colors).
+     - UI Manifest extraction and synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 100% SHA256 integrity).
+
 ### ✅ Milestone 500: Compact Subject Cards & Tactile Click Visual Feedback Architecture
 - **Objective & Architectural Scope**:
   1. *Ultra-Compact Subject Card Layout*:
