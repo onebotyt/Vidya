@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 534: Dynamic Excel Row Height, A4 Landscape Word/PDF Scaling & Viewport-Anchored Screen Fit (v18)
+- **Objective & Architectural Scope**:
+  1. *Excel Export Header Clipping Fix (`exportActiveWorkbook`)*:
+     - Resolved multiline header vertical text truncation in Excel exports (e.g. `Assignment (10)`, `UTs Total (Best 4)`, `Problem Solving Skills/`, `Lab Record File`, `Creative Work (Model/Chart/Project)`).
+     - Implemented dynamic line-count row height calculation: `maxLinesInRow >= 3 ? 52pt : maxLinesInRow === 2 ? 38pt : 22-28pt`, overriding fixed 20pt/26px constraints so wrapped header text is never squished or vertically clipped.
+     - Adjusted Excel column widths: Total fixed at `9.0` units (63px), Grand Total at `9.5` units (65px), and subheader data columns set to `Math.max(11.5, Math.round(customW / 6.0))` to prevent intra-word hyphenation (e.g. `Assignm-ent`).
+     - Added ExcelJS A4 Landscape print setup: `worksheet.pageSetup = { orientation: 'landscape', paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }`.
+  2. *Interactive "Fit to Screen" & Proportional Viewport Distribution (`sheets-grid-stretching.js`)*:
+     - Fixed "Fit to Screen" button not responding: `triggerFitColumnsToScreen()` now calls `renderExcelGrid(true)` to structurally re-render `<thead>` column headers with updated `<th style="width:...px">` attributes.
+     - Upgraded in-place fast renderer `renderExcelGrid(false)` in `sheets.js` to immediately synchronize `th.style.width` and `th.style.minWidth` across all active columns in the DOM.
+     - Re-engineered `autoFitSheetColumns()`: dynamically bounds table width to visible container `availWidth`, preserving fixed `63px` Total and `65px` Grand Total columns while distributing extra room to Student Name and scalable columns so all columns up to the last data column fit 100% on standard screens without horizontal scroll.
+     - Added `Fit Screen` button in the Home ribbon "Cells" group alongside the Secondary Action Bar and View Tab controls.
+  3. *Word & PDF A4 Landscape Standardization*:
+     - Standardized Word export with `@page WordSection1 { size: 841.9pt 595.3pt; mso-page-orientation: landscape; }` and explicit `width="${pct}%"` on every table cell, ensuring Word opens directly in Landscape without horizontal truncation.
+  4. *Zero-Break UI Contract & Theme Token Compliance*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) and `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passing).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passing).
+
 ### ✅ Milestone 533: Compact ESP32 Station Redesign & Dedicated Student Biometric Registration Section (v1)
 - **Objective & Architectural Scope**:
   1. *Dedicated Student Biometric Registration Station*:
