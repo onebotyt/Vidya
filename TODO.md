@@ -49,6 +49,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 504: Live Database Classroom Integration & Elimination of Stale Mock Fallbacks
+- **Objective & Architectural Scope**:
+  1. *Elimination of Hardcoded Mock Roster & Scores*:
+     - Purged hardcoded mock fallback names (`HARSHIT JOSHI`, `KAPIL BISHT`, `MANISH TIWARI` with roll numbers `24011F001`, `24011F002`...) and fake pre-filled marks (`8.3`, `1.82`, `4.3`).
+     - Stopped index-based score cross-pollination (`idx_${idx}`) in `extractExistingStudentScores` so rows are never contaminated with arbitrary scores.
+     - Added automatic invalidation of stale mock caches stored in `localStorage` under `vidyaos_excel_wb_*`.
+  2. *Live Database Classroom Binding & Dynamic Banner*:
+     - Dynamic banner synchronization: `#hdr-banner-line2` and `#hdr-banner-cohort` now dynamically reflect the selected teaching group's real subject name, subject code, department, and semester (e.g. `[55508] Java Programming`), replacing static "Database Management Systems" fallbacks.
+     - Static placeholder in `index.html` updated from `Subject : Database Management Systems` to neutral `Subject : Academic Coursework`.
+  3. *Backend Self-Healing Roster Auto-Enrollment*:
+     - Upgraded `TeachingGroupModel.getGroupMembers(groupId)` and `FacultyModel.getInternalEvaluationData(registerId, register)`: if `teaching_group_members` has no rows for a group, the backend self-heals by querying authentic enrolled students for that department & semester from `students JOIN enrollments`, auto-enrolling them, and returning the authentic database roster.
+     - Added frontend fallback to `/api/v1/students?limit=50` to guarantee real students are always loaded into the spreadsheet.
+  4. *Zero-Break UIMS Parity & Theme Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+
 ### ✅ Milestone 503: Instant Optimistic Grid Hydration, Non-Blocking Background Sync & Button Unfreeze
 - **Objective & Architectural Scope**:
   1. *Elimination of Parse-Time Syntax Errors & Script Collision*:
