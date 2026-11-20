@@ -142,13 +142,13 @@ class TeachingGroupModel {
       if (Array.isArray(cols)) {
         return new Set(cols.map(c => c.Field));
       }
-    } catch (_) {}
+    } catch (_) { }
     try {
       const cols = await query("PRAGMA table_info(teaching_groups)");
       if (Array.isArray(cols)) {
         return new Set(cols.map(c => c.name));
       }
-    } catch (_) {}
+    } catch (_) { }
     return new Set();
   }
 
@@ -171,11 +171,11 @@ class TeachingGroupModel {
       ];
 
       for (const sql of alters) {
-        await query(sql).catch(() => {});
+        await query(sql).catch(() => { });
       }
 
-      await query("UPDATE teaching_groups SET year = CASE WHEN semester IN (1, 2) THEN 1 WHEN semester IN (3, 4) THEN 2 ELSE 3 END WHERE year IS NULL").catch(() => {});
-    } catch (_) {}
+      await query("UPDATE teaching_groups SET year = CASE WHEN semester IN (1, 2) THEN 1 WHEN semester IN (3, 4) THEN 2 ELSE 3 END WHERE year IS NULL").catch(() => { });
+    } catch (_) { }
   }
 
   /**
