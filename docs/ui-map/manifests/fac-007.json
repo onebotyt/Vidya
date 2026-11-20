@@ -4,10 +4,10 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "e2030eb016d9",
-  "last_scanned": "2026-11-20T12:01:43.179Z",
+  "content_hash": "4848c0c0a416",
+  "last_scanned": "2026-11-20T12:20:45.862Z",
   "title": "Students Management — VidyaOS",
-  "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and permanent teacher document dossier access",
+  "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and student profile dossier modal",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
   "states": "Desktop: 6-column table (Avatar, Roll #, Registration No, Enrollment, Student Name with status chip, 3-dot menu with View/Transfer/Withdraw/Reactivate/Reset/Remove); Mobile: 4-column compact table (Avatar, Roll #, Student Name, 3-dot menu) with zero overflow",
   "url_parameters": [],
@@ -45,11 +45,6 @@
     {
       "method": "GET",
       "endpoint": "/api/v1:id",
-      "type": "REST"
-    },
-    {
-      "method": "POST",
-      "endpoint": "/api/v1/hod/students/:id/documents",
       "type": "REST"
     }
   ],
@@ -237,45 +232,29 @@
         "action": "closeStudentDetailsModal()",
         "class": "btn-modal-close",
         "data_ui": null,
-        "title": null
+        "title": "Close details"
+      },
+      {
+        "id": "detail-btn-delete",
+        "label": "Remove Student",
+        "action": "detailDeleteStudent()",
+        "class": "btn-stu-compact danger",
+        "data_ui": null,
+        "title": "Remove student from roster"
       },
       {
         "id": null,
-        "label": "+ Attach Doc",
-        "action": "toggleUploadDocBox()",
+        "label": "Reset Password",
+        "action": "detailResetPassword()",
         "class": "btn-stu-outline",
         "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Cancel",
-        "action": "toggleUploadDocBox()",
-        "class": "btn-stu-outline",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Upload",
-        "action": "submitStudentDocument()",
-        "class": "btn-stu-compact",
-        "data_ui": null,
-        "title": null
+        "title": "Reset student password"
       },
       {
         "id": null,
         "label": "Close",
         "action": "closeStudentDetailsModal()",
         "class": "btn-stu-outline",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "detail-btn-edit",
-        "label": "Edit Student",
-        "action": "detailEditStudent()",
-        "class": "btn-stu-compact",
         "data_ui": null,
         "title": null
       },
@@ -304,18 +283,10 @@
         "title": null
       },
       {
-        "id": null,
-        "label": "Reset Password",
-        "action": "detailResetPassword()",
-        "class": "btn-stu-outline",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "detail-btn-delete",
-        "label": "Remove Student",
-        "action": "detailDeleteStudent()",
-        "class": "btn-stu-compact danger",
+        "id": "detail-btn-edit",
+        "label": "Edit Student",
+        "action": "detailEditStudent()",
+        "class": "btn-stu-compact",
         "data_ui": null,
         "title": null
       },
@@ -450,22 +421,6 @@
         "class": "stu-checkbox"
       },
       {
-        "id": "doc-upload-title",
-        "type": "text",
-        "name": null,
-        "placeholder": "Document Title (e.g. Transfer Certificate, Marksheet)",
-        "handler": null,
-        "class": null
-      },
-      {
-        "id": "doc-upload-file",
-        "type": "file",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": null
-      },
-      {
         "id": "edit-stu-id",
         "type": "hidden",
         "name": null,
@@ -563,43 +518,6 @@
       }
     ],
     "dropdown_selectors": [
-      {
-        "id": "doc-upload-type",
-        "title": null,
-        "onchange": null,
-        "class": null,
-        "options_count": 7,
-        "sample_options": [
-          {
-            "value": "ACADEMIC_RECORD",
-            "text": "Academic Record"
-          },
-          {
-            "value": "TRANSFER_CERTIFICATE",
-            "text": "Transfer Certificate (TC)"
-          },
-          {
-            "value": "WITHDRAWAL_FORM",
-            "text": "Withdrawal Form"
-          },
-          {
-            "value": "ADMISSION_PROOF",
-            "text": "Admission Proof"
-          },
-          {
-            "value": "ID_PROOF",
-            "text": "ID Proof / Aadhaar"
-          },
-          {
-            "value": "MEDICAL_CERTIFICATE",
-            "text": "Medical Certificate"
-          },
-          {
-            "value": "OTHER",
-            "text": "Other Document"
-          }
-        ]
-      },
       {
         "id": "edit-stu-sem",
         "title": null,

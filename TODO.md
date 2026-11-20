@@ -49,6 +49,52 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 510: Excel-Grade Color Formatting Suite, Floating Viewport Popups (Zero Clipping / Z-Index Fix) & Ribbon Styles Group
+- **Objective & Architectural Scope**:
+  1. *Floating Viewport Dropdowns & Popups (Zero Clipping / Z-Index Low Fix)*:
+     - Solved the CSS overflow clipping issue where color popups were cut off by `.excel-ribbon-panels` (`overflow-x: auto;` forcing `overflow-y: auto`) and painted over by the formula bar (`z-index: 20`).
+     - Rewrote `.excel-color-palette-popup` and `.excel-conditional-dropdown` in `sheets-color-tools.css` to use `position: fixed !important; z-index: 9999999 !important;`.
+     - Integrated `positionFloatingDropdown(popup, button)` in `sheets-color-tools.js` to calculate exact button viewport coordinates with `getBoundingClientRect()`, ensuring popups float over all grid and toolbar layers anywhere on screen.
+  2. *Microsoft Excel 10-Column Theme Matrix & 10 Standard Colors Suite*:
+     - Upgraded Fill Color (`#palette-fill-color`) and Font Color (`#palette-font-color`) in `index.html` to replicate Microsoft Excel's full palette:
+       - 10 Theme Base Columns (`#ffffff`, `#000000`, `#e2e8f0`, `#1e3a8a`, `#2563eb`, `#ea580c`, `#64748b`, `#d97706`, `#0d9488`, `#16a34a`).
+       - 5 Tints & Shades rows (80%, 60%, 40%, 25%, 50%) providing 50 precise color swatches.
+       - 10 classic Standard Colors (`#c00000`, `#ff0000`, `#ffc000`, `#ffff00`, `#92d050`, `#00b050`, `#00b0f0`, `#0070c0`, `#002060`, `#7030a0`).
+       - Quick action buttons ("No Fill" and "Automatic") and custom color picker inputs.
+  3. *Excel Ribbon Styles Group with Conditional Formatting & Heatmap Color Scales*:
+     - Added dedicated `.excel-styles-group` into the Home ribbon toolbar between Number formatting and Cells.
+     - Added `#btn-conditional-formatting` triggering the comprehensive `#excel-conditional-menu`:
+       - Highlight Cells Rules: High Distinction ($\ge$ 75%), Average (50–74%), At Risk ($<$ 50%), Absent / Zero Marks.
+       - Color Scales (Heatmaps): Green – Yellow – Red, Red – Yellow – Green, Blue – White – Red.
+       - Clear Formatting Rules: Scoped to selected range or entire active sheet.
+  4. *Direct Modular Stylesheet Ingestion*:
+     - Linked `sheets-loading.css`, `sheets-color-tools.css`, `sheets-grid.css`, and `sheets-ribbon.css` directly in `<head>` of `index.html` to eliminate FOUC and guarantee instantaneous styling.
+  5. *Zero-Break UIMS Parity & Verification*:
+     - Passed `test-theme-support.js` with 100% token consistency (0 hardcoded colors in stylesheets).
+     - Passed `test-ui-manifest-sync.js` (203/203 passed with 0 failures).
+     - Passed server syntax check (`node -c backend/server.js`).
+
+### ✅ Milestone 509: Department Student Details Modal Modernization, Compact Tile Architecture & Complete Document Code Removal
+- **Objective & Architectural Scope**:
+  1. *Compact & Modern Student Details Modal*:
+     - Redesigned `#modal-student-details` in `frontend/faculty/students/` (`index.html`, `students.css`, `students.js`) into a modern, executive institutional profile card (`.stu-detail-modal-card`, 530px max-width).
+     - Modernized the 2-column detail grid with clean identity tiles (`.stu-detail-tile`): Official Enrollment #, UBTER Reg. #, Attendance Standing (highlighted % badge), Department, Email Address, and Phone Number with mono formatting and hover feedback.
+     - Redesigned footer into two responsive action clusters (`.stu-footer-secondary` and `.stu-footer-primary`):
+       - Secondary cluster (left): `Remove Student` (danger), `Reset Password` (outline).
+       - Primary cluster (right): `Close`, `Transfer`, `Withdraw`, `Re-Activate`, and `Edit Student`.
+       - Enabled `flex-wrap: wrap; gap: 0.5rem;` completely eliminating the horizontal button clipping / cut-off bug.
+  2. *Complete Removal of Document Attachment Code (Frontend & Backend)*:
+     - Frontend: Removed the Academic Records & Documents section (`.stu-records-section`), `+ Attach Doc` button, inline upload box, and file input from `index.html`.
+     - Frontend JS: Removed `loadStudentDocuments`, `toggleUploadDocBox`, `submitStudentDocument`, and `deleteStudentDocumentAction` along with their window exports in `students.js`.
+     - Frontend CSS: Cleaned up obsolete document styles (`.stu-records-*`, `.stu-doc-*`, `.stu-upload-box`) from `students.css`.
+     - Backend Routes: Purged `GET /students/:id/documents`, `POST /students/:id/documents`, and `DELETE /students/:id/documents/:docId`, as well as `makeUploader` from `backend/src/routes/hod.js`.
+     - Backend Controllers: Removed `getStudentDocuments`, `uploadStudentDocument`, and `deleteStudentDocument` from `backend/src/controllers/hodController.js`.
+     - Backend Models: Removed `getStudentDocuments`, `addStudentDocument`, and `deleteStudentDocument` from `backend/src/models/hodModel.js`.
+  3. *Zero-Break UIMS Parity & Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - Syntax verified clean (`node -c backend/server.js`, `node -c frontend/faculty/students/students.js`).
+
 ### ✅ Milestone 508: Fullscreen Gray Loading Overlay Modal, Modular Office Architecture, Mock Data Purge, Ribbon Color Tools, and Auto-Fit Width Distribution
 - **Objective & Architectural Scope**:
   1. *Fullscreen Gray Loading Overlay Modal (Prevents Extra Clicks)*:

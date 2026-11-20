@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "8a17d7a363c9",
-  "last_scanned": "2026-11-20T12:01:43.155Z",
+  "content_hash": "9481052ae487",
+  "last_scanned": "2026-11-20T12:20:45.848Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -544,43 +544,19 @@
       },
       {
         "id": null,
-        "label": "✕",
+        "label": "✕ No Fill",
         "action": "selectFillColor(",
-        "class": "color-swatch no-fill",
+        "class": "excel-palette-no-color-btn",
         "data_ui": null,
-        "title": "No Fill / Clear"
+        "title": null
       },
       {
         "id": null,
         "label": "White",
         "action": "selectFillColor(",
-        "class": "color-swatch",
+        "class": "excel-theme-cell",
         "data_ui": null,
         "title": "White"
-      },
-      {
-        "id": null,
-        "label": "Pass (≥ 75%)",
-        "action": "applyPresetFormatting(",
-        "class": "palette-preset-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Average (50-74%)",
-        "action": "applyPresetFormatting(",
-        "class": "palette-preset-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Low / At Risk (&lt; 50%)",
-        "action": "applyPresetFormatting(",
-        "class": "palette-preset-btn",
-        "data_ui": null,
-        "title": null
       },
       {
         "id": "btn-font-color-picker",
@@ -592,11 +568,19 @@
       },
       {
         "id": null,
-        "label": "Default Dark",
+        "label": "A Automatic",
         "action": "selectFontColor(",
-        "class": "color-swatch",
+        "class": "excel-palette-no-color-btn",
         "data_ui": null,
-        "title": "Default Dark"
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "White",
+        "action": "selectFontColor(",
+        "class": "excel-theme-cell",
+        "data_ui": null,
+        "title": "White"
       },
       {
         "id": "btn-valign-top",
@@ -725,6 +709,86 @@
         "class": "excel-icon-btn",
         "data_ui": null,
         "title": "Format as Percent (%)"
+      },
+      {
+        "id": "btn-conditional-formatting",
+        "label": "Conditional Formatting ▾",
+        "action": "toggleConditionalFormattingMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Excel Conditional Formatting & Color Scales"
+      },
+      {
+        "id": null,
+        "label": "✓ High Distinction (≥ 75%) Soft green fill with dark green text",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "~ Average (50% – 74%) Soft amber fill with dark yellow text",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "! At Risk (&lt; 50%) Soft red fill with dark red text",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "0 Absent / Zero Marks Muted slate fill with dashed alert",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Green – Yellow – Red",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Red – Yellow – Green",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Blue – White – Red",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Clear Rules from Selected Cells",
+        "action": "clearFormattingRules(",
+        "class": "cond-menu-item text-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Clear Rules from Entire Sheet",
+        "action": "clearFormattingRules(",
+        "class": "cond-menu-item text-danger",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "btn-insert-row",
@@ -2557,6 +2621,7 @@
     "toggleSidebar",
     "closeSidebar",
     "toggleColorPalette",
+    "toggleConditionalFormattingMenu",
     "closeAllColorPalettes",
     "loadScript",
     "loadSpreadsheetEngine",
