@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "317577283f2c",
-  "last_scanned": "2026-11-20T19:20:14.472Z",
+  "content_hash": "fd6c0dc4376c",
+  "last_scanned": "2026-11-20T19:23:53.061Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -139,6 +139,38 @@
         "title": "Refresh telemetry"
       },
       {
+        "id": "btn-scan-wifi",
+        "label": "Scan",
+        "action": "triggerScanNearbyWifi()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Scan nearby Wi-Fi networks"
+      },
+      {
+        "id": "btn-add-wifi-manual",
+        "label": "+ Add",
+        "action": "openAddWifiModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": "Add Wi-Fi manually"
+      },
+      {
+        "id": "btn-fallback-wifi",
+        "label": "Fallback Default",
+        "action": "triggerWifiFallback()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Trigger fallback to primary default Wi-Fi"
+      },
+      {
+        "id": "btn-reset-wifi",
+        "label": "Emergency Reset",
+        "action": "triggerWifiReset()",
+        "class": "btn btn-danger btn-sm",
+        "data_ui": null,
+        "title": "Emergency clear saved Wi-Fi"
+      },
+      {
         "id": "btn-enroll-selected-student",
         "label": "Enroll Fingerprint on ESP32",
         "action": "enrollCurrentSelectedStudent()",
@@ -243,7 +275,7 @@
         "title": null
       },
       {
-        "id": "btn-scan-wifi",
+        "id": "btn-tab-scan-wifi",
         "label": "Scan Nearby Wi-Fi",
         "action": "triggerScanNearbyWifi()",
         "class": "btn btn-secondary btn-sm",
@@ -251,7 +283,7 @@
         "title": null
       },
       {
-        "id": "btn-add-wifi-manual",
+        "id": "btn-tab-add-wifi",
         "label": "+ Add Wi-Fi Manually",
         "action": "openAddWifiModal()",
         "class": "btn btn-primary btn-sm",
@@ -259,7 +291,7 @@
         "title": null
       },
       {
-        "id": "btn-fallback-wifi",
+        "id": "btn-tab-fallback-wifi",
         "label": "Fallback Default Wi-Fi",
         "action": "triggerWifiFallback()",
         "class": "btn btn-secondary btn-sm",
@@ -267,7 +299,7 @@
         "title": null
       },
       {
-        "id": "btn-reset-wifi",
+        "id": "btn-tab-reset-wifi",
         "label": "Emergency Reset",
         "action": "triggerWifiReset()",
         "class": "btn btn-danger btn-sm",
@@ -589,6 +621,35 @@
           {
             "value": "",
             "text": "Select Active ESP32..."
+          }
+        ]
+      },
+      {
+        "id": "enroll-cohort-filter",
+        "title": null,
+        "onchange": "filterEnrollStudentDropdown(this.value)",
+        "class": "form-select form-select-sm",
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "pending",
+            "text": "Pending Only"
+          },
+          {
+            "value": "all",
+            "text": "All Students"
+          },
+          {
+            "value": "1",
+            "text": "1st Year"
+          },
+          {
+            "value": "2",
+            "text": "2nd Year"
+          },
+          {
+            "value": "3",
+            "text": "3rd Year"
           }
         ]
       },

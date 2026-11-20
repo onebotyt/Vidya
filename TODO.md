@@ -49,6 +49,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 538: Wi-Fi Card Promotion to Command Center, Quick Cohort Filtering & Enhanced Compact Layout
+- **Objective & Architectural Scope**:
+  1. *Promotion of Wi-Fi Connectivity & Failover into Top Command Center*:
+     - Created a dedicated `<section class="card esp-wifi-card">` with identical styling, border, padding, and header architecture to `Connected ESP32 Terminals`.
+     - Placed it directly into the command center row (`.esp-top-split`) between `Connected ESP32 Terminals` and `Live Hardware Console` (alongside `Biometric Registration Station`).
+     - Includes live connection badge (`ONLINE (RSSI: ...)` / `STANDBY`), quick action buttons (`Scan`, `+ Add`), compact real-time list of configured access points with signal pills and instant switch buttons, and quick fallback/emergency reset controls.
+  2. *Smart Cohort & Pending-Only Filter for Biometric Registration*:
+     - Added `<select id="enroll-cohort-filter">` (`Pending Only`, `All Students`, `1st Year`, `2nd Year`, `3rd Year`) directly above the student dropdown in the Biometric Registration Station.
+     - Defaults to `Pending Only`, eliminating the overwhelming 87-student scroll list down to only students awaiting biometric enrollment.
+  3. *High-Density Responsive Split Grid*:
+     - Configured `.esp-top-split` with 4-column desktop layout (`minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 1.15fr) minmax(0, 0.95fr)`).
+     - Responsive 2x2 grid on laptop screens (<=1240px) placing Terminals & Wi-Fi on Row 1, and Biometric Registration & Live Console on Row 2.
+     - Tightened padding across all command cards to `0.55rem 0.65rem` with compact metrics and zero horizontal scroll or blowout.
+  4. *Zero-Break UI Contracts & Vercel CleanUrls Synchronization*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 manifests generated and 758 action buttons cataloged.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Synchronized `frontend/faculty/esp32-devices.html` with `esp32-devices/index.html`.
+
 ### ✅ Milestone 537: Elimination of Phantom Columns, Single Authoritative Auto-Fit Engine & Viewport Proportional Distribution (v21)
 - **Objective & Architectural Scope**:
   1. *Elimination of Phantom Columns in DOM (`renderExcelGrid`)*:
