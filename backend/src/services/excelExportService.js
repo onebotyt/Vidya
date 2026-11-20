@@ -259,7 +259,7 @@ async function generateClassTestExcel(data) {
 
     // 4. UBTER ROLL NO. (dedicated column)
     const cEnrl = ws.getCell(currentRow, 4);
-    cEnrl.value = String(st.official_enrollment_no || '-');
+    cEnrl.value = String(st.ubter_roll_no || st.official_enrollment_no || '-');
     cEnrl.alignment = { horizontal: 'center', vertical: 'middle' };
 
     // 5. STUDENT NAME
@@ -686,7 +686,7 @@ async function generateInternalEvaluationExcel(data) {
 
     // 3. UBTER ROLL NO (added)
     const cEnr = ws.getCell(currentRow, 3);
-    cEnr.value = String(st.official_enrollment_no || '—');
+    cEnr.value = String(st.ubter_roll_no || st.official_enrollment_no || '—');
     cEnr.alignment = { horizontal: 'center', vertical: 'middle' };
 
     // 4. STUDENT NAME (renamed from CNAME)
@@ -1028,7 +1028,7 @@ async function generateUnitTestsSummaryExcel(data = {}) {
     cReg.alignment = { horizontal: 'center', vertical: 'middle' };
 
     const cEnr = ws.getCell(currentRow, 3);
-    cEnr.value = st.official_enrollment_no || '—';
+    cEnr.value = st.ubter_roll_no || st.official_enrollment_no || '—';
     cEnr.alignment = { horizontal: 'center', vertical: 'middle' };
 
     const cName = ws.getCell(currentRow, 4);
@@ -1174,7 +1174,7 @@ function buildClassTestMarksheetHtml(data) {
         <td style="text-align:center;padding:5px 3px;border:1px solid #777;font-weight:bold;">${idx + 1}</td>
         <td style="text-align:center;padding:5px 3px;border:1px solid #777;font-weight:bold;">${roll}</td>
         <td style="text-align:center;padding:4px 5px;border:1px solid #777;font-size:7.5pt;">${st.registration_no || '-'}</td>
-        <td style="text-align:center;padding:4px 5px;border:1px solid #777;font-size:7.5pt;">${st.official_enrollment_no || '-'}</td>
+        <td style="text-align:center;padding:4px 5px;border:1px solid #777;font-size:7.5pt;">${st.ubter_roll_no || st.official_enrollment_no || '-'}</td>
         <td style="padding:4px 8px;border:1px solid #777;font-weight:bold;text-align:left;">${name}</td>
         ${qCells}
         <td style="text-align:center;padding:5px 3px;border:1px solid #777;font-weight:bold;${isAb ? 'color:#dc2626;' : 'color:#1e40af;'}">${isAb ? '0 (AB)' : (Math.round(rowTotal * 10) / 10)}</td>
@@ -1844,7 +1844,7 @@ async function generateDepartmentReportsExcel(data) {
       r.scan_id,
       r.scan_time,
       r.class_roll_no || '--',
-      r.official_enrollment_no || '--',
+      r.ubter_roll_no || r.official_enrollment_no || '--',
       r.student_name || '--',
       r.department_code || r.department_name || '--',
       r.year || '--',

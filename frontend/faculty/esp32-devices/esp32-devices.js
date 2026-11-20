@@ -861,7 +861,7 @@ function onSelectEnrollStudent(studentId) {
       statusPill.textContent = 'WAITING SELECTION';
     }
     if (removeBtn) removeBtn.style.display = 'none';
-    if (visualBox) visualBox.className = 'esp-fingerprint-visual-wrap';
+    if (visualBox) visualBox.className = 'esp-hardware-bezel';
     return;
   }
 
@@ -895,7 +895,7 @@ function onSelectEnrollStudent(studentId) {
   if (step3) step3.className = isEnrolled ? 'step-pill completed' : 'step-pill';
 
   if (visualBox) {
-    visualBox.className = `esp-fingerprint-visual-wrap ${isEnrolled ? 'success' : ''}`;
+    visualBox.className = `esp-hardware-bezel ${isEnrolled ? 'success' : ''}`;
   }
 
   if (msgEl) {

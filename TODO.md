@@ -49,6 +49,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 541: Fix ESP32 Bezel CSS Syntax & Runtime Class Collision, Bust Static Cache (v24)
+- **Objective & Architectural Scope**:
+  1. *Root-Cause Fix for Bezel Overlap & Visual Collision*:
+     - In `esp32-devices.css`, removed orphaned CSS properties and an extra closing brace (`}`) at line 578 that caused browser CSS parsers to discard subsequent `.esp-hardware-bezel` rules.
+     - In `esp32-devices.js` (`onSelectEnrollStudent`), fixed a runtime bug where `visualBox.className = 'esp-fingerprint-visual-wrap'` was overwriting the entire `.esp-hardware-bezel` container into a 48px × 48px square, collapsing all child elements (OLED, AS608 viewfinder, LEDs, and simulation buttons) directly over the student selector dropdown.
+     - Updated `visualBox.className` to properly preserve `.esp-hardware-bezel` base class across all selection and scan states (`success`, `scanning`).
+  2. *Hardware Bezel & OLED Simulator Styling Enhancement*:
+     - Added `--hw-bezel-bg` and `--hw-bezel-border` CSS tokens to `:root` (`#0b1120` / `#1e293b`) and `[data-theme='dark']` (`#050b14` / `#1e293b`) ensuring strict theme token compliance with zero hardcoded values in markup.
+     - Guaranteed solid pure-black background (`#000000 !important`) for the 0.96" SSD1306 OLED screen, yellow header bar, high-contrast text hierarchy, and crisp LED indicators.
+     - Streamlined simulation mode buttons into a responsive clean grid (`repeat(6, 1fr)` on desktop, `repeat(3, 1fr)` on mobile).
+  3. *Static Asset Cache Invalidation & Route Parity*:
+     - Bumped stylesheet and script cache query parameters to `?v=20261121d` across both `frontend/faculty/esp32-devices/index.html` and `frontend/faculty/esp32-devices.html`.
+     - Mirrored changes to `frontend/www/faculty/esp32-devices/`.
+  4. *Zero-Break UI Contracts & Verification*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 manifests cataloged.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Verified backend syntax sanity (`node -c server.js`).
+
 ### ✅ Milestone 540: Standardize Enrollment No to UBTER ROLL NO Across UI, Database, and Exports (v23)
 - **Objective & Architectural Scope**:
   1. *Complete UI Standardization*:
