@@ -49,6 +49,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 540: Standardize Enrollment No to UBTER ROLL NO Across UI, Database, and Exports (v23)
+- **Objective & Architectural Scope**:
+  1. *Complete UI Standardization*:
+     - Standardized all occurrences of "Enrollment No" / "ENROLLMENT NO." to "UBTER ROLL NO." / "UBTER Roll No." across every academic sheet (Master Evaluation, Unit Tests Consolidated, Single Unit Tests, Coursework Assignments, Practicals Worksheet).
+     - Standardized column headers in student records (`frontend/faculty/student-records/`), group details (`frontend/faculty/group-detail/`), course files (`frontend/faculty/course-file/`), reports, login identifier placeholders, self-registration, and student profiles.
+  2. *Grid Stretching & Detection Logic*:
+     - Updated `frontend/faculty/sheets/js/sheets-grid-stretching.js` to detect `UBTER ROLL` and allocate standard ~102px width, while strictly preserving ~50px for institutional `ROLL NO.`.
+     - Preserved explicit user requirements: Total = 63px, Grand Total = 65px.
+  3. *Database Schema & Dual-Compatibility Architecture*:
+     - Added migration `backend/database/migrations/013_standardize_ubter_roll_no.sql` introducing `ubter_roll_no VARCHAR(100) NULL` on `students` table, backfilled from `official_enrollment_no` and indexed (`idx_students_ubter_roll_no`).
+     - Updated `backend/database/schema.sql` and `backend/database/cpanel_production_mysql.sql`.
+     - In `backend/src/config/db.js`, added self-healing boot migration to automatically verify, add, and backfill `ubter_roll_no` on startup.
+     - In `backend/src/services/authService.js`, allowed student login via `ubter_roll_no`, `official_enrollment_no`, or `registration_no`, returning both fields in the user object for 100% backward and forward compatibility.
+     - In `backend/src/controllers/authController.js` and `backend/src/controllers/hodController.js`, accepted `ubter_roll_no` and updated validation error messages.
+  4. *Multi-Format Exporter Parity (Excel, Word, PDF)*:
+     - Updated `backend/src/services/excelExportService.js` and `backend/src/utils/generateNativeExcelReport.py` to output `UBTER ROLL NO.` in all generated spreadsheets, reports, and attendance dossiers.
+  5. *Zero-Break UI Contracts & Parity Verification*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 manifests and 763 action buttons cataloged.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Mirrored updated assets to `frontend/www/` and `frontend/android/app/src/main/assets/public/`.
+
 ### ✅ Milestone 539: Content-Aware Column Sizing & Clean Header Space Reallocation (v22)
 - **Objective & Architectural Scope**:
   1. *Content-Based Column Width Measurement (`autoFitSheetColumns`)*:
