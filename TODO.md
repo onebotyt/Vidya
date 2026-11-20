@@ -49,6 +49,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 519: Dedicated 2-Page Decoupled Architecture for Office Studio (`index.html` & `editor.html`)
+- **Objective & Architectural Scope**:
+  1. *Physical Separation of Office Start Hub & Excel Studio*:
+     - Completely eliminated the fragile single-file dual-state container model (`index.html` formerly 3,084 lines).
+     - Created `frontend/faculty/sheets/editor.html` (2,922 lines): Pure, dedicated Excel Spreadsheet Studio holding only the Ribbon, Formula Bar, Spreadsheets Data Grid, Bottom Sheet Tabs, and body-root color palettes/modals.
+     - Streamlined `frontend/faculty/sheets/index.html` (341 lines): Dedicated Office Start Hub holding only the Start Hero, search bar, Quick Template cards, Recent Workbooks sidebar, and Teaching Subjects grid.
+  2. *Zero Collision & Natural Viewport Positioning*:
+     - Completely eradicated any possibility of Ribbon bleed-through, z-index warfare, or hidden container traps.
+     - In `editor.html`, the ribbon is always natively active and visible, allowing `positionFloatingDropdown()` to reliably measure bounding rects without ghost coordinates.
+  3. *Seamless URL Redirection & Backward Compatibility*:
+     - In `office-home.js`, any request to `index.html` containing `groupId` or `sheet` parameters instantly and transparently forwards via `window.location.replace('/faculty/sheets/editor.html' + window.location.search)`.
+     - In `index.html`, clicking any subject card or template navigates cleanly to `/faculty/sheets/editor.html?groupId=...&sheet=...`.
+     - In `editor.html`, the back button and Office Home icon return cleanly to `/faculty/sheets/index.html`.
+  4. *UIMS & Contract Catalog Parity*:
+     - Cataloged `FAC-017` in `docs/ui-map/pages.md` for `editor.html` and updated `FAC-005` for `index.html`.
+     - Ran `npm run ui:scan` generating deterministic JSON manifests for both pages.
+
 ### ✅ Milestone 518: Office Start Screen & Studio Decoupling, Dynamic Floating Dropdown Alignment, and Scale Markup Fix (v7)
 - **Objective & Architectural Scope**:
   1. *Decoupled Office Start Screen & Studio Main Container*:

@@ -1,0 +1,2745 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-017",
+  "role": "Faculty",
+  "route": "/faculty/sheets/editor.html",
+  "source_file": "frontend/faculty/sheets/editor.html",
+  "content_hash": "410f9539b9f7",
+  "last_scanned": "2026-11-20T14:16:13.652Z",
+  "title": "Spreadsheet Studio — Institutional Excel Workspace",
+  "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: high-density Excel-style grid with auto-fit, zoom, and multi-tier sticky headers; Mobile: responsive table with touch pinch zoom & sliding bottom tools drawer",
+  "url_parameters": [
+    "registerId",
+    "register_id",
+    "register",
+    "groupId",
+    "group_id",
+    "id",
+    "sheet",
+    "view",
+    "action"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/members",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/assignments",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/tests",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/faculty/registers/:id/internal-evaluation",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student-records",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/students",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id/tests/:id/scores",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/teaching-groups/:id/tests/:id/scores",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/export/table-to-excel",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "excel-formula-bar",
+        "class": "excel-formula-bar"
+      },
+      {
+        "id": "studio-bar-3",
+        "class": "studio-bar studio-bar-3 eval-filter-toolbar excel-search-bar"
+      },
+      {
+        "id": "pc-screen-toolbar",
+        "class": "pc-screen-toolbar"
+      },
+      {
+        "id": "excel-signatures-bar",
+        "class": "excel-signatures-bar"
+      },
+      {
+        "id": "excel-bottom-bar",
+        "class": "excel-bottom-bar"
+      },
+      {
+        "id": "excel-status-bar",
+        "class": "excel-status-bar"
+      },
+      {
+        "id": "floating-bottom-bar",
+        "class": "floating-bottom-drawer"
+      }
+    ],
+    "tables": [
+      {
+        "id": "excel-grid-table",
+        "class": "excel-grid-table",
+        "headers": []
+      }
+    ],
+    "modals": [
+      {
+        "id": "modal-add-column",
+        "title": "+ Add Spreadsheet Column",
+        "field_count": 0
+      },
+      {
+        "id": "add-col-sheet-target",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-remove-column",
+        "title": "− Remove Spreadsheet Column",
+        "field_count": 0
+      },
+      {
+        "id": "remove-col-select",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-add-row",
+        "title": "+ Add Student Row",
+        "field_count": 0
+      },
+      {
+        "id": "add-row-roll",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-edit-row",
+        "title": "Edit / Remove Student",
+        "field_count": 0
+      },
+      {
+        "id": "edit-row-select",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "sheet-filter-modal",
+        "title": "Filters",
+        "field_count": 0
+      },
+      {
+        "id": "tab-btn-sort",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "filter-modal-status-text",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-total-marks",
+        "title": "Edit Total Marks &amp;\n              Scheme",
+        "field_count": 0
+      },
+      {
+        "id": "modal-custom-cols-container",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-scheme-total-display",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-edit-student-roster",
+        "title": "Edit Student Row Data",
+        "field_count": 0
+      },
+      {
+        "id": "modal-roster-student-select",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-find-replace",
+        "title": "Find and Replace",
+        "field_count": 0
+      },
+      {
+        "id": "find-input-text",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-find-replace-all",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-insert-function",
+        "title": "Insert Function",
+        "field_count": 0
+      },
+      {
+        "id": "insert-fn-search",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-confirm-insert-fn",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "modal-rename-sheet",
+        "title": "Rename Worksheet",
+        "field_count": 0
+      },
+      {
+        "id": "rename-sheet-input",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "modal-template-manager",
+        "title": "Spreadsheet Formatting\n              Templates",
+        "field_count": 0
+      },
+      {
+        "id": "new-template-name-input",
+        "title": "Modal Dialog",
+        "field_count": 1
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "faculty-nav-toggle",
+        "label": "=769&&typeof toggleDesktopSidebar==='function'){toggleDesktopSidebar();}else if(typeof toggleSidebar==='function'){toggleSidebar();}\" aria-label=\"Toggle Navigation Menu\" title=\"Toggle Navigation Menu\">",
+        "action": null,
+        "class": "header-nav-toggle-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-back-bar1",
+        "label": "Back to Office Start Hub",
+        "action": "window.location.href=",
+        "class": "btn-icon-minimal header-back-btn excel-back-btn",
+        "data_ui": null,
+        "title": "Back to Office Start Hub"
+      },
+      {
+        "id": "btn-office-home",
+        "label": "Back to Office Start Hub",
+        "action": "window.location.href=",
+        "class": "btn-icon-minimal header-office-home-btn",
+        "data_ui": null,
+        "title": "Back to Office Start Hub"
+      },
+      {
+        "id": "theme-toggle-btn",
+        "label": "Toggle Dark/Light Mode",
+        "action": "toggleAppTheme()",
+        "class": "header-icon-btn header-theme-toggle",
+        "data_ui": null,
+        "title": "Toggle Dark/Light Mode"
+      },
+      {
+        "id": "header-bell-btn",
+        "label": "0",
+        "action": "toggleNotifications(event)",
+        "class": "header-icon-btn header-bell-btn",
+        "data_ui": null,
+        "title": "Notifications"
+      },
+      {
+        "id": null,
+        "label": "Mark all read",
+        "action": "markAllNotificationsAsRead(event)",
+        "class": "notif-mark-all-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "header-user-profile",
+        "label": "RS",
+        "action": "toggleUserProfile(event)",
+        "class": "header-profile-round-btn gc-user-avatar",
+        "data_ui": null,
+        "title": "Account Profile"
+      },
+      {
+        "id": null,
+        "label": "Sign Out",
+        "action": "if(typeof confirmFacultyLogout===",
+        "class": "profile-dropdown-item dropdown-logout-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "File",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Home",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Insert",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Page Layout",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Formulas",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Data",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Review",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Templates",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-ribbon-scroll-left",
+        "label": "Scroll Ribbon Left",
+        "action": "scrollRibbon(-220)",
+        "class": "ribbon-scroll-btn ribbon-scroll-left",
+        "data_ui": null,
+        "title": "Scroll Ribbon Left"
+      },
+      {
+        "id": "btn-ribbon-home",
+        "label": "Home",
+        "action": "openOfficeHomeScreen()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Office Studio Home &amp; Subjects Hub"
+      },
+      {
+        "id": null,
+        "label": "New Sheet",
+        "action": "createNewWorksheet()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Create Blank Sheet"
+      },
+      {
+        "id": null,
+        "label": "Open / Import",
+        "action": "triggerExcelImport()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Import .xlsx or .csv"
+      },
+      {
+        "id": null,
+        "label": "Save",
+        "action": "saveActiveSheetData(true)",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Save Workbook (Ctrl+S)"
+      },
+      {
+        "id": null,
+        "label": "Export .XLSX",
+        "action": "exportCurrentSheet(",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Export to .xlsx"
+      },
+      {
+        "id": null,
+        "label": "Print",
+        "action": "window.print()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Print active sheet (Ctrl+P)"
+      },
+      {
+        "id": "btn-ribbon-paste",
+        "label": "Paste",
+        "action": "excelPaste()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Paste (Ctrl+V)"
+      },
+      {
+        "id": "btn-ribbon-cut",
+        "label": "Cut",
+        "action": "excelCut()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Cut (Ctrl+X)"
+      },
+      {
+        "id": "btn-ribbon-copy",
+        "label": "Copy",
+        "action": "excelCopy()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Copy (Ctrl+C)"
+      },
+      {
+        "id": "btn-ribbon-undo",
+        "label": "Undo (Ctrl+Z)",
+        "action": "excelUndo()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Undo (Ctrl+Z)"
+      },
+      {
+        "id": "btn-ribbon-redo",
+        "label": "Redo (Ctrl+Y)",
+        "action": "excelRedo()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Redo (Ctrl+Y)"
+      },
+      {
+        "id": "btn-font-bold",
+        "label": "B",
+        "action": "toggleFontBold()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Bold (Ctrl+B)"
+      },
+      {
+        "id": "btn-font-italic",
+        "label": "I",
+        "action": "toggleFontItalic()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Italic (Ctrl+I)"
+      },
+      {
+        "id": "btn-font-underline",
+        "label": "U",
+        "action": "toggleFontUnderline()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Underline (Ctrl+U)"
+      },
+      {
+        "id": "btn-border-dropdown",
+        "label": "Borders",
+        "action": "toggleBordersMenu(event)",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Borders"
+      },
+      {
+        "id": null,
+        "label": "All Borders",
+        "action": "applyCellBorders(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Outside Borders",
+        "action": "applyCellBorders(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Thick Bottom Border",
+        "action": "applyCellBorders(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "No Border",
+        "action": "applyCellBorders(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-fill-color-picker",
+        "label": "Fill Color (Background)",
+        "action": "toggleColorPalette(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Fill Color (Background)"
+      },
+      {
+        "id": "btn-font-color-picker",
+        "label": "A",
+        "action": "toggleColorPalette(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Font Color (Text)"
+      },
+      {
+        "id": "btn-valign-top",
+        "label": "Top Align",
+        "action": "applyVAlign(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Top Align"
+      },
+      {
+        "id": "btn-valign-middle",
+        "label": "Middle Align",
+        "action": "applyVAlign(",
+        "class": "excel-icon-btn active",
+        "data_ui": null,
+        "title": "Middle Align"
+      },
+      {
+        "id": "btn-valign-bottom",
+        "label": "Bottom Align",
+        "action": "applyVAlign(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Bottom Align"
+      },
+      {
+        "id": "btn-wrap-text",
+        "label": "Wrap Text",
+        "action": "toggleWrapText()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Wrap Text"
+      },
+      {
+        "id": "btn-align-left",
+        "label": "Align Left",
+        "action": "applyHAlign(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Align Left"
+      },
+      {
+        "id": "btn-align-center",
+        "label": "Align Center",
+        "action": "applyHAlign(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Align Center"
+      },
+      {
+        "id": "btn-align-right",
+        "label": "Align Right",
+        "action": "applyHAlign(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Align Right"
+      },
+      {
+        "id": "btn-merge-cells",
+        "label": "Merge &amp; Center ▾",
+        "action": "toggleMergeAndCenterMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Merge &amp; Center or Unmerge Selected Cells"
+      },
+      {
+        "id": null,
+        "label": "Merge &amp; Center",
+        "action": "mergeAndCenter()",
+        "class": "excel-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Merge Across",
+        "action": "mergeAcross()",
+        "class": "excel-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Merge Cells",
+        "action": "mergeCellsOnly()",
+        "class": "excel-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Unmerge Cells",
+        "action": "unmergeSelectedCells()",
+        "class": "excel-menu-item text-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-dec-increase",
+        "label": ".0+",
+        "action": "adjustDecimals(1)",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Increase Decimal (.00 → .000)"
+      },
+      {
+        "id": "btn-dec-decrease",
+        "label": "-.0",
+        "action": "adjustDecimals(-1)",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Decrease Decimal (.000 → .00)"
+      },
+      {
+        "id": null,
+        "label": "₹",
+        "action": "applyNumberFormat(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Format as Currency (₹)"
+      },
+      {
+        "id": null,
+        "label": "%",
+        "action": "applyNumberFormat(",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Format as Percent (%)"
+      },
+      {
+        "id": "btn-conditional-formatting",
+        "label": "Conditional Formatting ▾",
+        "action": "toggleConditionalFormattingMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Excel Conditional Formatting & Color Scales"
+      },
+      {
+        "id": "btn-color-templates",
+        "label": "Color Templates ▾",
+        "action": "toggleColorTemplatesMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Sheet Color Templates & Table Themes"
+      },
+      {
+        "id": "btn-insert-row",
+        "label": "+ Row",
+        "action": "insertRowAtActive(true)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Insert Row Above"
+      },
+      {
+        "id": "btn-insert-col",
+        "label": "+ Col",
+        "action": "insertColAtActive(true)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Insert Column Left"
+      },
+      {
+        "id": null,
+        "label": "+ Student",
+        "action": "openAddRowModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Add Enrolled Student Row"
+      },
+      {
+        "id": "btn-delete-row",
+        "label": "− Row",
+        "action": "deleteActiveRow()",
+        "class": "excel-tool-btn text-danger",
+        "data_ui": null,
+        "title": "Delete Selected Row"
+      },
+      {
+        "id": "btn-delete-col",
+        "label": "− Col",
+        "action": "deleteActiveCol()",
+        "class": "excel-tool-btn text-danger",
+        "data_ui": null,
+        "title": "Delete Selected Column"
+      },
+      {
+        "id": null,
+        "label": "Roster Form",
+        "action": "openEditStudentRosterModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Open Scores Form Modal"
+      },
+      {
+        "id": "btn-autosum-dropdown",
+        "label": "Σ AutoSum ▾",
+        "action": "toggleAutoSumMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "AutoSum Formulas"
+      },
+      {
+        "id": null,
+        "label": "SUM",
+        "action": "insertAutoFormula(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "AVERAGE",
+        "action": "insertAutoFormula(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "COUNT NUMBERS",
+        "action": "insertAutoFormula(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "MAX",
+        "action": "insertAutoFormula(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "MIN",
+        "action": "insertAutoFormula(",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-sort-asc",
+        "label": "A→Z",
+        "action": "sortActiveColumn(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Sort Ascending A-Z / Lowest to Highest"
+      },
+      {
+        "id": "btn-sort-desc",
+        "label": "Z→A",
+        "action": "sortActiveColumn(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Sort Descending Z-A / Highest to Lowest"
+      },
+      {
+        "id": "btn-find-replace-open",
+        "label": "Find &amp; Replace",
+        "action": "openFindReplaceModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Find &amp; Replace (Ctrl+F / Ctrl+H)"
+      },
+      {
+        "id": "btn-clear-contents",
+        "label": "Clear",
+        "action": "clearSelectedCellContents()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Clear Contents (Delete)"
+      },
+      {
+        "id": "btn-home-toggle-gridlines",
+        "label": "Gridlines",
+        "action": "toggleGridlines()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Gridlines"
+      },
+      {
+        "id": "btn-home-toggle-formula-bar",
+        "label": "ƒx Formula Bar",
+        "action": "toggleFormulaBarVisibility()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Show/Hide Formula Bar"
+      },
+      {
+        "id": "btn-home-freeze-panes",
+        "label": "Freeze ▾",
+        "action": "toggleFreezePanesMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Freeze Panes / Rows / Columns"
+      },
+      {
+        "id": null,
+        "label": "Freeze Top Row",
+        "action": "freezeTopRow()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Freeze First Column",
+        "action": "freezeFirstColumn()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Unfreeze Panes",
+        "action": "unfreezePanes()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Zoom Out (−)",
+        "action": "zoomOut()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Zoom Out (−)"
+      },
+      {
+        "id": null,
+        "label": "Zoom In (+)",
+        "action": "zoomIn()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Zoom In (+)"
+      },
+      {
+        "id": "btn-home-autofit",
+        "label": "Auto-Fit",
+        "action": "toggleAutoFit()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Toggle Auto-Fit"
+      },
+      {
+        "id": null,
+        "label": "ƒx Insert Function",
+        "action": "openInsertFunctionModal()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Insert Mathematical / Academic Formula"
+      },
+      {
+        "id": null,
+        "label": "Student Row",
+        "action": "openAddRowModal()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Add Enrolled Student"
+      },
+      {
+        "id": null,
+        "label": "Column",
+        "action": "openAddColumnModal()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Add Assessment Column"
+      },
+      {
+        "id": null,
+        "label": "College Header",
+        "action": "toggleInstitutionalBanner()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Toggle College Header Banner"
+      },
+      {
+        "id": null,
+        "label": "Signatures",
+        "action": "togglePrintSignatures()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Toggle Signatures Block"
+      },
+      {
+        "id": "btn-toggle-gridlines",
+        "label": "Gridlines: ON",
+        "action": "toggleGridlines()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Gridlines"
+      },
+      {
+        "id": "btn-toggle-banner-view",
+        "label": "College Banner: ON",
+        "action": "toggleInstitutionalBanner()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Institutional Header Banner"
+      },
+      {
+        "id": null,
+        "label": "Scheme Weightage",
+        "action": "openEditMarksModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Edit Total Marks &amp; Scheme"
+      },
+      {
+        "id": null,
+        "label": "Print Sheet",
+        "action": "window.print()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Open Print View"
+      },
+      {
+        "id": null,
+        "label": "SUM()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "AVERAGE()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "COUNT()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "IF()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "ROUND()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "TODAY()",
+        "action": "insertFormulaTemplate(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Calculate Sheet",
+        "action": "recalculateAllSheetFormulas(true)",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Force Recalculate Formulas Now"
+      },
+      {
+        "id": null,
+        "label": "Sort A &rarr; Z",
+        "action": "sortActiveColumn(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Sort Ascending A-Z"
+      },
+      {
+        "id": null,
+        "label": "Sort Z &rarr; A",
+        "action": "sortActiveColumn(",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Sort Descending Z-A"
+      },
+      {
+        "id": "btn-data-filter",
+        "label": "Filters &amp; Sort",
+        "action": "openSheetFilterModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Clear Filter",
+        "action": "clearAllSheetFilters()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Refresh Data",
+        "action": "reloadGroupAcademicData()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Re-sync roster and marks from database"
+      },
+      {
+        "id": null,
+        "label": "Audit Pass/Fail",
+        "action": "auditSheetPassFail()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Audit Student Pass / Fail Statistics"
+      },
+      {
+        "id": null,
+        "label": "Protect Sheet",
+        "action": "toggleEditSaveMode()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Toggle Read-Only / Protect Sheet"
+      },
+      {
+        "id": null,
+        "label": "Browse Templates",
+        "action": "openTemplateManagerModal()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Open Templates Library &amp; Management"
+      },
+      {
+        "id": null,
+        "label": "Save As Template",
+        "action": "openSaveTemplateDialog()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Save Current Spreadsheet Structure as Reusable Template"
+      },
+      {
+        "id": null,
+        "label": "Polytechnic Master Eval",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
+        "data_ui": null,
+        "title": "Apply Standard Polytechnic Master Evaluation Template"
+      },
+      {
+        "id": null,
+        "label": "Class Test (20M)",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
+        "data_ui": null,
+        "title": "Apply Unit Test (20 Marks) Format"
+      },
+      {
+        "id": null,
+        "label": "Assignments Roster",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
+        "data_ui": null,
+        "title": "Apply Coursework Assignment Assessment Format"
+      },
+      {
+        "id": null,
+        "label": "Practicals Lab",
+        "action": "applyPresetTemplate(",
+        "class": "excel-action-btn",
+        "data_ui": null,
+        "title": "Apply Lab Record &amp; Practicals Format"
+      },
+      {
+        "id": "btn-ribbon-scroll-right",
+        "label": "Scroll Ribbon Right",
+        "action": "scrollRibbon(220)",
+        "class": "ribbon-scroll-btn ribbon-scroll-right",
+        "data_ui": null,
+        "title": "Scroll Ribbon Right"
+      },
+      {
+        "id": "btn-formula-cancel",
+        "label": "Cancel (Esc)",
+        "action": "cancelFormulaInput()",
+        "class": "btn-formula-action cancel",
+        "data_ui": null,
+        "title": "Cancel (Esc)"
+      },
+      {
+        "id": "btn-formula-accept",
+        "label": "Enter / Accept (Enter)",
+        "action": "acceptFormulaInput()",
+        "class": "btn-formula-action accept",
+        "data_ui": null,
+        "title": "Enter / Accept (Enter)"
+      },
+      {
+        "id": "btn-formula-fx",
+        "label": "ƒx",
+        "action": "openInsertFunctionModal()",
+        "class": "btn-formula-action fx",
+        "data_ui": null,
+        "title": "Insert Function (fx)"
+      },
+      {
+        "id": "btn-toggle-college-banner",
+        "label": "College Banner",
+        "action": "toggleInstitutionalBanner()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide College Header Banner"
+      },
+      {
+        "id": "btn-toggle-formula-bar",
+        "label": "Formula Bar",
+        "action": "toggleFormulaBarVisibility()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide Formula Bar"
+      },
+      {
+        "id": "btn-toggle-signatures-bar",
+        "label": "Signatures: ON",
+        "action": "toggleSignatureBarVisibility()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide Institutional Signatures Bar"
+      },
+      {
+        "id": "btn-open-filter-modal",
+        "label": "Filters 1",
+        "action": "openSheetFilterModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Filters, Sorting &amp; Visibility"
+      },
+      {
+        "id": "btn-quick-save",
+        "label": "Save",
+        "action": "saveActiveSheetData(true)",
+        "class": "btn btn-sm btn-quick-save",
+        "data_ui": null,
+        "title": "Save changes (Ctrl+S)"
+      },
+      {
+        "id": "btn-export-dropdown",
+        "label": "Export ▼",
+        "action": "toggleExportMenu(event)",
+        "class": "btn btn-secondary btn-sm studio-export-btn",
+        "data_ui": null,
+        "title": "Export active spreadsheet"
+      },
+      {
+        "id": null,
+        "label": ".XLSX Excel Spreadsheet Native Microsoft Excel workbook (.xlsx)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".PDF Printable Document Institutional PDF for signature &amp; audit",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".DOC Word Document Editable formatted table (.doc)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".CSV Raw Data Values Comma-separated tabular text (.csv)",
+        "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-mode-dynamic",
+        "label": "Dynamic",
+        "action": null,
+        "class": "btn-mode-toggle active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-mode-overview",
+        "label": "⇲ Overview",
+        "action": null,
+        "class": "btn-mode-toggle",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Click or double-click to edit banner text",
+        "action": "makeBannerEditable()",
+        "class": "banner-edit-pencil-btn",
+        "data_ui": null,
+        "title": "Click or double-click to edit banner text"
+      },
+      {
+        "id": "btn-sheet-nav-prev",
+        "label": "Scroll tabs left",
+        "action": "scrollSheetTabs(-1)",
+        "class": "excel-sheet-nav-btn",
+        "data_ui": null,
+        "title": "Scroll tabs left"
+      },
+      {
+        "id": "btn-sheet-nav-next",
+        "label": "Scroll tabs right",
+        "action": "scrollSheetTabs(1)",
+        "class": "excel-sheet-nav-btn",
+        "data_ui": null,
+        "title": "Scroll tabs right"
+      },
+      {
+        "id": "btn-add-sheet",
+        "label": "+",
+        "action": "createNewWorksheet()",
+        "class": "excel-add-sheet-btn",
+        "data_ui": null,
+        "title": "Insert new worksheet (+)"
+      },
+      {
+        "id": "excel-status-zoom-pct",
+        "label": "100%",
+        "action": "resetZoom()",
+        "class": "excel-status-zoom-pct",
+        "data_ui": null,
+        "title": "Reset to 100% (Click to reset)"
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeModal(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Add Column",
+        "action": "confirmAddColumn()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Delete Column",
+        "action": "confirmRemoveColumn()",
+        "class": "btn btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Add Student",
+        "action": "confirmAddStudentRow()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Delete Student",
+        "action": "confirmDeleteStudentRow()",
+        "class": "btn btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Details",
+        "action": "confirmUpdateStudentRow()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Back / Close",
+        "action": "closeSheetFilterModal()",
+        "class": null,
+        "data_ui": null,
+        "title": "Back / Close"
+      },
+      {
+        "id": "btn-filter-clear-all",
+        "label": "Clear All Filters",
+        "action": "clearAllSheetFilters()",
+        "class": "filter-btn-clear",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-sort",
+        "label": "Sort",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-students",
+        "label": "Students",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-visibility",
+        "label": "Visibility",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-focus",
+        "label": "Focus",
+        "action": "switchFilterCategory(",
+        "class": "filter-sidebar-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Show All",
+        "action": "resetFilterModalColumnsVisible()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeSheetFilterModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-filter-apply",
+        "label": "Apply Filters",
+        "action": "applyAndCloseFilterModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-floating-tools",
+        "label": "Adjust Scale &amp; Spreadsheet Columns",
+        "action": "toggleFloatingToolsDrawer()",
+        "class": "floating-tools-fab",
+        "data_ui": null,
+        "title": "Adjust Scale &amp; Spreadsheet Columns"
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "toggleFloatingToolsDrawer(false)",
+        "class": "drawer-close-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "−",
+        "action": "zoomOut()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Zoom Out (−)"
+      },
+      {
+        "id": null,
+        "label": "+",
+        "action": "zoomIn()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Zoom In (+)"
+      },
+      {
+        "id": null,
+        "label": "100%",
+        "action": "resetZoom()",
+        "class": "screen-ctrl-btn",
+        "data_ui": null,
+        "title": "Reset to 100%"
+      },
+      {
+        "id": "btn-autofit",
+        "label": "⇲ Auto-Fit",
+        "action": "toggleAutoFit()",
+        "class": "screen-ctrl-btn active",
+        "data_ui": null,
+        "title": "Continuous Auto-Fit"
+      },
+      {
+        "id": "drawer-btn-mode-dynamic",
+        "label": "Dynamic Mode",
+        "action": "setSheetViewMode(",
+        "class": "btn-mode-toggle active",
+        "data_ui": null,
+        "title": "Dynamic Mode: Freeze Roll &amp; Name, scroll other columns at 100% scale"
+      },
+      {
+        "id": "drawer-btn-mode-overview",
+        "label": "⇲ Overview Mode",
+        "action": "setSheetViewMode(",
+        "class": "btn-mode-toggle",
+        "data_ui": null,
+        "title": "Overview Mode: Full sheet scaled to screen, pinch-to-zoom"
+      },
+      {
+        "id": "btn-edit-student-row",
+        "label": "Edit Scores Form Scores",
+        "action": "openEditStudentRosterModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "View and edit all row data for a student inside modal"
+      },
+      {
+        "id": null,
+        "label": "+ Student",
+        "action": "openAddRowModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Column",
+        "action": "openAddColumnModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "− Column",
+        "action": "openRemoveColumnModal(); toggleFloatingToolsDrawer(false);",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Columns Visibility",
+        "action": "toggleFloatingToolsDrawer(false); toggleColumnVisibilityMenu();",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeEditMarksModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeEditMarksModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Apply Scheme",
+        "action": "applyAndCloseEditMarksModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Student Data",
+        "action": "confirmSaveStudentRosterModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeFindReplaceModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeFindReplaceModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-find-replace-all",
+        "label": "Replace All",
+        "action": "executeReplaceAll()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-find-replace-one",
+        "label": "Replace",
+        "action": "executeReplaceOne()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-find-next",
+        "label": "Find Next",
+        "action": "executeFindNext()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeInsertFunctionModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeInsertFunctionModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-insert-fn",
+        "label": "Insert Function",
+        "action": "confirmInsertSelectedFunction()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeRenameSheetModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeRenameSheetModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Rename",
+        "action": "confirmRenameWorksheet()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeTemplateManagerModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Current Layout",
+        "action": "saveActiveSheetAsTemplate()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeTemplateManagerModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ No Fill",
+        "action": "selectFillColor(",
+        "class": "excel-palette-no-color-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "White",
+        "action": "selectFillColor(",
+        "class": "excel-theme-cell",
+        "data_ui": null,
+        "title": "White"
+      },
+      {
+        "id": null,
+        "label": "A Automatic",
+        "action": "selectFontColor(",
+        "class": "excel-palette-no-color-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "White",
+        "action": "selectFontColor(",
+        "class": "excel-theme-cell",
+        "data_ui": null,
+        "title": "White"
+      },
+      {
+        "id": null,
+        "label": "✓ High Distinction (≥ 75%) Soft green fill with dark green text",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "~ Average (50% – 74%) Soft amber fill with dark yellow text",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "! At Risk (&lt; 50%) Soft red fill with dark red text",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "0 Absent / Zero Marks Muted slate fill with dashed alert",
+        "action": "applyPresetFormatting(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Green – Yellow – Red",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Red – Yellow – Green",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Blue – White – Red",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Clear Rules from Selected Cells",
+        "action": "clearFormattingRules(",
+        "class": "cond-menu-item text-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Clear Rules from Entire Sheet",
+        "action": "clearFormattingRules(",
+        "class": "cond-menu-item text-danger",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Executive Navy",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Forest Emerald",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Royal Cobalt",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Slate Charcoal",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Warm Amber",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Royal Purple",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Modern Teal",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Header Total Crimson Wine",
+        "action": "applySheetColorTemplate(",
+        "class": "template-card-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ Clear Template / Plain White",
+        "action": "applySheetColorTemplate(",
+        "class": "template-reset-btn",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "excel-name-box",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "excel-name-box"
+      },
+      {
+        "id": "excel-formula-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Enter value, text, or formula starting with =",
+        "handler": "onFormulaBarInput(this.value)",
+        "class": "excel-formula-input"
+      },
+      {
+        "id": "input-font-color",
+        "type": "color",
+        "name": null,
+        "placeholder": null,
+        "handler": "applyFontColor(this.value)",
+        "class": null
+      },
+      {
+        "id": "input-fill-color",
+        "type": "color",
+        "name": null,
+        "placeholder": null,
+        "handler": "applyFillColor(this.value)",
+        "class": null
+      },
+      {
+        "id": "excel-file-import-input",
+        "type": "file",
+        "name": null,
+        "placeholder": null,
+        "handler": "handleExcelFileImport(event)",
+        "class": null
+      },
+      {
+        "id": "sheet-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search student name, roll, or cell text...",
+        "handler": "onSheetSearch(this.value)",
+        "class": "eval-search-input"
+      },
+      {
+        "id": "excel-bottom-zoom-slider",
+        "type": "range",
+        "name": null,
+        "placeholder": null,
+        "handler": "onZoomSliderInput(this.value)",
+        "class": "excel-status-zoom-slider"
+      },
+      {
+        "id": "add-col-sheet-target",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-col-title",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Practical Exam, Viva, Mini Project, Q5",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-col-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Vikas Chauhan",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 2024IT011",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "add-row-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 24101054011",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-name",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-enroll",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "edit-row-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_sort_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_student_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": null,
+        "type": "radio",
+        "name": "filter_focus_radio",
+        "placeholder": null,
+        "handler": "onFilterModalRadioChange()",
+        "class": null
+      },
+      {
+        "id": "scheme-assign-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "onSchemeMarksChange(",
+        "class": "form-input-field"
+      },
+      {
+        "id": "scheme-exam-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "onSchemeMarksChange(",
+        "class": "form-input-field"
+      },
+      {
+        "id": "scheme-att-max",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": "onSchemeMarksChange(",
+        "class": "form-input-field"
+      },
+      {
+        "id": "roster-modal-name",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "roster-modal-roll",
+        "type": "number",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "find-input-text",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search text, number, or formula...",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "replace-input-text",
+        "type": "text",
+        "name": null,
+        "placeholder": "Replacement value...",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "find-match-case",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "find-entire-cell",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": null
+      },
+      {
+        "id": "insert-fn-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Type function name (e.g. SUM, AVERAGE, IF)...",
+        "handler": "filterFormulaFunctionsList(this.value)",
+        "class": "form-input-field"
+      },
+      {
+        "id": "rename-sheet-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Master Evaluation, UT Marks",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "new-template-name-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Template name (e.g. Standard Evaluation Layout)...",
+        "handler": null,
+        "class": "form-input-field"
+      },
+      {
+        "id": "input-fill-color",
+        "type": "color",
+        "name": null,
+        "placeholder": null,
+        "handler": "selectFillColor(this.value)",
+        "class": null
+      },
+      {
+        "id": "input-font-color",
+        "type": "color",
+        "name": null,
+        "placeholder": null,
+        "handler": "selectFontColor(this.value)",
+        "class": null
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "group-switcher-select",
+        "title": "Switch Teaching Group / Class",
+        "onchange": "onSwitchGroup(this.value)",
+        "class": "group-selector-select excel-group-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading classes..."
+          }
+        ]
+      },
+      {
+        "id": "font-family-select",
+        "title": "Font Family",
+        "onchange": "applyFontFamily(this.value)",
+        "class": "excel-select excel-font-family",
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "Inter, sans-serif",
+            "text": "Inter"
+          },
+          {
+            "value": "Arial, sans-serif",
+            "text": "Arial"
+          },
+          {
+            "value": "",
+            "text": "JetBrains Mono"
+          },
+          {
+            "value": "",
+            "text": "Times New Roman"
+          },
+          {
+            "value": "",
+            "text": "Segoe UI"
+          }
+        ]
+      },
+      {
+        "id": "font-size-select",
+        "title": "Font Size",
+        "onchange": "applyFontSize(this.value)",
+        "class": "excel-select excel-font-size",
+        "options_count": 8,
+        "sample_options": [
+          {
+            "value": "9",
+            "text": "9"
+          },
+          {
+            "value": "10",
+            "text": "10"
+          },
+          {
+            "value": "11",
+            "text": "11"
+          },
+          {
+            "value": "12",
+            "text": "12"
+          },
+          {
+            "value": "14",
+            "text": "14"
+          },
+          {
+            "value": "16",
+            "text": "16"
+          },
+          {
+            "value": "18",
+            "text": "18"
+          },
+          {
+            "value": "20",
+            "text": "20"
+          }
+        ]
+      },
+      {
+        "id": "number-format-select",
+        "title": "Number Format",
+        "onchange": "applyNumberFormat(this.value)",
+        "class": "excel-select",
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "general",
+            "text": "General"
+          },
+          {
+            "value": "number",
+            "text": "Number (0.00)"
+          },
+          {
+            "value": "currency",
+            "text": "Currency (₹)"
+          },
+          {
+            "value": "percent",
+            "text": "Percentage (%)"
+          },
+          {
+            "value": "date",
+            "text": "Short Date"
+          }
+        ]
+      },
+      {
+        "id": "home-density-selector",
+        "title": "Display Density",
+        "onchange": "setDensity(this.value)",
+        "class": "density-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "normal",
+            "text": "Normal"
+          },
+          {
+            "value": "compact",
+            "text": "Compact"
+          },
+          {
+            "value": "comfortable",
+            "text": "Comfortable"
+          }
+        ]
+      },
+      {
+        "id": "sheet-selector-dropdown",
+        "title": "Choose Active Academic Spreadsheet",
+        "onchange": "switchSheetDropdown(this.value)",
+        "class": "sheet-select-dropdown excel-sheet-select",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "evaluation",
+            "text": "1. Master Evaluation Sheet"
+          },
+          {
+            "value": "tests",
+            "text": "2. Class Test Marksheet"
+          },
+          {
+            "value": "assignments",
+            "text": "3. Assignment Marksheet"
+          },
+          {
+            "value": "practicals",
+            "text": "4. Practical &amp; Lab Work Marksheet"
+          }
+        ]
+      },
+      {
+        "id": "sheet-column-focus-select",
+        "title": "Jump directly to column",
+        "onchange": "onFocusColumnChange(this.value)",
+        "class": "eval-filter-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Column Focus ▾"
+          }
+        ]
+      },
+      {
+        "id": "add-col-category",
+        "title": null,
+        "onchange": "onAddColCategoryChange(this.value)",
+        "class": "form-input-field",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "custom",
+            "text": "Continuous Assessment (Lab, Viva, Project, Seminar)"
+          },
+          {
+            "value": "assign",
+            "text": "Coursework Assignment (A1, A2, ...)"
+          },
+          {
+            "value": "exam",
+            "text": "Unit Test / Periodic Exam (UT1, UT2, ...)"
+          }
+        ]
+      },
+      {
+        "id": "remove-col-select",
+        "title": null,
+        "onchange": null,
+        "class": "form-input-field",
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "edit-row-select",
+        "title": null,
+        "onchange": "onSelectStudentToEdit(this.value)",
+        "class": "form-input-field",
+        "options_count": 0,
+        "sample_options": []
+      },
+      {
+        "id": "density-selector",
+        "title": "Display Density",
+        "onchange": "setDensity(this.value)",
+        "class": "density-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "normal",
+            "text": "Normal Density"
+          },
+          {
+            "value": "compact",
+            "text": "Compact (Fit More)"
+          },
+          {
+            "value": "comfortable",
+            "text": "Comfortable (Large)"
+          }
+        ]
+      },
+      {
+        "id": "modal-roster-student-select",
+        "title": null,
+        "onchange": "onSelectStudentInRosterModal(this.value)",
+        "class": "form-input-field",
+        "options_count": 0,
+        "sample_options": []
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "modal-add-column",
+      "title": "+ Add Spreadsheet Column",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-col-sheet-target",
+      "title": "Modal Dialog",
+      "fields": [
+        "add-col-sheet-target"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-remove-column",
+      "title": "− Remove Spreadsheet Column",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "remove-col-select",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-add-row",
+      "title": "+ Add Student Row",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-row-roll",
+      "title": "Modal Dialog",
+      "fields": [
+        "add-row-roll"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-row",
+      "title": "Edit / Remove Student",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "edit-row-select",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "sheet-filter-modal",
+      "title": "Filters",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "tab-btn-sort",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "filter-modal-status-text",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-total-marks",
+      "title": "Edit Total Marks &amp;\n              Scheme",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-custom-cols-container",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-scheme-total-display",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-edit-student-roster",
+      "title": "Edit Student Row Data",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-roster-student-select",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-find-replace",
+      "title": "Find and Replace",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "find-input-text",
+      "title": "Modal Dialog",
+      "fields": [
+        "find-input-text"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-find-replace-all",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-insert-function",
+      "title": "Insert Function",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "insert-fn-search",
+      "title": "Modal Dialog",
+      "fields": [
+        "insert-fn-search"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-insert-fn",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeInsertFunctionModal()"
+    },
+    {
+      "id": "modal-rename-sheet",
+      "title": "Rename Worksheet",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "rename-sheet-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "rename-sheet-input"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "modal-template-manager",
+      "title": "Spreadsheet Formatting\n              Templates",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "new-template-name-input",
+      "title": "Modal Dialog",
+      "fields": [
+        "new-template-name-input"
+      ],
+      "submit_action": "saveActiveSheetAsTemplate()"
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
+    "faculty/components/header/header.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/sheets/js/sheets-loading.js",
+    "faculty/sheets/js/sheets-color-tools.js",
+    "faculty/sheets/js/sheets-grid-stretching.js",
+    "faculty/components/core/exceljs.min.js",
+    "faculty/sheets/sheets.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "openModal",
+    "closeModal",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleColorPalette",
+    "toggleConditionalFormattingMenu",
+    "toggleColorTemplatesMenu",
+    "closeAllColorPalettes",
+    "loadTeacherGroupsList",
+    "renderGroupSwitcherOptions",
+    "renderSheetSelectorDropdownOptions",
+    "loadGroupMetadata",
+    "switchSheetTab",
+    "loadSheetData",
+    "openSheetFilterModal",
+    "closeSheetFilterModal",
+    "switchFilterCategory"
+  ]
+}
