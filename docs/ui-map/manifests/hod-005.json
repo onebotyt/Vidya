@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "fd6c0dc4376c",
-  "last_scanned": "2026-11-20T19:29:04.760Z",
+  "content_hash": "11ca21deb8cd",
+  "last_scanned": "2026-11-20T19:55:56.849Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -139,36 +139,36 @@
         "title": "Refresh telemetry"
       },
       {
-        "id": "btn-scan-wifi",
-        "label": "Scan",
-        "action": "triggerScanNearbyWifi()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": "Scan nearby Wi-Fi networks"
-      },
-      {
-        "id": "btn-add-wifi-manual",
-        "label": "+ Add",
-        "action": "openAddWifiModal()",
+        "id": null,
+        "label": "View Students &rarr;",
+        "action": "switchEspTab(",
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
-        "title": "Add Wi-Fi manually"
+        "title": null
       },
       {
-        "id": "btn-fallback-wifi",
-        "label": "Fallback Default",
-        "action": "triggerWifiFallback()",
-        "class": "btn btn-secondary btn-sm",
+        "id": null,
+        "label": "Enroll Fingerprint &rarr;",
+        "action": "focusEnrollStation()",
+        "class": "btn btn-purple btn-sm",
         "data_ui": null,
-        "title": "Trigger fallback to primary default Wi-Fi"
+        "title": null
       },
       {
-        "id": "btn-reset-wifi",
-        "label": "Emergency Reset",
-        "action": "triggerWifiReset()",
-        "class": "btn btn-danger btn-sm",
+        "id": null,
+        "label": "Scan Now &rarr;",
+        "action": "focusAttendanceScanner()",
+        "class": "btn btn-success btn-sm",
         "data_ui": null,
-        "title": "Emergency clear saved Wi-Fi"
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Manage Wi-Fi &rarr;",
+        "action": "focusWifiManager()",
+        "class": "btn btn-warning btn-sm",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "btn-enroll-selected-student",
@@ -193,6 +193,46 @@
         "class": "btn btn-danger btn-sm",
         "data_ui": null,
         "title": "Delete fingerprint template from cloud vault"
+      },
+      {
+        "id": "btn-scan-wifi",
+        "label": "Scan Nearby",
+        "action": "triggerScanNearbyWifi()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Scan nearby Wi-Fi networks"
+      },
+      {
+        "id": "btn-add-wifi-manual",
+        "label": "+ Add Network",
+        "action": "openAddWifiModal()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": "Add Wi-Fi manually"
+      },
+      {
+        "id": null,
+        "label": "Add",
+        "action": "quickAddStudioWifi()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-fallback-wifi",
+        "label": "Fallback Default",
+        "action": "triggerWifiFallback()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Trigger fallback to primary default Wi-Fi"
+      },
+      {
+        "id": "btn-reset-wifi",
+        "label": "Emergency Reset",
+        "action": "triggerWifiReset()",
+        "class": "btn btn-danger btn-sm",
+        "data_ui": null,
+        "title": "Emergency clear saved Wi-Fi"
       },
       {
         "id": "sim-btn-standby",
@@ -485,6 +525,22 @@
     ],
     "input_controls": [
       {
+        "id": "studio-quick-ssid",
+        "type": "text",
+        "name": null,
+        "placeholder": "Network name (SSID)...",
+        "handler": null,
+        "class": "form-control form-control-sm"
+      },
+      {
+        "id": "studio-quick-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Password...",
+        "handler": null,
+        "class": "form-control form-control-sm"
+      },
+      {
         "id": "chk-buzzer-audio",
         "type": "checkbox",
         "name": null,
@@ -612,19 +668,6 @@
         ]
       },
       {
-        "id": "active-device-select",
-        "title": null,
-        "onchange": "onSelectActiveDevice(this.value)",
-        "class": "form-select form-select-sm",
-        "options_count": 1,
-        "sample_options": [
-          {
-            "value": "",
-            "text": "Select Active ESP32..."
-          }
-        ]
-      },
-      {
         "id": "enroll-cohort-filter",
         "title": null,
         "onchange": "filterEnrollStudentDropdown(this.value)",
@@ -663,6 +706,19 @@
           {
             "value": "",
             "text": "Choose a student from roster..."
+          }
+        ]
+      },
+      {
+        "id": "active-device-select",
+        "title": null,
+        "onchange": "onSelectActiveDevice(this.value)",
+        "class": "form-select form-select-sm",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Select Active ESP32..."
           }
         ]
       },

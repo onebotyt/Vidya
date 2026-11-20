@@ -1575,6 +1575,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
     - `test-bulk-import.js`: **20/20 passed**.
     - `test-student-self-registration.js`: **30/30 passed**.
 
+### ✅ Milestone 465: Modern High-Density 2-Column Command Studio for ESP32 Biometrics & Wi-Fi Management
+- **User Challenge & UI/UX Bottlenecks Identified**:
+  1. *4-Column Squishing on Standard Screens*: A previous 4-column layout squeezed Terminals, Wi-Fi, Biometric Registration, and OLED Console into ~25% widths, causing dropdown options (e.g. `[Pending] #1 - AMIT SARKAR (Yr 1 Sem 1)`) and labels to truncate.
+  2. *Bulky Vertical Spacing*: 4 large top KPI cards occupied excess vertical height before interactive controls appeared.
+  3. *Visual Cohesion*: Needed to align with modern glass/card aesthetic featuring quick-action shortcuts, biometric scanner device illustration, and interactive Wi-Fi signal strength meters.
+- **Architectural & UI/UX Solutions Delivered**:
+  - **4 Modern Quick-Action Cards (`.esp-quick-grid`)**:
+    - Added high-density quick cards with accent tokens: Student Directory (Blue), Fingerprint Enrollment (Purple), Attendance Scanner (Green), and Wi-Fi Manager (Orange).
+    - Integrated smooth deep-linking (`switchEspTab`, `focusEnrollStation`, `focusAttendanceScanner`, `focusWifiManager`).
+  - **Spacious Balanced 2-Column Command Studio (`.esp-studio-grid`)**:
+    - Converted workbench into a 50% / 50% split (~650px per column on desktop) ensuring 0 truncated text or squeezed dropdowns.
+    - *Column 1 (Left)*: Biometric Registration Station & Optical Scanner (`#section-bio-enrollment`) featuring AS608 hardware device simulator (`.scanner-hardware`) with glowing LED sensor, viewfinder box (`.fingerprint-box`) with pulsing concentric rings on scan, cohort filter (`#enroll-cohort-filter`), full-width student dropdown (`#enroll-student-select`), student preview chip (`#enroll-student-chip`), 3-step tracker, and scan/enroll action buttons.
+    - *Column 2 (Right)*: Connected ESP32 Terminals (`#section-esp-terminals`) & Wi-Fi Networks with Multi-Network Failover (`#section-esp-wifi`) featuring terminal node selector, 4-bar signal strength meters (`.esp-wifi-signal-bars`), inline quick-add network row (`#studio-quick-ssid`, `#studio-quick-password`), fallback default, and emergency reset.
+  - **Dedicated Full-Width Hardware Console Dock (`.esp-oled-simulator-card`)**:
+    - Positioned Live Hardware Console cleanly below the 2-column studio, preserving the 0.96" SSD1306 OLED simulation (128x64), 3 status LEDs (Green, Red, Blue), 5V Piezo Buzzer audio toggle (`#chk-buzzer-audio`), and 6 hardware simulation mode buttons.
+  - **Single Sleek Telemetry Ribbon (`.esp-telemetry-banner`)**:
+    - Compact 42px horizontal bar preserving all telemetry metrics (`#kpi-esp-devices`, `#kpi-esp-templates`, `#kpi-esp-coverage`, `#kpi-batt-status`, `#kpi-esp-battery`, `#kpi-esp-offline`) while saving over 100px vertical space.
+  - **Theme Token & Zero-Emoji Compliance**:
+    - 100% theme token compliant (replaced raw OLED hex values with CSS variables `--oled-*`).
+    - 0 emojis across all UI elements (replaced with clean SVG icons).
+  - **Rigorous Verification & Deployment Sync**:
+    - Synchronized `frontend/faculty/esp32-devices/index.html` <-> `frontend/faculty/esp32-devices.html` for Vercel cleanUrls parity.
+    - `node backend/scripts/extract-ui-manifest.js`: Successfully regenerated 32 manifests.
+    - `node backend/scripts/test-ui-manifest-sync.js`: **Passed 208/208 checks**.
+    - `node backend/scripts/test-theme-support.js`: **Passed 84/84 checks**.
+    - `node -c backend/server.js`: **Passed syntax check**.
+
 ### ✅ Milestone 464: Student Bulk CSV/TSV Import System Full Modernization & Dual-DB Parity
 - **Root-Cause Analysis of "Broken Bulk Import System"**:
   1. *Validation Constraint Failure*:

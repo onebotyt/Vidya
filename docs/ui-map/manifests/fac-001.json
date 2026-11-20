@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "c3434fb4955f",
-  "last_scanned": "2026-11-20T19:29:04.793Z",
+  "content_hash": "240aad0aab41",
+  "last_scanned": "2026-11-20T19:55:56.888Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -51,7 +51,7 @@
         "class": "rec-table",
         "headers": [
           "Roll #",
-          "Enrollment No",
+          "UBTER Roll No",
           "Student Name",
           "Cohort",
           "Batch",
@@ -63,7 +63,7 @@
         "class": "rec-table",
         "headers": [
           "Roll #",
-          "Enrollment No",
+          "UBTER Roll No",
           "Student Name",
           "Cohort",
           "Batch",

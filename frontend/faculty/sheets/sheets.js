@@ -2152,7 +2152,7 @@ async function loadEvaluationSheetData() {
           exam_avg_max: examAvgMax,
           total_max: grandTotalMax,
           roll_label: (cachedState && cachedState.scheme && cachedState.scheme.roll_label) || 'ROLL NO',
-          enroll_label: (cachedState && cachedState.scheme && cachedState.scheme.enroll_label) || 'ENROLLMENT NO',
+          enroll_label: (cachedState && cachedState.scheme && cachedState.scheme.enroll_label) || 'UBTER ROLL NO',
           reg_label: (cachedState && cachedState.scheme && cachedState.scheme.reg_label) || 'REG NO',
           name_label: (cachedState && cachedState.scheme && cachedState.scheme.name_label) || 'STUDENT NAME',
           assign_label: (cachedState && cachedState.scheme && cachedState.scheme.assign_label) || 'Assignment Marks',
@@ -2198,7 +2198,7 @@ async function loadEvaluationSheetData() {
     exam_avg_max: 20,
     total_max: 40,
     roll_label: 'ROLL NO',
-    enroll_label: 'ENROLLMENT NO',
+    enroll_label: 'UBTER ROLL NO',
     reg_label: 'REG NO',
     name_label: 'STUDENT NAME',
     assign_label: 'Assignment Marks',
@@ -2355,7 +2355,7 @@ function renderEvaluationSheetTable() {
           <tr class="excel-hdr-tan">
             <th rowspan="2" class="col-roll" style="width: 70px;">${esc(scheme.roll_label || 'ROLL NO')}</th>
             <th rowspan="2" class="col-reg" style="width: 135px;">${esc(scheme.reg_label || 'REG NO')}</th>
-            <th rowspan="2" class="col-enroll" style="width: 135px;">${esc(scheme.enroll_label || 'ENROLLMENT NO')}</th>
+            <th rowspan="2" class="col-enroll" style="width: 135px;">${esc(scheme.enroll_label || 'UBTER ROLL NO')}</th>
             <th rowspan="2" class="col-name" style="min-width: 190px; text-align: left;">${esc(scheme.name_label || 'STUDENT NAME')}</th>
             <th colspan="${aCount}" class="col-assign">${esc(scheme.assign_label || 'Assignment Marks')}</th>
             <th rowspan="2" class="col-assign-avg" style="width: 95px;">${esc(scheme.assign_avg_label || 'Assign Avg')}</th>
@@ -3153,7 +3153,7 @@ function renderTestSheetTable() {
               <th rowspan="2" class="col-sr" style="width: 55px; vertical-align: middle;">SR. NO.</th>
               <th rowspan="2" class="col-roll" style="width: 85px; vertical-align: middle;">ROLL NO.</th>
               <th rowspan="2" class="col-reg" style="width: 125px; vertical-align: middle;">REG. NO.</th>
-              <th rowspan="2" class="col-enroll" style="width: 125px; vertical-align: middle;">ENROLLMENT NO.</th>
+              <th rowspan="2" class="col-enroll" style="width: 125px; vertical-align: middle;">UBTER ROLL NO.</th>
               <th rowspan="2" class="col-name" style="width: 200px; vertical-align: middle;">STUDENT NAME</th>
               <th colspan="${questions.length}" class="col-test" title="${esc(testTitle)}">${esc(testShort)} (${esc(testTitle)})</th>
               <th rowspan="2" class="col-total excel-cell-total" style="width: 75px; vertical-align: middle;">Total</th>
@@ -3605,7 +3605,7 @@ function renderAllTestsCombinedTable() {
               <th class="col-sr" style="width: 50px;">SR. NO.</th>
               <th class="col-roll" style="width: 85px;">ROLL NO.</th>
               <th class="col-reg" style="width: 125px;">REG. NO.</th>
-              <th class="col-enroll" style="width: 125px;">ENROLLMENT NO.</th>
+              <th class="col-enroll" style="width: 125px;">UBTER ROLL NO.</th>
               <th class="col-name" style="min-width: 200px;">STUDENT NAME</th>
               ${allTests.map((t, i) => `<th class="col-test" title="${esc(t.title || 'Unit Test ' + (i + 1))}">${esc(getTestShortHeader(t, i))}</th>`).join('')}
               <th class="col-total" style="width: 90px; font-weight: 800;">Total Marks</th>
@@ -4016,7 +4016,7 @@ function renderAssignmentsSheetTable() {
               <th class="col-sr" style="width: 50px;">SR. NO.</th>
               <th class="col-roll" style="width: 85px;">ROLL NO.</th>
               <th class="col-reg" style="width: 125px;">REG. NO.</th>
-              <th class="col-enroll" style="width: 125px;">ENROLLMENT NO.</th>
+              <th class="col-enroll" style="width: 125px;">UBTER ROLL NO.</th>
               <th class="col-name" style="min-width: 200px;">STUDENT NAME</th>
               ${assignments.length ? assignments.map((a, i) => `<th class="col-assign" title="${esc(a.title || a.name || 'Assignment ' + (i + 1))}">${esc(getAssignShortHeader(a, i))}</th>`).join('') : '<th class="col-assign" style="width: 120px;">Assignments</th>'}
               <th style="width: 90px;">Total Marks</th>
@@ -4316,7 +4316,7 @@ function renderPracticalsSheetTable() {
               <th class="col-sr" style="width: 50px;">SR. NO.</th>
               <th class="col-roll" style="width: 85px;">ROLL NO.</th>
               <th class="col-reg" style="width: 125px;">REG. NO.</th>
-              <th class="col-enroll" style="width: 125px;">ENROLLMENT NO.</th>
+              <th class="col-enroll" style="width: 125px;">UBTER ROLL NO.</th>
               <th class="col-name" style="min-width: 200px;">STUDENT NAME</th>
               ${practicals.length ? practicals.map((p, i) => `<th class="col-practical" title="${esc(p.title || p.name || 'Lab Experiment ' + (i + 1))}">${esc(getPracticalShortHeader(p, i))}</th>`).join('') : '<th class="col-practical" style="width: 120px;">Practicals</th>'}
               <th style="width: 90px;">Total Marks</th>
@@ -8647,7 +8647,7 @@ async function exportCurrentSheet(format) {
         // 4. Track column max lengths for perfect auto-width calculation
         const colMaxLengths = new Array(maxDataCol + 1).fill(10);
         colMaxLengths[0] = 10; // Roll #
-        colMaxLengths[1] = 18; // Enrollment No
+        colMaxLengths[1] = 18; // UBTER Roll No
         colMaxLengths[2] = 26; // Student Name
 
         // 5. Populate Data Rows & Cells
@@ -8821,7 +8821,7 @@ async function exportCurrentSheet(format) {
           } else if (c === 2) {
             worksheet.getColumn(c + 1).width = 12.0; // REG. NO.
           } else if (c === 3) {
-            worksheet.getColumn(c + 1).width = 16.0; // ENROLLMENT NO.
+            worksheet.getColumn(c + 1).width = 16.0; // UBTER ROLL NO.
           } else if (c === 4) {
             worksheet.getColumn(c + 1).width = 24.0; // STUDENT NAME
           } else if (customW && typeof customW === 'number' && customW > 0) {
