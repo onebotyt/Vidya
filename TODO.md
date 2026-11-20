@@ -49,6 +49,22 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 518: Office Start Screen & Studio Decoupling, Dynamic Floating Dropdown Alignment, and Scale Markup Fix (v7)
+- **Objective & Architectural Scope**:
+  1. *Decoupled Office Start Screen & Studio Main Container*:
+     - In `office-home.js`, updated `openOfficeHomeScreen()` to explicitly hide `#studio-main-container` (`studio.style.display = 'none'`), and `closeOfficeHomeScreen()` to restore it (`studio.style.display = 'flex'`).
+     - Increased `.office-home-screen` `z-index` to `2000` in `sheets.css`, completely eliminating any visual collision or bleed-through of the Excel Ribbon over the Home Start Screen.
+  2. *Dynamic Trigger Button Resolution & Viewport Bounding*:
+     - In `sheets-color-tools.js`, upgraded `toggleColorPalette`, `toggleConditionalFormattingMenu`, and `toggleColorTemplatesMenu` to dynamically resolve the trigger element via `(event && (event.currentTarget || (event.target && event.target.closest('button'))))`.
+     - In `positionFloatingDropdown`, added fallback viewport centering if `rect` cannot be measured, preventing dropdowns from snapping to `left: 10px`.
+     - Added `setProperty('...', '...', 'important')` for `top`, `left`, `max-height`, and `z-index` ensuring full specificity override.
+  3. *Conditional Formatting Scale Markup Repair*:
+     - Fixed malformed HTML in `frontend/faculty/sheets/index.html` lines 2943-2945 for the Blue – White – Red color scale.
+  4. *Asset Cache Busting (`?v=20261120_v7`)*:
+     - Updated all CSS/JS asset version query strings across `index.html` and `office-home.js` to `?v=20261120_v7`.
+  5. *Zero-Break Regression Gatekeeper*:
+     - All UI manifests, theme checks, and syntax checks verified before push.
+
 ### ✅ Milestone 517: Unified Single-Modal Architecture for Student Profile & In-Place Editing
 - **Objective & Architectural Scope**:
   1. *Elimination of Modal Switching & Modal Duplication*:

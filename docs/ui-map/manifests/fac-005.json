@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "7bbea9d608be",
-  "last_scanned": "2026-11-20T13:30:10.333Z",
+  "content_hash": "80016ebf25f1",
+  "last_scanned": "2026-11-20T13:56:23.856Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Portal",
   "purpose": "Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with zero-loss local/cloud persistence and binary XLSX/PDF/DOC/CSV export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -1753,8 +1753,8 @@
       {
         "id": null,
         "label": "Blue – White – Red",
-        "action": null,
-        "class": "cond-scale-bar cond-scale-bwr",
+        "action": "applyColorScale(",
+        "class": "cond-menu-item",
         "data_ui": null,
         "title": null
       },
