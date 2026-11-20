@@ -49,6 +49,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 517: Unified Single-Modal Architecture for Student Profile & In-Place Editing
+- **Objective & Architectural Scope**:
+  1. *Elimination of Modal Switching & Modal Duplication*:
+     - Completely retired and removed `#modal-edit-student` from `frontend/faculty/students/index.html` (-134 lines of duplicated markup).
+     - Unified both profile view and profile edit modes into a single streamlined modal (`#modal-student-details`).
+     - Clicking "Edit Student" (either from the modal action footer or the table action kebab menu) no longer closes or switches modals. The active modal transitions smoothly in-place between view mode (`.stu-view-mode`) and edit mode (`.stu-edit-mode`).
+  2. *Dual-State Footer & Context Controls*:
+     - View mode displays institutional actions: "Remove Student", "Reset Password", "Close", "Transfer", "Withdraw", "Re-Activate", and "Edit Student" (`#stu-footer-view`).
+     - Edit mode displays in-place form controls: "Cancel" (`cancelStudentEdit()`) and "Save Changes" (`#btn-save-edit-student` submit) (`#stu-footer-edit`).
+     - Title dynamically updates between `Student Profile: <Name>` and `Edit Student Profile: <Name>` via `#detail-modal-mode-prefix`.
+  3. *Seamless In-Place Submission & State Refresh*:
+     - `submitEditStudent(e)` in `students.js` saves updates via `PUT /hod/students/:id`, updates the local `allStudents` roster and table DOM without reload, and refreshes `viewStudentDetails(studentId, false)` returning the user directly to the view state within the same modal dialog.
+     - "Cancel" button cleanly switches back to view mode without closing the modal or discarding unsaved background changes.
+  4. *Code Line Optimization & Zero-Break Verification*:
+     - Net reduction of 132 lines of code across HTML and JS.
+     - 100% UI Manifest & contract parity (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - Clean syntax verified across frontend and backend.
+
+
 ### ✅ Milestone 516: Color Tools Body-Root Relocation, Sticky Dropdown Headers, and Asset Cache Busting (v6)
 - **Objective & Architectural Scope**:
   1. *Complete Ancestor Overflow Immunization*:

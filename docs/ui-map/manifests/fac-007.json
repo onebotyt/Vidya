@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "a4d32cee53c6",
-  "last_scanned": "2026-11-20T13:17:52.348Z",
+  "content_hash": "f0c3c2896f7a",
+  "last_scanned": "2026-11-20T13:30:10.349Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and student profile dossier modal",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -87,16 +87,6 @@
       },
       {
         "id": "detail-stu-avatar",
-        "title": "Modal Dialog",
-        "field_count": 0
-      },
-      {
-        "id": "modal-edit-student",
-        "title": "Edit Student Profile: Student",
-        "field_count": 0
-      },
-      {
-        "id": "edit-stu-avatar",
         "title": "Modal Dialog",
         "field_count": 0
       },
@@ -327,55 +317,15 @@
       {
         "id": "detail-btn-edit",
         "label": "Edit Student",
-        "action": "detailEditStudent()",
+        "action": "setStudentModalEditMode(true)",
         "class": "btn-stu-compact",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "&times;",
-        "action": "closeEditStudentModal()",
-        "class": "btn-modal-close",
-        "data_ui": null,
-        "title": "Close"
-      },
-      {
-        "id": null,
-        "label": "Profile Info",
-        "action": "switchEditTab(",
-        "class": "stu-modal-tab active",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Academic Record",
-        "action": "switchEditTab(",
-        "class": "stu-modal-tab",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Attendance",
-        "action": "switchEditTab(",
-        "class": "stu-modal-tab",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Status",
-        "action": "switchEditTab(",
-        "class": "stu-modal-tab",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
         "label": "Cancel",
-        "action": "closeEditStudentModal()",
+        "action": "setStudentModalEditMode(false)",
         "class": "btn-stu-compact-cancel",
         "data_ui": null,
         "title": null
@@ -508,7 +458,7 @@
         "name": null,
         "placeholder": "Full Name",
         "handler": null,
-        "class": "stu-compact-input"
+        "class": "stu-compact-input stu-edit-mode"
       },
       {
         "id": "edit-chk-enroll-not-available",
@@ -532,7 +482,7 @@
         "name": null,
         "placeholder": "e.g. 24101054001",
         "handler": null,
-        "class": "stu-compact-input stu-mono-input uppercase"
+        "class": "stu-compact-input stu-mono-input uppercase stu-edit-mode"
       },
       {
         "id": "edit-stu-roll",
@@ -596,7 +546,7 @@
         "id": "edit-stu-sem",
         "title": null,
         "onchange": null,
-        "class": "stu-compact-input stu-compact-select",
+        "class": "stu-compact-input stu-compact-select stu-edit-mode",
         "options_count": 6,
         "sample_options": [
           {
@@ -629,7 +579,7 @@
         "id": "edit-stu-status",
         "title": null,
         "onchange": null,
-        "class": "stu-compact-input stu-compact-select",
+        "class": "stu-compact-input stu-compact-select stu-edit-mode",
         "options_count": 3,
         "sample_options": [
           {
@@ -696,18 +646,6 @@
     },
     {
       "id": "detail-stu-avatar",
-      "title": "Modal Dialog",
-      "fields": [],
-      "submit_action": null
-    },
-    {
-      "id": "modal-edit-student",
-      "title": "Edit Student Profile: Student",
-      "fields": [],
-      "submit_action": null
-    },
-    {
-      "id": "edit-stu-avatar",
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
