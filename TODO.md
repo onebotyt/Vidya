@@ -69,6 +69,51 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
      - Verified backend syntax sanity (`node -c server.js`).
 
+### ✅ Milestone 543: Complete Institutional Standardization: Ubiquitous UBTER Roll No Across UI, Student Management, and Rosters (v26)
+- **Objective & Architectural Scope**:
+  1. *Complete UI Standardization (100% Enrollment No -> UBTER Roll No Parity)*:
+     - In `frontend/faculty/students/index.html` and `students.js`:
+       - Replaced table column header from `Enrollment` to `UBTER Roll No`.
+       - Replaced search placeholder from `Search by name, roll, enrollment...` to `Search by name, roll, UBTER roll no...`.
+       - Replaced Add Student modal label `Official Enrollment # *` to `UBTER Roll No. *` and placeholder from `2024IT001` to `24011090008`.
+       - Replaced Edit Student modal label from `Enrollment #` to `UBTER Roll No`, checkbox tooltip from `Enrollment number not available` to `UBTER roll number not available`, and input placeholder from `11-digit numeric enrollment` to `11-digit numeric UBTER roll no`.
+       - Replaced Bulk CSV upload documentation and placeholder from `Official Enrollment` to `UBTER Roll No`.
+       - Replaced re-sequence confirmation modal from `Re-sequence class roll numbers sequentially by official enrollment?` to `Re-sequence class roll numbers sequentially by UBTER roll number?`.
+       - Replaced all validation error messages and notifications to explicitly state `UBTER Roll Number`.
+     - In `frontend/faculty/student-records/records.js`:
+       - Replaced student dossier table header from `Official Enrollment Number` to `UBTER Roll Number`.
+       - Replaced student demographics table header from `Enrollment #` to `UBTER Roll #`.
+     - In `frontend/index.html` and `frontend/landing/index.html`:
+       - Replaced attendance matrix preview table header from `Official Enrollment` to `UBTER Roll No.`.
+     - In `frontend/faculty/group-detail/js/group-detail-people.js` & `group-detail-register.js`:
+       - Replaced empty state message to `Add students using their UBTER roll number or share the invite code.`.
+       - Replaced tooltip titles from `Enroll: ...` to `UBTER Roll: ...`.
+       - Allowed adding students by both `ubter_roll_no` and `official_enrollment_no`.
+     - In `frontend/faculty/esp32-devices/esp32-devices.js`:
+       - Replaced OLED screen simulation text from `Enroll: ...` to `Roll: ${st?.ubter_roll_no || st?.official_enrollment_no || '24011090008'}`.
+     - In `frontend/faculty/sheets/sheets.js`:
+       - Ensured student row editing (`onSelectStudentToEdit` and `confirmUpdateStudentRow`) populates and updates both `ubter_roll_no` and `official_enrollment_no`.
+  2. *Backend Multi-Model & Controller Dual Persistence*:
+     - In `backend/src/models/studentModel.js`:
+       - `adjudicateRegistrationTransaction`: Updated query to check and assign `ubter_roll_no`, check unique conflict on both `official_enrollment_no` and `ubter_roll_no`, and return error message mentioning `UBTER Roll Number`.
+       - `checkEnrollmentConflict`: Checks both `official_enrollment_no` and `ubter_roll_no`.
+       - `listPendingRegistrations`: Selects `COALESCE(s.ubter_roll_no, s.official_enrollment_no) as ubter_roll_no`.
+       - `lookupPendingStudentId`: Checks both `ubter_roll_no` and `official_enrollment_no`.
+     - In `backend/src/models/hodModel.js`:
+       - `getStudentsRoster` & `getTrashStudents`: Selects `COALESCE(st.ubter_roll_no, st.official_enrollment_no) as ubter_roll_no`.
+       - `createStudent`: Inserts into `ubter_roll_no` upon provision and returns `ubter_roll_no`.
+     - In `backend/src/controllers/hodController.js` & `studentController.js`:
+       - Updated conflict checks and conflict error messages to reference `UBTER Roll Number`.
+     - In `backend/src/controllers/teachingGroupController.js` & `teachingGroupModel.js`:
+       - Accepted `ubter_roll_no` when adding members to teaching groups.
+  3. *Android & Capacitor Asset Mirroring*:
+     - Mirrored all updated source files to `frontend/www/` and `frontend/android/app/src/main/assets/public/`.
+  4. *Zero-Break UI Contracts & Verification*:
+     - Passed `node backend/scripts/extract-ui-manifest.js` (UIMS) with 32 manifests and 758 action buttons cataloged.
+     - Passed `node backend/scripts/test-ui-manifest-sync.js` (208/208 checks passed).
+     - Passed `node backend/scripts/test-theme-support.js` (84/84 checks passed).
+     - Verified backend syntax sanity (`node -c server.js`).
+
 ### ✅ Milestone 542: Layout Realignment: Biometric Station to Right, Remove Status Cards, Modernize Student Dropdown (v25)
 - **Objective & Architectural Scope**:
   1. *Studio Grid Layout Swap (Biometric Station to Right)*:
