@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/editor.html",
   "source_file": "frontend/faculty/sheets/editor.html",
-  "content_hash": "c8d88b3d8149",
-  "last_scanned": "2026-11-20T15:18:43.811Z",
+  "content_hash": "f8efa59ce748",
+  "last_scanned": "2026-11-20T15:41:46.446Z",
   "title": "Spreadsheet Studio — Institutional Excel Workspace",
   "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -403,6 +403,14 @@
       },
       {
         "id": null,
+        "label": "View",
+        "action": "switchRibbonTab(",
+        "class": "excel-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
         "label": "Templates",
         "action": "switchRibbonTab(",
         "class": "excel-tab-btn",
@@ -778,14 +786,6 @@
         "title": "Open Scores Form Modal"
       },
       {
-        "id": "btn-ribbon-fit-screen",
-        "label": "Fit Screen",
-        "action": "triggerFitColumnsToScreen()",
-        "class": "excel-tool-btn",
-        "data_ui": null,
-        "title": "Fit all columns to screen width without scrolling"
-      },
-      {
         "id": "btn-autosum-dropdown",
         "label": "Σ AutoSum ▾",
         "action": "toggleAutoSumMenu(event)",
@@ -866,78 +866,6 @@
         "title": "Clear Contents (Delete)"
       },
       {
-        "id": "btn-home-toggle-gridlines",
-        "label": "Gridlines",
-        "action": "toggleGridlines()",
-        "class": "excel-tool-btn active",
-        "data_ui": null,
-        "title": "Show/Hide Gridlines"
-      },
-      {
-        "id": "btn-home-toggle-formula-bar",
-        "label": "ƒx Formula Bar",
-        "action": "toggleFormulaBarVisibility()",
-        "class": "excel-tool-btn",
-        "data_ui": null,
-        "title": "Show/Hide Formula Bar"
-      },
-      {
-        "id": "btn-home-freeze-panes",
-        "label": "Freeze ▾",
-        "action": "toggleFreezePanesMenu(event)",
-        "class": "excel-tool-btn",
-        "data_ui": null,
-        "title": "Freeze Panes / Rows / Columns"
-      },
-      {
-        "id": null,
-        "label": "Freeze Top Row",
-        "action": "freezeTopRow()",
-        "class": "excel-menu-row",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Freeze First Column",
-        "action": "freezeFirstColumn()",
-        "class": "excel-menu-row",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Unfreeze Panes",
-        "action": "unfreezePanes()",
-        "class": "excel-menu-row",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Zoom Out (−)",
-        "action": "zoomOut()",
-        "class": "excel-icon-btn",
-        "data_ui": null,
-        "title": "Zoom Out (−)"
-      },
-      {
-        "id": null,
-        "label": "Zoom In (+)",
-        "action": "zoomIn()",
-        "class": "excel-icon-btn",
-        "data_ui": null,
-        "title": "Zoom In (+)"
-      },
-      {
-        "id": "btn-home-autofit",
-        "label": "Auto-Fit",
-        "action": "toggleAutoFit()",
-        "class": "excel-tool-btn active",
-        "data_ui": null,
-        "title": "Toggle Auto-Fit"
-      },
-      {
         "id": null,
         "label": "ƒx Insert Function",
         "action": "openInsertFunctionModal()",
@@ -978,44 +906,20 @@
         "title": "Toggle Signatures Block"
       },
       {
-        "id": "btn-toggle-gridlines",
-        "label": "Gridlines: ON",
-        "action": "toggleGridlines()",
-        "class": "excel-tool-btn active",
-        "data_ui": null,
-        "title": "Show/Hide Gridlines"
-      },
-      {
-        "id": "btn-toggle-banner-view",
-        "label": "College Banner: ON",
-        "action": "toggleInstitutionalBanner()",
-        "class": "excel-tool-btn active",
-        "data_ui": null,
-        "title": "Show/Hide Institutional Header Banner"
-      },
-      {
-        "id": null,
-        "label": "Scheme Weightage",
-        "action": "openEditMarksModal()",
-        "class": "excel-tool-btn",
-        "data_ui": null,
-        "title": "Edit Total Marks &amp; Scheme"
-      },
-      {
-        "id": "btn-layout-fit-screen",
-        "label": "Fit Columns to Screen",
-        "action": "triggerFitColumnsToScreen()",
-        "class": "excel-tool-btn",
-        "data_ui": null,
-        "title": "Auto-Fit All Columns to Screen Width"
-      },
-      {
         "id": null,
         "label": "Print Sheet",
         "action": "window.print()",
         "class": "excel-action-btn-large",
         "data_ui": null,
         "title": "Open Print View"
+      },
+      {
+        "id": null,
+        "label": "Scheme Marks",
+        "action": "openEditMarksModal()",
+        "class": "excel-action-btn-large",
+        "data_ui": null,
+        "title": "Configure Evaluation Scheme &amp; Marks Distribution"
       },
       {
         "id": null,
@@ -1130,6 +1034,110 @@
         "title": "Toggle Read-Only / Protect Sheet"
       },
       {
+        "id": "btn-toggle-gridlines",
+        "label": "Gridlines: ON",
+        "action": "toggleGridlines()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Gridlines"
+      },
+      {
+        "id": "btn-toggle-formula-view",
+        "label": "ƒx Formula Bar: ON",
+        "action": "toggleFormulaBarVisibility()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Formula Bar"
+      },
+      {
+        "id": "btn-toggle-banner-view",
+        "label": "College Banner: ON",
+        "action": "toggleInstitutionalBanner()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Institutional Header Banner"
+      },
+      {
+        "id": "btn-toggle-signatures-bar",
+        "label": "Signatures: ON",
+        "action": "toggleSignatureBarVisibility()",
+        "class": "excel-tool-btn active",
+        "data_ui": null,
+        "title": "Show/Hide Faculty &amp; HOD Signatures Block"
+      },
+      {
+        "id": null,
+        "label": "Zoom Out (−)",
+        "action": "zoomOut()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Zoom Out (−)"
+      },
+      {
+        "id": null,
+        "label": "Zoom In (+)",
+        "action": "zoomIn()",
+        "class": "excel-icon-btn",
+        "data_ui": null,
+        "title": "Zoom In (+)"
+      },
+      {
+        "id": null,
+        "label": "100%",
+        "action": "resetZoom()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Reset Zoom to 100%"
+      },
+      {
+        "id": "btn-view-fit-screen",
+        "label": "Fit to Screen",
+        "action": "triggerFitColumnsToScreen()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Auto-Fit All Columns to Screen Width without scrolling"
+      },
+      {
+        "id": "btn-view-freeze-panes",
+        "label": "Freeze Panes ▾",
+        "action": "toggleFreezePanesMenu(event)",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Freeze Panes / Rows / Columns"
+      },
+      {
+        "id": null,
+        "label": "Freeze Top Row",
+        "action": "freezeTopRow()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Freeze First Column",
+        "action": "freezeFirstColumn()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Unfreeze Panes",
+        "action": "unfreezePanes()",
+        "class": "excel-menu-row",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Scheme Weightage",
+        "action": "openEditMarksModal()",
+        "class": "excel-tool-btn",
+        "data_ui": null,
+        "title": "Edit Total Marks &amp; Scheme Weightage"
+      },
+      {
         "id": null,
         "label": "Browse Templates",
         "action": "openTemplateManagerModal()",
@@ -1224,14 +1232,6 @@
         "class": "btn btn-secondary btn-sm active",
         "data_ui": null,
         "title": "Show/Hide Formula Bar"
-      },
-      {
-        "id": "btn-toggle-signatures-bar",
-        "label": "Signatures: ON",
-        "action": "toggleSignatureBarVisibility()",
-        "class": "btn btn-secondary btn-sm active",
-        "data_ui": null,
-        "title": "Show/Hide Institutional Signatures Bar"
       },
       {
         "id": "btn-fit-columns-screen",
@@ -1512,14 +1512,6 @@
         "class": "screen-ctrl-btn",
         "data_ui": null,
         "title": "Zoom In (+)"
-      },
-      {
-        "id": null,
-        "label": "100%",
-        "action": "resetZoom()",
-        "class": "screen-ctrl-btn",
-        "data_ui": null,
-        "title": "Reset to 100%"
       },
       {
         "id": "btn-autofit",
@@ -2430,7 +2422,7 @@
         ]
       },
       {
-        "id": "home-density-selector",
+        "id": "view-density-selector",
         "title": "Display Density",
         "onchange": "setDensity(this.value)",
         "class": "density-select",
