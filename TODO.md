@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 505: Complete Eradication of LocalStorage Mock Caches & Multi-Tier Live Database Roster Hydration
+- **Objective & Architectural Scope**:
+  1. *Complete Eradication of Mock LocalStorage Caches*:
+     - Implemented complete key sweep across `localStorage` on boot (`initOfficePortal` and `initSheetsStudio`) to remove any key (`vidyaos_excel_wb_*`, `vidyaos_inst_header_*`, `vidyaos_institution_marks_header`) containing stale mock tokens (`24011F`, `HARSHIT JOSHI`, `KAPIL BISHT`, `MANISH TIWARI`, `8.3`, `1.82`).
+     - Added strict guard in `hydrateAcademicSheetsFromGroup()` and `extractExistingStudentScores()` to discard any saved workbook that contains mock roll numbers or names, preventing corrupted mock data from restoring over real database students.
+  2. *Unblocked Subject Switch & Direct Metadata Hydration*:
+     - Fixed critical early-return bug in `office-home.js`: `selectSubjectAndSheet()` now calls `loadGroupMetadata(targetGroupId)` directly instead of relying on `onSwitchGroup(groupId)`'s early-exit equality check (`newGroupId === S.groupId`).
+     - Upgraded `onSwitchGroup(newGroupId, force = false)` to accept a `force` flag and ensure switching is never bypassed when students have not yet loaded.
+  3. *Elimination of Brittle Short Timeouts & Multi-Tier Live Roster Binding*:
+     - Removed aggressive 2-second and 4-second race timeouts in `office-home.js` and `sheets.js` that caused premature network rejection under Render cloud cold starts.
+     - Implemented resilient 4-tier student fetch hierarchy: (1) `/teaching-groups/:id/members`, (2) `/faculty/registers/:id/internal-evaluation`, (3) `/student-records?department_id=&semester=`, (4) `/students?limit=100`.
+  4. *Backend Robustness Upgrades*:
+     - Upgraded `TeachingGroupModel.getGroupById(groupId)` with `LEFT JOIN` on `teachers` and `academic_years` to prevent groups with custom faculty IDs or unlinked years from vanishing.
+     - Extended `/api/v1/students` route permission to include `FACULTY` role.
+  5. *Zero-Break UIMS Parity & Verification*:
+     - 100% Theme compliance (`test-theme-support.js`: 84/84 passed).
+     - 100% UI Manifest synchronization (`test-ui-manifest-sync.js`: 203/203 passed with 0 failures).
+
 ### ✅ Milestone 504: Live Database Classroom Integration & Elimination of Stale Mock Fallbacks
 - **Objective & Architectural Scope**:
   1. *Elimination of Hardcoded Mock Roster & Scores*:

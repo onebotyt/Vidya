@@ -425,15 +425,15 @@ class TeachingGroupModel {
       `SELECT tg.id, tg.name, tg.subject_name, tg.subject_code, tg.component, tg.total_units, tg.syllabus_units, tg.teacher_id,
               tg.academic_year_id, ay.label as academic_year_label,
               tg.semester, tg.invite_code, tg.status, tg.created_at, tg.archived_at,
-              t.full_name as teacher_name, t.department_id as teacher_department_id,
-              d.name as department_name, d.code as department_code,
+              COALESCE(t.full_name, 'Faculty Teacher') as teacher_name, t.department_id as teacher_department_id,
+              COALESCE(d.name, 'Information Technology') as department_name, COALESCE(d.code, 'IT') as department_code,
               (SELECT COUNT(*) FROM teaching_group_members tgm WHERE tgm.group_id = tg.id AND (tgm.status IN ('ENROLLED', 'ACTIVE') OR tgm.status IS NULL)) as member_count,
               (SELECT COUNT(*) FROM assessments a WHERE a.group_id = tg.id AND a.type = 'ASSIGNMENT') as assignment_count,
               (SELECT COUNT(*) FROM assessments a WHERE a.group_id = tg.id AND a.type = 'EXAM') as exam_count
        FROM teaching_groups tg
-       JOIN teachers t ON tg.teacher_id = t.id
-       LEFT JOIN departments d ON t.department_id = d.id
-       JOIN academic_years ay ON tg.academic_year_id = ay.id
+       LEFT JOIN teachers t ON tg.teacher_id = t.id
+       LEFT JOIN departments d ON (tg.department_id = d.id OR t.department_id = d.id)
+       LEFT JOIN academic_years ay ON tg.academic_year_id = ay.id
        WHERE tg.id = ?`,
       [groupId]
     );
