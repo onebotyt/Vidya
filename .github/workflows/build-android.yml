@@ -1,0 +1,146 @@
+name: Build & Release Android APK (v2app & VidyaOS)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - 'frontendv2/**'
+      - '.github/workflows/build-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build Android APK (v2app & VidyaOS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - name: Auto-Increment App Version
+        id: versioning
+        run: |
+          BUILD_NUM=${{ github.run_number }}
+          VERSION="2.0.${BUILD_NUM}"
+          export BUILD_NUM VERSION
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
+          echo "BUILD_NUM=${BUILD_NUM}" >> $GITHUB_ENV
+          if [ -f frontend/scripts/bump-version.js ]; then
+            node frontend/scripts/bump-version.js "${BUILD_NUM}"
+          fi
+
+      - name: Sync Frontend v2 into Mobile Package
+        run: |
+          mkdir -p frontend/frontendv2
+          cp -r frontendv2/* frontend/frontendv2/
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Prepare Mobile Web Assets
+        run: |
+          cd frontend
+          node scripts/prepare-mobile.js
+
+      - name: Sync Capacitor Android Project
+        run: |
+          cd frontend
+          chmod +x android/gradlew
+          npx cap sync android
+
+      - name: Ensure Persistent Release Keystore
+        run: |
+          KEYSTORE_FILE="frontend/android/app/vidyaos.keystore"
+          if [ ! -f "$KEYSTORE_FILE" ]; then
+            echo "[Keystore] Generating persistent signing key for seamless updates..."
+            keytool -genkeypair -v -keystore "$KEYSTORE_FILE" \
+              -alias vidyaos -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "vidyaos@2026" -keypass "vidyaos@2026" \
+              -dname "CN=VidyaOS, OU=Engineering, O=VidyaOS, L=Nainital, ST=Uttarakhand, C=IN"
+          fi
+
+      - name: Build Android APK (Gradle)
+        run: |
+          cd frontend/android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Copy Release APK Artifacts
+        run: |
+          cp frontend/android/app/build/outputs/apk/debug/app-debug.apk ./v2app.apk
+          cp frontend/android/app/build/outputs/apk/debug/app-debug.apk ./VidyaOS.apk
+
+      - name: Upload v2app APK Artifact (Visible in GitHub Details)
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2app-apk
+          path: ./v2app.apk
+
+      - name: Upload VidyaOS APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VidyaOS-Android-APK
+          path: ./VidyaOS.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: "VidyaOS v2 Mobile App ${{ env.TAG_NAME }}"
+          body: |
+            ## 📱 VidyaOS & v2app Android APK Release (${{ env.TAG_NAME }})
+
+            Direct download links for Android:
+            - **[Download v2app.apk](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/v2app.apk)** (Frontend v2 Universal App)
+            - **[Download VidyaOS.apk](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/VidyaOS.apk)**
+
+            ### Features:
+            - **Auto-Version**: Version code `${{ env.BUILD_NUM }}`, version name `${{ env.VERSION }}`.
+            - Frontend v2 multi-OS universal mobile app included.
+            - Real-time cloud sync with VidyaOS backend on Render.
+            - Mobile-optimized attendance studio with Camera QR scanner & PIN entry.
+            - Google Classroom style dynamic theme banners.
+          files: |
+            ./v2app.apk
+            ./VidyaOS.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Auto-Incremented Version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend/app-version.json frontend/package.json frontend/android/app/build.gradle || true
+          if [ -f frontend/android/app/vidyaos.keystore ]; then
+            git add frontend/android/app/vidyaos.keystore || true
+          fi
+          git commit -m "chore(release): auto-bump version to v${{ env.VERSION }} [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "Push skipped"
