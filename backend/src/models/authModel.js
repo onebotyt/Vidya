@@ -218,6 +218,7 @@ class AuthModel {
   static async findExistingEnrollment(cleanEnroll) {
     const rows = await query(
       `SELECT id FROM students WHERE LOWER(TRIM(official_enrollment_no)) = LOWER(?)
+       OR LOWER(TRIM(ubter_roll_no)) = LOWER(?)
        UNION
        SELECT id FROM students WHERE LOWER(TRIM(COALESCE(ubter_roll_no, ''))) = LOWER(?)
        UNION

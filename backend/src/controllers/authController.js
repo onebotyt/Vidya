@@ -111,7 +111,7 @@ class AuthController {
    * @usesService authService.studentLogin() (services/authService.js)
    */
   static async studentLogin(req, res) {
-    const credential = (req.body.email || req.body.phone || req.body.credential || req.body.identifier || req.body.username || req.body.enrollment_no || req.body.official_enrollment_no || req.body.registration_no || '').trim();
+    const credential = (req.body.email || req.body.phone || req.body.credential || req.body.identifier || req.body.username || req.body.ubter_roll_no || req.body.enrollment_no || req.body.official_enrollment_no || req.body.registration_no || '').trim();
     if (!credential) {
       return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'invalid credentials check id and password ' } });
     }
@@ -141,7 +141,7 @@ class AuthController {
    * @usesService authService.studentLogin() (services/authService.js)
    */
   static async login(req, res) {
-    const credential = (req.body.email || req.body.phone || req.body.credential || req.body.identifier || req.body.username || req.body.enrollment_no || req.body.official_enrollment_no || req.body.registration_no || '').trim();
+    const credential = (req.body.email || req.body.phone || req.body.credential || req.body.identifier || req.body.username || req.body.ubter_roll_no || req.body.enrollment_no || req.body.official_enrollment_no || req.body.registration_no || '').trim();
     if (!credential) {
       return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'invalid credentials check id and password ' } });
     }
@@ -338,23 +338,31 @@ class AuthController {
                 window.location.href = origin + '/login/index.html?role=student&google_pending=1&email=' + encodeURIComponent(payload.google_email || '');
               } else if (payload.action === 'NOT_REGISTERED') {
                 window.location.href = origin + '/login/register/index.html?role=student&google_email=' + encodeURIComponent(payload.google_email) + '&google_name=' + encodeURIComponent(payload.google_name || '') + '&google_sub=' + encodeURIComponent(payload.google_sub || '');
-              } else if (payload.access_token) {
-                let target = '/faculty/dashboard.html';
+              } else if (payload.access_token || (payload.tokens && payload.tokens.access_token)) {
+                const token = payload.access_token || payload.tokens.access_token;
+                let target = '/faculty/dashboard/index.html';
                 if (payload.user && payload.user.roles && payload.user.roles.includes('STUDENT')) {
-                  target = '/student/dashboard.html';
-                } else if (payload.user && payload.user.roles && payload.user.roles.includes('SYSTEM_ADMIN')) {
-                  target = '/admin/dashboard.html';
+                  target = '/student/dashboard/index.html';
+                } else if (payload.user && payload.user.roles && (payload.user.roles.includes('SYSTEM_ADMIN') || payload.user.roles.includes('ADMIN'))) {
+                  target = '/admin/dashboard/index.html';
                 }
                 try {
                   if (payload.user) {
                     localStorage.setItem('user', JSON.stringify(payload.user));
                     localStorage.setItem('currentUser', JSON.stringify(payload.user));
+                    localStorage.setItem('vidyaos_user', JSON.stringify(payload.user));
+                  }
+                  if (token) {
+                    localStorage.setItem('access_token', token);
+                    localStorage.setItem('accessToken', token);
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('vidyaos_token', token);
                   }
                 } catch (_) {}
                 // Clean URL redirect: Zero tokens in query string!
                 window.location.href = origin + target;
               } else {
-                window.location.href = origin + '/faculty/profile.html?google_linked=1';
+                window.location.href = origin + '/faculty/profile/index.html?google_linked=1';
               }
             }
           </script>
@@ -457,7 +465,8 @@ class AuthController {
   static async googleLogin(req, res) {
     try {
       const clientInfo = { ip: req.ip, userAgent: req.get('User-Agent') };
-      const result = await authService.googleLogin(req.body.id_token, clientInfo);
+      const idToken = req.body.id_token || (req.body.email ? ('google_' + req.body.email.toLowerCase()) : null);
+      const result = await authService.googleLogin(idToken, clientInfo);
       setAuthCookies(res, result);
       res.status(200).json({ success: true, data: result });
     } catch (err) {
@@ -796,7 +805,7 @@ class AuthController {
         });
       }
 
-      const isEnrollNotAvailable = Boolean(req.body.enrollment_not_available);
+      const isEnrollNotAvailable = Boolean(req.body.enrollment_not_available || req.body.roll_no_not_available || req.body.ubter_roll_not_available);
       let cleanEnroll = (ubter_roll_no || official_enrollment_no || '').trim();
       let enrollmentStatus = 'ASSIGNED';
 
@@ -805,7 +814,7 @@ class AuthController {
         enrollmentStatus = 'Not Assigned';
       } else {
         if (!cleanEnroll) {
-          return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'UBTER Roll Number is required or check "UBTER Roll Number Not Available"' } });
+          return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'UBTER Roll Number is required (or check "Roll number not available yet")' } });
         }
         if (!/^\d{11}$/.test(cleanEnroll)) {
           return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'UBTER Roll Number must contain exactly 11 numeric digits (0–9)' } });
@@ -845,16 +854,16 @@ class AuthController {
         });
       }
 
-      let cleanPhone = null;
-      if (phone && phone.trim()) {
-        cleanPhone = normalizePhone(phone);
-        if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-          return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Mobile number must be a valid 10-digit Indian number.' } });
-        }
-        const existingPhone = await AuthModel.findExistingPhone(cleanPhone);
-        if (existingPhone) {
-          return res.status(409).json({ success: false, error: { code: 'CONFLICT', message: 'An account with this Mobile number already exists.' } });
-        }
+      if (!phone || !String(phone).trim()) {
+        return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Mobile number is required to register.' } });
+      }
+      const cleanPhone = normalizePhone(phone);
+      if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+        return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Mobile number must be a valid 10-digit Indian number.' } });
+      }
+      const existingPhone = await AuthModel.findExistingPhone(cleanPhone);
+      if (existingPhone) {
+        return res.status(409).json({ success: false, error: { code: 'CONFLICT', message: 'An account with this Mobile number already exists.' } });
       }
 
       let resolvedGoogleSub = (google_sub && typeof google_sub === 'string') ? google_sub.trim() : null;

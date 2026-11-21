@@ -3,6 +3,7 @@
   "appName": "VidyaOS",
   "webDir": "www",
   "server": {
+    "url": "https://vidyaos-pink.vercel.app",
     "androidScheme": "https",
     "cleartext": true
   },
@@ -10,5 +11,12 @@
     "allowMixedContent": true,
     "captureInput": true,
     "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "DARK",
+      "backgroundColor": "#07153e"
+    }
   }
 }

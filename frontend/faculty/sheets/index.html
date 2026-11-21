@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/faculty/components/header/header.css?v=20261029">
   <link rel="stylesheet" href="/faculty/components/sidebar/sidebar.css?v=20261029">
   <link rel="stylesheet" href="/faculty/sheets/css/sheets-loading.css?v=20261120_v7">
-  <link rel="stylesheet" href="/faculty/sheets/sheets.css?v=20261120_v7">
+  <link rel="stylesheet" href="/faculty/sheets/sheets.css?v=20261121_mobile_v3">
   <script>
     /* Always start closed (72px collapsed mini-rail) when page opens */
     (function () {
@@ -83,7 +83,7 @@
           <span class="header-nav-divider"></span>
 
           <!-- Office Studio Top Title -->
-          <div class="office-hub-top-title" id="office-hub-top-title" style="display:flex;">
+          <div class="office-hub-top-title" id="office-hub-top-title">
             <span class="office-hub-badge">XLS</span>
             <span class="office-hub-text">Office Studio — Subjects &amp; Documents Hub</span>
           </div>
@@ -184,7 +184,10 @@
                 <span class="office-hero-xls-badge">XLS</span>
               </div>
               <div class="office-hero-titles">
-                <h1 class="office-hero-heading">Office Studio</h1>
+                <div class="office-hero-title-row">
+                  <h1 class="office-hero-heading">Office Studio</h1>
+                  <span class="office-mobile-pdf-pill">PDF Registers</span>
+                </div>
                 <p class="office-hero-sub">Academic evaluation spreadsheets, marks registers, and coursework documents
                 </p>
               </div>
@@ -266,7 +269,7 @@
                   </svg>
                 </div>
                 <div class="template-card-info">
-                  <span class="template-title">Coursework Assignments</span>
+                  <span class="template-title">Assignments Marksheet</span>
                   <span class="template-sub">Classwork &amp; submissions</span>
                 </div>
               </div>
@@ -323,8 +326,29 @@
         </div>
       </div>
 
-      
+    </div>
+  </div>
 
+  <!-- Mobile Test Sheet Selector Modal -->
+  <div id="mobile-test-selector-modal" class="mobile-test-modal-overlay" style="display:none;" onclick="if(event.target===this)closeMobileTestSelectorModal();">
+    <div class="mobile-test-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-test-modal-title">
+      <div class="mobile-test-modal-handle"></div>
+      <div class="mobile-test-modal-header">
+        <div class="mobile-test-modal-header-info">
+          <h3 id="mobile-test-modal-title" class="mobile-test-modal-title">Select Test Worksheet</h3>
+          <p id="mobile-test-modal-sub" class="mobile-test-modal-sub">Unit Tests &amp; Summary</p>
+        </div>
+        <button type="button" class="mobile-test-modal-close" onclick="closeMobileTestSelectorModal()" aria-label="Close dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mobile-test-list-body" id="mobile-test-list-container">
+        <!-- Rendered dynamically -->
+      </div>
     </div>
   </div>
 
@@ -334,7 +358,7 @@
   <script src="/faculty/components/faculty-ui.js?v=20261029"></script>
   <script src="/faculty/components/header/header.js?v=20261029"></script>
   <script src="/faculty/components/sidebar/sidebar.js?v=20261029"></script>
-  <script src="/faculty/sheets/office-home.js?v=20261120_v12"></script>
+  <script src="/faculty/sheets/office-home.js?v=20261121_mobile_v3"></script>
 </body>
 
 </html>

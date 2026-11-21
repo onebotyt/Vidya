@@ -94,9 +94,15 @@
   // ── Fetch Trash Count for Action Button Badge ──
   async function fetchTrashCount() {
     try {
-      const res = await api.get('/teaching-groups?status=TRASH');
-      const data = res.data || res;
-      const trashed = Array.isArray(data) ? data : (data.groups || data.classes || []);
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+      const res = await fetch('/api/v1/teaching-groups?status=TRASH', {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      const trashed = data?.data || (Array.isArray(data) ? data : []);
       const badge = document.getElementById('classes-trash-count');
       if (badge) {
         if (trashed.length > 0) {
@@ -222,6 +228,13 @@
             <div class="class-card-sub">
               Sem ${semester} &bull; ${escapeHtml(formattedComp)} &bull; ${escapeHtml(ayLabel)}
             </div>
+            ${g.start_date ? `
+              <div class="class-card-timeline">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+                <span>Started ${new Date(g.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                ${g.end_date ? `<span>&bull; Ends ${new Date(g.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>` : `<span class="tag-ongoing">&bull; Ongoing</span>`}
+              </div>
+            ` : ''}
           </div>
 
           <!-- Primary Action Buttons (Take Attendance + Register) -->
@@ -235,7 +248,7 @@
                 <path d="M17.8 16.7A6 6 0 0 0 18 12a6 6 0 0 0-6-6"></path>
                 <path d="M15.2 13.7A2 2 0 0 0 14 12a2 2 0 0 0-2-2"></path>
               </svg>
-              <span>((•)) Take Attendance</span>
+              <span>Take Attendance</span>
             </a>
             <a href="/faculty/registers/index.html?groupId=${g.id}" class="btn-card-register">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -329,6 +342,23 @@
 
   window.handleSemesterFilter = function (val) {
     state.selectedSemester = val;
+    // Synchronize semester filter pills
+    document.querySelectorAll('.sem-filter-pill').forEach(p => {
+      const match = p.getAttribute('onclick')?.includes(`'${val}'`);
+      p.classList.toggle('active', !!match);
+    });
+    // Synchronize select dropdown if different
+    const selectElem = document.getElementById('filter-semester-select');
+    if (selectElem && selectElem.value !== val) selectElem.value = val;
+    renderCards();
+  };
+
+  window.handleSemesterFilterPill = function (val, elem) {
+    document.querySelectorAll('.sem-filter-pill').forEach(p => p.classList.remove('active'));
+    if (elem) elem.classList.add('active');
+    const selectElem = document.getElementById('filter-semester-select');
+    if (selectElem) selectElem.value = val;
+    state.selectedSemester = val;
     renderCards();
   };
 
@@ -411,6 +441,23 @@
     loadSessionsForModal('select-class-session');
     const semSelect = document.getElementById('select-class-sem');
     if (semSelect) window.autoUpdateYear(semSelect.value);
+
+    // Default start date to today's local date
+    const startDateInput = document.getElementById('input-class-start-date');
+    if (startDateInput && !startDateInput.value) {
+      const now = new Date();
+      const localToday = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+      ].join('-');
+      startDateInput.value = localToday;
+    }
+
+    const unitsInput = document.getElementById('input-class-units');
+    if (unitsInput && !unitsInput.value) {
+      unitsInput.value = '5';
+    }
   };
 
   window.closeCreateGroupModal = function () {
@@ -426,12 +473,18 @@
     const compInput = document.getElementById('select-class-comp');
     const sessionInput = document.getElementById('select-class-session');
     const semInput = document.getElementById('select-class-sem');
+    const startDateInput = document.getElementById('input-class-start-date');
+    const endDateInput = document.getElementById('input-class-end-date');
+    const unitsInput = document.getElementById('input-class-units');
 
     const subjectName = nameInput?.value?.trim() || 'New Class';
     const sem = parseInt(semInput?.value || '1', 10);
     const yr = Math.ceil(sem / 2);
     const shortName = shortNameInput?.value?.trim() || shortNameInput?.placeholder || '';
     const code = codeInput?.value?.trim() || '';
+    const startDate = startDateInput?.value?.trim() || new Date().toISOString().split('T')[0];
+    const endDate = endDateInput?.value?.trim() || null;
+    const totalUnits = Math.min(20, Math.max(1, parseInt(unitsInput?.value?.replace(/[^0-9]/g, '') || '5', 10) || 5));
 
     const payload = {
       name: subjectName,
@@ -442,7 +495,10 @@
       academic_year_id: sessionInput?.value ? parseInt(sessionInput.value, 10) : undefined,
       semester: sem,
       year: yr,
-      room_no: code || '101'
+      start_date: startDate,
+      end_date: endDate,
+      room_no: code || '101',
+      total_units: totalUnits
     };
 
     try {
@@ -504,6 +560,20 @@
       window.autoUpdateEditYear(semSelect.value);
     }
 
+    const startDateInput = document.getElementById('input-edit-class-start-date');
+    if (startDateInput) {
+      startDateInput.value = group.start_date ? group.start_date.split('T')[0] : (group.created_at ? group.created_at.split('T')[0] : '');
+    }
+    const endDateInput = document.getElementById('input-edit-class-end-date');
+    if (endDateInput) {
+      endDateInput.value = group.end_date ? group.end_date.split('T')[0] : '';
+    }
+
+    const editUnitsInput = document.getElementById('input-edit-class-units');
+    if (editUnitsInput) {
+      editUnitsInput.value = group.total_units || 5;
+    }
+
     loadSessionsForModal('select-edit-class-session', group.academic_year_id);
     modal.style.display = 'flex';
   };
@@ -524,12 +594,18 @@
     const compInput = document.getElementById('select-edit-class-comp');
     const sessionInput = document.getElementById('select-edit-class-session');
     const semInput = document.getElementById('select-edit-class-sem');
+    const startDateInput = document.getElementById('input-edit-class-start-date');
+    const endDateInput = document.getElementById('input-edit-class-end-date');
+    const editUnitsInput = document.getElementById('input-edit-class-units');
 
     const subjectName = nameInput?.value?.trim() || '';
     const sem = parseInt(semInput?.value || '1', 10);
     const yr = Math.ceil(sem / 2);
     const shortName = shortNameInput?.value?.trim() || '';
     const code = codeInput?.value?.trim() || '';
+    const startDate = startDateInput?.value?.trim() || null;
+    const endDate = endDateInput?.value?.trim() || null;
+    const totalUnits = Math.min(20, Math.max(1, parseInt(editUnitsInput?.value?.replace(/[^0-9]/g, '') || '5', 10) || 5));
 
     const payload = {
       name: subjectName,
@@ -539,7 +615,10 @@
       component: compInput?.value || 'THEORY',
       academic_year_id: sessionInput?.value ? parseInt(sessionInput.value, 10) : undefined,
       semester: sem,
-      year: yr
+      year: yr,
+      start_date: startDate,
+      end_date: endDate,
+      total_units: totalUnits
     };
 
     try {

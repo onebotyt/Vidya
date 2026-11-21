@@ -32,6 +32,67 @@
   window.VIDYAOS_API_BASE = isCapacitor ? `${CLOUD_BACKEND_URL}/api/v1` : '/api/v1';
   window.VIDYAOS_CLOUD_BACKEND = CLOUD_BACKEND_URL;
 
+  // Status Bar & System Windows Dynamic Theming (Meesho-Style Clarity)
+  function syncSystemBarsWithAppTheme() {
+    try {
+      const isDark = document.documentElement.classList.contains('dark') ||
+                     document.body?.classList.contains('dark') ||
+                     document.documentElement.getAttribute('data-theme') === 'dark' ||
+                     document.body?.getAttribute('data-theme') === 'dark' ||
+                     localStorage.getItem('theme') === 'dark';
+
+      const barColor = isDark ? '#0b1220' : '#ffffff';
+
+      // 1. Native Java Bridge (Sets WindowInsetsControllerCompat appearanceLight)
+      if (window.NativeSystemUI && typeof window.NativeSystemUI.setSystemBarTheme === 'function') {
+        try {
+          window.NativeSystemUI.setSystemBarTheme(isDark, barColor, barColor);
+        } catch (_) {}
+      }
+
+      // 2. Capacitor StatusBar Plugin
+      if (window.Capacitor?.Plugins?.StatusBar) {
+        try {
+          window.Capacitor.Plugins.StatusBar.setOverlaysWebView({ overlay: false });
+          window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: barColor });
+          if (window.Capacitor.Plugins.StatusBar.setStyle) {
+            // LIGHT style in Capacitor means light icons (for dark bg)
+            // DARK style in Capacitor means dark icons (for light bg, like Meesho)
+            window.Capacitor.Plugins.StatusBar.setStyle({ style: isDark ? 'DARK' : 'LIGHT' });
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
+  // Expose global helper for theme switchers
+  window.syncSystemBarsWithAppTheme = syncSystemBarsWithAppTheme;
+
+  // Run immediately and listen for theme changes
+  syncSystemBarsWithAppTheme();
+  if (typeof window !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    const themeObserver = new MutationObserver(() => syncSystemBarsWithAppTheme());
+    if (document.documentElement) {
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    }
+    if (document.body) {
+      themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (document.body) {
+          themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        }
+        syncSystemBarsWithAppTheme();
+      });
+    }
+  }
+
+  if (isCapacitor) {
+    if (document.documentElement) {
+      document.documentElement.classList.add('is-native-shell');
+    }
+  }
+
   // 2. Fetch Interceptor for Native App Context
   if (isCapacitor) {
     const originalFetch = window.fetch;
@@ -87,6 +148,8 @@
       // Never show mobile update banner on desktop web browser
       const isRealNativeApp = (
         typeof window !== 'undefined' && (
+          Boolean(window.NativeAppUpdater) ||
+          Boolean(window.NativeAuthBridge) ||
           Boolean(window.Capacitor?.isNativePlatform?.()) ||
           window.location.protocol === 'capacitor:' ||
           window.location.protocol === 'file:' ||
@@ -97,7 +160,9 @@
         return;
       }
 
-      const currentVersion = window.VIDYAOS_APP_VERSION || '1.0.0';
+      const currentVersion = (window.NativeAppUpdater && typeof window.NativeAppUpdater.getAppVersionName === 'function')
+        ? window.NativeAppUpdater.getAppVersionName()
+        : (window.VIDYAOS_APP_VERSION || '1.0.98');
       const res = await fetch(GITHUB_VERSION_URL + '?t=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) return;
 
@@ -105,7 +170,21 @@
       const remoteVersion = data.version;
       const downloadUrl = data.apkUrl || LATEST_APK_URL;
 
-      if (!remoteVersion || remoteVersion === currentVersion) return;
+      const isNewer = (function (v1, v2) {
+        if (!v1 || !v2) return false;
+        const p1 = String(v1).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+        const p2 = String(v2).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+        const len = Math.max(p1.length, p2.length);
+        for (let i = 0; i < len; i++) {
+          const a = p1[i] || 0;
+          const b = p2[i] || 0;
+          if (a > b) return true;
+          if (a < b) return false;
+        }
+        return false;
+      })(remoteVersion, currentVersion);
+
+      if (!remoteVersion || !isNewer) return;
 
       // Check if user dismissed this specific version recently
       const dismissedVer = localStorage.getItem('vidyaos_dismissed_update');
@@ -156,22 +235,23 @@
           </svg>
         </div>
         <div style="flex: 1;">
-          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 2px;">Update Available â€¢ v${version}</div>
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 2px;">Update Available • v${version}</div>
           <div style="font-size: 0.8rem; color: #94a3b8; line-height: 1.35; margin-bottom: 12px;">
             ${releaseNotes || 'A new update of VidyaOS is available with the latest features.'}
           </div>
           <div style="display: flex; gap: 8px;">
-            <a href="${apkUrl}" target="_blank" id="btn-update-apk" style="
+            <button id="btn-update-apk" style="
               display: inline-block;
               background: #2563eb;
               color: #ffffff;
               padding: 6px 14px;
               border-radius: 8px;
+              border: none;
               font-size: 0.82rem;
               font-weight: 600;
-              text-decoration: none;
+              cursor: pointer;
               text-align: center;
-            ">Download Update</a>
+            ">Update Now</button>
             <button id="btn-dismiss-apk" style="
               background: rgba(255, 255, 255, 0.1);
               color: #cbd5e1;
@@ -188,14 +268,59 @@
 
     document.body.appendChild(banner);
 
+    const updateBtn = document.getElementById('btn-update-apk');
+    if (updateBtn) {
+      window.onNativeUpdateProgress = function (percent) {
+        if (updateBtn) {
+          updateBtn.textContent = `Downloading ${percent}%...`;
+        }
+      };
+      window.onNativeUpdateComplete = function () {
+        if (updateBtn) {
+          updateBtn.textContent = `Opening installer...`;
+        }
+      };
+      window.onNativeUpdateError = function () {
+        if (updateBtn) {
+          updateBtn.disabled = false;
+          updateBtn.textContent = `Retry Update`;
+          updateBtn.style.opacity = '1';
+        }
+      };
+
+      updateBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.NativeAppUpdater && typeof window.NativeAppUpdater.downloadAndInstall === 'function') {
+          updateBtn.textContent = 'Starting download...';
+          updateBtn.disabled = true;
+          updateBtn.style.opacity = '0.8';
+          try {
+            window.NativeAppUpdater.downloadAndInstall(apkUrl);
+          } catch (_) {
+            window.open(apkUrl, '_blank');
+          }
+        } else {
+          window.open(apkUrl, '_blank');
+        }
+      });
+    }
+
     document.getElementById('btn-dismiss-apk')?.addEventListener('click', () => {
       localStorage.setItem('vidyaos_dismissed_update', version);
       banner.remove();
     });
   }
 
-  // Check for updates shortly after document loads
+  // Export to window for in-app settings & UI interactions
   if (typeof window !== 'undefined') {
+    window.VidyaOSMobileBridge = {
+      checkForAppUpdates,
+      showUpdateNotification,
+      getCurrentVersion: () => window.VIDYAOS_APP_VERSION || '1.0.95',
+      GITHUB_VERSION_URL,
+      LATEST_APK_URL
+    };
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => setTimeout(checkForAppUpdates, 2000));
     } else {

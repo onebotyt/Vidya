@@ -236,8 +236,21 @@ async function initiateGoogleSignUp() {
   if (btnText) btnText.textContent = 'Connecting to Google…';
   if (btn) btn.disabled = true;
 
+  // 1. Android Native App: Launch native Google Account Chooser bottom-sheet
+  if (window.NativeAuthBridge && typeof window.NativeAuthBridge.launchGoogleSignIn === 'function') {
+    try {
+      window.NativeAuthBridge.launchGoogleSignIn();
+      return;
+    } catch (e) {
+      console.warn('NativeAuthBridge launch failed in register:', e);
+    }
+  }
+
+  // 2. Web browser flow (OAuth URL)
   try {
-    const origin = window.location.origin;
+    const origin = (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:') && !window.location.origin.startsWith('capacitor:'))
+      ? window.location.origin
+      : 'https://vidyaos-pink.vercel.app';
     let res = await fetch(`/api/v1/auth/google/url?mode=STUDENT_REGISTER&origin=${encodeURIComponent(origin)}`).then(r => r.json()).catch(() => null);
     if (!res || !res.success || !res.data?.url) {
       res = await fetch(`https://vidyaos-backend.onrender.com/api/v1/auth/google/url?mode=STUDENT_REGISTER&origin=${encodeURIComponent(origin)}`).then(r => r.json()).catch(() => null);
@@ -262,6 +275,30 @@ async function initiateGoogleSignUp() {
     if (btn) btn.disabled = false;
   }
 }
+
+/* ── Native Google Sign-Up Callbacks ── */
+window.onNativeGoogleSignInSuccess = function(data) {
+  try {
+    const payload = typeof data === 'string' ? JSON.parse(data) : data;
+    const { email, name, sub, idToken } = payload;
+    if (email) {
+      selectGoogleAccount(email, name, sub);
+      if (idToken && S.googleRegistrationData) {
+        S.googleRegistrationData.id_token = idToken;
+      }
+    }
+  } catch (err) {
+    console.error('Native Google auto-fill error:', err);
+  }
+};
+
+window.onNativeGoogleSignInError = function(err) {
+  console.warn('Native Google sign-up cancelled or error:', err);
+  const btn = document.getElementById('google-signup-btn');
+  const btnText = document.getElementById('google-signup-btn-text');
+  if (btnText) btnText.textContent = 'Sign up with Google (Auto-Fill)';
+  if (btn) btn.disabled = false;
+};
 
 window.addEventListener('message', (event) => {
   if (!event.data) return;
@@ -440,8 +477,14 @@ async function handleStudentSubmit(e) {
     showAlert('Please fill in all required fields (Name, Branch, Semester, Gmail' + (isGoogle ? '' : ', Password') + ').', 'danger');
     return;
   }
-  if (phone && (phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone))) {
-    showAlert('If entering a mobile number, it must be a valid 10-digit Indian mobile number.', 'danger');
+  if (!phone) {
+    showAlert('Mobile number is required to identify your account.', 'danger');
+    document.getElementById('stu-phone')?.focus();
+    return;
+  }
+  if (phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone)) {
+    showAlert('Please enter a valid 10-digit Indian mobile number (starts with 6, 7, 8, or 9).', 'danger');
+    document.getElementById('stu-phone')?.focus();
     return;
   }
   if (password && password.length < 8) {
@@ -458,6 +501,7 @@ async function handleStudentSubmit(e) {
     submitBtn.innerHTML = 'Submitting… <span class="arrow">→</span>';
     const payload = {
       full_name: fullName,
+      ubter_roll_no: isEnrollNotAvailable ? null : enrollNo,
       official_enrollment_no: isEnrollNotAvailable ? null : enrollNo,
       ubter_roll_no: isEnrollNotAvailable ? null : enrollNo,
       enrollment_not_available: isEnrollNotAvailable,
@@ -558,6 +602,32 @@ function showSuccessView(info) {
     });
   }
 
+  // Mobile phone 10-digit enforcement
+  const stuPhoneInput = document.getElementById('stu-phone');
+  const stuPhoneError = document.getElementById('stu-phone-error');
+  if (stuPhoneInput) {
+    stuPhoneInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+      if (stuPhoneError && e.target.value.length === 10) {
+        stuPhoneError.textContent = '';
+        stuPhoneInput.classList.remove('has-error');
+      }
+    });
+    stuPhoneInput.addEventListener('blur', (e) => {
+      const val = e.target.value.trim();
+      if (!val) {
+        if (stuPhoneError) stuPhoneError.textContent = 'Mobile number is required.';
+        stuPhoneInput.classList.add('has-error');
+      } else if (val.length !== 10 || !/^[6-9]\d{9}$/.test(val)) {
+        if (stuPhoneError) stuPhoneError.textContent = 'Enter a valid 10-digit mobile number (starts with 6-9).';
+        stuPhoneInput.classList.add('has-error');
+      } else if (stuPhoneError) {
+        stuPhoneError.textContent = '';
+        stuPhoneInput.classList.remove('has-error');
+      }
+    });
+  }
+
   // UBTER Roll Number numeric 11-digit enforcement
   if (stuEnrollInput) {
     stuEnrollInput.addEventListener('input', (e) => {
@@ -571,7 +641,7 @@ function showSuccessView(info) {
       if (chkEnrollNotAvailable && chkEnrollNotAvailable.checked) return;
       const val = e.target.value.trim();
       if (val && val.length !== 11) {
-        if (stuEnrollError) stuEnrollError.textContent = 'UBTER Roll number must be exactly 11 numeric digits.';
+        if (stuEnrollError) stuEnrollError.textContent = 'UBTER Roll Number must be exactly 11 numeric digits.';
         stuEnrollInput.classList.add('has-error');
       } else if (stuEnrollError) {
         stuEnrollError.textContent = '';

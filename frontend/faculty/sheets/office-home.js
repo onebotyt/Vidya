@@ -132,7 +132,7 @@ async function loadSpreadsheetEngine(onReady) {
 
     // 3. Load main Sheets Studio engine
     if (typeof window.initSheetsStudio !== 'function') {
-      await loadScript('/faculty/sheets/sheets.js?v=20261120_v12');
+      await loadScript('/faculty/sheets/sheets.js?v=20261121_mobile_v3');
     }
 
     window.__OFFICE_ENGINE_LOADED = true;
@@ -266,25 +266,26 @@ function renderOfficeSubjectsGrid(filterQuery = '') {
             <span class="office-code-chip">${escapeHtml(grp.subject_code || ('SUB' + grp.id))}</span>
             <span class="office-sem-chip">${escapeHtml(grp.class_name || '')} ${grp.semester ? '• Sem ' + grp.semester : ''}</span>
           </div>
+          <span class="office-card-pdf-pill">A4 PDF</span>
         </div>
         <h3 class="office-subject-name" title="${escapeHtml(grp.subject_name || 'Subject')}">${escapeHtml(grp.subject_name || 'Academic Subject')}</h3>
       </div>
       <div class="office-subject-actions-panel">
-        <div class="office-actions-label">Open Worksheet:</div>
+        <div class="office-actions-label">Open Worksheet (PDF):</div>
         <div class="office-sheet-quick-actions">
-          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'evaluation', this)" title="Consolidated Internal Evaluation">
+          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'evaluation', this)" title="Consolidated Internal Evaluation (A4 PDF)">
             <svg class="office-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
             <span>Master Evaluation</span>
           </button>
-          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'tests', this)" title="Unit Tests (UT1..UT10)">
+          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'tests', this)" title="Unit Tests UT1..UT10 (A4 PDF)">
             <svg class="office-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             <span>Class Tests (UT1-10)</span>
           </button>
-          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'assignments', this)" title="Assignments Ledger">
+          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'assignments', this)" title="Assignments Ledger (A4 PDF)">
             <svg class="office-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            <span>Coursework</span>
+            <span>Assignments</span>
           </button>
-          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'practicals', this)" title="Practicals & Laboratory Records">
+          <button type="button" class="office-sheet-btn" onclick="selectSubjectAndSheet(${grp.id}, 'practicals', this)" title="Practicals & Laboratory Records (A4 PDF)">
             <svg class="office-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31L4.69 19.3A2 2 0 0 0 6.44 22h11.12a2 2 0 0 0 1.75-2.7L14 9.31V2"/></svg>
             <span>Practicals &amp; Labs</span>
           </button>
@@ -337,10 +338,20 @@ function selectSubjectAndSheet(groupId, sheetKey, clickedEl) {
     clickedEl.classList.add('office-btn-pulse');
   }
 
+  // ── ON MOBILE (<= 768px): LOAD IN-APP PDF VIEWER OR TEST SELECTOR MODAL ──
+  if (window.innerWidth <= 768) {
+    if (sheetKey === 'tests') {
+      openMobileTestSelectorModal(groupId);
+      return;
+    }
+    viewSheetOnMobile(groupId, sheetKey);
+    return;
+  }
+
   const sheetNames = {
     evaluation: 'Master Evaluation Sheet',
     tests: 'Class Tests Marksheet',
-    assignments: 'Coursework & Assignments',
+    assignments: 'Assignments Marksheet',
     practicals: 'Practicals & Lab Records',
     blank: 'New Blank Worksheet'
   };
@@ -476,8 +487,9 @@ async function initOfficePortal() {
         console.warn('Could not load groups via apiFetch, using offline fallback', err);
       });
 
-    // Deep Link Forwarder: If accessing index.html with specific subject or sheet parameters, cleanly redirect to dedicated editor
-    if (!isHomeStart && (qId || params.get('sheet'))) {
+    // Deep Link Forwarder: If on desktop and accessing index.html with specific subject or sheet parameters, cleanly redirect to dedicated editor
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile && !isHomeStart && (qId || params.get('sheet'))) {
       window.location.replace('/faculty/sheets/editor.html' + window.location.search);
       return;
     }
@@ -521,6 +533,231 @@ function triggerExcelImport() {
   });
 }
 
+/**
+ * ══════════════════════════════════════════════════════════════
+ * MOBILE INTERFACE MODALS: TEST SELECTOR & PDF IN-APP VIEWER
+ * ══════════════════════════════════════════════════════════════
+ */
+function openMobileTestSelectorModal(groupId) {
+  window._mobileSelectedGroupId = Number(groupId);
+  const grp = (S.allGroups || []).find(g => Number(g.id) === Number(groupId)) || S.group;
+
+  const titleEl = document.getElementById('mobile-test-modal-title');
+  const subEl = document.getElementById('mobile-test-modal-sub');
+  const container = document.getElementById('mobile-test-list-container');
+  const modal = document.getElementById('mobile-test-selector-modal');
+
+  const grpName = grp?.subject_name || grp?.name || 'Academic Class';
+  const grpCode = grp?.subject_code ? ` [${grp.subject_code}]` : '';
+  const grpSem = grp?.semester ? ` • Sem ${grp.semester}` : '';
+
+  if (titleEl) titleEl.textContent = 'Select Test Worksheet';
+  if (subEl) subEl.textContent = `${grpName}${grpCode}${grpSem}`;
+
+  if (container) {
+    let rowsHtml = `
+      <div class="mobile-test-row">
+        <div class="mobile-test-row-main" onclick="closeMobileTestSelectorModal(); viewSheetOnMobile(${groupId}, 'tests')">
+          <div class="mobile-test-badge is-all">ALL</div>
+          <div class="mobile-test-info">
+            <span class="mobile-test-name">All Tests Combined</span>
+            <span class="mobile-test-desc">Consolidated Unit Tests (UT1 - UT10 Summary)</span>
+          </div>
+        </div>
+        <div class="mobile-test-actions">
+          <button type="button" class="mobile-test-action-btn btn-view" onclick="closeMobileTestSelectorModal(); viewSheetOnMobile(${groupId}, 'tests')" title="View in PDF viewer">
+            <span>View</span>
+          </button>
+          <button type="button" class="mobile-test-action-btn btn-dl" onclick="closeMobileTestSelectorModal(); downloadSheetDirectOnMobile(${groupId}, 'tests')" title="Download PDF">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+
+    for (let t = 1; t <= 10; t++) {
+      rowsHtml += `
+        <div class="mobile-test-row">
+          <div class="mobile-test-row-main" onclick="closeMobileTestSelectorModal(); viewSheetOnMobile(${groupId}, 'single-test', ${t})">
+            <div class="mobile-test-badge">UT ${t}</div>
+            <div class="mobile-test-info">
+              <span class="mobile-test-name">Unit Test ${t}</span>
+              <span class="mobile-test-desc">Individual marks register &amp; evaluation</span>
+            </div>
+          </div>
+          <div class="mobile-test-actions">
+            <button type="button" class="mobile-test-action-btn btn-view" onclick="closeMobileTestSelectorModal(); viewSheetOnMobile(${groupId}, 'single-test', ${t})" title="View in PDF viewer">
+              <span>View</span>
+            </button>
+            <button type="button" class="mobile-test-action-btn btn-dl" onclick="closeMobileTestSelectorModal(); downloadSheetDirectOnMobile(${groupId}, 'single-test', ${t})" title="Download PDF">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = rowsHtml;
+  }
+
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closeMobileTestSelectorModal() {
+  const modal = document.getElementById('mobile-test-selector-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function viewSheetOnMobile(groupId, sheetKey, testNumber = null) {
+  // Pre-open a blank tab synchronously to prevent popup blocker on mobile browsers
+  let newTab = null;
+  try {
+    newTab = window.open('about:blank', '_blank');
+    if (newTab && newTab.document) {
+      newTab.document.write('<!DOCTYPE html><html><head><title>Opening Worksheet...</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#334155;background:#f8fafc;"><div style="text-align:center;"><div style="width:36px;height:36px;border:3px solid #cbd5e1;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px auto;"></div><p style="font-size:14px;font-weight:600;margin:0;">Opening Worksheet in Browser…</p><style>@keyframes spin{to{transform:rotate(360deg)}}</style></div></body></html>');
+    }
+  } catch (_) { }
+
+  showOfficeScreenLoader('Opening worksheet in browser…');
+  try {
+    // 1. Ensure spreadsheet engine is loaded
+    await loadSpreadsheetEngine();
+
+    // 2. Set current group and load context
+    S.groupId = Number(groupId);
+    S.group = (S.allGroups || []).find(g => Number(g.id) === Number(groupId)) || S.group;
+
+    if (typeof window.loadGroupMetadata === 'function') {
+      await window.loadGroupMetadata(groupId);
+    } else if (typeof window.loadSubjectAcademicContext === 'function') {
+      await window.loadSubjectAcademicContext(groupId, false);
+    } else if (typeof window.hydrateAcademicSheetsFromGroup === 'function') {
+      window.hydrateAcademicSheetsFromGroup(false);
+    }
+
+    // 3. Locate target sheet in EXCEL_WB.sheets
+    const sheets = (window.EXCEL_WB && window.EXCEL_WB.sheets) || [];
+    let targetSheet = null;
+
+    if (sheetKey === 'single-test' && testNumber) {
+      targetSheet = sheets.find(s => s.type === 'single-test' && (
+        Number(s.testNumber) === Number(testNumber) ||
+        String(s.name || '').toLowerCase() === `unit test ${testNumber}` ||
+        String(s.name || '').toLowerCase().includes(`test ${testNumber}`)
+      ));
+      if (!targetSheet) {
+        const fallbackIdx = 1 + Number(testNumber);
+        if (sheets[fallbackIdx] && sheets[fallbackIdx].type === 'single-test') {
+          targetSheet = sheets[fallbackIdx];
+        }
+      }
+    } else if (sheetKey === 'tests') {
+      targetSheet = sheets.find(s => s.type === 'tests') || sheets[1];
+    } else if (sheetKey === 'assignments') {
+      targetSheet = sheets.find(s => s.type === 'assignments') || sheets[12];
+    } else if (sheetKey === 'practicals') {
+      targetSheet = sheets.find(s => s.type === 'practicals') || sheets[13];
+    } else {
+      // Default: Master Evaluation
+      targetSheet = sheets.find(s => s.type === 'evaluation') || sheets[0];
+    }
+
+    if (!targetSheet && sheets.length > 0) {
+      targetSheet = sheets[0];
+    }
+
+    if (!targetSheet) {
+      throw new Error('Sheet data could not be initialized.');
+    }
+
+    // 4. Generate printable HTML
+    if (typeof window.generateSheetPrintableHtml !== 'function') {
+      throw new Error('PDF generator function not available.');
+    }
+    const printHtml = window.generateSheetPrintableHtml(targetSheet);
+    if (!printHtml) {
+      throw new Error('Unable to generate HTML output.');
+    }
+
+    // 5. Open directly in browser view tab
+    const blob = new Blob([printHtml], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    if (newTab && !newTab.closed) {
+      newTab.location.href = blobUrl;
+    } else {
+      const w = window.open(blobUrl, '_blank');
+      if (!w) {
+        window.location.href = blobUrl;
+      }
+    }
+
+    closeMobileTestSelectorModal();
+    hideOfficeScreenLoader();
+  } catch (err) {
+    console.error('Failed to view sheet in browser:', err);
+    if (newTab && !newTab.closed) {
+      try { newTab.close(); } catch (_) { }
+    }
+    closeMobileTestSelectorModal();
+    hideOfficeScreenLoader();
+    if (typeof showToast === 'function') {
+      showToast('Could not open worksheet view. Please try again.', 'error', 3500);
+    }
+  }
+}
+
+async function downloadSheetDirectOnMobile(groupId, sheetKey, testNumber = null) {
+  showOfficeScreenLoader('Preparing A4 PDF…');
+  try {
+    await loadSpreadsheetEngine();
+
+    S.groupId = Number(groupId);
+    S.group = (S.allGroups || []).find(g => Number(g.id) === Number(groupId)) || S.group;
+
+    if (typeof window.loadGroupMetadata === 'function') {
+      await window.loadGroupMetadata(groupId);
+    } else if (typeof window.hydrateAcademicSheetsFromGroup === 'function') {
+      window.hydrateAcademicSheetsFromGroup(false);
+    }
+
+    const sheets = (window.EXCEL_WB && window.EXCEL_WB.sheets) || [];
+    let targetSheet = null;
+
+    if (sheetKey === 'single-test' && testNumber) {
+      targetSheet = sheets.find(s => s.type === 'single-test' && (
+        Number(s.testNumber) === Number(testNumber) ||
+        String(s.name || '').toLowerCase().includes(`test ${testNumber}`)
+      ));
+    } else if (sheetKey === 'tests') {
+      targetSheet = sheets.find(s => s.type === 'tests') || sheets[1];
+    } else if (sheetKey === 'assignments') {
+      targetSheet = sheets.find(s => s.type === 'assignments') || sheets[12];
+    } else if (sheetKey === 'practicals') {
+      targetSheet = sheets.find(s => s.type === 'practicals') || sheets[13];
+    } else {
+      targetSheet = sheets.find(s => s.type === 'evaluation') || sheets[0];
+    }
+
+    if (!targetSheet && sheets.length > 0) targetSheet = sheets[0];
+
+    closeMobileTestSelectorModal();
+    hideOfficeScreenLoader();
+
+    if (targetSheet && typeof window.exportSheetToPdf === 'function') {
+      window.exportSheetToPdf(targetSheet);
+    }
+  } catch (err) {
+    console.error('Failed to download sheet:', err);
+    closeMobileTestSelectorModal();
+    hideOfficeScreenLoader();
+    if (typeof showToast === 'function') {
+      showToast('Could not generate PDF download. Please try again.', 'error');
+    }
+  }
+}
+
 // Global Exports
 window.showOfficeScreenLoader = showOfficeScreenLoader;
 window.hideOfficeScreenLoader = hideOfficeScreenLoader;
@@ -537,3 +774,7 @@ window.openSubjectSheetDirect = openSubjectSheetDirect;
 window.loadSpreadsheetEngine = loadSpreadsheetEngine;
 window.navigateBackFromSheets = navigateBackFromSheets;
 window.triggerExcelImport = triggerExcelImport;
+window.openMobileTestSelectorModal = openMobileTestSelectorModal;
+window.closeMobileTestSelectorModal = closeMobileTestSelectorModal;
+window.viewSheetOnMobile = viewSheetOnMobile;
+window.downloadSheetDirectOnMobile = downloadSheetDirectOnMobile;

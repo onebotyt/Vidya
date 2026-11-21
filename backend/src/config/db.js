@@ -225,7 +225,35 @@ async function ensureCompatibilityViews() {
       logger.info('✓ Added missing column teaching_groups.subject_code');
     }
 
-    // 1b. Ensure students.deleted_at exists for trash management
+    // 1a. Ensure teaching_groups.start_date and end_date exist
+    const tgDateCols = await query("SHOW COLUMNS FROM teaching_groups LIKE 'start_date'");
+    if (!tgDateCols || tgDateCols.length === 0) {
+      await query("ALTER TABLE teaching_groups ADD COLUMN start_date DATE NULL AFTER semester");
+      await query("ALTER TABLE teaching_groups ADD COLUMN end_date DATE NULL AFTER start_date");
+      await query("UPDATE teaching_groups SET start_date = DATE(created_at) WHERE start_date IS NULL");
+      logger.info('✓ Added missing columns teaching_groups.start_date and end_date');
+    }
+
+    // 1a-reg. Ensure attendance_registers.start_date and end_date exist
+    const arDateCols = await query("SHOW COLUMNS FROM attendance_registers LIKE 'start_date'");
+    if (!arDateCols || arDateCols.length === 0) {
+      await query("ALTER TABLE attendance_registers ADD COLUMN start_date DATE NULL AFTER semester");
+      await query("ALTER TABLE attendance_registers ADD COLUMN end_date DATE NULL AFTER start_date");
+      await query("UPDATE attendance_registers SET start_date = DATE(created_at) WHERE start_date IS NULL");
+      logger.info('✓ Added missing columns attendance_registers.start_date and end_date');
+    }
+
+    // 1b. Ensure teachers.designation exists
+    try {
+      const desigCols = await query("SHOW COLUMNS FROM teachers LIKE 'designation'");
+      if (!desigCols || desigCols.length === 0) {
+        await query("ALTER TABLE teachers ADD COLUMN designation VARCHAR(100) NULL DEFAULT 'Lecturer' AFTER full_name");
+        await query("UPDATE teachers SET designation = 'Head of Department' WHERE employee_id LIKE '%HOD%'");
+        logger.info('✓ Added missing column teachers.designation');
+      }
+    } catch (_) {}
+
+    // 1c. Ensure students.deleted_at exists for trash management
     const stuCols = await query("SHOW COLUMNS FROM students LIKE 'deleted_at'");
     if (!stuCols || stuCols.length === 0) {
       await query("ALTER TABLE students ADD COLUMN deleted_at DATETIME NULL DEFAULT NULL AFTER updated_at");
@@ -263,6 +291,53 @@ async function ensureCompatibilityViews() {
           await query("CREATE INDEX idx_students_ubter_roll_no ON students (ubter_roll_no)");
         } catch (_) {}
         logger.info('✓ Added column students.ubter_roll_no & backfilled from official_enrollment_no');
+      }
+    } catch (_) {}
+
+    // 1f. Ensure assessments has questions, instructions, unit_name
+    try {
+      const qCol = await query("SHOW COLUMNS FROM assessments LIKE 'questions'");
+      if (!qCol || qCol.length === 0) {
+        await query("ALTER TABLE assessments ADD COLUMN questions LONGTEXT NULL AFTER max_marks");
+      }
+      const insCol = await query("SHOW COLUMNS FROM assessments LIKE 'instructions'");
+      if (!insCol || insCol.length === 0) {
+        await query("ALTER TABLE assessments ADD COLUMN instructions TEXT NULL AFTER questions");
+      }
+      const unCol = await query("SHOW COLUMNS FROM assessments LIKE 'unit_name'");
+      if (!unCol || unCol.length === 0) {
+        await query("ALTER TABLE assessments ADD COLUMN unit_name VARCHAR(150) NULL AFTER instructions");
+      }
+    } catch (_) {}
+
+    // 1g. Ensure attendance_sessions has cohort & period columns
+    try {
+      const sessCols = [
+        { name: "teacher_id", type: "INT NULL AFTER register_id" },
+        { name: "subject_id", type: "INT NULL AFTER teacher_id" },
+        { name: "department_id", type: "INT NULL AFTER subject_id" },
+        { name: "year", type: "INT NULL AFTER department_id" },
+        { name: "semester", type: "INT NULL AFTER year" },
+        { name: "academic_year_id", type: "INT NULL AFTER semester" },
+        { name: "period_number", type: "INT NULL DEFAULT 1 AFTER session_type" }
+      ];
+      for (const c of sessCols) {
+        const cExists = await query(`SHOW COLUMNS FROM attendance_sessions LIKE '${c.name}'`);
+        if (!cExists || cExists.length === 0) {
+          await query(`ALTER TABLE attendance_sessions ADD COLUMN ${c.name} ${c.type}`);
+        }
+      }
+    } catch (_) {}
+
+    // 1h. Ensure classroom_posts has attachment_path and attachment_name
+    try {
+      const apCol = await query("SHOW COLUMNS FROM classroom_posts LIKE 'attachment_path'");
+      if (!apCol || apCol.length === 0) {
+        await query("ALTER TABLE classroom_posts ADD COLUMN attachment_path VARCHAR(500) NULL AFTER content");
+      }
+      const anCol = await query("SHOW COLUMNS FROM classroom_posts LIKE 'attachment_name'");
+      if (!anCol || anCol.length === 0) {
+        await query("ALTER TABLE classroom_posts ADD COLUMN attachment_name VARCHAR(255) NULL AFTER attachment_path");
       }
     } catch (_) {}
   } catch (err) {
