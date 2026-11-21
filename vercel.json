@@ -1,0 +1,846 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://vidyaos-backend.onrender.com/api/v1/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://vidyaos-backend.onrender.com/uploads/:path*"
+    },
+    {
+      "source": "/login",
+      "destination": "/login/index.html"
+    },
+    {
+      "source": "/login/",
+      "destination": "/login/index.html"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/login/index.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/login/register/index.html"
+    },
+    {
+      "source": "/register/",
+      "destination": "/login/register/index.html"
+    },
+    {
+      "source": "/register.html",
+      "destination": "/login/register/index.html"
+    },
+    {
+      "source": "/login/register",
+      "destination": "/login/register/index.html"
+    },
+    {
+      "source": "/login/register/",
+      "destination": "/login/register/index.html"
+    },
+    {
+      "source": "/login/register.html",
+      "destination": "/login/register/index.html"
+    },
+    {
+      "source": "/login/student-register.html",
+      "destination": "/login/register/index.html?role=student"
+    },
+    {
+      "source": "/login/student-register",
+      "destination": "/login/register/index.html?role=student"
+    },
+    {
+      "source": "/login/faculty-register.html",
+      "destination": "/login/register/index.html?role=faculty"
+    },
+    {
+      "source": "/login/faculty-register",
+      "destination": "/login/register/index.html?role=faculty"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin/dashboard/index.html"
+    },
+    {
+      "source": "/admin/",
+      "destination": "/admin/dashboard/index.html"
+    },
+    {
+      "source": "/admin/academic_structure.html",
+      "destination": "/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/admin/academic_structure",
+      "destination": "/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/admin/audit_logs.html",
+      "destination": "/admin/audit-logs/index.html"
+    },
+    {
+      "source": "/admin/audit_logs",
+      "destination": "/admin/audit-logs/index.html"
+    },
+    {
+      "source": "/admin/departments",
+      "destination": "/admin/academic-structure/index.html?tab=departments"
+    },
+    {
+      "source": "/admin/departments/",
+      "destination": "/admin/academic-structure/index.html?tab=departments"
+    },
+    {
+      "source": "/admin/departments.html",
+      "destination": "/admin/academic-structure/index.html?tab=departments"
+    },
+    {
+      "source": "/faculty/esp32-devices",
+      "destination": "/faculty/esp32-devices/index.html"
+    },
+    {
+      "source": "/faculty/esp32-devices/",
+      "destination": "/faculty/esp32-devices/index.html"
+    },
+    {
+      "source": "/faculty/esp32-devices.html",
+      "destination": "/faculty/esp32-devices/index.html"
+    },
+    {
+      "source": "/faculty",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/dashboard",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/dashboard/",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/dashboard.html",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/classes",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/classes/",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/classes.html",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/analytics",
+      "destination": "/faculty/reports/index.html?tab=analytics"
+    },
+    {
+      "source": "/faculty/analytics/",
+      "destination": "/faculty/reports/index.html?tab=analytics"
+    },
+    {
+      "source": "/faculty/analytics.html",
+      "destination": "/faculty/reports/index.html?tab=analytics"
+    },
+    {
+      "source": "/faculty/assignments",
+      "destination": "/faculty/registers/index.html?tab=assignments"
+    },
+    {
+      "source": "/faculty/assignments/",
+      "destination": "/faculty/registers/index.html?tab=assignments"
+    },
+    {
+      "source": "/faculty/assignments.html",
+      "destination": "/faculty/registers/index.html?tab=assignments"
+    },
+    {
+      "source": "/faculty/tests",
+      "destination": "/faculty/registers/index.html?tab=marks"
+    },
+    {
+      "source": "/faculty/tests/",
+      "destination": "/faculty/registers/index.html?tab=marks"
+    },
+    {
+      "source": "/faculty/tests.html",
+      "destination": "/faculty/registers/index.html?tab=marks"
+    },
+    {
+      "source": "/faculty/marks",
+      "destination": "/faculty/registers/index.html?tab=marks"
+    },
+    {
+      "source": "/faculty/marks/",
+      "destination": "/faculty/registers/index.html?tab=marks"
+    },
+    {
+      "source": "/faculty/marks.html",
+      "destination": "/faculty/registers/index.html?tab=marks"
+    },
+    {
+      "source": "/faculty/attendance/quick",
+      "destination": "/faculty/registers/index.html"
+    },
+    {
+      "source": "/faculty/attendance/quick/",
+      "destination": "/faculty/registers/index.html"
+    },
+    {
+      "source": "/faculty/attendance/quick.html",
+      "destination": "/faculty/registers/index.html"
+    },
+    {
+      "source": "/faculty/evaluation",
+      "destination": "/faculty/sheets/index.html"
+    },
+    {
+      "source": "/faculty/evaluation/",
+      "destination": "/faculty/sheets/index.html"
+    },
+    {
+      "source": "/faculty/evaluation.html",
+      "destination": "/faculty/sheets/index.html"
+    },
+    {
+      "source": "/faculty/hod-teachers.html",
+      "destination": "/faculty/students/index.html"
+    },
+    {
+      "source": "/faculty/hod-teachers",
+      "destination": "/faculty/students/index.html"
+    },
+    {
+      "source": "/faculty/settings",
+      "destination": "/faculty/settings/index.html"
+    },
+    {
+      "source": "/faculty/settings/",
+      "destination": "/faculty/settings/index.html"
+    },
+    {
+      "source": "/faculty/settings.html",
+      "destination": "/faculty/settings/index.html"
+    },
+    {
+      "source": "/faculty/hod-settings.html",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/hod-settings",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/common-teachers.html",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/common-teachers",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/student",
+      "destination": "/student/dashboard/index.html"
+    },
+    {
+      "source": "/student/",
+      "destination": "/student/dashboard/index.html"
+    },
+    {
+      "source": "/student/attendance/subjects",
+      "destination": "/student/attendance/index.html"
+    },
+    {
+      "source": "/student/attendance/subjects/",
+      "destination": "/student/attendance/index.html"
+    },
+    {
+      "source": "/student/attendance/subjects.html",
+      "destination": "/student/attendance/index.html"
+    },
+    {
+      "source": "/student/todo",
+      "destination": "/student/assignments/index.html"
+    },
+    {
+      "source": "/student/todo/",
+      "destination": "/student/assignments/index.html"
+    },
+    {
+      "source": "/student/todo.html",
+      "destination": "/student/assignments/index.html"
+    },
+    {
+      "source": "/faculty/dashboard",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/dashboard/",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/dashboard.html",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/registers",
+      "destination": "/faculty/registers/index.html"
+    },
+    {
+      "source": "/faculty/registers/",
+      "destination": "/faculty/registers/index.html"
+    },
+    {
+      "source": "/faculty/registers.html",
+      "destination": "/faculty/registers/index.html"
+    },
+    {
+      "source": "/faculty/sheets",
+      "destination": "/faculty/sheets/index.html"
+    },
+    {
+      "source": "/faculty/sheets/",
+      "destination": "/faculty/sheets/index.html"
+    },
+    {
+      "source": "/faculty/sheets.html",
+      "destination": "/faculty/sheets/index.html"
+    },
+    {
+      "source": "/faculty/students",
+      "destination": "/faculty/students/index.html"
+    },
+    {
+      "source": "/faculty/students/",
+      "destination": "/faculty/students/index.html"
+    },
+    {
+      "source": "/faculty/students.html",
+      "destination": "/faculty/students/index.html"
+    },
+    {
+      "source": "/faculty/reports",
+      "destination": "/faculty/reports/index.html"
+    },
+    {
+      "source": "/faculty/reports/",
+      "destination": "/faculty/reports/index.html"
+    },
+    {
+      "source": "/faculty/reports.html",
+      "destination": "/faculty/reports/index.html"
+    },
+    {
+      "source": "/faculty/timetable",
+      "destination": "/faculty/timetable/index.html"
+    },
+    {
+      "source": "/faculty/timetable/",
+      "destination": "/faculty/timetable/index.html"
+    },
+    {
+      "source": "/faculty/timetable.html",
+      "destination": "/faculty/timetable/index.html"
+    },
+    {
+      "source": "/faculty/leave-approvals",
+      "destination": "/faculty/leave-approvals/index.html"
+    },
+    {
+      "source": "/faculty/leave-approvals/",
+      "destination": "/faculty/leave-approvals/index.html"
+    },
+    {
+      "source": "/faculty/leave-approvals.html",
+      "destination": "/faculty/leave-approvals/index.html"
+    },
+    {
+      "source": "/faculty/media",
+      "destination": "/faculty/media/index.html"
+    },
+    {
+      "source": "/faculty/media/",
+      "destination": "/faculty/media/index.html"
+    },
+    {
+      "source": "/faculty/media.html",
+      "destination": "/faculty/media/index.html"
+    },
+    {
+      "source": "/faculty/profile",
+      "destination": "/faculty/profile/index.html"
+    },
+    {
+      "source": "/faculty/profile/",
+      "destination": "/faculty/profile/index.html"
+    },
+    {
+      "source": "/faculty/profile.html",
+      "destination": "/faculty/profile/index.html"
+    },
+    {
+      "source": "/faculty/classwork",
+      "destination": "/faculty/classwork/index.html"
+    },
+    {
+      "source": "/faculty/classwork/",
+      "destination": "/faculty/classwork/index.html"
+    },
+    {
+      "source": "/faculty/classwork.html",
+      "destination": "/faculty/classwork/index.html"
+    },
+    {
+      "source": "/faculty/classwork/create",
+      "destination": "/faculty/classwork/create/index.html"
+    },
+    {
+      "source": "/faculty/classwork/create/",
+      "destination": "/faculty/classwork/create/index.html"
+    },
+    {
+      "source": "/faculty/classwork/create.html",
+      "destination": "/faculty/classwork/create/index.html"
+    },
+    {
+      "source": "/faculty/course-file",
+      "destination": "/faculty/course-file/index.html"
+    },
+    {
+      "source": "/faculty/course-file/",
+      "destination": "/faculty/course-file/index.html"
+    },
+    {
+      "source": "/faculty/course-file.html",
+      "destination": "/faculty/course-file/index.html"
+    },
+    {
+      "source": "/faculty/nba",
+      "destination": "/faculty/course-file/index.html"
+    },
+    {
+      "source": "/faculty/nba/",
+      "destination": "/faculty/course-file/index.html"
+    },
+    {
+      "source": "/faculty/nba.html",
+      "destination": "/faculty/course-file/index.html"
+    },
+    {
+      "source": "/faculty/theory-classes",
+      "destination": "/faculty/theory-classes/index.html"
+    },
+    {
+      "source": "/faculty/theory-classes/",
+      "destination": "/faculty/theory-classes/index.html"
+    },
+    {
+      "source": "/faculty/theory-classes.html",
+      "destination": "/faculty/theory-classes/index.html"
+    },
+    {
+      "source": "/faculty/lab-classes",
+      "destination": "/faculty/lab-classes/index.html"
+    },
+    {
+      "source": "/faculty/lab-classes/",
+      "destination": "/faculty/lab-classes/index.html"
+    },
+    {
+      "source": "/faculty/lab-classes.html",
+      "destination": "/faculty/lab-classes/index.html"
+    },
+    {
+      "source": "/faculty/student-performance",
+      "destination": "/faculty/student-performance/index.html"
+    },
+    {
+      "source": "/faculty/student-performance/",
+      "destination": "/faculty/student-performance/index.html"
+    },
+    {
+      "source": "/faculty/student-performance.html",
+      "destination": "/faculty/student-performance/index.html"
+    },
+    {
+      "source": "/faculty/assessment-process",
+      "destination": "/faculty/assessment-process/index.html"
+    },
+    {
+      "source": "/faculty/assessment-process/",
+      "destination": "/faculty/assessment-process/index.html"
+    },
+    {
+      "source": "/faculty/assessment-process.html",
+      "destination": "/faculty/assessment-process/index.html"
+    },
+    {
+      "source": "/faculty/direct-assessment",
+      "destination": "/faculty/direct-assessment/index.html"
+    },
+    {
+      "source": "/faculty/direct-assessment/",
+      "destination": "/faculty/direct-assessment/index.html"
+    },
+    {
+      "source": "/faculty/direct-assessment.html",
+      "destination": "/faculty/direct-assessment/index.html"
+    },
+    {
+      "source": "/faculty/indirect-assessment",
+      "destination": "/faculty/indirect-assessment/index.html"
+    },
+    {
+      "source": "/faculty/indirect-assessment/",
+      "destination": "/faculty/indirect-assessment/index.html"
+    },
+    {
+      "source": "/faculty/indirect-assessment.html",
+      "destination": "/faculty/indirect-assessment/index.html"
+    },
+    {
+      "source": "/faculty/groups",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/groups/",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/groups.html",
+      "destination": "/faculty/dashboard/index.html"
+    },
+    {
+      "source": "/faculty/group-detail",
+      "destination": "/faculty/group-detail/index.html"
+    },
+    {
+      "source": "/faculty/group-detail/",
+      "destination": "/faculty/group-detail/index.html"
+    },
+    {
+      "source": "/faculty/group-detail.html",
+      "destination": "/faculty/group-detail/index.html"
+    },
+    {
+      "source": "/admin/dashboard",
+      "destination": "/admin/dashboard/index.html"
+    },
+    {
+      "source": "/admin/dashboard/",
+      "destination": "/admin/dashboard/index.html"
+    },
+    {
+      "source": "/admin/dashboard.html",
+      "destination": "/admin/dashboard/index.html"
+    },
+    {
+      "source": "/admin/academic-structure",
+      "destination": "/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/admin/academic-structure/",
+      "destination": "/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/admin/academic-structure.html",
+      "destination": "/admin/academic-structure/index.html"
+    },
+    {
+      "source": "/admin/faculty-management",
+      "destination": "/admin/faculty-management/index.html"
+    },
+    {
+      "source": "/admin/faculty-management/",
+      "destination": "/admin/faculty-management/index.html"
+    },
+    {
+      "source": "/admin/faculty-management.html",
+      "destination": "/admin/faculty-management/index.html"
+    },
+    {
+      "source": "/admin/faculty",
+      "destination": "/admin/faculty-management/index.html"
+    },
+    {
+      "source": "/admin/faculty/",
+      "destination": "/admin/faculty-management/index.html"
+    },
+    {
+      "source": "/admin/faculty.html",
+      "destination": "/admin/faculty-management/index.html"
+    },
+    {
+      "source": "/admin/audit-logs",
+      "destination": "/admin/audit-logs/index.html"
+    },
+    {
+      "source": "/admin/audit-logs/",
+      "destination": "/admin/audit-logs/index.html"
+    },
+    {
+      "source": "/admin/audit-logs.html",
+      "destination": "/admin/audit-logs/index.html"
+    },
+    {
+      "source": "/admin/reports",
+      "destination": "/admin/reports/index.html"
+    },
+    {
+      "source": "/admin/reports/",
+      "destination": "/admin/reports/index.html"
+    },
+    {
+      "source": "/admin/reports.html",
+      "destination": "/admin/reports/index.html"
+    },
+    {
+      "source": "/admin/settings",
+      "destination": "/admin/settings/index.html"
+    },
+    {
+      "source": "/admin/settings/",
+      "destination": "/admin/settings/index.html"
+    },
+    {
+      "source": "/admin/settings.html",
+      "destination": "/admin/settings/index.html"
+    },
+    {
+      "source": "/admin/profile",
+      "destination": "/admin/profile/index.html"
+    },
+    {
+      "source": "/admin/profile/",
+      "destination": "/admin/profile/index.html"
+    },
+    {
+      "source": "/admin/profile.html",
+      "destination": "/admin/profile/index.html"
+    },
+    {
+      "source": "/student/dashboard",
+      "destination": "/student/dashboard/index.html"
+    },
+    {
+      "source": "/student/dashboard/",
+      "destination": "/student/dashboard/index.html"
+    },
+    {
+      "source": "/student/dashboard.html",
+      "destination": "/student/dashboard/index.html"
+    },
+    {
+      "source": "/student/attendance",
+      "destination": "/student/attendance/index.html"
+    },
+    {
+      "source": "/student/attendance/",
+      "destination": "/student/attendance/index.html"
+    },
+    {
+      "source": "/student/attendance.html",
+      "destination": "/student/attendance/index.html"
+    },
+    {
+      "source": "/student/assignments",
+      "destination": "/student/assignments/index.html"
+    },
+    {
+      "source": "/student/assignments/",
+      "destination": "/student/assignments/index.html"
+    },
+    {
+      "source": "/student/assignments.html",
+      "destination": "/student/assignments/index.html"
+    },
+    {
+      "source": "/student/scores",
+      "destination": "/student/scores/index.html"
+    },
+    {
+      "source": "/student/scores/",
+      "destination": "/student/scores/index.html"
+    },
+    {
+      "source": "/student/scores.html",
+      "destination": "/student/scores/index.html"
+    },
+    {
+      "source": "/student/timetable",
+      "destination": "/student/timetable/index.html"
+    },
+    {
+      "source": "/student/timetable/",
+      "destination": "/student/timetable/index.html"
+    },
+    {
+      "source": "/student/timetable.html",
+      "destination": "/student/timetable/index.html"
+    },
+    {
+      "source": "/student/leave",
+      "destination": "/student/leave/index.html"
+    },
+    {
+      "source": "/student/leave/",
+      "destination": "/student/leave/index.html"
+    },
+    {
+      "source": "/student/leave.html",
+      "destination": "/student/leave/index.html"
+    },
+    {
+      "source": "/student/profile",
+      "destination": "/student/profile/index.html"
+    },
+    {
+      "source": "/student/profile/",
+      "destination": "/student/profile/index.html"
+    },
+    {
+      "source": "/student/profile.html",
+      "destination": "/student/profile/index.html"
+    },
+    {
+      "source": "/student/settings",
+      "destination": "/student/settings/index.html"
+    },
+    {
+      "source": "/student/settings/",
+      "destination": "/student/settings/index.html"
+    },
+    {
+      "source": "/student/settings.html",
+      "destination": "/student/settings/index.html"
+    },
+    {
+      "source": "/student/theory-classes",
+      "destination": "/student/theory-classes/index.html"
+    },
+    {
+      "source": "/student/theory-classes/",
+      "destination": "/student/theory-classes/index.html"
+    },
+    {
+      "source": "/student/theory-classes.html",
+      "destination": "/student/theory-classes/index.html"
+    },
+    {
+      "source": "/student/lab-classes",
+      "destination": "/student/lab-classes/index.html"
+    },
+    {
+      "source": "/student/lab-classes/",
+      "destination": "/student/lab-classes/index.html"
+    },
+    {
+      "source": "/student/lab-classes.html",
+      "destination": "/student/lab-classes/index.html"
+    },
+    {
+      "source": "/student/student-performance",
+      "destination": "/student/student-performance/index.html"
+    },
+    {
+      "source": "/student/student-performance/",
+      "destination": "/student/student-performance/index.html"
+    },
+    {
+      "source": "/student/student-performance.html",
+      "destination": "/student/student-performance/index.html"
+    },
+    {
+      "source": "/student/assessment-process",
+      "destination": "/student/assessment-process/index.html"
+    },
+    {
+      "source": "/student/assessment-process/",
+      "destination": "/student/assessment-process/index.html"
+    },
+    {
+      "source": "/student/assessment-process.html",
+      "destination": "/student/assessment-process/index.html"
+    },
+    {
+      "source": "/student/direct-assessment",
+      "destination": "/student/direct-assessment/index.html"
+    },
+    {
+      "source": "/student/direct-assessment/",
+      "destination": "/student/direct-assessment/index.html"
+    },
+    {
+      "source": "/student/direct-assessment.html",
+      "destination": "/student/direct-assessment/index.html"
+    },
+    {
+      "source": "/student/indirect-assessment",
+      "destination": "/student/indirect-assessment/index.html"
+    },
+    {
+      "source": "/student/indirect-assessment/",
+      "destination": "/student/indirect-assessment/index.html"
+    },
+    {
+      "source": "/student/indirect-assessment.html",
+      "destination": "/student/indirect-assessment/index.html"
+    },
+    {
+      "source": "/student/nba",
+      "destination": "/student/nba/index.html"
+    },
+    {
+      "source": "/student/nba/",
+      "destination": "/student/nba/index.html"
+    },
+    {
+      "source": "/student/nba.html",
+      "destination": "/student/nba/index.html"
+    },
+    {
+      "source": "/student/group-detail",
+      "destination": "/student/group-detail/index.html"
+    },
+    {
+      "source": "/student/group-detail/",
+      "destination": "/student/group-detail/index.html"
+    },
+    {
+      "source": "/student/group-detail.html",
+      "destination": "/student/group-detail/index.html"
+    },
+    {
+      "source": "/:section/:page.css",
+      "destination": "/:section/:page/:page.css"
+    },
+    {
+      "source": "/:section/:page.js",
+      "destination": "/:section/:page/:page.js"
+    },
+    {
+      "source": "/:section(admin|faculty|student)/:page([a-zA-Z0-9_-]+)",
+      "destination": "/:section/:page/index.html"
+    },
+    {
+      "source": "/:section(admin|faculty|student)/:page([a-zA-Z0-9_-]+)/",
+      "destination": "/:section/:page/index.html"
+    },
+    {
+      "source": "/:section(admin|faculty|student)/:page([a-zA-Z0-9_-]+).html",
+      "destination": "/:section/:page/index.html"
+    }
+  ]
+}
