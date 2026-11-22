@@ -1,11 +1,11 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-22T22:43:05.019Z",
+  "generated_at": "2026-11-22T23:12:35.270Z",
   "total_pages": 33,
   "totals": {
     "buttons": 844,
-    "modals": 195,
+    "modals": 202,
     "inputs": 405,
     "apis": 300
   },
@@ -145,10 +145,10 @@
       "route": "/faculty/group-detail.html",
       "title": "Teaching Group Classroom - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-004.json",
-      "content_hash": "62faef012299",
+      "content_hash": "91572bf51a90",
       "counts": {
         "buttons": 186,
-        "modals": 55,
+        "modals": 59,
         "inputs": 89,
         "apis": 37
       }
@@ -288,10 +288,10 @@
       "route": "/faculty/registers/index.html",
       "title": "Attendance Register Studio — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-018.json",
-      "content_hash": "35f01ad68979",
+      "content_hash": "1e4bf2ec9cd0",
       "counts": {
         "buttons": 46,
-        "modals": 7,
+        "modals": 10,
         "inputs": 16,
         "apis": 23
       }

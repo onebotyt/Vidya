@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/registers/index.html",
   "source_file": "frontend/faculty/registers/index.html",
-  "content_hash": "35f01ad68979",
-  "last_scanned": "2026-11-22T22:43:04.967Z",
+  "content_hash": "1e4bf2ec9cd0",
+  "last_scanned": "2026-11-22T23:12:35.197Z",
   "title": "Attendance Register Studio — VidyaOS",
   "purpose": "Unified Attendance Register Studio: Dedicated multi-subject attendance matrix, subject switcher toolbar, live roll call studio (Dynamic QR, 6-digit PIN, live check-ins feed, and manual roll call roster), ESP32 hardware scan sync, custom holiday & working day management, and clean 5-column institutional export & print (Roll No, UBTER Reg No, UBTER Roll No, Name, Days)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -169,7 +169,7 @@
       },
       {
         "id": "unnamed-table",
-        "class": null,
+        "class": "rollcall-roster-table",
         "headers": [
           "Roll",
           "Student Name",
@@ -194,6 +194,11 @@
         "field_count": 0
       },
       {
+        "id": "class-rc-view-live",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
         "id": "class-rc-footer-date",
         "title": "Modal Dialog",
         "field_count": 0
@@ -201,6 +206,16 @@
       {
         "id": "manage-holiday-modal",
         "title": "Institutional Holiday Management",
+        "field_count": 0
+      },
+      {
+        "id": "holiday-modal-date-picker",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "holiday-modal-default-wrap",
+        "title": "Modal Dialog",
         "field_count": 0
       },
       {
@@ -389,17 +404,17 @@
       },
       {
         "id": null,
-        "label": "✓ All Present",
+        "label": "All Present",
         "action": "bulkSetRollCallStatus(",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn-rc-bulk-present",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "✕ All Absent",
+        "label": "All Absent",
         "action": "bulkSetRollCallStatus(",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn-rc-bulk-absent",
         "data_ui": null,
         "title": null
       },
@@ -407,15 +422,15 @@
         "id": null,
         "label": "Close",
         "action": "closeClassRollCallModal()",
-        "class": "btn btn-secondary",
+        "class": "btn btn-secondary btn-sm",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "✓ Confirm &amp; Save Attendance",
+        "label": "Confirm &amp; Save Attendance",
         "action": "submitClassRollCall()",
-        "class": "btn btn-primary",
+        "class": "btn btn-primary btn-sm",
         "data_ui": null,
         "title": null
       },
@@ -429,7 +444,7 @@
       },
       {
         "id": "btn-holiday-off",
-        "label": "🎉 Holiday / Off-Day",
+        "label": "Holiday / Off-Day",
         "action": "selectHolidayType(",
         "class": "btn btn-secondary",
         "data_ui": null,
@@ -437,7 +452,7 @@
       },
       {
         "id": "btn-holiday-work",
-        "label": "📚 Active Working Day",
+        "label": "Active Working Day",
         "action": "selectHolidayType(",
         "class": "btn btn-secondary",
         "data_ui": null,
@@ -445,7 +460,7 @@
       },
       {
         "id": "btn-reset-holiday-default",
-        "label": "Restore Default",
+        "label": "Reset to Default",
         "action": "resetDayHolidayDefault()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -805,6 +820,12 @@
       "submit_action": null
     },
     {
+      "id": "class-rc-view-live",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
       "id": "class-rc-footer-date",
       "title": "Modal Dialog",
       "fields": [],
@@ -813,6 +834,20 @@
     {
       "id": "manage-holiday-modal",
       "title": "Institutional Holiday Management",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "holiday-modal-date-picker",
+      "title": "Modal Dialog",
+      "fields": [
+        "holiday-modal-date-picker"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "holiday-modal-default-wrap",
+      "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
     },

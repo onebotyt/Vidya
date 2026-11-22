@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
-  "content_hash": "62faef012299",
-  "last_scanned": "2026-11-22T22:43:04.854Z",
+  "content_hash": "91572bf51a90",
+  "last_scanned": "2026-11-22T23:12:35.065Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -389,8 +389,28 @@
         "field_count": 0
       },
       {
+        "id": "class-rc-view-live",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "class-rc-footer-date",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
         "id": "manage-holiday-modal",
-        "title": "Manage Holidays &amp; Working Days",
+        "title": "Institutional Holiday Management",
+        "field_count": 0
+      },
+      {
+        "id": "holiday-modal-date",
+        "title": "Modal Dialog",
+        "field_count": 1
+      },
+      {
+        "id": "btn-reset-holiday",
+        "title": "Modal Dialog",
         "field_count": 0
       },
       {
@@ -1384,7 +1404,7 @@
       },
       {
         "id": null,
-        "label": "✓ All Present",
+        "label": "All Present",
         "action": "bulkSetRollCallStatus(",
         "class": "btn-rc-bulk-present",
         "data_ui": null,
@@ -1392,7 +1412,7 @@
       },
       {
         "id": null,
-        "label": "✕ All Absent",
+        "label": "All Absent",
         "action": "bulkSetRollCallStatus(",
         "class": "btn-rc-bulk-absent",
         "data_ui": null,
@@ -1402,7 +1422,7 @@
         "id": null,
         "label": "Close",
         "action": "closeClassRollCallModal()",
-        "class": "btn btn-secondary",
+        "class": "btn btn-secondary btn-sm",
         "data_ui": null,
         "title": null
       },
@@ -1410,7 +1430,7 @@
         "id": "btn-save-class-rollcall",
         "label": "Confirm &amp; Save Attendance",
         "action": "submitClassRollCall()",
-        "class": "btn btn-primary",
+        "class": "btn btn-primary btn-sm",
         "data_ui": null,
         "title": null
       },
@@ -1424,23 +1444,23 @@
       },
       {
         "id": "btn-type-holiday",
-        "label": "🌴 Mark as Holiday",
+        "label": "Holiday / Off-Day",
         "action": "selectHolidayType(",
-        "class": "btn btn-sm",
+        "class": "btn btn-secondary",
         "data_ui": null,
         "title": null
       },
       {
         "id": "btn-type-working",
-        "label": "🏫 Working Class Day",
+        "label": "Active Working Day",
         "action": "selectHolidayType(",
-        "class": "btn btn-sm btn-secondary",
+        "class": "btn btn-secondary",
         "data_ui": null,
         "title": null
       },
       {
         "id": "btn-reset-holiday",
-        "label": "↺ Reset to Default",
+        "label": "Reset to Default",
         "action": "resetDayHolidayDefault()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -1456,7 +1476,7 @@
       },
       {
         "id": "btn-save-holiday",
-        "label": "Save Date Status",
+        "label": "Save Configuration",
         "action": "submitSaveHoliday()",
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
@@ -2308,7 +2328,7 @@
         "id": "class-rc-search",
         "type": "text",
         "name": null,
-        "placeholder": "🔍 Search student by name or roll...",
+        "placeholder": "Search student by name or roll...",
         "handler": "filterClassRollCallRoster(this.value)",
         "class": "rollcall-filter-input"
       },
@@ -2318,15 +2338,15 @@
         "name": null,
         "placeholder": null,
         "handler": "onHolidayModalDateChange(this.value)",
-        "class": "form-input"
+        "class": "form-control"
       },
       {
         "id": "holiday-modal-reason",
         "type": "text",
         "name": null,
-        "placeholder": "e.g., Annual Sports Day, Local Festival, Special Holiday",
+        "placeholder": "e.g. Govardhan Puja, Republic Day, Extra Class...",
         "handler": null,
-        "class": "form-input"
+        "class": "form-control"
       },
       {
         "id": null,
@@ -2993,10 +3013,36 @@
       "submit_action": null
     },
     {
-      "id": "manage-holiday-modal",
-      "title": "Manage Holidays &amp; Working Days",
+      "id": "class-rc-view-live",
+      "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
+    },
+    {
+      "id": "class-rc-footer-date",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "manage-holiday-modal",
+      "title": "Institutional Holiday Management",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "holiday-modal-date",
+      "title": "Modal Dialog",
+      "fields": [
+        "holiday-modal-date"
+      ],
+      "submit_action": null
+    },
+    {
+      "id": "btn-reset-holiday",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "resetDayHolidayDefault()"
     },
     {
       "id": "modal-export-attendance",

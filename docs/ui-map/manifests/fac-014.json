@@ -5,7 +5,7 @@
   "route": "/faculty/profile.html",
   "source_file": "frontend/faculty/profile/index.html",
   "content_hash": "eeb7fa2da618",
-  "last_scanned": "2026-11-22T22:43:04.904Z",
+  "last_scanned": "2026-11-22T23:12:35.121Z",
   "title": "Faculty Profile — VidyaOS",
   "purpose": "Faculty profile, qualifications, active devices, password management",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",

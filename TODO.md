@@ -49,6 +49,36 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 583: Compact Mobile-First Live Roll Call Studio & Institutional Holiday Management Modals with Zero Emojis
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Live Roll Call & Attendance Studio Modal (`classroom-roll-modal`)*:
+     - Re-architected modal with flex layout: sticky fixed header (`.rollcall-modal-header`), scrollable middle container (`.rollcall-modal-body`), and sticky fixed footer (`.rollcall-modal-footer`). Prevents top title/close button and bottom action buttons from clipping on mobile or laptop screens.
+     - Reduced modal width to `min(95vw, 520px)` and height to `min(92vh, 600px)` (supports `92dvh` for mobile viewports).
+     - Compacted PIN display card (reduced font size to `1.85rem`, compact padding `0.4rem 1rem`) and replaced emoji `⚡` with clean institutional typography: `6-Digit Live Attendance PIN`.
+     - Scaled dynamic QR code to compact `125px x 125px` (requesting `size=130x130` with `margin=2`), saving vertical height while maintaining instant smartphone camera scanning.
+     - Upgraded live student check-ins status to a CSS animated pulsing dot (`.live-pulse-dot`), eliminating emoji `🟢`.
+     - Removed emoji `🔍` from roster search and removed emoji checkmarks in favor of clean SVG icons and professional labels (`All Present`, `All Absent`).
+  2. *Institutional Holiday Management Modal (`manage-holiday-modal`)*:
+     - Streamlined modal card to ultra-compact `min(94vw, 420px)` with `max-height: min(90vh, 480px)`.
+     - Completely eliminated all emojis:
+       - Removed `🗓️` from header title, pairing title with clean SVG calendar icon.
+       - Removed `🎉` from `Holiday / Off-Day` button.
+       - Removed `📚` from `Active Working Day` button.
+       - Removed `🌴` and `🏫` from dynamic status text badges (`Marked as Holiday`, `Marked as Active Working Day`).
+       - Removed `↺` from `Reset to Default` button.
+     - Aligned date selector and current status badge side-by-side in a compact card (`padding: 0.45rem 0.75rem`).
+     - Standardized control IDs (`holiday-modal-date`, `holiday-modal-reason`, `btn-type-holiday`, `btn-type-working`, `btn-reset-holiday`, `btn-save-holiday`) across both classroom group-detail and unified registers pages with dual-alias backward compatibility in [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js).
+  3. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 582: Complete Deprecation & Removal of frontendv2 and v2app from CI/CD Workflows, Build Scripts, and Git Repositories
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:
