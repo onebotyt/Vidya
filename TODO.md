@@ -49,6 +49,43 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 580: Matrix Crisp Grid, Multi-Period Hierarchical Headers, Custom Holiday & Working Day Engine, and Live Roll Call Studio UI/UX (v63)
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Matrix Crisp Grid Styling*:
+     - In [register.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/register.css): Added high-contrast table cell borders (`.register-table th, .register-table td { border-right: 1px solid var(--table-border) !important; border-bottom: 1px solid var(--table-border) !important; }`) ensuring clean, visible grid lines separating every day column, student row, and total counter.
+  2. *Hierarchical Multi-Period Date Headers (No Duplicate Day Headers)*:
+     - In [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js): Refactored `renderClassRegisterMatrix()`:
+       - Calculated `dayGroups` grouping all sessions on a given date.
+       - When a day has multiple periods, rendered the date once in Tier 2 with `colspan="${dg.colCount}"`, and added a dedicated Tier 3 period sub-row directly beneath that day (`.period-subcol-th`) displaying period badges (`P1`, `P2`, etc.).
+       - Single-period days cleanly span `rowspan="2"` across Tier 2 and Tier 3, completely eliminating duplicate day headers.
+  3. *Default Holidays & Custom Holiday / Working Day Override System*:
+     - In [db.js](file:///e:/uiap/VidyaOS/backend/src/config/db.js): Added startup schema guarantee `CREATE TABLE IF NOT EXISTS register_holidays` with `(id, register_id, holiday_date, holiday_name, is_working_day, created_by, created_at, updated_at, UNIQUE KEY uq_reg_date)`.
+     - In [facultyController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/facultyController.js):
+       - Removed hardcoded festival arrays. Configured default non-instructional days to strictly Sundays (`dayOfWeek === 0`) and Second Saturdays (`dayOfWeek === 6 && d >= 8 && d <= 14`).
+       - Supported custom holiday creation on ANY date with optional reason/title.
+       - Supported overriding Sundays and Second Saturdays to working class days (`is_working_day = 1`).
+       - Added `POST /api/v1/faculty/registers/:id/holidays` and `DELETE /api/v1/faculty/registers/:id/holidays/:date` (restore system default).
+     - In [routes/faculty.js](file:///e:/uiap/VidyaOS/backend/src/routes/faculty.js): Sanitized and validated holiday requests with loose boolean conversion and nullable reason.
+     - In [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html) and [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js): Added `#manage-holiday-modal`, toolbar shortcut (`.btn-manage-holidays`), and one-click matrix day header trigger (`onclick="openHolidayModal('${dg.date}')"`).
+  4. *Live Roll Call Studio UI/UX Overhaul*:
+     - In [register.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/register.css): Replaced raw unstyled tabs with modern segmented pill buttons (`.rollcall-mode-tabs`, `.rollcall-tab-btn.active`).
+     - Enhanced PIN card with large monospace typography, dashed primary border, and hint label (`.roll-pin-display-card`, `.roll-pin-display`).
+     - Added real-time student check-in feed (`.rollcall-live-feed-wrap`) featuring live progress bar, checked-in student count / percentage, and auto-refreshing student check-in list with initials avatar, verification method, and timestamp.
+     - Upgraded Manual Roll Call Roster with real-time student search filter (`#class-rc-search`), bulk action buttons (`✓ All Present`, `✕ All Absent`), live status chips (Total, Present, Absent), and interactive status toggle buttons (`.rc-status-btn.present` / `.rc-status-btn.absent`).
+  5. *Asset Versioning & Multi-Platform Parity*:
+     - Bumped script asset cache hash in [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html) to `v=20261123_v3`.
+     - Mirrored updated files across `frontend/www/` and Android Capacitor public assets.
+     - Synchronized UI manifests (`docs/ui-map/manifests/fac-004.json` & `manifest-index.json`).
+  6. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed (0 hardcoded hex colors).
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Dedicated Holiday & Multi-Period Verification -> Passed.
+     - Total: **388 / 388 automated tests passed on localhost**.
+
 ### ✅ Milestone 579: MySQL Strict Mode 'start_time' Hardening & Register Session Resolution Error Resilience (v62)
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
 - **Objective & Architectural Scope**:
