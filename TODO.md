@@ -49,6 +49,25 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 582: Complete Deprecation & Removal of frontendv2 and v2app from CI/CD Workflows, Build Scripts, and Git Repositories
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Decommissioning Deprecated frontendv2 Codebase*:
+     - Removed legacy `frontendv2` universal app directories and assets across root monorepo and frontend tree.
+     - Confirmed production focus exclusively on the high-performance native Android Capacitor app (`VidyaOS.apk`) and web operating system.
+  2. *CI/CD Workflow Sanitization*:
+     - In [.github/workflows/build-android.yml](file:///e:/uiap/VidyaOS/.github/workflows/build-android.yml) and [frontend/.github/workflows/build-android.yml](file:///e:/uiap/VidyaOS/frontend/.github/workflows/build-android.yml):
+       - Removed `Setup pnpm` and `Build Native React Native v2app (Expo Prebuild & Gradle)` steps that previously caused CI build failures.
+       - Removed `Upload v2app APK Artifact` and removed `v2app.apk` from release attachments, simplifying releases to single authentic `VidyaOS.apk`.
+     - In [.github/workflows/build-desktop.yml](file:///e:/uiap/VidyaOS/.github/workflows/build-desktop.yml):
+       - Switched trigger paths and packaging sources from `frontendv2/**` to standard `frontend/**`.
+  3. *Build Script Clean-up*:
+     - In [scripts/prepare-mobile.js](file:///e:/uiap/VidyaOS/frontend/scripts/prepare-mobile.js): Removed `frontendv2` from `DIRS_TO_COPY`.
+     - In [scripts/bump-version.js](file:///e:/uiap/VidyaOS/frontend/scripts/bump-version.js): Removed version stamping for deprecated v2 package and mobile JSON configs.
+  4. *Integration Verification*:
+     - UI manifest sync (`test-ui-manifest-sync.js`) passed 100% (221/221 checks).
+     - Theme tokens (`test-theme-support.js`) passed 100% (84/84 checks).
+
 ### ✅ Milestone 581: Unified Attendance Register Studio with Subject Switcher & 5-Column Clean Institutional Export and Print Engine (v64)
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:
