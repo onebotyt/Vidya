@@ -49,6 +49,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 584: Desktop PC Matrix "Add Period" Toolbar Button & Marks Workspace UI/UX Overhaul
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Desktop PC "Add Period" Button (`#btn-add-period-pc`)*:
+     - Resolved missing "Add Period" button on PC viewports in attendance register toolbar (`.esp-toolbar-actions`).
+     - Added `#btn-add-period-pc` with clean calendar-plus SVG icon and responsive styling to both [group-detail/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html) and [registers/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/registers/index.html).
+     - Enhanced `openAddPeriodModal(customDate)`, `updateModalAutoSlot()`, and `createClassSession()` in [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js) with dual-alias backward compatibility supporting both `sess-*` and `new-session-*` control IDs.
+  2. *Academic Marksheets & Evaluation Tab UI/UX Polish (`tab=marks`)*:
+     - Fixed duplicate plus sign defect on `#btn-marks-create-main` (`+ + Create ▾` replaced with clean `Create ▾` paired with SVG icon).
+     - Redesigned 4 top KPI metrics (`kpi-tests`, `kpi-assignments`, `kpi-practicals`, `kpi-pending`) into modern institutional dashboard cards (`.marks-stat-item`) with hover transitions, uppercase badges, bold numbers, and theme token color accents (zero hardcoded colors).
+     - Enhanced search bar with internal SVG search icon (`.marks-search-icon`), smooth focus states, and flexible alignment beside category filter pills.
+     - Uncollapsed primary sections (`#marks-tests-section` and `#marks-assignments-section`) by default so tables and empty states are visible immediately without requiring manual chevron clicks.
+     - Added direct desktop action buttons (`+ Schedule Test`, `+ New Assignment`, `+ New Practical`) inside section header actions (`.marks-sec-right`) with `event.stopPropagation()`.
+     - Prevented search bar clear from aggressively collapsing open sections.
+  3. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 583: Compact Mobile-First Live Roll Call Studio & Institutional Holiday Management Modals with Zero Emojis
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
-  "content_hash": "91572bf51a90",
-  "last_scanned": "2026-11-22T23:12:35.065Z",
+  "content_hash": "609970308d5f",
+  "last_scanned": "2026-11-22T23:33:32.433Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -1156,7 +1156,7 @@
       },
       {
         "id": "btn-marks-create-main",
-        "label": "+ Create",
+        "label": "Create",
         "action": "toggleMarksCreateDropdown(event)",
         "class": "btn btn-primary",
         "data_ui": null,
@@ -1220,19 +1220,27 @@
       },
       {
         "id": null,
-        "label": "+ Schedule Test",
-        "action": "openScheduleTestModal()",
-        "class": "btn btn-secondary btn-sm mobile-sec-add-btn",
+        "label": "Schedule Test",
+        "action": "event.stopPropagation();openScheduleTestModal()",
+        "class": "btn btn-secondary btn-sm marks-sec-add-btn",
         "data_ui": null,
-        "title": null
+        "title": "Schedule a new class test"
       },
       {
         "id": null,
-        "label": "+ New Assignment",
-        "action": "openCreateAssignmentModal()",
-        "class": "btn btn-secondary btn-sm mobile-sec-add-btn",
+        "label": "New Assignment",
+        "action": "event.stopPropagation();openCreateAssignmentModal()",
+        "class": "btn btn-secondary btn-sm marks-sec-add-btn",
         "data_ui": null,
-        "title": null
+        "title": "Create a new coursework assignment"
+      },
+      {
+        "id": null,
+        "label": "New Practical",
+        "action": "event.stopPropagation();openCreatePracticalModal()",
+        "class": "btn btn-secondary btn-sm marks-sec-add-btn",
+        "data_ui": null,
+        "title": "Create a new lab practical"
       },
       {
         "id": "btn-toggle-mobile-mode",
@@ -1313,6 +1321,14 @@
         "class": "btn btn-secondary btn-sm btn-manage-holidays",
         "data_ui": null,
         "title": "Manage institutional holidays and working days"
+      },
+      {
+        "id": "btn-add-period-pc",
+        "label": "Add Period Add",
+        "action": "openAddPeriodModal()",
+        "class": "btn btn-secondary btn-sm btn-add-period",
+        "data_ui": null,
+        "title": "Add extra class period or session for this subject"
       },
       {
         "id": null,
@@ -2288,7 +2304,7 @@
         "id": "marks-search-input",
         "type": "text",
         "name": null,
-        "placeholder": "Search tests, assignments, practicals&#8230;",
+        "placeholder": "Search tests, assignments, practicals...",
         "handler": "filterAllMarks(this.value)",
         "class": null
       },

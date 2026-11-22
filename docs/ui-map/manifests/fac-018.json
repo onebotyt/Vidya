@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/registers/index.html",
   "source_file": "frontend/faculty/registers/index.html",
-  "content_hash": "1e4bf2ec9cd0",
-  "last_scanned": "2026-11-22T23:12:35.197Z",
+  "content_hash": "bf2963ef2a70",
+  "last_scanned": "2026-11-22T23:33:32.578Z",
   "title": "Attendance Register Studio — VidyaOS",
   "purpose": "Unified Attendance Register Studio: Dedicated multi-subject attendance matrix, subject switcher toolbar, live roll call studio (Dynamic QR, 6-digit PIN, live check-ins feed, and manual roll call roster), ESP32 hardware scan sync, custom holiday & working day management, and clean 5-column institutional export & print (Roll No, UBTER Reg No, UBTER Roll No, Name, Days)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -321,6 +321,14 @@
         "class": "btn btn-secondary btn-sm btn-manage-holidays",
         "data_ui": null,
         "title": "Manage institutional holidays and working days"
+      },
+      {
+        "id": "btn-add-period-pc",
+        "label": "Add Period Add",
+        "action": "openAddPeriodModal()",
+        "class": "btn btn-secondary btn-sm btn-add-period",
+        "data_ui": null,
+        "title": "Add extra class period or session for this subject"
       },
       {
         "id": null,
