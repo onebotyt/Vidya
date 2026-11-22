@@ -50,7 +50,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
 ### ✅ Milestone 576: Group Classroom Action Cleanup & Matrix Register UX Streamlining (v59)
-- **Status**: Tested & Verified on Localhost (388/388 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Status**: Tested, Verified & Pushed to GitHub `main` across Frontend (`7ba216f`), Backend (`2839ee9`), and Root (`9c2340e`). (388/388 checks passed).
 - **Objective & Architectural Scope**:
   1. *Streamlined Classroom Quick Actions (Removed Non-Existent Promote & Archive)*:
      - In [group-detail/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html): Removed obsolete "Promote Cohort" and "Archive Group" quick action buttons from the classroom sidebar and banner action bar.
@@ -74,7 +74,7 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
      - Total: **388 / 388 automated tests passed on localhost**. All changes held strictly on localhost.
 
 ### ✅ Milestone 575: In-App Update Prompt Scoping, HOD Self-Card Elimination & Export Color Contrast Hardening (v58)
-- **Status**: Tested & Verified on Localhost (388/388 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Status**: Tested, Verified & Pushed to GitHub `main` across Frontend (`7ba216f`), Backend (`2839ee9`), and Root (`9c2340e`). (388/388 checks passed).
 - **Objective & Architectural Scope**:
   1. *Elimination of HOD Self-Card in Faculty Management*:
      - In [hodModel.js](file:///e:/uiap/VidyaOS/backend/src/models/hodModel.js): Hardened `getTeachers()`, `getTrashFaculty()`, and `getFacultyRoster()` with dual exclusion `AND u.id != ? AND t.user_id != ?` when caller is HOD.
