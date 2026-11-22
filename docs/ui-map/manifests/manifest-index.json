@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-22T20:23:27.244Z",
+  "generated_at": "2026-11-22T20:55:29.048Z",
   "total_pages": 32,
   "totals": {
-    "buttons": 780,
-    "modals": 186,
-    "inputs": 384,
+    "buttons": 789,
+    "modals": 187,
+    "inputs": 386,
     "apis": 275
   },
   "pages": [
@@ -405,11 +405,11 @@
       "route": "/login/",
       "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "d785137edca4",
+      "content_hash": "b284b14c2f79",
       "counts": {
-        "buttons": 22,
-        "modals": 6,
-        "inputs": 8,
+        "buttons": 31,
+        "modals": 7,
+        "inputs": 10,
         "apis": 11
       }
     },

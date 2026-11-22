@@ -5,7 +5,7 @@
   "route": "/student/profile.html",
   "source_file": "frontend/student/profile/index.html",
   "content_hash": "7384e9fbe9d7",
-  "last_scanned": "2026-11-22T20:23:27.234Z",
+  "last_scanned": "2026-11-22T20:55:29.037Z",
   "title": "Student Profile &amp; Academic Credentials — VidyaOS",
   "purpose": "Academic credentials, PRN, branch, semester, active devices",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
