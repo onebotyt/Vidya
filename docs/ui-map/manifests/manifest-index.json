@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-20T21:19:07.029Z",
+  "generated_at": "2026-11-22T20:23:27.244Z",
   "total_pages": 32,
   "totals": {
-    "buttons": 753,
-    "modals": 181,
-    "inputs": 389,
-    "apis": 270
+    "buttons": 780,
+    "modals": 186,
+    "inputs": 384,
+    "apis": 275
   },
   "pages": [
     {
@@ -15,7 +15,7 @@
       "route": "/admin/academic-structure.html",
       "title": "Academic Departments &amp; Branches — Admin Console",
       "manifest_file": "docs/ui-map/manifests/adm-001.json",
-      "content_hash": "79959d607a69",
+      "content_hash": "9d421fb06b22",
       "counts": {
         "buttons": 6,
         "modals": 2,
@@ -28,12 +28,12 @@
       "route": "/admin/dashboard.html",
       "title": "Admin Dashboard — VidyaOS Institutional Console",
       "manifest_file": "docs/ui-map/manifests/adm-003.json",
-      "content_hash": "bda52340123e",
+      "content_hash": "a1e2dacb22f6",
       "counts": {
         "buttons": 0,
         "modals": 0,
         "inputs": 0,
-        "apis": 6
+        "apis": 7
       }
     },
     {
@@ -41,23 +41,10 @@
       "route": "/admin/audit-logs.html",
       "title": "Institutional Audit Trail — Admin Console",
       "manifest_file": "docs/ui-map/manifests/adm-004.json",
-      "content_hash": "b81e5c1d9f9b",
+      "content_hash": "b63879b5124c",
       "counts": {
         "buttons": 8,
         "modals": 2,
-        "inputs": 5,
-        "apis": 6
-      }
-    },
-    {
-      "page_id": "ADM-005",
-      "route": "/admin/reports.html",
-      "title": "Admin Console",
-      "manifest_file": "docs/ui-map/manifests/adm-005.json",
-      "content_hash": "ff045e8ad02f",
-      "counts": {
-        "buttons": 7,
-        "modals": 0,
         "inputs": 5,
         "apis": 6
       }
@@ -67,7 +54,7 @@
       "route": "/admin/settings.html",
       "title": "Institution Settings — Admin Console",
       "manifest_file": "docs/ui-map/manifests/adm-006.json",
-      "content_hash": "0e31cddd497a",
+      "content_hash": "814cc3f27c37",
       "counts": {
         "buttons": 6,
         "modals": 0,
@@ -80,7 +67,7 @@
       "route": "/admin/profile.html",
       "title": "Administrator Profile &amp; Security — VidyaOS Admin Console",
       "manifest_file": "docs/ui-map/manifests/adm-007.json",
-      "content_hash": "aab4b517d68c",
+      "content_hash": "5504da285d33",
       "counts": {
         "buttons": 13,
         "modals": 2,
@@ -89,15 +76,28 @@
       }
     },
     {
+      "page_id": "ADM-008",
+      "route": "/admin/app-settings.html",
+      "title": "Admin App Settings &amp; Preferences — VidyaOS",
+      "manifest_file": "docs/ui-map/manifests/adm-008.json",
+      "content_hash": "bf2e2484ed4e",
+      "counts": {
+        "buttons": 5,
+        "modals": 2,
+        "inputs": 0,
+        "apis": 6
+      }
+    },
+    {
       "page_id": "HOD-004",
       "route": "/faculty/faculty/index.html",
       "title": "Faculty Management — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/hod-004.json",
-      "content_hash": "2a9971732c4a",
+      "content_hash": "ed54e225b24a",
       "counts": {
-        "buttons": 14,
-        "modals": 2,
-        "inputs": 7,
+        "buttons": 7,
+        "modals": 1,
+        "inputs": 6,
         "apis": 7
       }
     },
@@ -119,9 +119,9 @@
       "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
       "title": "Student Academic Records & Dossiers — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-001.json",
-      "content_hash": "240aad0aab41",
+      "content_hash": "2187076ca136",
       "counts": {
-        "buttons": 27,
+        "buttons": 36,
         "modals": 14,
         "inputs": 27,
         "apis": 6
@@ -145,9 +145,9 @@
       "route": "/faculty/group-detail.html",
       "title": "Teaching Group Classroom - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-004.json",
-      "content_hash": "b998b1a47ed3",
+      "content_hash": "d944489a2064",
       "counts": {
-        "buttons": 180,
+        "buttons": 177,
         "modals": 54,
         "inputs": 86,
         "apis": 35
@@ -158,10 +158,10 @@
       "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
       "title": "Office Studio — Institutional Spreadsheets &amp; Documents Hub",
       "manifest_file": "docs/ui-map/manifests/fac-005.json",
-      "content_hash": "ee333a863ce8",
+      "content_hash": "b6d1f5b571d0",
       "counts": {
-        "buttons": 8,
-        "modals": 0,
+        "buttons": 9,
+        "modals": 2,
         "inputs": 2,
         "apis": 7
       }
@@ -171,7 +171,7 @@
       "route": "/faculty/students/index.html",
       "title": "Students Management — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-007.json",
-      "content_hash": "28b746bbe4a7",
+      "content_hash": "fbad4bdaab19",
       "counts": {
         "buttons": 38,
         "modals": 7,
@@ -249,11 +249,11 @@
       "route": "/faculty/classes/index.html",
       "title": "My Teaching Classes — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-015.json",
-      "content_hash": "eef9ad8abbf8",
+      "content_hash": "e29be42a6db1",
       "counts": {
-        "buttons": 15,
+        "buttons": 23,
         "modals": 9,
-        "inputs": 21,
+        "inputs": 27,
         "apis": 12
       }
     },
@@ -275,12 +275,12 @@
       "route": "/faculty/sheets/editor.html",
       "title": "Spreadsheet Studio — Institutional Excel Workspace",
       "manifest_file": "docs/ui-map/manifests/fac-017.json",
-      "content_hash": "2b315d7452f4",
+      "content_hash": "174156458f50",
       "counts": {
         "buttons": 205,
         "modals": 26,
         "inputs": 63,
-        "apis": 17
+        "apis": 16
       }
     },
     {
@@ -288,12 +288,12 @@
       "route": "/student/dashboard.html",
       "title": "Student Classroom Dashboard — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-001.json",
-      "content_hash": "4ac9037799a7",
+      "content_hash": "a3e65cdf7a5a",
       "counts": {
-        "buttons": 21,
-        "modals": 9,
-        "inputs": 12,
-        "apis": 7
+        "buttons": 20,
+        "modals": 8,
+        "inputs": 6,
+        "apis": 8
       }
     },
     {
@@ -327,7 +327,7 @@
       "route": "/student/group-detail.html",
       "title": "Classwork — Student Portal | VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-004.json",
-      "content_hash": "e54c0546a40f",
+      "content_hash": "32b10b9b746b",
       "counts": {
         "buttons": 26,
         "modals": 2,
@@ -377,14 +377,14 @@
     {
       "page_id": "STU-008",
       "route": "/student/profile.html",
-      "title": "Student Profile & Academic Credentials — College Attendance System",
+      "title": "Student Profile &amp; Academic Credentials — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-008.json",
-      "content_hash": "8a8b5a5269af",
+      "content_hash": "7384e9fbe9d7",
       "counts": {
-        "buttons": 6,
-        "modals": 0,
+        "buttons": 17,
+        "modals": 1,
         "inputs": 12,
-        "apis": 7
+        "apis": 8
       }
     },
     {
@@ -405,12 +405,12 @@
       "route": "/login/",
       "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "85a8780c9c77",
+      "content_hash": "d785137edca4",
       "counts": {
-        "buttons": 11,
-        "modals": 4,
-        "inputs": 7,
-        "apis": 8
+        "buttons": 22,
+        "modals": 6,
+        "inputs": 8,
+        "apis": 11
       }
     },
     {
@@ -418,7 +418,7 @@
       "route": "/login/register/",
       "title": "Register — VidyaOS Campus Management",
       "manifest_file": "docs/ui-map/manifests/pub-003.json",
-      "content_hash": "573f249be4e9",
+      "content_hash": "7087cd93f912",
       "counts": {
         "buttons": 5,
         "modals": 0,

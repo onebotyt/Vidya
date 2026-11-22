@@ -4,8 +4,8 @@
   "role": "Student",
   "route": "/student/group-detail.html",
   "source_file": "frontend/student/group-detail/index.html",
-  "content_hash": "e54c0546a40f",
-  "last_scanned": "2026-11-20T21:19:06.995Z",
+  "content_hash": "32b10b9b746b",
+  "last_scanned": "2026-11-22T20:23:27.217Z",
   "title": "Classwork — Student Portal | VidyaOS",
   "purpose": "Enrolled course stream, teacher announcements, materials",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -378,6 +378,7 @@
     "student/components/student-ui.js",
     "student/components/header/header.js",
     "student/components/sidebar/sidebar.js",
+    "shared/js/classroom-themes.js",
     "student/group-detail/student-group.js"
   ],
   "exported_functions": [
@@ -391,6 +392,8 @@
     "toggleStudentTheme",
     "loadDrawerClasses",
     "toggleDrawerComponent",
+    "renderCard",
+    "toggleCardMenu",
     "loadStudentProfile",
     "loadGroupDetails",
     "renderHeroBanner",
@@ -403,8 +406,6 @@
     "renderPcWorkCard",
     "renderMobileWorkItemRow",
     "togglePcWorkCard",
-    "toggleUnitAccordion",
-    "toggleCollapseAllUnits",
-    "toggleWorkCardExpand"
+    "toggleUnitAccordion"
   ]
 }

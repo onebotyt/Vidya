@@ -4,8 +4,8 @@
   "role": "Admin",
   "route": "/admin/dashboard.html",
   "source_file": "frontend/admin/dashboard/index.html",
-  "content_hash": "bda52340123e",
-  "last_scanned": "2026-11-20T21:19:06.766Z",
+  "content_hash": "a1e2dacb22f6",
+  "last_scanned": "2026-11-22T20:23:27.013Z",
   "title": "Admin Dashboard — VidyaOS Institutional Console",
   "purpose": "System-wide institutional KPIs, attendance averages, active sessions",
   "shell": "Admin Shell (`nav.css`, `nav.js`)",
@@ -41,6 +41,11 @@
       "method": "PUT",
       "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/admin/settings",
+      "type": "REST"
     }
   ],
   "layout_structure": {
@@ -58,8 +63,9 @@
     "admin/components/core/api.js",
     "admin/components/core/auth.js",
     "admin/components/icons.js",
-    "admin/components/sidebar/sidebar.js",
-    "admin/components/header/header.js",
+    "global-components/sidebar/sidebar.js",
+    "global-components/header/header.js",
+    "global-components/institution-hero/institution-hero.js",
     "admin/components/admin-ui.js",
     "admin/dashboard/dashboard.js"
   ],
@@ -76,7 +82,6 @@
     "toggleDashboardTheme",
     "openModal",
     "closeModal",
-    "loadInstitutionalBranding",
     "loadAdminStats"
   ]
 }

@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "240aad0aab41",
-  "last_scanned": "2026-11-20T21:19:06.831Z",
+  "content_hash": "2187076ca136",
+  "last_scanned": "2026-11-22T20:23:27.069Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -44,7 +44,12 @@
     }
   ],
   "layout_structure": {
-    "toolbars": [],
+    "toolbars": [
+      {
+        "id": "rec-sem-chips-bar",
+        "class": "rec-sem-chips-scroll"
+      }
+    ],
     "tables": [
       {
         "id": "rec-students-table",
@@ -227,10 +232,82 @@
         "title": "Export all student records matching active filters"
       },
       {
-        "id": null,
-        "label": "Reset Filters",
+        "id": "rec-search-clear-btn",
+        "label": "&times;",
+        "action": "clearSearchInput()",
+        "class": "btn-search-clear",
+        "data_ui": null,
+        "title": "Clear search text"
+      },
+      {
+        "id": "btn-toggle-filters",
+        "label": "Filters 0",
+        "action": "toggleAdvancedFilters()",
+        "class": "btn-rec-filter-toggle",
+        "data_ui": null,
+        "title": "Toggle Advanced Filters"
+      },
+      {
+        "id": "btn-reset-filters",
+        "label": "Reset",
         "action": "resetFilters()",
         "class": "btn-rec-clear",
+        "data_ui": null,
+        "title": "Reset all filters"
+      },
+      {
+        "id": null,
+        "label": "All Semesters",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 1",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 2",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 3",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 4",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 5",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 6",
+        "action": "setSemesterFilterChip(",
+        "class": "rec-chip-btn",
         "data_ui": null,
         "title": null
       },
@@ -440,7 +517,7 @@
         "id": "rec-search-input",
         "type": "text",
         "name": null,
-        "placeholder": "Search by student, roll #, work or subject (e.g. 1 girdhardhami assinment java)...",
+        "placeholder": "Search by student, roll #, work or subject...",
         "handler": "onSearchInput(this.value)",
         "class": null
       },

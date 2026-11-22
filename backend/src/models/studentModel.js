@@ -56,13 +56,13 @@ class StudentModel {
     let whereClause = `WHERE 1=1`;
     const params = [];
 
-    if (deptId) {
+    const effectiveDeptId = deptId || branch_id;
+    if (effectiveDeptId) {
       whereClause += ` AND e.department_id = ?`;
-      params.push(deptId);
+      params.push(effectiveDeptId);
     }
 
     if (academic_year_id) { whereClause += ` AND e.academic_year_id = ?`; params.push(academic_year_id); }
-    if (branch_id && branch_id !== deptId) { whereClause += ` AND e.department_id = ?`; params.push(branch_id); }
     if (year) { whereClause += ` AND e.year = ?`; params.push(parseInt(year, 10)); }
     if (semester) { whereClause += ` AND e.semester = ?`; params.push(parseInt(semester, 10)); }
     if (status) {

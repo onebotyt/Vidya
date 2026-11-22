@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/index.html (aliased /faculty/sheets.html)",
   "source_file": "frontend/faculty/sheets/index.html",
-  "content_hash": "ee333a863ce8",
-  "last_scanned": "2026-11-20T21:19:06.881Z",
+  "content_hash": "b6d1f5b571d0",
+  "last_scanned": "2026-11-22T20:23:27.114Z",
   "title": "Office Studio — Institutional Spreadsheets &amp; Documents Hub",
   "purpose": "Office Studio Subjects & Documents Start Hub: Subject cards, recent workbooks list, quick templates, search, and deep-link routing",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -60,7 +60,18 @@
   "layout_structure": {
     "toolbars": [],
     "tables": [],
-    "modals": []
+    "modals": [
+      {
+        "id": "mobile-test-selector-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "mobile-test-modal-title",
+        "title": "Select Test Worksheet",
+        "field_count": 0
+      }
+    ]
   },
   "ui_elements": {
     "action_buttons": [
@@ -127,6 +138,14 @@
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
         "title": "Return to active spreadsheet editor"
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "closeMobileTestSelectorModal()",
+        "class": "mobile-test-modal-close",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -149,7 +168,20 @@
     ],
     "dropdown_selectors": []
   },
-  "modals_catalog": [],
+  "modals_catalog": [
+    {
+      "id": "mobile-test-selector-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "mobile-test-modal-title",
+      "title": "Select Test Worksheet",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
   "companion_scripts": [
     "faculty/components/core/api.js",
     "faculty/components/core/auth.js",
@@ -181,6 +213,8 @@
     "toggleOfficeHomeScreen",
     "openBlankWorkbookFromHome",
     "openSpreadsheetEditorFromHome",
-    "openSubjectSheetDirect"
+    "openSubjectSheetDirect",
+    "openMobileTestSelectorModal",
+    "closeMobileTestSelectorModal"
   ]
 }

@@ -4,9 +4,9 @@
   "role": "Student",
   "route": "/student/profile.html",
   "source_file": "frontend/student/profile/index.html",
-  "content_hash": "8a8b5a5269af",
-  "last_scanned": "2026-11-20T21:19:07.015Z",
-  "title": "Student Profile & Academic Credentials — College Attendance System",
+  "content_hash": "7384e9fbe9d7",
+  "last_scanned": "2026-11-22T20:23:27.234Z",
+  "title": "Student Profile &amp; Academic Credentials — VidyaOS",
   "purpose": "Academic credentials, PRN, branch, semester, active devices",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
   "states": "Desktop: 2-column card layout; Mobile: single-column profile view",
@@ -48,6 +48,11 @@
       "method": "PUT",
       "endpoint": "/api/v1/notifications/mark-all-read",
       "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "https://api.github.com/repos/:id/releases/latest",
+      "type": "INTERNAL"
     }
   ],
   "layout_structure": {
@@ -59,32 +64,34 @@
       {
         "id": "health-progress-bar",
         "class": "progress-bar-fill"
+      },
+      {
+        "id": "",
+        "class": "card dossier-toolbar-card mobile-only-dossier"
       }
     ],
     "tables": [],
-    "modals": []
+    "modals": [
+      {
+        "id": "student-google-modal",
+        "title": "Connect Google Account",
+        "field_count": 0
+      }
+    ]
   },
   "ui_elements": {
     "action_buttons": [
       {
         "id": null,
-        "label": "Icon Button",
-        "action": "togglePassVisibility(",
-        "class": "password-toggle-btn",
+        "label": "Official Dossier PDF",
+        "action": "exportStudentDossier(",
+        "class": "btn-top-dossier",
         "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "save-profile-btn",
-        "label": "Save Profile Updates",
-        "action": null,
-        "class": "btn btn-primary",
-        "data_ui": null,
-        "title": null
+        "title": "Download or print official academic dossier PDF"
       },
       {
         "id": null,
-        "label": "Print / PDF",
+        "label": "PDF",
         "action": "exportStudentDossier(",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
@@ -107,55 +114,111 @@
         "title": null
       },
       {
+        "id": "tab-btn-academic",
+        "label": "Academic Cohort",
+        "action": "switchProfileTab(",
+        "class": "profile-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-kyc",
+        "label": "KYC &amp; Demographics",
+        "action": "switchProfileTab(",
+        "class": "profile-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-documents",
+        "label": "Verified Documents",
+        "action": "switchProfileTab(",
+        "class": "profile-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-security",
+        "label": "Account Security",
+        "action": "switchProfileTab(",
+        "class": "profile-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-all",
+        "label": "All Details",
+        "action": "switchProfileTab(",
+        "class": "profile-tab-btn desktop-only-tab",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "save-demographics-btn",
         "label": "Save Demographic Details",
         "action": null,
+        "class": "btn btn-primary btn-save-action",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Excel",
+        "action": "exportStudentDossier(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Word",
+        "action": "exportStudentDossier(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-student-google-action",
+        "label": "Connect with Google",
+        "action": "handleStudentGoogleLink()",
         "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Icon Button",
+        "action": "togglePassVisibility(",
+        "class": "password-toggle-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "save-profile-btn",
+        "label": "Save Profile &amp; Password",
+        "action": null,
+        "class": "btn btn-primary btn-save-action",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeStudentGoogleModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeStudentGoogleModal()",
+        "class": "btn btn-secondary btn-sm",
         "data_ui": null,
         "title": null
       }
     ],
     "input_controls": [
-      {
-        "id": "profile-username",
-        "type": "text",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "profile-email",
-        "type": "email",
-        "name": null,
-        "placeholder": "student@gmail.com",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "current-password",
-        "type": "password",
-        "name": null,
-        "placeholder": "Required only if changing password",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "new-password",
-        "type": "password",
-        "name": null,
-        "placeholder": "Minimum 8 characters",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "confirm-password",
-        "type": "password",
-        "name": null,
-        "placeholder": "Re-enter new password",
-        "handler": null,
-        "class": "form-control"
-      },
       {
         "id": "profile-father-name",
         "type": "text",
@@ -193,6 +256,46 @@
         "type": "tel",
         "name": null,
         "placeholder": "10-digit mobile",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-username",
+        "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "profile-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@gmail.com",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "current-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Required only if changing password",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "new-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Minimum 8 characters",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "confirm-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Re-enter new password",
         "handler": null,
         "class": "form-control"
       }
@@ -262,7 +365,14 @@
       }
     ]
   },
-  "modals_catalog": [],
+  "modals_catalog": [
+    {
+      "id": "student-google-modal",
+      "title": "Connect Google Account",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
   "companion_scripts": [
     "student/components/core/api.js",
     "student/components/core/auth.js",
@@ -271,6 +381,7 @@
     "student/components/student-ui.js",
     "student/components/header/header.js",
     "student/components/sidebar/sidebar.js",
+    "mobile-bridge.js",
     "student/profile/profile.js"
   ],
   "exported_functions": [
@@ -287,6 +398,9 @@
     "togglePassVisibility",
     "loadStudentProfile",
     "loadStudentDocuments",
-    "exportStudentDossier"
+    "exportStudentDossier",
+    "switchProfileTab",
+    "openStudentGoogleModal",
+    "closeStudentGoogleModal"
   ]
 }

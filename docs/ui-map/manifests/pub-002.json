@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "85a8780c9c77",
-  "last_scanned": "2026-11-20T21:19:07.024Z",
+  "content_hash": "d785137edca4",
+  "last_scanned": "2026-11-22T20:23:27.241Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
@@ -13,14 +13,24 @@
   "url_parameters": [
     "reason",
     "preview",
+    "require_password_link",
+    "email",
+    "google_sub",
+    "google_name",
+    "google_token",
+    "id_token",
     "pending",
     "google_pending",
     "status",
-    "email",
     "message",
     "error"
   ],
   "api_contracts": [
+    {
+      "method": "GET",
+      "endpoint": "https://api.github.com/repos/:id/releases/latest",
+      "type": "INTERNAL"
+    },
     {
       "method": "GET",
       "endpoint": "/api/v1/health",
@@ -48,6 +58,16 @@
     },
     {
       "method": "POST",
+      "endpoint": ":id/auth/google",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "POST",
+      "endpoint": "https://vidyaos-backend.onrender.com/api/v1/auth/google",
+      "type": "INTERNAL"
+    },
+    {
+      "method": "POST",
       "endpoint": "/api/v1/auth/google",
       "type": "REST"
     },
@@ -67,6 +87,11 @@
     "tables": [],
     "modals": [
       {
+        "id": "download-app-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
         "id": "activation-modal",
         "title": "Modal Dialog",
         "field_count": 0
@@ -83,6 +108,11 @@
       },
       {
         "id": "act-email",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "google-link-pwd-modal",
         "title": "Modal Dialog",
         "field_count": 0
       }
@@ -132,11 +162,27 @@
       },
       {
         "id": null,
+        "label": "Desktop App",
+        "action": "openDownloadAppModal(",
+        "class": "app-action-btn beta-btn",
+        "data_ui": null,
+        "title": "Download VidyaOS for PC & Mobile"
+      },
+      {
+        "id": null,
         "label": "Get Started",
         "action": "showMobileLoginView()",
         "class": "m-btn-get-started",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "Download App",
+        "action": "openDownloadAppModal()",
+        "class": "m-header-chip-btn m-app-chip beta-chip",
+        "data_ui": null,
+        "title": "Download VidyaOS App"
       },
       {
         "id": null,
@@ -171,10 +217,82 @@
         "title": null
       },
       {
+        "id": null,
+        "label": "&times;",
+        "action": "closeDownloadAppModal()",
+        "class": "download-modal-close",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-pc",
+        "label": "PC &amp; Desktop",
+        "action": "switchDownloadTab(",
+        "class": "download-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-android",
+        "label": "Android (APK)",
+        "action": "switchDownloadTab(",
+        "class": "download-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-ios",
+        "label": "iOS (iPhone)",
+        "action": "switchDownloadTab(",
+        "class": "download-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Copy Link for Safari",
+        "action": "copyCurrentWebUrl(this)",
+        "class": "download-primary-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "act-submit-btn",
         "label": "Save &amp; Enter Portal →",
         "action": null,
         "class": "signin",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeGoogleLinkPwdModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "👁️",
+        "action": "toggleGlpPasswordVisibility()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeGoogleLinkPwdModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "glp-submit-btn",
+        "label": "Verify &amp; Link Google →",
+        "action": null,
+        "class": null,
         "data_ui": null,
         "title": null
       }
@@ -184,7 +302,7 @@
         "id": "identifier",
         "type": "text",
         "name": "identifier",
-        "placeholder": "Enter Email, Phone or UBTER Roll No.",
+        "placeholder": "Email, Mobile or UBTER Roll No.",
         "handler": null,
         "class": null
       },
@@ -200,7 +318,7 @@
         "id": "m-identifier",
         "type": "text",
         "name": "identifier",
-        "placeholder": "business.abineshjiro@gmail.com",
+        "placeholder": "Email, Mobile or UBTER Roll No.",
         "handler": null,
         "class": null
       },
@@ -235,11 +353,25 @@
         "placeholder": "Re-enter your password",
         "handler": null,
         "class": null
+      },
+      {
+        "id": "glp-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Enter your current password",
+        "handler": null,
+        "class": null
       }
     ],
     "dropdown_selectors": []
   },
   "modals_catalog": [
+    {
+      "id": "download-app-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
     {
       "id": "activation-modal",
       "title": "Modal Dialog",
@@ -263,6 +395,12 @@
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
+    },
+    {
+      "id": "google-link-pwd-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
     }
   ],
   "companion_scripts": [
@@ -276,6 +414,12 @@
     "togglePw",
     "openGoogleSignInModal",
     "closeGoogleSignInModal",
-    "loadDynamicCampusBanner"
+    "openGoogleLinkPwdModal",
+    "closeGoogleLinkPwdModal",
+    "toggleGlpPasswordVisibility",
+    "loadDynamicCampusBanner",
+    "openDownloadAppModal",
+    "closeDownloadAppModal",
+    "switchDownloadTab"
   ]
 }

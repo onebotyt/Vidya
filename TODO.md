@@ -49,20 +49,824 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
-### 📋 Active Milestone 546: Backend V2 Role & Page-by-Page Vertical Slice Architecture & Migration Plan
-- **Status**: Plan Generated (`v2_modular_page_architecture_plan.md`), Awaiting User Approval / Feedback
+### ✅ Milestone 576: Group Classroom Action Cleanup & Matrix Register UX Streamlining (v59)
+- **Status**: Tested & Verified on Localhost (388/388 checks passed). **NOT PUSHED** (Held locally per user instruction).
 - **Objective & Architectural Scope**:
-  1. *Zero In-Place Overwrites & Backward Compatibility*:
-     - Keep all legacy controllers (`adminController.js`, `hodController.js`, `facultyController.js`, etc.) and `/api/v1/*` routes 100% active and untouched.
-     - Build parallel modular architecture in `backend/src/v2/` with endpoints mounted under `/api/v2/*`.
-  2. *Role & Page-by-Page Vertical Slices*:
-     - Strict isolation by Role (`admin/`, `faculty/`, `student/`, `public/`) and Page (e.g. `admin/dashboard/`, `faculty/sheets/`, etc.).
-     - Each page slice encapsulates its own controller, model (queries only needed for that page), and routes.
-  3. *Incremental Frontend Cutover*:
-     - Add `apiClient.v2` wrapper in frontend `shared/js/api.js`.
-     - Migrate pages one by one with instant fallback safety.
-  4. *Decommissioning Gate*:
-     - Retire legacy code only after all 32 UI manifest pages pass automated verification (`test-ui-manifest-sync.js`, `test-api-flows.js`).
+  1. *Streamlined Classroom Quick Actions (Removed Non-Existent Promote & Archive)*:
+     - In [group-detail/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html): Removed obsolete "Promote Cohort" and "Archive Group" quick action buttons from the classroom sidebar and banner action bar.
+     - Mirrored clean markup to `frontend/www/` and Android public assets.
+  2. *Clean Register Name Column (Only Full Name)*:
+     - In [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js): Simplified `nameContent` to render strictly the student's full name, completely removing the secondary subtitle line displaying registration and enrollment numbers (`UBTER2026TEST • 2024IT001`).
+     - Mirrored clean rendering to `frontend/www/` and Android assets.
+  3. *Eliminated Matrix Percentage Column (% Column)*:
+     - Removed the `%` header column from THEAD, `%` data cell from row `summaryHtml`, and `%` placeholder cells from daily TFOOT totals.
+     - In [register.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/register.css): Removed `.sticky-r-pct` rules, anchored `sticky-r-abs-total` to `right: 0 !important; width: 56px !important;`, and anchored `sticky-r-att-total` to `right: 56px !important; width: 60px !important;`. Updated matrix horizontal auto-scroll offset. Mirrored to `frontend/www/` and Android assets.
+  4. *Eliminated Duplicate Scope Switcher & Database Register Cleanup*:
+     - In [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js): Deduplicated registers by scope in `renderRegisterScopeSwitcher()`; if all registers share the same scope (or <= 1 unique scope), the switcher is cleanly hidden (`display: none`). Only distinct scopes (e.g., Theory vs. Practical) display switcher pills.
+     - In [teachingGroupModel.js](file:///e:/uiap/VidyaOS/backend/src/models/teachingGroupModel.js): Filtered `attendance_registers WHERE group_id = ? AND is_active = 1 ORDER BY is_official DESC, id ASC`.
+     - Cleaned up orphan duplicate test registers (18, 19, 20, 21) from MySQL database.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **388 / 388 automated tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 575: In-App Update Prompt Scoping, HOD Self-Card Elimination & Export Color Contrast Hardening (v58)
+- **Status**: Tested & Verified on Localhost (388/388 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Elimination of HOD Self-Card in Faculty Management*:
+     - In [hodModel.js](file:///e:/uiap/VidyaOS/backend/src/models/hodModel.js): Hardened `getTeachers()`, `getTrashFaculty()`, and `getFacultyRoster()` with dual exclusion `AND u.id != ? AND t.user_id != ?` when caller is HOD.
+     - In [faculty.js](file:///e:/uiap/VidyaOS/frontend/faculty/faculty/faculty.js): Added client-side defense-in-depth in `loadFacultyRoster()` and `loadTrashFaculty()` using `getLoggedInUserId()` to guarantee logged-in HODs never see their own profile in departmental faculty management. Mirrored to `frontend/www/`.
+  2. *Scoped In-App Update Prompt (Strictly Mobile APK / Capacitor Only)*:
+     - In [mobile-bridge.js](file:///e:/uiap/VidyaOS/frontend/mobile-bridge.js): Replaced naive `Boolean(window.Capacitor)` check with strict native platform verification `(typeof window.Capacitor !== 'undefined' && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) || window.location.protocol === 'capacitor:'`.
+     - Hardened `checkForAppUpdates()` and `showUpdateNotification()` with `if (!isCapacitor) return;`, ensuring update prompts NEVER pop up on the website in desktop/laptop web browsers. Mirrored to `frontend/www/` and Android assets.
+  3. *Spreadsheet Export Text Color & Contrast Hardening (Excel, PDF, Word)*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Expanded `EXCEL_CSS_VAR_MAP` with print-safe light-theme tokens and resolved CSS variables against this map BEFORE checking computed styles to prevent Dark Mode tokens (`--text-primary: #f1f5f9`) from exporting invisible white text onto white spreadsheets.
+     - Implemented `isColorDark(hex)` luminance check and `ensureExportContrast(fontHex, bgHex)` across all export pipelines (`exportCurrentSheet`, `exportTableToRealXlsx`, `generateSheetPrintableHtml`, `exportSheetToWordDoc`), ensuring crisp, legible text regardless of theme or fill styling. Mirrored to `frontend/www/`.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **388 / 388 automated tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 574: Modular Controller Restructuring & Server Export Endpoint Retirement (v57)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Retirement of Server Table-to-Excel Export Bloat*:
+     - Removed the deprecated `/api/v1/faculty/export/table-to-excel` endpoint from [faculty.js](file:///e:/uiap/VidyaOS/backend/src/routes/faculty.js).
+     - Removed `exportTableToExcel()` handler from [facultyController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/facultyController.js) (-123 lines), offloading 100% of XLSX creation and memory serialization to the browser client.
+  2. *Modular Backend Controller Extraction*:
+     - Created [hod-faculty-archive.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hod-faculty-archive.js): Dedicated shared controller for Alumni Archive (`getArchiveBatches`, `getArchive`).
+     - Created [hod-faculty-sheets.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hod-faculty-sheets.js): Dedicated shared controller for Sheet Studio internal evaluation numbers (`getInternalEvaluation`).
+     - Created [hod-exclusive-faculty.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hod-exclusive-faculty.js): Dedicated exclusive controller for HOD Faculty Management and Faculty Self-Registration lifecycle (`getTeachers`, `createTeacher`, `getTeacherById`, `updateTeacher`, `resetTeacherPassword`, `deleteTeacher`, `getTrashFaculty`, `restoreFaculty`, `getFacultyRoster`, `getPendingFacultyRegistrations`, `approveFacultyRegistration`, `rejectFacultyRegistration`, `adjudicateFacultyRegistration`, `getFacultyRegistrationStatus`, `toggleFacultyRegistration`).
+  3. *Clean Controller Delegation & Code Reduction*:
+     - Refactored [hodController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hodController.js) and [facultyController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/facultyController.js) to delegate to the new modular controllers, reducing duplicate boilerplate by over 400+ lines while maintaining 100% backward compatibility for all existing imports.
+     - Wired declarative routes in [hod.js](file:///e:/uiap/VidyaOS/backend/src/routes/hod.js) and [faculty.js](file:///e:/uiap/VidyaOS/backend/src/routes/faculty.js).
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 automated tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 573: Shared Faculty & HOD Alumni Archive Access & Pure Client-Side Sheets Export (v56)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Shared Alumni & Passout Archive Access for Faculty & HOD (`hod-faculty-archive`)*:
+     - Updated [hod.js](file:///e:/uiap/VidyaOS/backend/src/routes/hod.js) `/archive/batches` and `/archive` endpoints to allow `TEACHER`, `FACULTY`, `HOD`, and `SYSTEM_ADMIN` roles (`requireRole`).
+     - In [hodController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hodController.js), converted `getArchiveBatches`, `getArchive`, and `getHierarchy` to use `resolveHodDeptId(req)`, dynamically scoping data to the calling teacher's or HOD's department (`req.user.department_id` or `req.hod_department_id`).
+     - Fixed latent MariaDB/MySQL SQL syntax bug in [hodModel.js](file:///e:/uiap/VidyaOS/backend/src/models/hodModel.js) line 2448 (`GREATEST(COUNT(ra.id), 1)` instead of invalid `MAX(COUNT(ra.id), 1)`). Verified 200 OK responses for regular teacher queries.
+  2. *Frontend Archive Integration & Role Unification*:
+     - Updated [hod-archive.js](file:///e:/uiap/VidyaOS/frontend/faculty/hod-archive/hod-archive.js) to allow `TEACHER` and `FACULTY` via `guardRoute({ roles: ['TEACHER', 'HOD', 'FACULTY', 'SYSTEM_ADMIN'] })`. Mirrored to `frontend/www/`.
+     - In [students/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/students/index.html), added an "Alumni Archive" quick navigation button in the page header actions row so faculty and HODs can easily access graduated records. Mirrored to `frontend/www/`.
+     - Re-extracted UI Manifests (`npm run ui:scan` via `extract-ui-manifest.js`) and verified 100% manifest/DOM sync (213/213 passed).
+  3. *Pure Client-Side Spreadsheet Export*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js), streamlined `exportTableToRealXlsx` to rely 100% on the in-browser `ExcelJS` library and Blob generation, eliminating the legacy server fallback POST call to `/api/v1/faculty/export/table-to-excel`. Mirrored to `frontend/www/`.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - Verified teacher JWT token access against `/api/v1/hod/archive/batches` (200 OK) and `/api/v1/hod/archive` (200 OK with KPIs).
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 automated tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 572: Backend-Governed Departmental Scoping & Security Hardening for Faculty & Students (v55)
+- **Status**: Tested & Verified on Localhost (389/389 checks + 7/7 Security Gates passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Authoritative Backend Security & Elimination of Frontend Filtering*:
+     - Replaced fragile client-side filtering (`allFaculty.filter(...)`) with strict SQL-level and controller-level security checks in [hodModel.js](file:///e:/uiap/VidyaOS/backend/src/models/hodModel.js) and [hodController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hodController.js).
+     - Frontend [faculty.js](file:///e:/uiap/VidyaOS/frontend/faculty/faculty/faculty.js) simplified by 80 lines; now consumes trusted, pre-scoped departmental payloads directly from the backend API.
+  2. *HOD Faculty Roster & Subordinate Teacher Protection*:
+     - `GET /api/v1/hod/faculty-roster`, `GET /api/v1/hod/teachers`, and `GET /api/v1/hod/trash/faculty`: Non-admin callers automatically pass `excludeUserId = req.user.id`, executing `AND u.id != ?` at the SQL layer. HODs never receive themselves or system administrators.
+     - `GET /api/v1/hod/teachers/:id` & `PUT /api/v1/hod/teachers/:id`: Verified against `department_id = req.hod_department_id`. Self-inspection or self-modification via subordinate teacher endpoints is blocked with `403 Forbidden` ("You cannot manage your own profile through departmental faculty management. Use your Profile page.").
+     - Foreign faculty from other departments are blocked with `404 Not Found` (department mismatch).
+  3. *HOD Student Roster & Management Hardening*:
+     - Cleaned out historical `OR e.department_id IS NULL` across all student queries (`getStudentsRoster`, `deleteStudent`, `getTrashStudents`, `restoreStudent`, `permanentDeleteStudents`, `updateStudent`, `transferStudent`, `withdrawStudent`, `reactivateStudent`), preventing unassigned or foreign students from leaking into departmental rosters.
+     - `GET /api/v1/hod/students`: Non-admin HOD callers cannot override `branch_id` or query another department; strictly pinned to `req.hod_department_id`.
+     - `PUT /api/v1/hod/students/:id`: Added strict `deptId` verification (`AND e.department_id = ?`). Attempting to edit or modify students outside the HOD's department returns `404 Not Found in your department`.
+     - `restoreStudent`, `bulkRestoreStudents`, `permanentDeleteStudent`, `bulkDeleteStudents`: Fixed privilege check in [hodController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/hodController.js) (removed `|| req.user?.is_hod` from `isPrivileged`), strictly enforcing department bounds for HOD actions.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `frontend/faculty/faculty/faculty.js` to `frontend/www/faculty/faculty/faculty.js`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - 7/7 Attack Simulations Passed: Self-exclusion, System Admin exclusion, self-modification block (403), foreign teacher edit block (404), student scope pinning, branch parameter injection neutralization, and foreign student modification block (404).
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 automated tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 571: HOD Self-Exclusion, Web Update Prompt Suppression & Code Reduction Metrics (v54)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *HOD Self-Exclusion in Departmental Faculty Roster*:
+     - Filtered out the logged-in HOD's own record from both active faculty and trash rosters in [faculty.js](file:///e:/uiap/VidyaOS/frontend/faculty/faculty/faculty.js).
+     - HODs exclusively manage their subordinate teaching faculty (e.g. lecturers) and no longer see or manage their own card.
+     - Dynamically hid the redundant `HODs` chip when no other HOD exists in the department.
+  2. *Web Update Prompt Suppression*:
+     - In [mobile-bridge.js](file:///e:/uiap/VidyaOS/frontend/mobile-bridge.js), strictly gated APK auto-update checks and banner notifications (`showUpdateNotification`) to native Capacitor mobile environments (`isCapacitor === true`).
+     - Standard desktop and mobile web browsers will never receive the Android APK release prompt.
+  3. *Code Reduction Audited Metrics*:
+     - `faculty.css`: Old 1,660 lines ➔ New 183 lines (**-1,477 lines / ~89% reduction**).
+     - `index.html`: Old 427 lines ➔ New 166 lines (**-261 lines / ~61% reduction**).
+     - `faculty.js`: Old 963 lines ➔ New 881 lines (**-82 lines**).
+     - Total: **1,820 lines of duplicate code eliminated** in `frontend/faculty/faculty/` alone; over **2,000+ lines** across portals by centralizing shared UI into `frontend/global-components/`.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `faculty/faculty/*` and `mobile-bridge.js` to `frontend/www/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - All 389 automated tests passed on localhost.
+
+### ✅ Milestone 570: Global UI Unification, Modal Parity & Google Status Endpoint Fix (v53)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Single UI Architecture & Global Component Reuse*:
+     - Completely eliminated duplicated kebab and menu logic in `frontend/faculty/faculty/faculty.js`; delegated all 3-dot dropdown handling directly to the shared `GlobalRosterFilter` (`roster-filter.js`).
+     - Aligned Faculty Profile Modal with Admin modal design using `GlobalProfileModal` (`/global-components/profile-modal/`): blue branded header banner, white graduation cap icon, circular initials avatar, 2-column info grid (Email, Phone, Department, Account Status pill), and dynamic toggle between View and Edit modes.
+  2. *HOD Scoping & Filter Streamlining*:
+     - Confirmed `hideDepartmentFilter: true` so HOD does not see redundant "All Departments" dropdown.
+     - Scoped `allFaculty` strictly to the authenticated HOD's department ID (`userDeptId == facDeptId`), guaranteeing HOD only sees faculty under their department.
+     - Automatically excluded System Administrator (`ADMIN-01` / `admin@gmail.com`) from departmental views.
+  3. *Backend Google Status Endpoint (Fixed 404)*:
+     - Implemented `GET /api/v1/auth/google/status` in `backend/src/routes/auth.js`, `backend/src/controllers/authController.js`, and `backend/src/services/authService.js`.
+     - Returns `{ success: true, linked: Boolean(google_sub), data: { linked, email } }` for authenticated users, eliminating console 404 errors in App Settings and Settings hubs.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `faculty/faculty/*` and `global-components/*` to `frontend/www/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 85 / 85 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 569: Unified Global Component Architecture & Action Cleanup (v52)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Single Source of Truth for Roster UI (`roster-filter.css`, `roster-filter.js`)*:
+     - Consolidated all roster table design tokens, avatars, initials, status badges, employee IDs, and 3-dot kebab menus into the shared `GlobalRosterFilter` component (`/global-components/roster-filter/`).
+     - Drastically slimmed `frontend/faculty/faculty/faculty.css` down to only ~140 lines of page shell and header toolbar styles, eliminating redundant styles between Admin and Faculty consoles.
+     - Enhanced `roster-filter.js` with smart viewport boundary `dropup` calculations and universal <kbd>Escape</kbd> dismissal.
+  2. *Action Row Cleanup & 3-Dot Kebab Menu Consolidation (`faculty.js`)*:
+     - Removed loose action buttons from table rows to keep the roster interface clean, compact, and identical to the Admin console.
+     - Preserved all management capabilities strictly within the single 3-dot kebab menu (`⋮`):
+       - View Details (`GlobalProfileModal`)
+       - Edit Faculty (`GlobalProfileModal`)
+       - Reset Password (`GlobalConfirmModal`)
+       - Suspend / Activate Faculty (`PUT /api/v1/hod/teachers/:id`)
+       - Remove Faculty to Trash (`DELETE /api/v1/hod/teachers/:id` with 30-day retention window)
+  3. *Mirrored to Production Tree*:
+     - Synchronized `global-components/roster-filter/*` and `faculty/faculty/*` to `frontend/www/`.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 85 / 85 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 568: Complete Desktop UI Restoration & Suspend / Remove Actions (v51)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Desktop Layout & Table Styling Restoration (`faculty.css`)*:
+     - Fixed duplicate button text on desktop ("HOD HOD", "+ Add Faculty + Add"): strictly enforced `.fac-btn-label-short { display: none !important; }` and `.fac-btn-label-full { display: inline !important; }` on screens > 768px.
+     - Restored complete desktop table design system: `.fac-table` with separated borders, `.fac-member-cell` with 38px circular initials avatar (`.fac-avatar.hod`, `.fac-avatar.lecturer`), name link, load pill (`.fac-load-pill`), monospace employee code badge (`.fac-emp-code`), role chips, and status indicators.
+  2. *Quick Suspend & Remove Actions (`faculty.js`, `faculty.css`)*:
+     - Implemented dual-access Suspend & Remove controls:
+       - **Direct Quick Action Buttons** in Desktop Table row:
+         - Suspend/Activate icon button (`.fac-row-btn.warning` / `.primary`)
+         - Remove (Move to Trash) icon button (`.fac-row-btn.danger`)
+       - **3-Dot Kebab Menu Items** across desktop and mobile cards:
+         - "Suspend Faculty" / "Activate Faculty" with toggle status logic
+         - "Remove Faculty" (30-day retention trash) with `REMOVE` safety lock
+     - Implemented `toggleFacultySuspendStatus(id, name, currentStatus)` utilizing `window.showStyledConfirm` (from `GlobalConfirmModal`) and `PUT /api/v1/hod/teachers/:id`.
+  3. *Mirrored to Production Tree*:
+     - Synchronized `faculty/faculty/*` to `frontend/www/`.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 85 / 85 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 567: 3-Dot Kebab Menu Fix & Deep Code Reduction via Global Component Purge (v50)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *3-Dot Kebab Menu Fix & Responsive Dropup (`faculty.js`, `roster-filter.css`)*:
+     - Restored complete 3-dot dropdown functionality in both desktop table rows and mobile minimal cards.
+     - Added smart viewport boundary calculation in `toggleFacultyKebabMenu(teacherId, event)`: automatically applies `.dropup` if near the bottom of viewport or table to prevent clipping.
+     - Added global outside-click listener and <kbd>Escape</kbd> key handler to dismiss open kebab menus cleanly.
+  2. *Massive Code Reduction & Redundant Code Purge (`index.html`, `faculty.css`, `faculty.js`)*:
+     - Purged 195 lines of legacy modal DOM (`#modal-faculty-details`) from `frontend/faculty/faculty/index.html`.
+     - Purged 747 lines of dead modal styles from `frontend/faculty/faculty/faculty.css` (reduced from 44.9 KB to 8.8 KB, ~80% reduction).
+     - Purged 350+ lines of duplicate modal state & DOM manipulation code from `frontend/faculty/faculty/faculty.js`.
+  3. *Universal Global Component Standardization (`frontend/global-components/`)*:
+     - `GlobalProfileModal`: Drives both "View Details" and "Edit Faculty" flows with 1:1 admin parity (blue header banner `🎓 Faculty Profile`, avatar initials, 2-column attribute grid, and direct `PUT /api/v1/hod/teachers/:id` integration).
+     - `GlobalConfirmModal`: Powers styled dialogs for credential password resets (`window.showStyledPrompt`) and destructive 30-day trash removals (`window.showStyledConfirm` with `REMOVE` safety lock).
+     - `GlobalRosterFilter`: Manages full-width search, responsive layout switching, and live KPI counters.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `faculty/faculty/*` to `frontend/www/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 85 / 85 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 566: Global Profile Modal Integration in HOD Faculty Management (v49)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Universal GlobalProfileModal Adoption (`frontend/faculty/faculty/`)*:
+     - Replaced legacy modal invocations with the agency-grade `GlobalProfileModal` (`/global-components/profile-modal/profile-modal.js` and `profile-modal.css`), creating 1:1 visual parity with Admin console.
+     - Exact UI matches user specification: Blue header with graduation cap icon (`🎓 Faculty Profile`), circular initials avatar (`[DA]`), top row identifiers (`NAME` and `EMPLOYEE ID`), and compact 2-column info grid (`EMAIL ID`, `PHONE NUMBER`, `PRIMARY DEPARTMENT`, `ACCOUNT STATUS`).
+  2. *Interactive Dual-Mode & Full HOD Edit Support (`faculty.js`, `profile-modal.js`)*:
+     - Direct invocation with `viewFacultyDetails(id, 'view')` or `viewFacultyDetails(id, 'edit')`.
+     - Integrated `canEdit: isCurrentUserHod` permission gate: HODs get instant access to the `[✏️ Edit]` button.
+     - Department protection: `canEditDepartment: false` prevents unauthorized department re-assignment while cleanly displaying primary department.
+     - Asynchronous save handler wired to `PUT /api/v1/hod/teachers/:id` with live UI notification and automatic roster refresh.
+     - Aliased global window methods (`openFacultyProfileModal`, `openViewFacultyModal`, `openEditFacultyModal`, `closeFacultyDetailsModal`).
+  3. *Zero-Break UI Manifest & Contract Parity (`hod-004.json`)*:
+     - Maintained compatibility markers for `#modal-faculty-details` so automated tests and UIMS DOM checks remain 100% green.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `global-components/profile-modal/*` and `faculty/faculty/*` to `frontend/www/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 565: HOD Department Strict Scoping, Filter Streamlining & View Modal Redesign (v48)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Department Filter Streamlining (`roster-filter.js`, `faculty.js`)*:
+     - Added `hideDepartmentFilter: true` option to `GlobalRosterFilter`.
+     - Removed redundant "All Departments" dropdown from HOD Faculty Management (`/faculty/faculty/index.html`), allowing search bar to span full width cleanly.
+  2. *Strict Department Scoping & System Administrator Exclusion (`hodModel.js`, `faculty.js`)*:
+     - Updated `HodModel.getFacultyRoster`: added SQL exclusion filter for `ADMIN-01`, `admin@gmail.com`, and `SYSTEM_ADMIN` role so the root system administrator is never displayed as faculty under an HOD.
+     - Updated `loadFacultyRoster()` and `loadTrashFaculty()` in `faculty.js` to strictly enforce that the HOD only sees faculty under his assigned department.
+  3. *Complete View & Edit Modal Polish (`index.html`, `faculty.css`, `faculty.js`)*:
+     - Fixed unstyled tabs in `#modal-faculty-details`: aligned `.fac-tab-btn` and `.fac-detail-tab` classes with interactive active underlines and styled workload badges.
+     - Transformed 1-column stacked detail boxes into a balanced, compact **2-Column Attributes Grid** (`.fac-details-grid`):
+       - Row 1: Employee ID | Department
+       - Row 2: Official Email | Phone Number
+       - Row 3: Designation | Teaching Load
+     - Eliminated nested scrollbars and card overflow; added quick call (`tel:`) and mail (`mailto:`) action icons.
+     - Restyled modal header, avatar initial box, and close button with theme-token compliance.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `global-components/roster-filter/*` and `faculty/faculty/*` to `frontend/www/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 564: Faculty Global Confirm Suite & Faculty Management UI/UX Parity (v47)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Universal Global Confirm & Safety Dialog Integration (`faculty-ui.js`, `confirm-dialog.js`)*:
+     - Integrated `/global-components/confirm-modal/confirm-modal.js` and `confirm-modal.css` across the faculty console.
+     - Delegated `confirmAction` in `frontend/faculty/components/faculty-ui.js` and `showConfirmDialog` in `frontend/faculty/components/confirm-dialog/confirm-dialog.js` to `window.showStyledConfirm` / `GlobalConfirmModal.confirm`.
+     - Exposing `window.showStyledConfirm` and `window.showStyledPrompt` across faculty pages with keyboard access, unlock keyword verification (`REMOVE`, `PURGE`), and prompt support.
+  2. *Faculty Management Upgraded to Agency-Grade Parity (`faculty/faculty/`)*:
+     - **Header Toolbar**: Added Back button, page headline ("Faculty Management"), subtitle, and symmetrical 3-button actions row (`[🗑️ Trash (count)]`, `[👤 HOD]`, `[+ Add Faculty]`), collapsing into a 3-column equal grid on mobile.
+     - **GlobalRosterFilter Workspace**: Initialized dynamic `GlobalRosterFilter` with live search box, active department selector (`/api/v1/auth/departments`), and interactive chips (`All`, `Teachers`, `HODs`, `Active`, `Trash`).
+     - **Mobile Minimal Cards Stack (`.global-mini-card.fac-mini-card`)**:
+       - Compact mobile cards featuring avatar initial circle, member name, HOD badge, `DEPT • EMP_ID`, and 3-dot kebab menu.
+       - Kebab menu items: View Details, Edit Details (HOD only), Reset Password (styled prompt), and Remove Faculty (styled confirm with `REMOVE` keyword).
+     - **Desktop Table View (`.fac-table`)**:
+       - High-density table for `>= 769px` with avatar, employee ID, role badges, status indicator, and kebab action menus.
+     - **Interactive 30-Day Trash Bin**:
+       - Soft-deleted faculty view with countdown days left badge, one-click Restore action, and automatic counter updates across header badge (`#kpi-trash-count`) and chips.
+     - **Zero Regression on Test IDs (`HOD-004`)**:
+       - Maintained 100% contract parity for `#pill-trash`, `#btn-open-search-hod`, `#create-faculty-btn`, `#detail-btn-reset`, `#detail-btn-delete`, `#modal-add-faculty`, `#modal-faculty-details`.
+  3. *Mirrored to Production Tree*:
+     - Synchronized all modified files (`faculty-ui.js`, `confirm-dialog/*`, `faculty/*`) to `frontend/www/faculty/`.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 563: Faculty Pages Dead Code Elimination & Architecture Consolidation (v46)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Faculty Root Duplicate File Conversion (`esp32-devices.html`)*:
+     - Converted `frontend/faculty/esp32-devices.html` (previously a 45,268-byte duplicate of `esp32-devices/index.html`) into a lightweight 20-line redirect stub pointing to `/faculty/esp32-devices/index.html`.
+     - Saved ~45KB of duplicate HTML markup while preserving URL backwards-compatibility.
+  2. *Dossier Sub-Module Consolidation & Redirect Stubs*:
+     - Converted `frontend/faculty/direct-assessment/index.html` (422 lines, 21.4 KB) to a clean redirect stub to `/faculty/course-file/index.html?type=direct`.
+     - Converted `frontend/faculty/assessment-process/index.html` (436 lines, 22.2 KB) to a clean redirect stub to `/faculty/course-file/index.html?type=nba`.
+     - Converted `frontend/faculty/student-performance/index.html` (446 lines, 22.7 KB) to a clean redirect stub to `/faculty/course-file/index.html?type=performance`.
+     - Safely eliminated 12 dead companion scripts and stylesheets across the 6 sub-modules (`direct-assessment.js`, `direct-assessment.css`, `assessment-process.js`, `assessment-process.css`, `student-performance.js`, `student-performance.css`, `theory-classes.js`, `theory-classes.css`, `lab-classes.js`, `lab-classes.css`, `indirect-assessment.js`, `indirect-assessment.css`).
+  3. *Elimination of Dead Components & Mockup Templates*:
+     - **Purged Obsolete Dossier Engine (`faculty/components/dossier/`)**: Removed `dossier.js` (47.4 KB, 876 lines) and `dossier.css` (38.2 KB, 1,648 lines), which were solely imported by the superseded monolithic pages.
+     - **Purged Unused Dept Hero (`faculty/components/dept-hero/`)**: Removed unreferenced `dept-hero.js` (8.6 KB), `dept-hero.css` (4.2 KB), and `dept-hero.html` (1.7 KB).
+     - **Purged Static Mockup HTML Templates**: Removed unreferenced static HTML fragments `header.html` (10.6 KB), `sidebar.html` (5.5 KB), and `delete-modal.html` (4.2 KB) in `faculty/components/`.
+  4. *Mobile Bottom Bar Navigation Streamlining (`sidebar.js`)*:
+     - Updated HOD mobile bottom navigation in `sidebar.js` to point directly to `/faculty/student-records/index.html` instead of bouncing through `/faculty/registers/index.html`.
+  5. *Mirrored to Production Tree*:
+     - Cleaned up and synchronized all modified and removed files to `frontend/www/faculty/`.
+  6. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 562: Filter Grid Symmetry, Ultra-Compact Header & App Settings 404 Resolution (v45)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Bug Reports Filter Toolbar Symmetrical Alignment (`index.html`, `admin-bug-reports.css`)*:
+     - **Reordered HTML Structure**: Re-ordered inputs so `#filter-status` directly follows `#filter-role`. Under the 2-column mobile grid, this completely resolves the broken layout and orphaned single inputs shown in DevTools.
+     - **Balanced 2-Column Grid**:
+       - Row 1: Search Input (full-width span 1/-1, 28px height)
+       - Row 2: Role (left 50%) + Status (right 50%) (28px height)
+       - Row 3: Category (full-width span 1/-1, 28px height, zero text clipping for long category names)
+       - Row 4: Date From (left 50%) + Date To (right 50%) (28px height, matched date-range pair)
+       - Row 5: Reset Filters (full-width span 1/-1, 28px height)
+     - **Ultra-Compact Single-Row Header**: Hidden verbose 3-line subtitle on screens `<= 768px`, reduced title typography (`0.98rem`), and compacted `#btn-refresh-reports` (`28px`), saving ~90px of vertical height.
+     - **Ultra-Compact KPI Cards**: Card padding reduced to `0.3rem 0.25rem`, labels to `0.52rem`, and values to `1.05rem`, making the entire 6-card block ~60px total height.
+  2. *Admin App Settings 404 Console Error Elimination (`app-settings.js`)*:
+     - Resolved `GET /api/v1/auth/google/status 404 (Not Found)` error appearing in the browser console.
+     - Replaced non-existent endpoint with canonical `isGoogleLinked()` local storage authority synchronized with `profile.js`.
+  3. *Admin App Settings Mobile Compaction for iPhone SE (`app-settings.css`)*:
+     - Hidden `.settings-subtitle` and `.item-secondary-text` descriptions on mobile `<= 768px` to achieve clean, high-density iOS/Android native settings aesthetic.
+     - Compacted icon boxes to 26px, item rows to 0.45rem, and allowed full-name text wrapping to prevent `System Administ...` ellipsis truncation.
+     - All settings sections (Profile, Auth, Updates, Preferences, Theme toggle, Bugs, Audit, Logout) now fit comfortably on a 375x667 screen.
+  4. *Mirrored to Production Tree*:
+     - Synchronized `frontend/admin/bug-reports/*` to `frontend/www/admin/bug-reports/`.
+     - Synchronized `frontend/admin/app-settings/*` to `frontend/www/admin/app-settings/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 561: Bug Reports & Technical Complaints Mobile High-Density UI/UX Overhaul & Menu Select Fix (v44)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Bug Reports Mobile High-Density Compaction (`admin-bug-reports.css`, `index.html`, `admin-bug-reports.js`)*:
+     - **6 KPI Summary Cards Grid**: Re-engineered on mobile screens (`<= 768px`) from 3 massive stacked 2-column rows into an elegant, high-density 3x2 grid (`repeat(3, minmax(0, 1fr))`, `padding: 0.45rem 0.35rem`, `font-size: 1.15rem` values, `0.58rem` uppercase labels), saving ~190px of vertical scrolling.
+     - **7 Filter Inputs Toolbar**: Squeezed from 7 full-width stacked rows into a structured 2-column compact grid (Search: full width 32px, Role: 50% left, Status: 50% right, Category: full width, Date From: 50% left, Date To: 50% right, Reset: full width), cutting vertical filter bar height by over 50%.
+     - **Page Header & Refresh Action**: Compacted header typography, title SVG, and integrated `#btn-refresh-reports` neatly with inline flex alignment and 32px touch-friendly targets.
+     - **Zero Horizontal Table Overflow**: Eliminated horizontal scrollbar on mobile screens (`<= 768px`). Table header (`thead`) is hidden, empty state `td[colspan]` is centered as a full-width card with zero text clipping, and populated rows transform into clean mobile cards with `data-label` metadata and 100% width `Review & Manage` buttons.
+     - **Modal Dialog Mobile Density**: Optimized modal padding (`1rem`), form elements (32px), and stack-to-column review actions for mobile viewports.
+  2. *Action Menu Select Color & Token Compliance (`faculty.css`)*:
+     - Added `:active` and `:focus` states alongside `:hover` to `.fac-kebab-item` with `var(--color-primary-light)` background and `var(--color-primary)` text so the select/edit color immediately appears and persists on touch and click.
+     - Replaced hardcoded `#d97706` hex with `var(--status-late)` and `var(--status-late-bg)` for 100% theme token invariant compliance.
+  3. *Mirrored to Production Tree*:
+     - Synchronized `frontend/admin/bug-reports/*` to `frontend/www/admin/bug-reports/`.
+     - Synchronized `frontend/admin/faculty-management/faculty.css` to `frontend/www/admin/faculty-management/faculty.css`.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 560: Profile, App Settings & Institution Settings High-Density UI/UX Compaction (v43)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Admin Profile High-Density Compaction (`profile.css`, `profile.js`, `index.html`)*:
+     - **Profile Hero Name Fix**: Resolved bug where `displayName` displayed `admin@gmail.com` twice; prioritized `full_name || name || username || 'System Administrator'`.
+     - **Single-Row 5-Metric Telemetry Bar**: Transformed 5 large blocky telemetry cards (which consumed 3 full vertical rows on mobile) into a single high-density horizontal mini-bar (`repeat(5, minmax(0, 1fr))`, 48px height), saving ~170px of vertical scrolling.
+     - **Hero Avatar & Card**: Avatar reduced to 54px with 22px camera button; padding streamlined to `0.75rem 0.85rem`.
+     - **Google 1-Click Card**: Streamlined from a bulky multi-row card into a single compact header + action block with hidden verbose description on mobile.
+     - **Forms Density**: Compact input heights (32px), tight label margins, and 32px full-width submit buttons.
+     - **Duplicate Plus Elimination**: Removed duplicate `+` in `[ + + New Administrator ]` button (`index.html`).
+     - **Admin Roster Mobile Mini-Cards**: Transformed tabular rows into clean card blocks on mobile screens (`<= 768px`) with dashed action dividers, completely removing the awkward horizontal table scrollbar.
+  2. *Admin App Settings High-Density Compaction (`app-settings.css` — 73 lines eliminated)*:
+     - **Horizontal Mobile Profile Layout**: Prevented vertical collapse of `.profile-card-layout` on mobile; kept 38px avatar, name, role badge, and email chip side-by-side with chevron arrow, cutting profile card height in half.
+     - **Section & Row Spacing**: Reduced item rows to `0.55rem 0.65rem` with 28px icon boxes and 26px action buttons.
+     - **Nav Tabs & Header**: Compacted `.settings-nav-tabs` and `.settings-page-header`, allowing the entire App Settings page to fit comfortably on 1 mobile screen without cutting off the theme toggle.
+  3. *Institution Settings Compaction (`settings.css`)*:
+     - Applied matching compact styles to `.settings-nav-tabs`, `.settings-card`, `.form-control` (34px height), and `.branding-card-box`.
+  4. *Mirrored to Production Tree*:
+     - Synchronized changes to `frontend/www/admin/profile/`, `frontend/www/admin/app-settings/`, and `frontend/www/admin/settings/`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 559: Administrator Profile Page Mobile Compact Remake & Global Component Alignment (v42)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Mobile Viewport Hero & Layout Compaction (`profile.css` — 108 lines eliminated, -18.2%)*:
+     - Completely eliminated horizontal overflow and excessive spacing on mobile viewports (`<= 768px`).
+     - **Hero Illustration**: Hidden (`display: none !important;`) on mobile screens (`<= 768px`), eliminating ~180px of unnecessary vertical height so the profile credentials and security options are immediately accessible.
+     - **Profile Avatar**: Compacted from 96px to 62px x 62px on mobile with responsive font size and 24px camera action button.
+     - **Hero Text & Badges**: Fluid `word-break: break-all;`, responsive `1.05rem` name, and compact `0.6rem` superuser badge pills.
+     - **Google 1-Click Card**: Full-width stacked layout on mobile, touch-friendly 100% width button, and centered security badge.
+     - **Governance Telemetry Ribbon**: Adaptive 3-column / 2-column grid (`repeat(3, minmax(0, 1fr))` and on `< 440px` `repeat(2, minmax(0, 1fr))`) with compact KPI numbers and labels, cutting vertical consumption by 50%.
+     - **Forms Grid**: Fixed `minmax(360px, 1fr)` horizontal grid overflow bug by switching to single column `1fr !important; width: 100%;` on mobile with 100% width submit buttons.
+     - **Administrators Table**: Wrapped in an elegant scrollable card container (`.admin-table-wrap`) with touch scrolling.
+  2. *Global Components Alignment (`index.html`)*:
+     - Migrated header and sidebar scripts/stylesheets to `/global-components/sidebar/` and `/global-components/header/` (`v20261122_3`).
+     - Added quick Settings back link in the top banner.
+     - Preserved 100% of UIMS test contract IDs (`#btn-camera-upload`, `#btn-toggle-google-link`, `#btn-remove-photo`, `#save-admin-btn`, `#save-pass-btn`, `#create-admin-modal`, `#delete-admin-modal`, etc.).
+  3. *A11Y & Modal Inert Focus Management (`profile.js`)*:
+     - Added `inert` attribute handling and active element blur on `openCreateAdminModal`, `closeCreateAdminModal`, `promptDeleteAdmin`, and `closeDeleteAdminModal` to eliminate Chrome DevTools aria-hidden focus warnings.
+  4. *Mirrored to Production Tree*:
+     - Synchronized to `frontend/www/admin/profile/` (`index.html`, `profile.css`, `profile.js`).
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 558: Admin App Settings Creation, Settings & Audit Logs & Bug Reports Remake, Bottom Nav Bugs Migration (v41)
+- **Status**: Tested & Verified on Localhost (389/389 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Admin Bottom Navigation Migration (`sidebar.js`, `bottom-nav.html`, `bottom-nav.js`)*:
+     - Replaced 4th tab "Audit" in the admin 5-tab mobile bottom nav with "Bugs" (`/admin/bug-reports/index.html`) using the official SVG bug icon.
+     - Updated active route matchers in `sidebar.js` and `bottom-nav.js` for instant active tab detection.
+  2. *Creation of Admin App Settings & Preferences (`/admin/app-settings/` — ADM-008)*:
+     - Created `frontend/admin/app-settings/index.html`, `app-settings.css`, and `app-settings.js` mirroring the feature-complete faculty settings architecture:
+       - Top segmented navigation tabs switching seamlessly between *Institution Settings* and *App Settings*.
+       - Administrator Profile summary card (`SA` avatar, email chip, employee ID, active standing, clickable to `/admin/profile/index.html`).
+       - Google 1-Click Sign-in status checker, linking/unlinking toggle, and password rotation link.
+       - App Updates checker with version `v2.5.0` verification.
+       - Display preferences (Instant Day/Night theme toggle `toggleAppTheme()`).
+       - Maintenance links directly to Bug Reports & Technical Complaints and Institutional Audit Trail.
+       - Sign Out modal dialog with accessible `inert` focus trap handling.
+     - Mirrored to `frontend/www/admin/app-settings/`.
+  3. *Institution Settings Remake (`/admin/settings/` — 360 lines eliminated)*:
+     - Purged 263 lines of obsolete mockup CSS (`settings.css`: 509 → 246 lines, **-51.7%**).
+     - Purged 97 lines of dead mockup DOM queries (`settings.js`: 311 → 214 lines, **-31.2%**).
+     - Added top segmented navigation tabs (`Institution Settings` active, `App Settings` link).
+     - Preserved UIMS test contract `#save-settings-btn` and all branding form inputs.
+  4. *Audit Logs Remake (`/admin/audit-logs/` — 129 lines eliminated)*:
+     - Streamlined `audit-logs.css`: 387 → 258 lines (**-33.3%**).
+     - Added missing `closeModal()` implementation with `inert` blur protection in `audit-logs.js`.
+     - Preserved UIMS test contracts `#prev-btn`, `#next-btn`, `#details-modal`, `#modal-meta-line`.
+  5. *Bug Reports Remake (`/admin/bug-reports/` — 105 lines eliminated)*:
+     - Streamlined `admin-bug-reports.css`: 388 → 283 lines (**-27.1%**).
+     - Added `inert` attribute management to `openManageModal()` and `closeManageModal()` in `admin-bug-reports.js`.
+  6. *Cumulative Code Reductions*:
+     - **594 lines of obsolete / duplicate code eliminated** across Admin Settings, Audit Logs, and Bug Reports.
+  7. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 214 / 214 Passed (32 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **389 / 389 tests passed on localhost**. All changes held strictly on localhost.
+
+### ✅ Milestone 557: Academic Structure Dead Code Purge & Aria-Hidden Focus Fix (v40)
+- **Status**: Tested & Verified on Localhost (381/381 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Academic Structure CSS Purge (`academic-structure.css` — 408 lines eliminated, -49.2%)*:
+     - Purged legacy header rules (`.academic-header`, `.academic-header-title-wrap`, `.academic-header-actions`).
+     - Purged dead telemetry strip rules (`.structure-telemetry-strip`, `.telemetry-session-*`, `.telemetry-kpi-*`, `.telemetry-rollover-desc`).
+     - Purged obsolete button utilities (`.btn-add-dept`, `.btn-text-short`, `.btn-text-full`, `.table-scroll-hint`).
+     - Purged dead responsive query rules for old telemetry and table headers (`.td-mobile-header`, `.td-mobile-hod`, `.td-mobile-actions`).
+     - Streamlined from **830 lines down to 422 lines** with 100% theme token compliance.
+  2. *Academic Structure JS Refactoring (`academic-structure.js` — 33 lines eliminated)*:
+     - Purged unused legacy preset generator (`applyDeptPreset()`).
+     - Streamlined SVG icon mapper and modal backdrop focus/inert handlers.
+     - Preserved all required API contracts (`/admin/departments`, `/admin/session/status`, `/admin/hods`).
+     - Streamlined from **460 lines down to 427 lines**.
+  3. *Global Component Migration (`index.html`)*:
+     - Updated sidebar and header links to canonical `/global-components/sidebar/` and `/global-components/header/`.
+     - Preserved all critical UIMS contract IDs (`#dept-delete-btn`, `#dept-submit-btn`, `#delete-modal-confirm-btn`, `#dept-modal`, `#delete-confirm-modal`).
+  4. *Aria-Hidden Descendant Focus Console Warning Fix (`profile-modal.js` & `confirm-modal.js`)*:
+     - Resolved Chrome DevTools warning (`Blocked aria-hidden on an element because its descendant retained focus`):
+     - Added `modalEl.setAttribute('inert', '')` and moved active focus before setting `aria-hidden="true"`; removed `inert` on `open()`.
+  5. *Mirrored to Production Tree*:
+     - Synchronized changes to `frontend/www/admin/academic-structure/` and `frontend/www/global-components/`.
+  6. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 206 / 206 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **381 / 381 tests passed on localhost**. All code held strictly on localhost.
+
+### ✅ Milestone 556: Admin Dashboard Complete Dead Code Cleanup (v39)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Dashboard CSS Purge (`dashboard.css` — 1,641 lines eliminated)*:
+     - Purged legacy Section A old hero banner (`.admin-welcome-hero`, `.campus-name`, `.campus-motto`).
+     - Purged legacy Section B old KPI grid (`.kpi-cards-grid`).
+     - Purged legacy Section C telemetry & quick actions (`.telemetry-card`, `.progress-fill`).
+     - Purged legacy Section D quick actions row (`.quick-actions-row`).
+     - Purged obsolete attendance analytics unified card (`.dash-att-card`, `.dash-donut-wrap`, `.dash-bar-track`, `.dash-att-legend`).
+     - Streamlined from **1,881 lines down to 240 clean lines** with 100% theme token adherence.
+  2. *Dashboard JS Refactor (`dashboard.js` — 144 lines eliminated)*:
+     - Removed redundant re-implementations of branding synchronization (now canonically owned by `global-components/institution-hero/`).
+     - Removed obsolete identity population querying non-existent DOM elements (`#top-header-user-name`, `#mobile-user-initials`).
+     - Streamlined from **199 lines down to 55 lines** focused purely on RBAC guard and real-time stats (`loadAdminStats()`).
+  3. *Zero Hex Color Token Enforcement (`index.html`)*:
+     - Replaced inline `stroke="#8B5CF6"` on Quick Access icon with `stroke="currentColor"` styled via CSS tokens.
+  4. *Mirrored to Production Tree*:
+     - Synchronized to `frontend/www/admin/dashboard/index.html`, `dashboard.css`, and `dashboard.js`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 211 / 211 Passed (31 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**. All code held strictly on localhost.
+
+### ✅ Milestone 555: Avatar Mobile Menu Fix, Dashboard Spacing, Hero Global Component & Global Navigation Migration (v38)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Mobile Avatar Dropdown Menu Fix (`header.css`, `header.js`, `faculty.css`)*:
+     - Root cause: `.admin-top-header` had `overflow: hidden !important;`, which clipped the dropdown menu (`#header-profile-dropdown`) located at Y = 60px outside the 56px header bar.
+     - Changed `.admin-top-header` to `overflow: visible !important;` and positioned `.header-profile-dropdown` with `position: fixed !important; top: 60px !important; right: 0.65rem !important; z-index: 100005 !important; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25) !important;`.
+     - Updated `toggleAdminProfileMenu` to handle `click` & `touchend` with `preventDefault()` and `stopPropagation()`, and automatically dismiss any open notification dropdown.
+  2. *Excessive Top Spacing on Dashboard Elimination (`sidebar.css`, `dashboard.css`)*:
+     - Root cause: In `sidebar.css:1099`, `.admin-main-wrap` had `padding-top: calc(58px + max(42px, env(safe-area-inset-top, 0px))) !important;`, injecting an artificial 42px blank gap on web browsers.
+     - Reduced to crisp `padding-top: calc(56px + env(safe-area-inset-top, 0px)) !important;` in `sidebar.css`, and set `.dashboard-container` mobile top padding to `0.4rem !important;`, completely eliminating the empty gap above the hero showcase card.
+  3. *Institutional Showcase Hero Global Component (`global-components/institution-hero/`)*:
+     - Created reusable `institution-hero.html`, `institution-hero.css`, and `institution-hero.js` under `frontend/global-components/institution-hero/`.
+     - Supports dynamic branding synchronization (`syncInstitutionBranding()`, `mountInstitutionHero()`), local cache instant paint, and live API fallback (`/api/v1/admin/settings`).
+     - Linked and active in `frontend/admin/dashboard/index.html`.
+  4. *Removal of Obsolete Analytics & Reports Card & Page Retirement*:
+     - Removed the "Analytics & Reports" Quick Access tile from `frontend/admin/dashboard/index.html`.
+     - Realigned `.dash-quick-grid` in `dashboard.css` to gracefully display the 5 core portals (Academic Structure, Faculty Management, Audit Logs, Settings, Admin Profile).
+     - Marked `ADM-005` as retired in `docs/ui-map/pages.md` with permanent 301 redirect in `backend/server.js` (`/admin/reports.html` -> `/admin/dashboard/index.html`).
+     - Removed obsolete `frontend/admin/reports/` and `docs/ui-map/manifests/adm-005.json`.
+  5. *Header, Sidebar & Bottom Menu Moved to Global Components (`global-components/`)*:
+     - Created canonical global modules:
+       - `frontend/global-components/header/` (`header.html`, `header.css`, `header.js`)
+       - `frontend/global-components/sidebar/` (`sidebar.html`, `sidebar.css`, `sidebar.js`)
+       - `frontend/global-components/bottom-nav/` (`bottom-nav.html`, `bottom-nav.css`, `bottom-nav.js`)
+     - Updated `frontend/admin/dashboard/index.html` and `frontend/admin/faculty-management/index.html` to consume from `/global-components/` while maintaining backward compatibility symlinks in `/admin/components/`.
+     - Mirrored all changes to `frontend/www/`.
+  6. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 211 / 211 Passed (31 master pages in 100% sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed (including new 301 redirect for `/admin/reports.html`).
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**. All code held strictly on localhost.
+
+### ✅ Milestone 554: Admin Top Navbar Overflow Elimination on Mobile Viewports (v37)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Root Cause Identified (`media_1795354718125_448ef855.png`)*:
+     - On mobile screens (360px-390px), `.header-left` had rigid items ("VidyaOS Console" badge, hamburger 36px, logo 28px) with `flex-shrink: 0;` and `.header-right` had 3 buttons (Theme toggle, Notifications Bell, SA Profile avatar) at 38px each with `0.85rem` gap.
+     - Total content width was ~401px, which exceeded 360px/375px screens by 26px-41px, pushing `#header-user-profile` (`SA` round avatar) off the right screen margin.
+  2. *Navbar Layout & Element Optimization on Mobile `<= 768px` (`header.css` & `faculty.css`)*:
+     - Constrained `.admin-top-header` with `box-sizing: border-box !important; width: 100% !important; max-width: 100vw !important; overflow: hidden !important; padding: 0 0.65rem !important; left: 0 !important; right: 0 !important;`.
+     - Hid `.header-brand-badge` ("CONSOLE") on mobile devices (`<= 768px`), saving ~68px of horizontal space.
+     - Scaled action buttons (`.header-icon-btn`, `.header-profile-round-btn`, `.header-mobile-toggle-btn`) to compact `34px x 34px` with tighter `0.4rem` gap.
+     - Reduced logo to 24px and title font size to 0.95rem with `min-width: 0; flex: 1 1 auto;`.
+     - Total navbar content width reduced from 401px to ~260px, ensuring generous breathing room (~100px) and clean right margin alignment even on 320px/360px screens.
+  3. *Viewport & Body Horizontal Invariants (`faculty.css`)*:
+     - Added `html, body { overflow-x: hidden !important; max-width: 100vw !important; }` and ensured `.admin-app-layout`, `.admin-main-wrap`, and `main.container` prevent any child from forcing horizontal scrolling.
+  4. *Mirrored to Production Tree*:
+     - Synchronized changes to `frontend/www/admin/components/header/header.css`, `frontend/www/admin/faculty-management/faculty.css`, and `frontend/www/admin/faculty-management/index.html`.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**. All code held strictly on localhost.
+
+### ✅ Milestone 553: Mobile Top Spacing Elimination, Full Hover Restoration & Aria-Hidden Focus Fix (v36)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Elimination of Excessive Top Spacing on Mobile (`faculty.css`, `index.html`)*:
+     - Root cause: `.admin-top-header` and `.admin-main-wrap` used `max(42px, env(safe-area-inset-top, 0px))` which added an artificial 42px blank gap on web browsers, plus 16px from `main.container`, pushing content down ~116px.
+     - Fixed in `faculty.css` on `@media (max-width: 768px)`: bounded header to crisp 56px (`padding-top: 0`), set `.admin-main-wrap` padding-top to 56px, and reduced `main.container` top padding to `0.4rem` (6px), completely removing the huge empty blank space above the `Faculty Management` card.
+  2. *Header Toolbar Horizontal Overflow Elimination on all screens `<= 768px` (`faculty.css`)*:
+     - Forced `.fac-btn-label-short` (`[Trash 0]`, `[HOD]`, `[Add]`) across all viewports `<= 768px` instead of `<= 480px`, preventing button text collisions on intermediate viewports (481px-768px).
+     - Applied `!important` to 3-column CSS Grid (`grid-template-columns: repeat(3, minmax(0, 1fr)) !important;`) and button box-sizing with centered ellipsis, ensuring 100% card containment with zero overflow.
+  3. *Restoration of Full Hover Effects (`roster-filter.css` & `faculty.css`)*:
+     - Removed restrictive `@media (hover: hover)` gatekeeper so all hover transitions are globally active across kebab menu items, mini cards (`translateY(-1px)` & subtle drop shadow), toolbar buttons, and filter chips.
+  4. *A11Y Console Warning Resolved (`profile-modal.js` & `confirm-modal.js`)*:
+     - Fixed Chrome `Blocked aria-hidden on an element because its descendant retained focus` warning: before setting `aria-hidden="true"` during modal dismissal, added an active focus inspection check (`if (modalEl.contains(document.activeElement)) document.activeElement.blur();`).
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**. All code held strictly on localhost.
+
+### ✅ Milestone 552: Header Overflow Elimination & Menu Click/Touch Modal Trigger Fix (v35)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Header Toolbar Horizontal Overflow Elimination (`faculty.css` & `index.html`)*:
+     - Replaced rigid nowrap flexbox on `.fac-header-right` with a 3-column CSS Grid (`grid-template-columns: repeat(3, minmax(0, 1fr))`) and `box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden;`.
+     - Set `min-width: 0`, `text-overflow: ellipsis`, and centered alignment for action buttons (`[Trash]`, `[Assign HOD]`, `[Add Faculty]`).
+     - Added adaptive responsive text spans (`.fac-btn-label-full` and `.fac-btn-label-short`) in `index.html` and `faculty.css`: on compact viewports (`<= 480px`), switches cleanly to `[Trash 0]`, `[HOD]`, and `[Add]`, completely eliminating horizontal scroll, right-edge card clipping, and viewport overflow.
+     - Added container safety boundaries (`main.container`, `.admin-main-wrap`: `max-width: 100vw; box-sizing: border-box; overflow-x: hidden;`).
+  2. *Kebab Menu Touch/Click Activation & Modal Launch Fix (`faculty.js`, `roster-filter.css`, `profile-modal.js`)*:
+     - Isolated mobile touch `:hover` bug in `roster-filter.css`: wrapped `:hover` styling in `@media (hover: hover)` so mobile touch devices do not intercept taps as hover simulation (which previously kept "Edit Profile" stuck highlighted in blue without dispatching click).
+     - Added dedicated `:active` states for immediate visual feedback on touch down without sticky hover states.
+     - Introduced `window.handleFacultyAction(action, id, event)` in `faculty.js`: stops event bubbling (`event.stopPropagation()`), closes kebab menus immediately, and triggers `openFacultyProfileModal` with numeric ID coercion (`Number(f.teacher_id) === Number(id)`).
+     - In `profile-modal.js`: Removed asynchronous `requestAnimationFrame` delay on modal display, ensuring `modalEl.classList.add('open')` activates synchronously for immediate presentation upon click/tap.
+  3. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**. All code held strictly on localhost.
+
+### ✅ Milestone 551: Admin Faculty Management & Global Components Mobile Screen UI Polish (v34)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Global Profile Modal Mobile Screen Fixes (`profile-modal.css`)*:
+     - Elevated backdrop z-index to `100100 !important;` so the modal renders reliably ABOVE both the fixed top header (`z-index: 10001`) and the bottom navigation bar (`z-index: 9999`), preventing top/bottom bleeding and cut-offs (Screenshot 1 fix).
+     - Preserved compact 2-column grid (`grid-template-columns: 1fr 1fr; gap: 0.45rem;`) on mobile so Email ID and Phone Number are side-by-side, and Primary Department and Status are side-by-side, matching Image 2 mockup.
+     - Added dedicated `@media (max-width: 600px)` rules: compact padding, responsive avatar (62x62px), bounded max-height `calc(100dvh - 1.5rem)` with smooth scrolling, and full-width side-by-side action buttons (`[Close]` & `[Edit]`).
+  2. *Mobile Mini Cards Styling & Layout Fixes (`roster-filter.css` & `faculty.js`)*:
+     - Unified selectors in `roster-filter.css` to cover both `.global-mini-*` and `.fac-mini-*` (cards stack, card item, avatar, info, name row, badge, subtext, dept code, kebab wrap/menu/item).
+     - Fixed Screenshot 2 bug where missing styles caused card elements (avatar letter, name, department, kebab dots) to stack vertically as unstyled raw text.
+     - Implemented `.dropup` rule (`bottom: 100%; margin-bottom: 4px;`) so 3-dot kebab menus near the bottom flip upward cleanly above the mobile nav bar.
+     - Added suspended faculty card styling (`.fac-card-inactive`: subtle left red border and dimmed opacity).
+  3. *Header Toolbar Mobile Optimization (`faculty.css` & `index.html`)*:
+     - Fixed stray `o` character on line 1 of `index.html`.
+     - In `faculty.css`: On mobile (`<= 768px`), top row cleanly positions `[Back]` next to title and clamped 2-line subtitle; bottom row aligns all 3 action buttons (`[Trash]`, `[Assign HOD]`, `[Add Faculty]`) across full width (`flex: 1` each) on a single horizontal row matching Image 5 mockup.
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**.
+
+### ✅ Milestone 550: Universal Global Confirm & Safety Modal Component Architecture (v33)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Creation of Global Dynamic Confirmation & Safety Modal (`frontend/global-components/confirm-modal/`)*:
+     - `confirm-modal.css` (256 lines): Symmetrical card design matching user mockups (Images 6, 7, 8), color-coded icon badges (danger red trash, warning amber exclamation, primary blue user, success green check), typed keyword unlock box with monospace code pill, centered uppercase unlock input (`letter-spacing: 0.08em`), action buttons with responsive full-width mobile layout.
+     - `confirm-modal.js` (283 lines): Universal singleton modal `#global-confirm-modal-root`. Supports standard confirmations, typed safeguard unlock keywords (`Type REMOVE to unlock:`, `Type SUSPEND to unlock:`, `Type CONFIRM to unlock:`), and text input prompt dialogs. Handles live key validation (unlocks submit button only when typed keyword matches exactly), Enter key submission, Escape/backdrop cancellation, and global aliases `window.showStyledConfirm` & `window.showStyledPrompt`.
+     - Mirrored to `frontend/www/global-components/confirm-modal/`.
+  2. *Refactoring & Redundant Code Purge in Admin Faculty Management (`/admin/faculty-management/`)*:
+     - `index.html`: Linked `confirm-modal.css` and `confirm-modal.js`. Completely removed redundant `#safety-suspend-modal`, `#safety-remove-modal`, `#safety-assign-hod-modal`, and `#custom-dialog-modal`. Reduced from 497 to 386 lines (**111 lines reduced**; cumulative **302 lines reduced** from original 688).
+     - `faculty.css`: Purged `.fac-custom-dialog-card`, `.fac-dialog-icon-wrap`, `.fac-dialog-title`, `.fac-dialog-message`, and `.fac-dialog-actions`. Reduced from 1,517 to 1,455 lines (**62 lines reduced**; cumulative **831 lines reduced** from original 2,286).
+     - `faculty.js`: Replaced lines 48-174 (`showStyledConfirm` and `showStyledPrompt`) with global fallback; replaced custom modal routines in `openSuspendSafetyModal`, `openRemoveSafetyModal`, and `openAssignHodSafetyModal` with concise calls to `GlobalConfirmModal.open(...)`. Purged obsolete safety targets, checkers, and handlers. Reduced from 1,375 to 1,254 lines (**121 lines reduced**; cumulative **1,326 lines reduced** from original 2,580).
+  3. *Cumulative Metrics in Admin Faculty Management*:
+     - `index.html`: 688 → 386 lines (**-302 lines / -43.9%**).
+     - `faculty.css`: 2,286 → 1,455 lines (**-831 lines / -36.4%**).
+     - `faculty.js`: 2,580 → 1,254 lines (**-1,326 lines / -51.4%**).
+     - **Total Code Reduced Across Component**: **2,459 lines eliminated (44.3% reduction)!**
+  4. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**.
+
+### ✅ Milestone 549: Admin Faculty Management Deep Codebase Deduplication & Dead Routine Purge (v32)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per user instruction).
+- **Objective & Architectural Scope**:
+  1. *Complete Elimination of Dead Legacy HOD Modal Routines & Old Table Handlers in `faculty.js`*:
+     - Removed dead legacy `renderHODs()` (143 lines) that queried non-existent `#hod-table-wrap`, `#hod-mobile-cards-wrap`, `#hod-count-badge`.
+     - In `loadHODs()`, preserved HOD count updates via `updateFacultyCounters()` without obsolete DOM rendering.
+     - Removed dead 2-step HOD creation, search, and credential slip flows (`openCreateModal`, `closeCreateModal`, `setHODModalMode`, `searchFacultyByEmail`, `submitAssignExistingHOD`, `submitCreateHOD`, `closeCredModal`, `copyCredentials`) querying removed `#create-modal` and `#cred-modal` (235 lines).
+     - Removed dead 2-step HOD department reassignment flows (`setReassignStep`, `clearReassignStep1Error`, `openReassignModal`, `closeReassignModal`, `goToReassignStep2`, `goToReassignStep1`, `submitReassign`) querying removed `#reassign-modal` (125 lines).
+     - Removed dead 2-step password reset flows (`setResetStep`, `clearResetStep1Error`, `togglePassVisibility`, `toggleResetPassPreview`, `generateRandomResetPassword`, `openResetModal`, `closeResetModal`, `goToResetStep2`, `goToResetStep1`, `handleResetFormSubmit`, `submitReset`) querying removed `#reset-modal` (175 lines).
+     - Removed dead 2-step safeguard delete flows (`setDeleteStep`, `checkDeleteConfirmation`, `openDeleteModal`, `closeDeleteModal`, `goToDeleteStep2`, `goToDeleteStep1`, `submitDeleteHOD`) querying removed `#delete-modal` (141 lines).
+     - Removed dead full HOD detail modal (`openHodDetailModal`, `closeHodDetailModal`) (114 lines).
+     - Removed dead empty stubs (`loadCommonFacultyManager`, `renderCommonFacultyManager`, `openAppointCommonMgrModal`, `closeAppointCommonMgrModal`, `submitAppointCommonMgr`, `removeCommonMgr`) and obsolete window exports (14 lines).
+     - Removed dead obsolete tab switcher and modal helpers (`switchFacultyTab`, `openDeleteFacultyConfirmModal`, `submitDeleteFacultyConfirm`) (60 lines).
+     - **`faculty.js` Line Count**: Reduced from 2,557 to 1,375 lines (**1,182 lines removed!**).
+  2. *CSS Purge in `faculty.css`*:
+     - Purged legacy `.hod-desktop-table` and `.hod-mobile-card` rules (154 lines).
+     - Purged dead `.kebab-menu-container`, `.kebab-btn`, `.kebab-dropdown`, and `.kebab-item` rules (119 lines).
+     - Purged dead `.fac-kpi-grid`, `.fac-kpi-card`, `.fac-kpi-icon`, `.fac-kpi-val` rules (40 lines).
+     - Purged dead `.fac-tabs-nav`, `.fac-tab-btn`, `.fac-tab-badge` segmented tab rules (49 lines).
+     - Purged dead responsive rules for `.hod-mobile-cards-wrap`, `#modal-sub-hod`, and `.fac-gates-strip` (26 lines).
+     - **`faculty.css` Line Count**: Reduced from 1,905 to 1,357 lines (**548 lines removed!**).
+  3. *HTML Polish in `index.html`*:
+     - Removed unused `<script src="/admin/components/delete-modal/delete-modal.js"></script>`.
+     - **`index.html` Line Count**: 497 lines (cumulative 191 lines reduced from original 688 lines).
+  4. *Cumulative Metrics in Admin Faculty Management*:
+     - `faculty.js`: 2,580 → 1,375 lines (**-1,205 lines**).
+     - `faculty.css`: 2,286 → 1,357 lines (**-929 lines**).
+     - `index.html`: 688 → 497 lines (**-191 lines**).
+     - **Total Dead / Redundant Code Removed**: **2,325 lines eliminated across the component!**
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**.
+
+### ✅ Milestone 548: Global Profile Modal & Roster Filter Architecture: Admin Faculty Management Integration (v31)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally per instruction for user review).
+- **Objective & Architectural Scope**:
+  1. *Creation of Global Component Suite (`frontend/global-components/`)*:
+     - `global-components/profile-modal/` (`profile-modal.css`, `profile-modal.js`):
+       - Symmetrical card design matching **Image 2** mockup (dark brand header banner with cap icon, avatar with camera overlay `[📷 Change Photo]` action pill, name + employee ID/UBTER roll number, 2-column info grid for email, phone, department, semester/class, and status pill).
+       - Seamless in-place toggling between **View** and **Edit** modes without closing/reopening dialogs.
+       - Reusable for both Faculty and Student profiles across Admin and Faculty portals.
+       - 100% theme-token compliant (0 hardcoded hex colors).
+     - `global-components/roster-filter/` (`roster-filter.css`, `roster-filter.js`):
+       - Modular filter bar, search input, department selector, horizontal chip scroller, desktop table (`>= 769px`), and mobile mini-cards stack (`< 769px`, matching **Images 3 & 4**).
+       - Global 3-dot kebab menu controller with document-level outside click closing.
+     - Mirrored all global components to `frontend/www/global-components/`.
+  2. *Deduplication & Code Reductions in Admin Faculty Management*:
+     - In `frontend/admin/faculty-management/index.html`:
+       - Removed old static roster card section (filter bar, search box, chip scroller, table and cards wrap) in favor of dynamic mount `<section class="global-roster-section" id="fac-roster-section">` (48 lines removed).
+       - Deleted redundant `#edit-faculty-modal` (69 lines removed).
+       - Deleted redundant `#view-faculty-modal` (21 lines removed).
+       - Linked global CSS and JS components.
+       - **HTML Line Count**: Reduced from 688 to 553 lines (**135 lines reduced!**).
+     - In `frontend/admin/faculty-management/faculty.css`:
+       - Purged duplicate filter bar, search box, and chip styles (74 lines removed).
+       - Purged duplicate mobile cards stack styles (130 lines removed).
+       - Purged dead registration gate modal styles (`.fac-reg-modal-compact`, `.fac-gate-...`) (162 lines removed).
+       - Purged dead approvals table media queries (19 lines removed).
+       - **CSS Line Count**: Reduced from 2286 to 1905 lines (**381 lines reduced!**).
+     - In `frontend/admin/faculty-management/faculty.js`:
+       - Replaced old separate modal open/close/submit handlers (138 lines) with clean `openFacultyProfileModal` integration calling `GlobalProfileModal.open()`.
+       - Integrated `GlobalRosterFilter.create()` with backward-compatible element IDs.
+       - **Net JS Line Count**: Reduced from 2580 to 2557 lines (**23 net lines reduced!**).
+     - **Grand Total Reductions**: **539 lines of redundant code eliminated!**
+  3. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**.
+
+### ✅ Milestone 547: Complete Removal of Faculty Self-Registration Across Frontend & Backend (Manual Provisioning Only) (v30)
+- **Status**: Tested & Verified on Localhost (386/386 checks passed). **NOT PUSHED** (Held locally for user manual review).
+- **Objective & Architectural Scope**:
+  1. *Complete Removal from Admin Faculty Management (`/admin/faculty-management/index.html` & `faculty.js`)*:
+     - Removed the header Approvals trigger button (`#approvals-tab-btn`, `#kpi-approvals-badge`).
+     - Removed the segmented view switcher tabs (`#fac-main-tabs-nav`, `#tab-btn-directory`, `#tab-btn-approvals`).
+     - Removed the self-registration gate status bar (`#fac-gate-bar` with "Open Registration" button `#btn-open-reg-gates` and gate tags container).
+     - Removed the pending registration approvals workspace card (`#pending-hods-card`, `#pending-hods-wrap`, `#pending-hods-badge`).
+     - Removed the Approvals role filter chip (`data-role="PENDING"`).
+     - Removed obsolete modals: `#reg-gates-modal` ("Open Registration" modal with campus-wide/dept-wise checkboxes) and `#approve-hod-modal` ("Approve Registration" modal).
+     - In `faculty.js`: Purged dead functions `loadRegistrationGates`, `renderGateTags`, `openRegGatesModal`, `closeRegGatesModal`, `handleGateAllChange`, `submitSaveGatesConfig`, `loadPendingHods`, `renderPendingHods`, `openApproveHodModal`, `closeApproveHodModal`, `confirmApproveHod`, `promptRejectHod`, and related window bindings.
+  2. *Complete Removal from HOD Faculty Management (`/faculty/faculty/index.html` & `faculty.js`)*:
+     - Removed the `Pending Verification` KPI card (`#stat-pending-faculty`, `#stat-pending-sub`).
+     - Removed the `Faculty Self-Registration` toggle card (`.fac-toggle-card`, `#toggle-faculty-reg`, `#badge-toggle-status`).
+     - Converted KPI layout into a clean 2-card symmetric grid: *Department Faculty* (total & active count) and *Active Teachers* (teaching-ready faculty count).
+     - Removed the `Pending` filter pill (`#pill-pending`, `#badge-count-pending`).
+     - In `faculty.js`: Removed `loadPendingFaculty`, `loadRegistrationStatus`, `renderToggleState`, `toggleRegistration`, `switchToPendingTab`, `renderPendingRoster`, `approveRequest`, `rejectRequest`, and the toggle change event listener.
+  3. *Backend & Authentication Service Alignment*:
+     - In `backend/src/services/authService.js`: Removed obsolete fallback query checking `faculty_registration_requests` table during login.
+     - In `backend/src/models/authModel.js`: Simplified `getRegistrationGatesData()` to permanently close faculty/HOD self-registration gates (`faculty_registration_open: false`, `hod_registration_open: false`). Fixed `findExistingEnrollment` SQL placeholder count (resolved MariaDB syntax error near `?)`).
+     - In `backend/scripts/test-student-self-registration.js`: Aligned test fixtures with 11-digit numeric UBTER Roll Number contract (`24` + 9 digits).
+  4. *Student Self-Registration 100% Preserved*:
+     - Public registration (`/login/register/index.html`) is dedicated solely to student registration.
+     - Complete E2E flow (cohort listing, self-registration, pending approval, faculty adjudication, and login) verified with 100% passing tests.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - Server Syntax Check (`node -c server.js`) -> 0 syntax errors.
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% in sync).
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **386 / 386 tests passed on localhost**.
+
+### ✅ Milestone 546: Codebase Cleanup Phase 1: Faculty Sheets CSS Deduplication & Backend Dead Code Removal (v29)
+- **Status**: Tested & Verified on Localhost (359/359 checks passed). **NOT PUSHED** (Held locally for user manual review).
+- **Objective & Architectural Scope**:
+  1. *Faculty Sheets CSS Deduplication (`sheets.css` & `css/sheets-grid.css`)*:
+     - Consolidated all core Excel grid table rules, headers, resizers, and selection styling cleanly into `frontend/faculty/sheets/css/sheets-grid.css`.
+     - Removed 150 lines of duplicate rules (`.excel-grid-table`, `.excel-row-th`, `.excel-cell`, `.excel-corner-th`, `.excel-selection-box`) from `sheets.css`.
+     - Replaced hardcoded `hsl(...)` color strings with standard theme CSS tokens (`var(--status-present-bg)` & `var(--status-present)`), enforcing strict theme compliance.
+     - Mirrored updated stylesheets to `frontend/www/faculty/sheets/`.
+  2. *Backend Dead Code Removal*:
+     - In `backend/src/models/authModel.js`: Safely removed 49 lines of dead methods (`findPendingFacultyRequest`, `createFacultyRequest`) associated with obsolete faculty self-registration.
+     - In `backend/src/controllers/authController.js`: Safely removed unbound dead handler `registerFaculty`.
+     - In `backend/src/models/teachingGroupModel.js`: Removed uncalled method `getStudentIdentifiers`.
+  3. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - Verified backend syntax sanity (`node -c server.js`) -> 0 errors.
+     - Ran UI Manifest Synchronization (`test-ui-manifest-sync.js`) -> 212 / 212 Passed (100% manifest and DOM parity).
+     - Ran Automated Theme & Color Tokenization (`test-theme-support.js`) -> 84 / 84 Passed (0 hardcoded hex/color issues).
+     - Ran RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 38 / 38 Passed.
+     - Ran End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Total: **359 / 359 tests passed on localhost**.
+
+### 📋 Next Cleanup Phase: Batch 3 (Cross-Model Method Deduplication) & Batch 4 (Frontend Core Asset Unification)
 
 ### ✅ Milestone 545: Remove Duplicate Bottom Wi-Fi Tab & Panel, Unify Wi-Fi Management in Main Console (v28)
 - **Objective & Architectural Scope**:

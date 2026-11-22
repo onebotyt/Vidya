@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "ADM-008",
+  "role": "Admin",
+  "route": "/admin/app-settings.html",
+  "source_file": "frontend/admin/app-settings/index.html",
+  "content_hash": "bf2e2484ed4e",
+  "last_scanned": "2026-11-22T20:23:27.034Z",
+  "title": "Admin App Settings &amp; Preferences — VidyaOS",
+  "purpose": "Admin app preferences, Google 1-Click login, update patches, appearance",
+  "shell": "Admin Shell (`sidebar.css`, `header.css`)",
+  "states": "Desktop: grouped settings form; Mobile: full-width card list with toggle controls",
+  "url_parameters": [],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [],
+    "tables": [],
+    "modals": [
+      {
+        "id": "logout-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "btn-confirm-logout",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "btn-toggle-google-link",
+        "label": "Link Google",
+        "action": "handleGoogleLinkToggle()",
+        "class": "btn btn-sm btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-check-updates",
+        "label": "Check Now",
+        "action": "checkForUpdates()",
+        "class": "btn btn-sm btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Toggle Theme",
+        "action": "toggleAppTheme()",
+        "class": "btn btn-sm btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeLogoutModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-logout",
+        "label": "Sign Out",
+        "action": "executeLogout()",
+        "class": "btn btn-danger",
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [],
+    "dropdown_selectors": []
+  },
+  "modals_catalog": [
+    {
+      "id": "logout-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-confirm-logout",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeLogoutModal()"
+    }
+  ],
+  "companion_scripts": [
+    "student/components/core/api.js",
+    "student/components/core/auth.js",
+    "global-components/sidebar/sidebar.js",
+    "global-components/header/header.js",
+    "admin/app-settings/app-settings.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "openSidebar",
+    "closeSidebar",
+    "toggleNotifications",
+    "closeAdminLogoutModal",
+    "toggleAdminNotifications",
+    "toggleAdminProfileMenu",
+    "toggleDashboardTheme",
+    "loadAdminProfile",
+    "closeLogoutModal"
+  ]
+}

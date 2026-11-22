@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
-  "content_hash": "b998b1a47ed3",
-  "last_scanned": "2026-11-20T21:19:06.875Z",
+  "content_hash": "d944489a2064",
+  "last_scanned": "2026-11-22T20:23:27.105Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -664,14 +664,6 @@
         "title": "Take Attendance Register"
       },
       {
-        "id": "btn-banner-promote",
-        "label": "Promote Cohort",
-        "action": "openPromoteModal()",
-        "class": "banner-action-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
         "id": null,
         "label": "Open Mark's Excel Sheet",
         "action": "openSheetStudio(",
@@ -795,22 +787,6 @@
         "id": null,
         "label": "document.getElementById('add-enroll-input').focus(),100)\"> Add Student",
         "action": "switchTab(",
-        "class": "qa-item",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Promote Cohort",
-        "action": "openPromoteModal()",
-        "class": "qa-item",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Archive Group",
-        "action": "openArchiveModal()",
         "class": "qa-item",
         "data_ui": null,
         "title": null
@@ -3250,6 +3226,7 @@
     "faculty/components/header/header.js",
     "faculty/components/sidebar/sidebar.js",
     "faculty/components/core/exceljs.min.js",
+    "shared/js/classroom-themes.js",
     "faculty/group-detail/js/group-detail-core.js",
     "faculty/group-detail/js/group-detail-stream.js",
     "faculty/group-detail/js/group-detail-people.js",
@@ -3270,6 +3247,8 @@
     "toggleDesktopSidebar",
     "toggleSidebar",
     "closeSidebar",
+    "renderCard",
+    "toggleCardMenu",
     "renderUserAvatar",
     "loadAttStat",
     "renderBanner",
@@ -3280,8 +3259,6 @@
     "renderUpcomingWorkSidebar",
     "toggleDesktopClassSettings",
     "closeDesktopClassSettings",
-    "toggleMobileClassroomOverflow",
-    "openSheetStudio",
-    "openLinkedRegister"
+    "toggleMobileClassroomOverflow"
   ]
 }

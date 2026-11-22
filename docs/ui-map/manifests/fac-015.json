@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/classes/index.html",
   "source_file": "frontend/faculty/classes/index.html",
-  "content_hash": "eef9ad8abbf8",
-  "last_scanned": "2026-11-20T21:19:06.934Z",
+  "content_hash": "e29be42a6db1",
+  "last_scanned": "2026-11-22T20:23:27.161Z",
   "title": "My Teaching Classes — VidyaOS",
   "purpose": "Teaching Classes Overview: 3 KPI status cards, classroom cards with uniform 6-module action grid (Theory Classes, Laboratory, NBA, Student Performance, Direct Assessment, Indirect Assessment), 3-dot kebab menu (Edit Class, Move to Trash), Create Class modal, Broadcast Notice modal with Year cohort filter and media upload, and Trash Bin navigation with live count badge",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -74,7 +74,12 @@
     }
   ],
   "layout_structure": {
-    "toolbars": [],
+    "toolbars": [
+      {
+        "id": "classes-sem-pills-bar",
+        "class": "classes-sem-pills-scroll"
+      }
+    ],
     "tables": [],
     "modals": [
       {
@@ -130,15 +135,71 @@
         "id": null,
         "label": "Create Class",
         "action": "openCreateGroupModal()",
-        "class": "btn-create-class-solid",
+        "class": "btn-create-class-solid desktop-only-btn",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "Broadcast Notice",
+        "label": "Broadcast",
         "action": "openBroadcastNoticeModal()",
         "class": "btn-action-outline",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "All",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 1",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 2",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 3",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 4",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 5",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sem 6",
+        "action": "handleSemesterFilterPill(",
+        "class": "sem-filter-pill",
         "data_ui": null,
         "title": null
       },
@@ -245,6 +306,14 @@
         "class": "btn-dialog-primary",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "Class",
+        "action": "openCreateGroupModal()",
+        "class": "classes-mobile-fab",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -289,6 +358,30 @@
         "class": "form-control-input"
       },
       {
+        "id": "input-class-units",
+        "type": "number",
+        "name": null,
+        "placeholder": "5",
+        "handler": "this.value = this.value.replace(/[^0-9]/g, ",
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-class-start-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-class-end-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
         "id": "edit-class-id",
         "type": "hidden",
         "name": null,
@@ -323,6 +416,30 @@
       {
         "id": "input-edit-class-year",
         "type": "text",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-edit-class-units",
+        "type": "number",
+        "name": null,
+        "placeholder": "5",
+        "handler": "this.value = this.value.replace(/[^0-9]/g, ",
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-edit-class-start-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control-input"
+      },
+      {
+        "id": "input-edit-class-end-date",
+        "type": "date",
         "name": null,
         "placeholder": null,
         "handler": null,
@@ -413,19 +530,6 @@
         ]
       },
       {
-        "id": "select-class-session",
-        "title": null,
-        "onchange": null,
-        "class": "form-control-select",
-        "options_count": 1,
-        "sample_options": [
-          {
-            "value": "",
-            "text": "Loading session..."
-          }
-        ]
-      },
-      {
         "id": "select-class-sem",
         "title": null,
         "onchange": "autoUpdateYear(this.value)",
@@ -459,6 +563,19 @@
         ]
       },
       {
+        "id": "select-class-session",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading session..."
+          }
+        ]
+      },
+      {
         "id": "select-edit-class-comp",
         "title": null,
         "onchange": null,
@@ -476,19 +593,6 @@
           {
             "value": "THEORY+PRACTICAL",
             "text": "THEORY + PRACTICAL"
-          }
-        ]
-      },
-      {
-        "id": "select-edit-class-session",
-        "title": null,
-        "onchange": null,
-        "class": "form-control-select",
-        "options_count": 1,
-        "sample_options": [
-          {
-            "value": "",
-            "text": "Loading session..."
           }
         ]
       },
@@ -522,6 +626,19 @@
           {
             "value": "6",
             "text": "Sem 6"
+          }
+        ]
+      },
+      {
+        "id": "select-edit-class-session",
+        "title": null,
+        "onchange": null,
+        "class": "form-control-select",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading session..."
           }
         ]
       },
@@ -620,6 +737,7 @@
     "faculty/components/icons.js",
     "faculty/components/sidebar/sidebar.js",
     "faculty/components/header/header.js",
+    "shared/js/classroom-themes.js",
     "faculty/classes/classes.js"
   ],
   "exported_functions": [
@@ -633,6 +751,8 @@
     "toggleNotifications",
     "toggleAppsLauncher",
     "closeAllPopovers",
+    "renderCard",
+    "toggleCardMenu",
     "loadClasses",
     "renderCards",
     "loadSessionsForModal"

@@ -4,14 +4,19 @@
   "role": "Student",
   "route": "/student/dashboard.html",
   "source_file": "frontend/student/dashboard/index.html",
-  "content_hash": "4ac9037799a7",
-  "last_scanned": "2026-11-20T21:19:06.980Z",
+  "content_hash": "a3e65cdf7a5a",
+  "last_scanned": "2026-11-22T20:23:27.204Z",
   "title": "Student Classroom Dashboard — VidyaOS",
   "purpose": "Student classroom dashboard, enrolled courses, attendance progress",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
   "states": "Desktop: multi-column course grid; Mobile: single-column cards with tap-to-enter",
   "url_parameters": [],
   "api_contracts": [
+    {
+      "method": "GET",
+      "endpoint": "https://api.github.com/repos/:id/releases/latest",
+      "type": "INTERNAL"
+    },
     {
       "method": "POST",
       "endpoint": "/api/v1/auth/logout",
@@ -100,11 +105,6 @@
       },
       {
         "id": "complete-profile-modal",
-        "title": "Modal Dialog",
-        "field_count": 0
-      },
-      {
-        "id": "pop-submit-btn",
         "title": "Modal Dialog",
         "field_count": 0
       }
@@ -258,25 +258,17 @@
       },
       {
         "id": null,
-        "label": "&times;",
+        "label": "Remind Later",
         "action": "closeCompleteProfileModal()",
-        "class": "btn-close",
+        "class": "btn btn-secondary",
         "data_ui": null,
         "title": null
       },
       {
         "id": null,
-        "label": "Remind Me Later",
-        "action": "closeCompleteProfileModal()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "pop-submit-btn",
-        "label": "Save &amp; Complete Profile",
-        "action": null,
-        "class": "btn btn-primary btn-sm",
+        "label": "Complete Profile",
+        "action": "redirectToCompleteProfile()",
+        "class": "btn btn-primary",
         "data_ui": null,
         "title": null
       }
@@ -321,38 +313,6 @@
         "placeholder": "Paste token hash...",
         "handler": null,
         "class": "form-control"
-      },
-      {
-        "id": "pop-father-name",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. Rajesh Sharma",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "pop-mother-name",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. Sunita Sharma",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "pop-dob",
-        "type": "date",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "pop-aadhar",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. 1234 5678 9012",
-        "handler": null,
-        "class": "form-control"
       }
     ],
     "dropdown_selectors": [
@@ -374,68 +334,6 @@
           {
             "value": "BUTTON",
             "text": "One-Tap Presence Request"
-          }
-        ]
-      },
-      {
-        "id": "pop-gender",
-        "title": null,
-        "onchange": null,
-        "class": "form-control",
-        "options_count": 4,
-        "sample_options": [
-          {
-            "value": "",
-            "text": "— Select —"
-          },
-          {
-            "value": "Male",
-            "text": "Male"
-          },
-          {
-            "value": "Female",
-            "text": "Female"
-          },
-          {
-            "value": "Other",
-            "text": "Other"
-          }
-        ]
-      },
-      {
-        "id": "pop-category",
-        "title": null,
-        "onchange": null,
-        "class": "form-control",
-        "options_count": 7,
-        "sample_options": [
-          {
-            "value": "",
-            "text": "— Select —"
-          },
-          {
-            "value": "General",
-            "text": "General"
-          },
-          {
-            "value": "OBC",
-            "text": "OBC"
-          },
-          {
-            "value": "SC",
-            "text": "SC"
-          },
-          {
-            "value": "ST",
-            "text": "ST"
-          },
-          {
-            "value": "EWS",
-            "text": "EWS"
-          },
-          {
-            "value": "Other",
-            "text": "Other"
           }
         ]
       }
@@ -491,20 +389,16 @@
       "title": "Modal Dialog",
       "fields": [],
       "submit_action": null
-    },
-    {
-      "id": "pop-submit-btn",
-      "title": "Modal Dialog",
-      "fields": [],
-      "submit_action": "closeCompleteProfileModal()"
     }
   ],
   "companion_scripts": [
+    "mobile-bridge.js",
     "student/components/core/api.js",
     "student/components/core/auth.js",
     "student/components/core/utils.js",
     "student/components/icons.js",
     "student/components/student-ui.js",
+    "shared/js/classroom-themes.js",
     "student/components/header/header.js",
     "student/components/sidebar/sidebar.js",
     "student/dashboard/dashboard.js"
@@ -513,6 +407,8 @@
     "toggleAppTheme",
     "exportToCsv",
     "exportTableToRealXlsx",
+    "renderCard",
+    "toggleCardMenu",
     "toggleStudentDrawer",
     "toggleStudentNotifications",
     "toggleStudentApps",
@@ -532,8 +428,6 @@
     "closeSelfAttendanceModal",
     "toggleSelfMethod",
     "openCameraQrModal",
-    "closeCameraQrModal",
-    "loadInstitutionBranding",
-    "toggleStudentFabMenu"
+    "closeCameraQrModal"
   ]
 }

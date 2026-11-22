@@ -5,7 +5,7 @@
   "route": "/faculty/classwork/create.html",
   "source_file": "frontend/faculty/classwork/create/index.html",
   "content_hash": "257046a62e9e",
-  "last_scanned": "2026-11-20T21:19:06.896Z",
+  "last_scanned": "2026-11-22T20:23:27.128Z",
   "title": "Create Classwork - VidyaOS",
   "purpose": "Create assignments, materials, quizzes, and deadlines",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -16,7 +16,9 @@
     "groupId",
     "id",
     "register",
-    "registerId"
+    "registerId",
+    "unit",
+    "topic"
   ],
   "api_contracts": [
     {
