@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'frontendv2/**'
+      - 'frontend/**'
       - '.github/workflows/build-desktop.yml'
 
 permissions:
@@ -27,20 +27,20 @@ jobs:
           node-version: 22
 
       - name: Verify Environment
-        run: echo "Packaging Frontend v2 Universal Desktop..."
+        run: echo "Packaging VidyaOS Universal Desktop..."
 
       - name: Package Desktop Web Distribution
         shell: bash
         run: |
           mkdir -p dist/desktop-bundle
-          cp -r frontendv2 dist/desktop-bundle/
+          cp -r frontend/* dist/desktop-bundle/ 2>/dev/null || true
           
           # Create Windows Quick-Launch PowerShell and Batch script
           cat << 'EOF' > dist/desktop-bundle/Launch-VidyaOS.bat
           @echo off
           title VidyaOS Desktop Client
           echo Launching VidyaOS Academic Suite...
-          start "" "%~dp0frontendv2\index.html"
+          start "" "%~dp0login\index.html"
           exit
           EOF
 
