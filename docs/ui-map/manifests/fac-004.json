@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
-  "content_hash": "944fd3f60fa6",
-  "last_scanned": "2026-11-22T21:51:58.945Z",
+  "content_hash": "f5be661971e7",
+  "last_scanned": "2026-11-22T22:17:14.810Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -184,6 +184,16 @@
     },
     {
       "method": "POST",
+      "endpoint": "/api/v1/faculty/registers/:id/holidays",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/v1/faculty/registers/:id/holidays/:id",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
       "endpoint": "/api/v1/faculty/registers/:id/export/attendance",
       "type": "REST"
     }
@@ -229,6 +239,14 @@
       {
         "id": "pc-matrix-bulk-bar",
         "class": "matrix-bulk-bar"
+      },
+      {
+        "id": "class-rc-progress-bar",
+        "class": "rollcall-progress-bar-fill"
+      },
+      {
+        "id": "",
+        "class": "rollcall-manual-toolbar"
       },
       {
         "id": "",
@@ -321,7 +339,7 @@
       },
       {
         "id": "unnamed-table",
-        "class": null,
+        "class": "rollcall-roster-table",
         "headers": [
           "Roll",
           "Student Name",
@@ -367,7 +385,12 @@
     "modals": [
       {
         "id": "classroom-roll-modal",
-        "title": "Live Roll Call &amp; Attendance",
+        "title": "Live Roll Call &amp; Attendance Studio",
+        "field_count": 0
+      },
+      {
+        "id": "manage-holiday-modal",
+        "title": "Manage Holidays &amp; Working Days",
         "field_count": 0
       },
       {
@@ -1265,6 +1288,14 @@
       },
       {
         "id": null,
+        "label": "Holidays",
+        "action": "openHolidayModal()",
+        "class": "btn btn-secondary btn-sm btn-manage-holidays",
+        "data_ui": null,
+        "title": "Manage institutional holidays and working days"
+      },
+      {
+        "id": null,
         "label": "Deselect",
         "action": "deselectAllMatrixStudents()",
         "class": "btn btn-secondary btn-sm",
@@ -1337,7 +1368,7 @@
       },
       {
         "id": "class-rc-tab-live",
-        "label": "Dynamic QR &amp; 6-Digit PIN",
+        "label": "Dynamic QR &amp; PIN",
         "action": "switchClassRollCallMode(",
         "class": "rollcall-tab-btn active",
         "data_ui": null,
@@ -1348,6 +1379,22 @@
         "label": "Manual Roll Call Roster",
         "action": "switchClassRollCallMode(",
         "class": "rollcall-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✓ All Present",
+        "action": "bulkSetRollCallStatus(",
+        "class": "btn-rc-bulk-present",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ All Absent",
+        "action": "bulkSetRollCallStatus(",
+        "class": "btn-rc-bulk-absent",
         "data_ui": null,
         "title": null
       },
@@ -1364,6 +1411,54 @@
         "label": "Confirm &amp; Save Attendance",
         "action": "submitClassRollCall()",
         "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeHolidayModal()",
+        "class": null,
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": "btn-type-holiday",
+        "label": "🌴 Mark as Holiday",
+        "action": "selectHolidayType(",
+        "class": "btn btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-type-working",
+        "label": "🏫 Working Class Day",
+        "action": "selectHolidayType(",
+        "class": "btn btn-sm btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-reset-holiday",
+        "label": "↺ Reset to Default",
+        "action": "resetDayHolidayDefault()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Reset back to system default"
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeHolidayModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-holiday",
+        "label": "Save Date Status",
+        "action": "submitSaveHoliday()",
+        "class": "btn btn-primary btn-sm",
         "data_ui": null,
         "title": null
       },
@@ -2210,6 +2305,30 @@
         "class": null
       },
       {
+        "id": "class-rc-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "🔍 Search student by name or roll...",
+        "handler": "filterClassRollCallRoster(this.value)",
+        "class": "rollcall-filter-input"
+      },
+      {
+        "id": "holiday-modal-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "onHolidayModalDateChange(this.value)",
+        "class": "form-input"
+      },
+      {
+        "id": "holiday-modal-reason",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g., Annual Sports Day, Local Festival, Special Holiday",
+        "handler": null,
+        "class": "form-input"
+      },
+      {
         "id": null,
         "type": "radio",
         "name": "export-format",
@@ -2869,7 +2988,13 @@
   "modals_catalog": [
     {
       "id": "classroom-roll-modal",
-      "title": "Live Roll Call &amp; Attendance",
+      "title": "Live Roll Call &amp; Attendance Studio",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "manage-holiday-modal",
+      "title": "Manage Holidays &amp; Working Days",
       "fields": [],
       "submit_action": null
     },

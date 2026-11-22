@@ -123,8 +123,8 @@ router.delete('/registers/:id/sessions/:sessionId', [
 router.post('/registers/:id/holidays', [
   param('id').isInt(),
   body('date').isDate().withMessage('Valid date required (YYYY-MM-DD)'),
-  body('holiday_name').optional().isString(),
-  body('is_working_day').optional().isBoolean(),
+  body('holiday_name').optional({ nullable: true, checkFalsy: true }).isString(),
+  body('is_working_day').optional({ nullable: true }).customSanitizer(v => (v === true || v === 1 || v === '1' || v === 'true') ? 1 : 0),
   validate
 ], FacultyController.setRegisterHoliday);
 
