@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-22T20:55:29.048Z",
+  "generated_at": "2026-11-22T21:37:55.233Z",
   "total_pages": 32,
   "totals": {
     "buttons": 789,
@@ -145,7 +145,7 @@
       "route": "/faculty/group-detail.html",
       "title": "Teaching Group Classroom - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-004.json",
-      "content_hash": "d944489a2064",
+      "content_hash": "62905bdf3c5c",
       "counts": {
         "buttons": 177,
         "modals": 54,

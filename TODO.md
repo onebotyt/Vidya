@@ -49,6 +49,35 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 578: Classroom Register Full-Screen Fluid Layout & Visual UX Enhancement (v61)
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Full-Screen Fluid Layout for Attendance Matrix (`group-detail`)*:
+     - In [core.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/core.css) and [register.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/register.css): Added `.classroom-body.fluid-layout` and `body[data-active-tab="register"] .classroom-body` to expand `.classroom-body` from the artificial 1200px clamp to `max-width: 100% !important; padding: 1rem 1.25rem 2.5rem !important; margin: 0 !important; width: 100% !important;` when on the Register tab, allowing all 30/31 days to fit on desktop screens without horizontal scrolling.
+     - In [group-detail-core.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-core.js): Updated `switchTab(tab)` to toggle `.fluid-layout` on `.classroom-body`.
+  2. *Fluid Date Columns & Responsive Fallback*:
+     - In [register.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/register.css) and [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js): Removed artificial `max-width: 38px` from day column headers, setting `min-width: 28px` with fluid expansion so date columns naturally distribute across wide viewports (> 1250px) with 0 horizontal scroll.
+     - On smaller screens (< 1200px, tablets, laptops), `.register-matrix-wrapper` gracefully enables smooth horizontal scrolling (`overflow-x: auto`) with custom sleek scrollbar.
+  3. *Sunday & Holiday Vertical Ribbon Typography*:
+     - Eliminated broken letter splitting (`w.split('').join(' ')`) that caused multi-word labels like "SECOND SATURDAY" and "GOV DHASARA PUJA" to wrap horizontally into jumbled character blocks.
+     - Implemented continuous vertical ribbons (`writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;`) with directional arrows (`↑`, `↓`) and theme token colors (`var(--col-holiday-color)`, `var(--col-holiday-bg)`).
+  4. *Unified Today's Column Guide*:
+     - Enhanced Day 22 header with primary blue background, bold white typography, and `TODAY` pill.
+     - Extended subtle vertical accent tint (`var(--color-primary-light)` with `2px solid var(--color-primary)` borders) through all student rows in TBODY and daily totals in TFOOT.
+  5. *Digital Pen Marks & Bulk Action Bar Polish*:
+     - Styled `.pen-mark` in matrix cells and legend with rounded badge aesthetics (`.pen-mark.p` green, `.pen-mark.a` red, `.pen-mark.empty` muted dot) and interactive hover lift.
+     - Styled `.matrix-bulk-bar`, `.btn-bulk-present`, and `.btn-bulk-absent` with primary accent borders and pill geometry.
+  6. *Asset Versioning & Multi-Platform Parity*:
+     - Updated asset version hashes in [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html) and [group-detail.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/group-detail.css) to `v=20261123_v1` to eliminate stale stylesheet caching.
+     - Mirrored all changes across `frontend/www/` and Android Capacitor public assets.
+  7. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed (0 hardcoded hex colors).
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Total: **388 / 388 automated tests passed on localhost**.
+
 ### ✅ Milestone 577: Dev 4 Login Page Integration — Interactive Campus Photo Gallery & Social Auth Locking (v60)
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
 - **Objective & Architectural Scope**:
