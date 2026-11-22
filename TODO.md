@@ -49,6 +49,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 585: Global Institution Hero Integration, Compact Student Home & Profile Density, and Attendance Eligibility Purge
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Global Institution Showcase Hero Reusability (`#global-hero-mount`)*:
+     - Eliminated custom/duplicated hero implementations across student portals in favor of canonical global component `/global-components/institution-hero/` (`institution-hero.html`, `institution-hero.css`, `institution-hero.js`).
+     - In [student/home/index.html](file:///e:/uiap/VidyaOS/frontend/student/home/index.html), replaced old custom `.home-hero-card` with self-mounting `<div id="global-hero-mount"></div>` and integrated `institution-hero.css`/`institution-hero.js`.
+     - In [student/dashboard/index.html](file:///e:/uiap/VidyaOS/frontend/student/dashboard/index.html), replaced static `.hero-card` markup and purged duplicate DOM injection code in [student/dashboard/dashboard.js](file:///e:/uiap/VidyaOS/frontend/student/dashboard/dashboard.js), mounting the global showcase component while preserving backward compatibility spans.
+  2. *Student Home & Profile UI Density Optimization*:
+     - Compacted Google 1-Click Connect banner in [student/components/header/header.js](file:///e:/uiap/VidyaOS/frontend/student/components/header/header.js) from 64px to sleek 34px slim strip (`padding: 5px 14px`, 22px icon, compact button).
+     - Compacted [student/home/home.css](file:///e:/uiap/VidyaOS/frontend/student/home/home.css): tightened `.home-main-container` padding, reduced `.home-up-next-card` padding and subject font size, streamlined the 4 quick action tiles (`.quick-tile`, 36px icons), and optimized mobile responsive layouts.
+     - Compacted [student/profile/profile.css](file:///e:/uiap/VidyaOS/frontend/student/profile/profile.css): reduced grid gap from 1.25rem to 0.85rem, reduced avatar size from 62px to 52px, streamlined `.student-id-hero` card, and compacted `.desktop-dossier-card`.
+  3. *Complete Removal of Attendance Health & Exam Eligibility Statutory Requirement*:
+     - Purged the entire `.attendance-health-card` ("Attendance Health & Exam Eligibility — Statutory minimum requirement: 75.0% across subjects") from [student/profile/index.html](file:///e:/uiap/VidyaOS/frontend/student/profile/index.html) and removed all calculation/standing logic from [student/profile/profile.js](file:///e:/uiap/VidyaOS/frontend/student/profile/profile.js).
+     - Standardized `#hero-standing-badge` to neutral enrolled badge (`Active Student`).
+     - Removed the "75% Attendance Health" pulse card from [student/home/index.html](file:///e:/uiap/VidyaOS/frontend/student/home/home.css) and disabled calculation in [student/home/home.js](file:///e:/uiap/VidyaOS/frontend/student/home/home.js).
+     - Replaced all legacy "statutory 75% exam eligibility" copy across [student/attendance/index.html](file:///e:/uiap/VidyaOS/frontend/student/attendance/index.html), [student/attendance/attendance.js](file:///e:/uiap/VidyaOS/frontend/student/attendance/attendance.js), [student/dashboard/index.html](file:///e:/uiap/VidyaOS/frontend/student/dashboard/index.html), and [student/settings/index.html](file:///e:/uiap/VidyaOS/frontend/student/settings/index.html) with clean institutional attendance guidelines.
+  4. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 584: Desktop PC Matrix "Add Period" Toolbar Button & Marks Workspace UI/UX Overhaul
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

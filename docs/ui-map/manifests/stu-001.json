@@ -4,8 +4,8 @@
   "role": "Student",
   "route": "/student/dashboard.html",
   "source_file": "frontend/student/dashboard/index.html",
-  "content_hash": "a3e65cdf7a5a",
-  "last_scanned": "2026-11-22T23:33:32.586Z",
+  "content_hash": "293f5da8f4ae",
+  "last_scanned": "2026-11-22T23:57:22.547Z",
   "title": "Student Classroom Dashboard — VidyaOS",
   "purpose": "Student classroom dashboard, enrolled courses, attendance progress",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -50,6 +50,11 @@
     {
       "method": "PUT",
       "endpoint": "/api/v1/notifications/mark-all-read",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/admin/settings",
       "type": "REST"
     }
   ],
@@ -401,6 +406,7 @@
     "shared/js/classroom-themes.js",
     "student/components/header/header.js",
     "student/components/sidebar/sidebar.js",
+    "global-components/institution-hero/institution-hero.js",
     "student/dashboard/dashboard.js"
   ],
   "exported_functions": [

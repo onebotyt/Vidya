@@ -4,8 +4,8 @@
   "role": "Student",
   "route": "/student/profile.html",
   "source_file": "frontend/student/profile/index.html",
-  "content_hash": "7384e9fbe9d7",
-  "last_scanned": "2026-11-22T23:33:32.629Z",
+  "content_hash": "d70bc0e08978",
+  "last_scanned": "2026-11-22T23:57:22.593Z",
   "title": "Student Profile &amp; Academic Credentials — VidyaOS",
   "purpose": "Academic credentials, PRN, branch, semester, active devices",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -60,10 +60,6 @@
       {
         "id": "student-sidebar-mount",
         "class": ""
-      },
-      {
-        "id": "health-progress-bar",
-        "class": "progress-bar-fill"
       },
       {
         "id": "",

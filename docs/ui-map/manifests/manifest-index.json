@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-22T23:33:32.645Z",
+  "generated_at": "2026-11-22T23:57:22.608Z",
   "total_pages": 33,
   "totals": {
     "buttons": 847,
     "modals": 202,
     "inputs": 405,
-    "apis": 300
+    "apis": 301
   },
   "pages": [
     {
@@ -301,12 +301,12 @@
       "route": "/student/dashboard.html",
       "title": "Student Classroom Dashboard — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-001.json",
-      "content_hash": "a3e65cdf7a5a",
+      "content_hash": "293f5da8f4ae",
       "counts": {
         "buttons": 20,
         "modals": 8,
         "inputs": 6,
-        "apis": 8
+        "apis": 9
       }
     },
     {
@@ -314,7 +314,7 @@
       "route": "/student/attendance.html",
       "title": "My Attendance &amp; Calendar — Student Portal",
       "manifest_file": "docs/ui-map/manifests/stu-002.json",
-      "content_hash": "9ed047c1ab0e",
+      "content_hash": "e7dd7331de4c",
       "counts": {
         "buttons": 5,
         "modals": 2,
@@ -392,7 +392,7 @@
       "route": "/student/profile.html",
       "title": "Student Profile &amp; Academic Credentials — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-008.json",
-      "content_hash": "7384e9fbe9d7",
+      "content_hash": "d70bc0e08978",
       "counts": {
         "buttons": 17,
         "modals": 1,
