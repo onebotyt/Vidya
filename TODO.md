@@ -49,6 +49,21 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### 📋 Active Milestone 546: Backend V2 Role & Page-by-Page Vertical Slice Architecture & Migration Plan
+- **Status**: Plan Generated (`v2_modular_page_architecture_plan.md`), Awaiting User Approval / Feedback
+- **Objective & Architectural Scope**:
+  1. *Zero In-Place Overwrites & Backward Compatibility*:
+     - Keep all legacy controllers (`adminController.js`, `hodController.js`, `facultyController.js`, etc.) and `/api/v1/*` routes 100% active and untouched.
+     - Build parallel modular architecture in `backend/src/v2/` with endpoints mounted under `/api/v2/*`.
+  2. *Role & Page-by-Page Vertical Slices*:
+     - Strict isolation by Role (`admin/`, `faculty/`, `student/`, `public/`) and Page (e.g. `admin/dashboard/`, `faculty/sheets/`, etc.).
+     - Each page slice encapsulates its own controller, model (queries only needed for that page), and routes.
+  3. *Incremental Frontend Cutover*:
+     - Add `apiClient.v2` wrapper in frontend `shared/js/api.js`.
+     - Migrate pages one by one with instant fallback safety.
+  4. *Decommissioning Gate*:
+     - Retire legacy code only after all 32 UI manifest pages pass automated verification (`test-ui-manifest-sync.js`, `test-api-flows.js`).
+
 ### ✅ Milestone 545: Remove Duplicate Bottom Wi-Fi Tab & Panel, Unify Wi-Fi Management in Main Console (v28)
 - **Objective & Architectural Scope**:
   1. *Elimination of Redundant Bottom Wi-Fi Panel (`#panel-wifi` & `#tab-btn-wifi`)*:
