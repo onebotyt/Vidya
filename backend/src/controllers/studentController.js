@@ -604,7 +604,7 @@ class StudentController {
             : `Your registration request was not approved: ${rejection_reason || 'Criteria not met'}.`,
           linkUrl: isApprove ? '/student/attendance.html' : null
         });
-      } catch (_) {}
+      } catch (_) { }
 
       res.status(200).json({
         success: true,

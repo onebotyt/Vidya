@@ -359,7 +359,7 @@ class StudentModel {
            VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'ACTIVE')`,
           [studentId, departmentId, ayId, year, semester, finalRoll]
         );
-      } catch (_) {}
+      } catch (_) { }
 
       return {
         student_id: studentId,
@@ -642,7 +642,7 @@ class StudentModel {
              ON DUPLICATE KEY UPDATE class_roll_no = VALUES(class_roll_no), status = 'ACTIVE'`,
             [actualStudentId, studentDeptId, resolvedAyId, studentYear, studentSem, finalRollNo]
           );
-        } catch (_) {}
+        } catch (_) { }
       } else {
         await conn.execute(
           `UPDATE users SET status = 'REJECTED', rejection_reason = ? WHERE id = ?`,
@@ -732,7 +732,7 @@ class StudentModel {
            VALUES (?, 'STUDENT_DEPARTMENT_TRANSFERRED', 'students', ?, ?)`,
           [actorId, String(studentId), JSON.stringify({ from_dept: student.current_dept_id, to_dept: newDepartmentId, reason: reason || null })]
         );
-      } catch (_) {}
+      } catch (_) { }
 
       return {
         student_id: Number(studentId),

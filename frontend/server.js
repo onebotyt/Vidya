@@ -61,6 +61,12 @@ const STATIC_REWRITES = [
   // login/index.css and login/index.js live at login/ root
   // (no rewrite needed — direct paths work)
 
+  // Frontend v2 Isolated SPA Rewrites
+  [/^\/v2\/?$/, '/v2/index.html'],
+  [/^\/v2\/(.+)$/, '/v2/$1'],
+  [/^\/views\/(.+)$/, '/v2/views/$1'],
+  [/^\/css\/(auth-loader\.css|v2\.css)$/, '/v2/css/$1'],
+
   // Login
   [/^\/login\/?$/, '/login/index.html'],
   [/^\/login\.html$/, '/login/index.html'],
@@ -139,27 +145,36 @@ function serveFile(filePath, res, status = 200) {
   const ext = path.extname(filePath).toLowerCase();
   const mime = MIME[ext] || 'application/octet-stream';
   const stat = fs.statSync(filePath);
+  const isStaticAsset = ['.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2'].includes(ext);
+  const cacheHeader = isStaticAsset ? 'public, max-age=86400, stale-while-revalidate=604800' : 'no-cache';
   res.writeHead(status, {
     'Content-Type': mime,
     'Content-Length': stat.size,
-    'Cache-Control': 'no-cache',
+    'Cache-Control': cacheHeader,
   });
   fs.createReadStream(filePath).pipe(res);
 }
 
+const CLOUD_FALLBACK = 'https://vidyaos-backend.onrender.com';
+
 // ─── Proxy to backend ─────────────────────────────────────────────────────────
-function proxyToBackend(req, res) {
-  const target = new url.URL(BACKEND_URL);
+function sendProxyRequest(targetUrlStr, req, res, bodyBuffer) {
+  const target = new url.URL(targetUrlStr);
   const isHttps = target.protocol === 'https:';
+  const headers = { ...req.headers, host: target.host };
+  delete headers['connection'];
+  delete headers['content-length'];
+  if (bodyBuffer && bodyBuffer.length) {
+    headers['content-length'] = Buffer.byteLength(bodyBuffer);
+  }
+
   const options = {
     hostname: target.hostname,
     port: target.port || (isHttps ? 443 : 80),
     path: req.url,
     method: req.method,
-    headers: {
-      ...req.headers,
-      host: target.host,
-    },
+    headers: headers,
+    timeout: 15000
   };
 
   const mod = isHttps ? https : http;
@@ -169,12 +184,36 @@ function proxyToBackend(req, res) {
   });
 
   proxyReq.on('error', (err) => {
+    if (targetUrlStr !== CLOUD_FALLBACK) {
+      console.log(`[proxy] Primary backend (${targetUrlStr}) offline: ${err.message}. Retrying cloud: ${CLOUD_FALLBACK}`);
+      return sendProxyRequest(CLOUD_FALLBACK, req, res, bodyBuffer);
+    }
     console.error('[proxy error]', err.message);
-    res.writeHead(502, { 'Content-Type': 'text/plain' });
-    res.end(`Backend proxy error: ${err.message}\nIs the backend running at ${BACKEND_URL}?`);
+    res.writeHead(502, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: false, error: { message: `Backend error: ${err.message}` } }));
   });
 
-  req.pipe(proxyReq);
+  proxyReq.on('timeout', () => {
+    proxyReq.destroy(new Error('Proxy request timed out'));
+  });
+
+  if (bodyBuffer && bodyBuffer.length) {
+    proxyReq.write(bodyBuffer);
+  }
+  proxyReq.end();
+}
+
+function proxyToBackend(req, res) {
+  const chunks = [];
+  req.on('data', chunk => chunks.push(chunk));
+  req.on('end', () => {
+    const bodyBuffer = Buffer.concat(chunks);
+    sendProxyRequest(BACKEND_URL, req, res, bodyBuffer);
+  });
+  req.on('error', (err) => {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: false, error: { message: err.message } }));
+  });
 }
 
 // ─── Main request handler ─────────────────────────────────────────────────────
