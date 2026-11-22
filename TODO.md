@@ -49,6 +49,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 579: MySQL Strict Mode 'start_time' Hardening & Register Session Resolution Error Resilience (v62)
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
+- **Objective & Architectural Scope**:
+  1. *MySQL Strict Mode (`STRICT_TRANS_TABLES`) 'start_time' Compliance*:
+     - In [facultyModel.js](file:///e:/uiap/VidyaOS/backend/src/models/facultyModel.js): In `autoCreateTodaySession()`, added `effStartTime = '${today} 09:00:00'` to the `INSERT INTO attendance_sessions` column list and parameter array. Resolved fallback subject ID from teaching group or department to guarantee foreign key integrity.
+     - In [attendanceService.js](file:///e:/uiap/VidyaOS/backend/src/services/attendanceService.js): In `createSession()`, added `effStartTime = data.start_time || '${session_date} 09:00:00'` into `INSERT INTO attendance_sessions`.
+     - In [db.js](file:///e:/uiap/VidyaOS/backend/src/config/db.js): Added startup schema guarantee `ALTER TABLE attendance_sessions MODIFY COLUMN start_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP` to prevent MySQL strict mode errors across all deployment platforms.
+     - In [facultyController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/facultyController.js): Wrapped `autoCreateTodaySession` in `getRegisterDetail` in a defensive `try...catch` so any session creation anomaly never crashes the register grid view with an unhandled 500 error.
+  2. *Flexible `session_type` Normalization & Sanitation*:
+     - In [routes/faculty.js](file:///e:/uiap/VidyaOS/backend/src/routes/faculty.js): In `POST /registers/:id/sessions`, replaced rigid enum validation with `.customSanitizer()` to cleanly map component strings like `'THEORY + PRACTICAL'`, `'Theory'`, `'lab'`, and `'Practical'` into canonical `'THEORY'`, `'PRACTICAL'`, `'TUTORIAL'`, or `'CUSTOM'` before `.isIn()` verification, completely preventing 400 Bad Request ("Invalid value") errors. Allowed optional `start_time` and `end_time` body fields.
+  3. *Client-Side Register Resolution & UI Error State*:
+     - In [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js):
+       - Immediately initialized `class-sync-date` input value on load so the date picker never renders empty `dd-mm-yyyy`.
+       - In `openClassRollCallModal()`: Normalized `session_type` from `reg.session_type_scope || grp.component` and explicitly passed `start_time: '${dateVal} 09:00:00'` to `/registers/:id/sessions`.
+       - In `createClassSession()`: Defaulted `payload.start_time` to `${session_date} 09:00:00` when time input is omitted.
+       - In `loadClassRegister()`: Replaced silent console-only catch with an inline user-friendly error container and a one-click Retry button (`window.retryLoadClassRegister()`) instead of leaving the table stuck in an infinite "Loading student attendance sheet..." spinner.
+  4. *Multi-Platform Mirroring & Asset Versioning*:
+     - Updated asset versioning in [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/index.html) to `v=20261123_v2`.
+     - Mirrored updated `group-detail-register.js` and `index.html` to `frontend/www/` and Android Capacitor public assets.
+  5. *Localhost Verification Suite (Zero-Break Guaranteed)*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`) -> 213 / 213 Passed.
+     - Automated Theme & Color Tokens (`test-theme-support.js`) -> 84 / 84 Passed.
+     - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+     - End-to-End System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+     - Student Self-Registration E2E Suite (`test-student-self-registration.js`) -> 27 / 27 Passed.
+     - Dedicated Session Defaults & Sanitizer (`test-session-defaults.js`) -> Passed.
+     - Total: **388 / 388 automated tests passed on localhost**.
+
 ### ✅ Milestone 578: Classroom Register Full-Screen Fluid Layout & Visual UX Enhancement (v61)
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
 - **Objective & Architectural Scope**:
