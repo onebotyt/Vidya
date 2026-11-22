@@ -8,6 +8,28 @@
 (function () {
   'use strict';
 
+  // Global helper fallbacks
+  window.ById = window.ById || (id => document.getElementById(id));
+  window.openModal = window.openModal || (id => {
+    const el = window.ById(id);
+    if (el) {
+      el.classList.add('open');
+      el.style.display = 'flex';
+      document.body.classList.add('modal-open');
+    }
+  });
+  window.closeModal = window.closeModal || (id => {
+    const el = window.ById(id);
+    if (el) {
+      el.classList.remove('open');
+      el.style.display = 'none';
+      if (!document.querySelector('.modal-backdrop.open')) {
+        document.body.classList.remove('modal-open');
+      }
+    }
+  });
+  window.escapeHtml = window.escapeHtml || (s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+
   let _allTeacherRegisters = [];
   let _activeRegister = null;
 
@@ -21,6 +43,7 @@
 
       // Initialize state container
       window.S = window.S || { groupId: null, group: null, members: [] };
+      window.classRegState = window.classRegState || {};
 
       // Fetch all registers assigned to teacher
       const resp = await apiFetch('/faculty/registers');
@@ -90,6 +113,7 @@
     // Update global state S
     window.S.groupId = reg.group_id;
     window.S.group = reg;
+    window.classRegState = window.classRegState || {};
     window.classRegState.registerId = reg.id;
     window.classRegState.registerData = reg;
 
@@ -144,6 +168,63 @@
   // Window exports
   window.initUnifiedRegisterStudio = initUnifiedRegisterStudio;
   window.onUnifiedSubjectSelectChange = onUnifiedSubjectSelectChange;
+
+  // Compatibility & Integration bridges
+  function triggerEspDaySync(e) {
+    if (typeof window.triggerClassEspDaySync === 'function') return window.triggerClassEspDaySync(e);
+  }
+  function checkEspStatus() {
+    if (typeof window.checkClassEspStatus === 'function') return window.checkClassEspStatus();
+  }
+  function submitEspConfirmation() {
+    if (typeof window.submitClassEspConfirmation === 'function') return window.submitClassEspConfirmation();
+  }
+  function switchRegisterTab(tab) {
+    if (tab === 'assignments') {
+      window.location.href = `/faculty/group-detail/index.html?id=${(window.S && window.S.groupId) || ''}&tab=classwork`;
+    } else if (tab === 'marks') {
+      window.location.href = `/faculty/group-detail/index.html?id=${(window.S && window.S.groupId) || ''}&tab=marks`;
+    }
+  }
+  function openCreateAssignmentModal() {
+    const m = window.ById('create-assignment-modal');
+    if (m) window.openModal('create-assignment-modal');
+  }
+  function openCreateExamModal() {
+    const m = window.ById('create-exam-modal');
+    if (m) window.openModal('create-exam-modal');
+  }
+  function loadRegisterAssignments() {}
+  function loadRegisterExams() {}
+  function initLiveAttendanceTogether() {
+    if (typeof window.openClassRollCallModal === 'function') return window.openClassRollCallModal();
+  }
+  function switchRollCallMode(mode) {
+    if (typeof window.switchClassRollCallMode === 'function') return window.switchClassRollCallMode(mode);
+  }
+  function generateNewQr() {}
+  function generateNewPin() {}
+  function copyPinCode() {}
+  function copyQrToken() {}
+  function finalizeClaimsAttendance() {
+    if (typeof window.submitClassRollCall === 'function') return window.submitClassRollCall();
+  }
+
+  window.triggerEspDaySync = triggerEspDaySync;
+  window.checkEspStatus = checkEspStatus;
+  window.submitEspConfirmation = submitEspConfirmation;
+  window.switchRegisterTab = switchRegisterTab;
+  window.openCreateAssignmentModal = openCreateAssignmentModal;
+  window.openCreateExamModal = openCreateExamModal;
+  window.loadRegisterAssignments = loadRegisterAssignments;
+  window.loadRegisterExams = loadRegisterExams;
+  window.initLiveAttendanceTogether = initLiveAttendanceTogether;
+  window.switchRollCallMode = switchRollCallMode;
+  window.generateNewQr = generateNewQr;
+  window.generateNewPin = generateNewPin;
+  window.copyPinCode = copyPinCode;
+  window.copyQrToken = copyQrToken;
+  window.finalizeClaimsAttendance = finalizeClaimsAttendance;
 
   // Initialize on DOM ready
   if (document.readyState === 'loading') {

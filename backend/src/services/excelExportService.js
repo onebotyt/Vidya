@@ -1922,26 +1922,17 @@ async function generateAttendanceRegisterExcel(data) {
     const students = data.overview_students || [];
     const mCount = months.length;
 
-    // Columns: Sr No (1), Roll No (2), Enroll No (3), Reg No (4), Name (5), Month 1..M, Tot Present, Tot Absent, Tot Classes, % Attended
-    const baseColsCount = 5;
-    const totPresCol = baseColsCount + mCount + 1;
-    const totAbsCol = totPresCol + 1;
-    const totClassesCol = totAbsCol + 1;
-    const pctCol = totClassesCol + 1;
-    const totalColsCount = pctCol;
+    // Columns: Roll No (1), UBTER Reg No (2), UBTER Roll No (3), Name (4), Month 1..M
+    const baseColsCount = 4;
+    const totalColsCount = baseColsCount + mCount;
 
-    wsOverview.getColumn(1).width = 7;   // SR. NO.
-    wsOverview.getColumn(2).width = 10;  // ROLL NO.
-    wsOverview.getColumn(3).width = 18;  // REGISTRATION NO.
-    wsOverview.getColumn(4).width = 16;  // UBTER ROLL NO.
-    wsOverview.getColumn(5).width = 26;  // STUDENT NAME
+    wsOverview.getColumn(1).width = 10;  // ROLL NO.
+    wsOverview.getColumn(2).width = 22;  // UBTER REGISTRATION NO.
+    wsOverview.getColumn(3).width = 18;  // UBTER ROLL NO.
+    wsOverview.getColumn(4).width = 28;  // STUDENT NAME
     for (let i = 0; i < mCount; i++) {
       wsOverview.getColumn(baseColsCount + 1 + i).width = 14;
     }
-    wsOverview.getColumn(totPresCol).width = 14;
-    wsOverview.getColumn(totAbsCol).width = 14;
-    wsOverview.getColumn(totClassesCol).width = 14;
-    wsOverview.getColumn(pctCol).width = 13;
 
     // Row 1: Institution & Session
     wsOverview.mergeCells(1, 1, 1, totalColsCount);
@@ -1980,9 +1971,8 @@ async function generateAttendanceRegisterExcel(data) {
     const r4 = wsOverview.getRow(4);
     r4.height = 24;
     const overviewHeaders = [
-      'SR. NO.', 'ROLL NO.', 'REGISTRATION NO.', 'UBTER ROLL NO.', 'STUDENT NAME',
-      ...months.map(m => `${m.label}\n(P/Held)`),
-      'TOTAL PRESENT', 'TOTAL ABSENT', 'TOTAL CLASSES', '% ATTENDED'
+      'ROLL NO.', 'UBTER REGISTRATION NO.', 'UBTER ROLL NO.', 'STUDENT NAME',
+      ...months.map(m => `${m.label}\n(P/Held)`)
     ];
 
     overviewHeaders.forEach((text, idx) => {
@@ -2000,16 +1990,15 @@ async function generateAttendanceRegisterExcel(data) {
       const row = wsOverview.getRow(rowIdx);
       row.height = 20;
 
-      row.getCell(1).value = st.sr_no || (sIdx + 1);
-      row.getCell(2).value = st.roll_no || '--';
-      row.getCell(3).value = st.registration_no || '--';
-      row.getCell(4).value = st.enrollment_no || '--';
-      row.getCell(5).value = st.name || '--';
+      row.getCell(1).value = st.roll_no || '--';
+      row.getCell(2).value = st.registration_no || '--';
+      row.getCell(3).value = st.enrollment_no || '--';
+      row.getCell(4).value = st.name || '--';
 
-      for (let c = 1; c <= 5; c++) {
+      for (let c = 1; c <= 4; c++) {
         row.getCell(c).font = { name: 'Calibri', size: 9.5 };
         row.getCell(c).border = THIN_BORDER;
-        row.getCell(c).alignment = { horizontal: c === 5 ? 'left' : 'center', vertical: 'middle' };
+        row.getCell(c).alignment = { horizontal: c === 4 ? 'left' : 'center', vertical: 'middle' };
       }
 
       // Monthly breakdown columns
@@ -2021,41 +2010,6 @@ async function generateAttendanceRegisterExcel(data) {
         cell.border = THIN_BORDER;
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
       });
-
-      // Total Present
-      const presCell = row.getCell(totPresCol);
-      presCell.value = Number(st.overall_present || 0);
-      presCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: 'FF006600' } };
-      presCell.border = THIN_BORDER;
-      presCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
-      // Total Absent
-      const absCell = row.getCell(totAbsCol);
-      absCell.value = Number(st.overall_absent || 0);
-      absCell.font = { name: 'Calibri', size: 9.5, bold: Number(st.overall_absent) > 0, color: { argb: Number(st.overall_absent) > 0 ? COLOR_ABSENT_RED : 'FF000000' } };
-      absCell.border = THIN_BORDER;
-      absCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
-      // Total Classes
-      const presLetter = colToLetter(totPresCol);
-      const absLetter = colToLetter(totAbsCol);
-      const classesCell = row.getCell(totClassesCol);
-      classesCell.value = { formula: `${presLetter}${rowIdx}+${absLetter}${rowIdx}`, result: Number(st.overall_total || 0) };
-      classesCell.font = { name: 'Calibri', size: 9.5, bold: true };
-      classesCell.border = THIN_BORDER;
-      classesCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
-      // % Attended
-      const classesLetter = colToLetter(totClassesCol);
-      const pctCell = row.getCell(pctCol);
-      pctCell.value = {
-        formula: `IF(${classesLetter}${rowIdx}>0, ${presLetter}${rowIdx}/${classesLetter}${rowIdx}, 0)`,
-        result: st.overall_total > 0 ? (st.overall_present / st.overall_total) : 0
-      };
-      pctCell.numFmt = '0.0%';
-      pctCell.font = { name: 'Calibri', size: 9.5, bold: true };
-      pctCell.border = THIN_BORDER;
-      pctCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
       rowIdx++;
     });

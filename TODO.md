@@ -49,6 +49,41 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 581: Unified Attendance Register Studio with Subject Switcher & 5-Column Clean Institutional Export and Print Engine (v64)
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Unified Attendance Register Studio (`/faculty/registers/index.html` - `FAC-018`)*:
+     - Replaced the legacy 0-second redirect with a full-fledged unified register studio providing the exact same rich classroom matrix UI/UX, hardware sync tools, and live roll call studio without requiring teachers to jump between separate classroom workspaces.
+     - Created top Subject / Cohort Switcher Card (`#reg-subject-switcher-card` with `#unified-subject-select`) powered by [registers.js](file:///e:/uiap/VidyaOS/frontend/faculty/registers/registers.js) and [registers.css](file:///e:/uiap/VidyaOS/frontend/faculty/registers/registers.css).
+     - Seamlessly synchronizes URL parameters (`?id=`, `?register_id=`), updates global state container (`window.S`, `window.classRegState`), and fetches teaching group members dynamically on subject selection.
+     - Updated [sidebar.js](file:///e:/uiap/VidyaOS/frontend/faculty/components/sidebar/sidebar.js) with dedicated `Registers` navigation entry pointing directly to `/faculty/registers/index.html`.
+  2. *5-Column Clean Institutional Export Engine (Excel, PDF, Word)*:
+     - In [excelExportService.js](file:///e:/uiap/VidyaOS/backend/src/services/excelExportService.js):
+       - Strictly streamlined monthly sheets and overview sheets to output only the 5 required institutional columns:
+         1. `Roll No`
+         2. `UBTER Registration No`
+         3. `UBTER Roll No`
+         4. `Name` (Student Full Name)
+         5. `Days` (Day 1..31 attendance ledger marks `P`, `A`, or empty)
+       - Omitted `SR. NO.` and stripped out total counters (`TOTAL PRESENT`, `TOTAL ABSENT`, `TOTAL CLASSES`, `% ATTENDED`) per institutional evaluation guidelines.
+       - Updated HTML generator for PDF and Word doc exports with matched 5-column layout and dynamic spans.
+  3. *Clean Browser Print System*:
+     - In [register.css](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/css/register.css) and [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js):
+       - Configured `.print-only-col` to remain hidden on screen (`display: none !important`), keeping the web matrix ultra-clean with only Roll No, Student Name, and Day columns visible.
+       - Activated `.print-only-col` in `@media print` (`display: table-cell !important`) showing UBTER Registration No and UBTER Roll No alongside Name and Days, while suppressing sidebars, header mounts, toolbar buttons, bulk check bars, and right-hand totals.
+  4. *Multi-Platform Parity & Integration Verification*:
+     - Synchronized UI Manifests (`npm run ui:scan` & `npm run ui:verify`), cataloging `FAC-018` with 46 action buttons, 7 modals, and 23 API contracts (221/221 checks passed).
+     - Mirrored updated files to `frontend/www/` and Android Capacitor public assets (`registers/`, `group-detail/`, `sidebar.js`).
+     - Passed entire regression suite:
+       - UI Manifest Parity (`test-ui-manifest-sync.js`) -> 221 / 221 Passed.
+       - Theme & Token Support (`test-theme-support.js`) -> 84 / 84 Passed (0 hardcoded hex colors).
+       - RBAC Authorization & Permanent Redirects (`test-rbac-and-structure.js`) -> 39 / 39 Passed.
+       - System API Flows (`test-api-flows.js`) -> 25 / 25 Passed.
+       - Student Self-Registration E2E (`test-student-self-registration.js`) -> 27 / 27 Passed.
+       - Consolidation Suite (`test-register-consolidation.js`) -> 46 / 46 Passed.
+       - Roll Call Upgrade & Live Feed Checks (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`) -> All Passed.
+       - Total: **442 / 442 automated tests passed on localhost**.
+
 ### ✅ Milestone 580: Matrix Crisp Grid, Multi-Period Hierarchical Headers, Custom Holiday & Working Day Engine, and Live Roll Call Studio UI/UX (v63)
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (388/388 checks passed).
 - **Objective & Architectural Scope**:

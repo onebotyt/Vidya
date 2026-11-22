@@ -1,0 +1,881 @@
+{
+  "schema_version": "1.0.0",
+  "page_id": "FAC-018",
+  "role": "Faculty",
+  "route": "/faculty/registers/index.html",
+  "source_file": "frontend/faculty/registers/index.html",
+  "content_hash": "35f01ad68979",
+  "last_scanned": "2026-11-22T22:43:04.967Z",
+  "title": "Attendance Register Studio — VidyaOS",
+  "purpose": "Unified Attendance Register Studio: Dedicated multi-subject attendance matrix, subject switcher toolbar, live roll call studio (Dynamic QR, 6-digit PIN, live check-ins feed, and manual roll call roster), ESP32 hardware scan sync, custom holiday & working day management, and clean 5-column institutional export & print (Roll No, UBTER Reg No, UBTER Roll No, Name, Days)",
+  "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
+  "states": "Desktop: 31-day physical matrix ledger with hierarchical period sub-headers and zero overflow; Mobile: daily roster cards with period pills",
+  "url_parameters": [
+    "register_id",
+    "id",
+    "group_id"
+  ],
+  "api_contracts": [
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/me",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/heartbeat",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/notifications",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/:id/read",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/notifications/mark-all-read",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/faculty/registers",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/faculty/registers/",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/faculty/registers/:id/mark-cell",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/registers/:id/sessions",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/v1/faculty/registers/:id/sessions/:id",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/attendance/registers/:id/esp32-day-scans",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/attendance/registers/:id/confirm-day-attendance",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/faculty/registers/:id/student-status",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/faculty/registers/:id/sessions",
+      "type": "REST"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/v1/attendance/sessions/:id/state",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/attendance/sessions/:id/pin",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/attendance/sessions/:id/qr",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/attendance/sessions/:id/self-attendance",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/registers/:id/holidays",
+      "type": "REST"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/v1/faculty/registers/:id/holidays/:id",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/faculty/registers/:id/export/attendance",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/teaching-groups/:id",
+      "type": "REST"
+    }
+  ],
+  "layout_structure": {
+    "toolbars": [
+      {
+        "id": "",
+        "class": "esp-toolbar no-print"
+      },
+      {
+        "id": "",
+        "class": "esp-toolbar-actions"
+      },
+      {
+        "id": "pc-matrix-bulk-bar",
+        "class": "matrix-bulk-bar"
+      },
+      {
+        "id": "mobile-periods-bar",
+        "class": "class-periods-bar"
+      },
+      {
+        "id": "class-rc-progress-bar",
+        "class": "rollcall-progress-bar"
+      },
+      {
+        "id": "",
+        "class": "rollcall-manual-toolbar"
+      }
+    ],
+    "tables": [
+      {
+        "id": "class-register-matrix-table",
+        "class": "register-table",
+        "headers": [
+          "Loading register headers..."
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": null,
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Status"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "sync-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "UBTER Roll No",
+          "Scan Time"
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "classroom-roll-modal",
+        "title": "Live Roll Call &amp; Attendance Studio",
+        "field_count": 0
+      },
+      {
+        "id": "class-rc-footer-date",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "manage-holiday-modal",
+        "title": "Institutional Holiday Management",
+        "field_count": 0
+      },
+      {
+        "id": "modal-export-attendance",
+        "title": "Export Attendance Register",
+        "field_count": 0
+      },
+      {
+        "id": "btn-do-export",
+        "title": "Modal Dialog",
+        "field_count": 0
+      },
+      {
+        "id": "esp-confirm-modal",
+        "title": "Confirm ESP32 Attendance",
+        "field_count": 0
+      },
+      {
+        "id": "add-session-modal",
+        "title": "Modal Dialog",
+        "field_count": 0
+      }
+    ]
+  },
+  "ui_elements": {
+    "action_buttons": [
+      {
+        "id": "btn-toggle-mobile-mode",
+        "label": "Switch between Compact Daily view and Full 31-Day Ledger",
+        "action": "toggleMobileRegisterMode()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Switch between Compact Daily view and Full 31-Day Ledger"
+      },
+      {
+        "id": null,
+        "label": "Previous Month",
+        "action": "navigateClassRegisterMonth(-1)",
+        "class": "month-nav-arrow",
+        "data_ui": null,
+        "title": "Previous Month"
+      },
+      {
+        "id": "btn-class-reg-month-picker",
+        "label": "NovemberNov 2026",
+        "action": "openClassRegMonthPicker()",
+        "class": "month-nav-display",
+        "data_ui": null,
+        "title": "Choose month"
+      },
+      {
+        "id": null,
+        "label": "Next Month",
+        "action": "navigateClassRegisterMonth(1)",
+        "class": "month-nav-arrow",
+        "data_ui": null,
+        "title": "Next Month"
+      },
+      {
+        "id": null,
+        "label": "Today",
+        "action": "jumpToClassRegisterCurrentMonth()",
+        "class": "month-nav-today",
+        "data_ui": null,
+        "title": "Jump to current month"
+      },
+      {
+        "id": null,
+        "label": "Export",
+        "action": "openAttendanceExportModal()",
+        "class": "btn btn-secondary btn-sm btn-export-register",
+        "data_ui": null,
+        "title": "Export Attendance Register (Excel, PDF, Word)"
+      },
+      {
+        "id": null,
+        "label": "Print",
+        "action": "printClassRegister()",
+        "class": "btn btn-secondary btn-sm btn-print-register",
+        "data_ui": null,
+        "title": "Print physical inspection format"
+      },
+      {
+        "id": "btn-class-esp-sync",
+        "label": "Sync ESP Scans Sync ESP",
+        "action": "triggerClassEspDaySync()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": "Fetch ESP scans and preview attendance"
+      },
+      {
+        "id": null,
+        "label": "Roll Call (Manual, QR &amp; PIN) Roll Call",
+        "action": "openClassRollCallModal()",
+        "class": "btn btn-secondary btn-sm btn-roll-call",
+        "data_ui": null,
+        "title": "Conduct manual roll call, QR attendance, or 6-digit PIN"
+      },
+      {
+        "id": null,
+        "label": "Holidays",
+        "action": "openHolidayModal()",
+        "class": "btn btn-secondary btn-sm btn-manage-holidays",
+        "data_ui": null,
+        "title": "Manage institutional holidays and working days"
+      },
+      {
+        "id": null,
+        "label": "Deselect",
+        "action": "deselectAllMatrixStudents()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "P Mark Present",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-bulk-present",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "A Mark Absent",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-bulk-absent",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Clear",
+        "action": "bulkMarkAttendance(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-mobile-del-class",
+        "label": "Remove P2",
+        "action": "confirmDeleteCurrentPeriod()",
+        "class": "btn-roster-del-period",
+        "data_ui": null,
+        "title": "Remove this period"
+      },
+      {
+        "id": null,
+        "label": "All Day (Combined)",
+        "action": "switchMobilePeriod(",
+        "class": "period-pill active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Add Class Period",
+        "action": "openAddSessionModal()",
+        "class": "btn-add-second-period",
+        "data_ui": null,
+        "title": "Add an extra class period for this date"
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeClassRollCallModal()",
+        "class": null,
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": "class-rc-tab-live",
+        "label": "Dynamic QR &amp; PIN",
+        "action": "switchClassRollCallMode(",
+        "class": "rollcall-tab-btn active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "class-rc-tab-manual",
+        "label": "Manual Roll Call Roster",
+        "action": "switchClassRollCallMode(",
+        "class": "rollcall-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✓ All Present",
+        "action": "bulkSetRollCallStatus(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✕ All Absent",
+        "action": "bulkSetRollCallStatus(",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeClassRollCallModal()",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "✓ Confirm &amp; Save Attendance",
+        "action": "submitClassRollCall()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeHolidayModal()",
+        "class": null,
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": "btn-holiday-off",
+        "label": "🎉 Holiday / Off-Day",
+        "action": "selectHolidayType(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-holiday-work",
+        "label": "📚 Active Working Day",
+        "action": "selectHolidayType(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-reset-holiday-default",
+        "label": "Restore Default",
+        "action": "resetDayHolidayDefault()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeHolidayModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Save Configuration",
+        "action": "submitSaveHoliday()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAttendanceExportModal()",
+        "class": "export-modal-close",
+        "data_ui": null,
+        "title": "Close"
+      },
+      {
+        "id": null,
+        "label": "Excel Spreadsheet .xlsx",
+        "action": "selectExportFormat(",
+        "class": "export-format-card active",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "PDF Document .pdf (Landscape)",
+        "action": "selectExportFormat(",
+        "class": "export-format-card",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Word Document .docx",
+        "action": "selectExportFormat(",
+        "class": "export-format-card",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeAttendanceExportModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-do-export",
+        "label": "Export File",
+        "action": "executeAttendanceExport()",
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeModal(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Cancel",
+        "action": "closeModal(",
+        "class": "btn btn-secondary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-confirm-save-esp",
+        "label": "Confirm &amp; Add to Register",
+        "action": "submitEspConfirmation()",
+        "class": "btn btn-primary",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-save-new-session",
+        "label": "Save Period &amp; Open Roster",
+        "action": null,
+        "class": "btn btn-primary btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-esp-sync",
+        "label": "Icon Button",
+        "action": "triggerEspDaySync()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-matrix",
+        "label": "Icon Button",
+        "action": "switchRegisterTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-assignments",
+        "label": "Icon Button",
+        "action": "switchRegisterTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-btn-exams",
+        "label": "Icon Button",
+        "action": "switchRegisterTab(",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "rc-tab-btn-live",
+        "label": "Icon Button",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "rc-tab-btn-manual",
+        "label": "Icon Button",
+        "action": null,
+        "class": null,
+        "data_ui": null,
+        "title": null
+      }
+    ],
+    "input_controls": [
+      {
+        "id": "hidden-class-reg-month-picker",
+        "type": "month",
+        "name": null,
+        "placeholder": null,
+        "handler": "changeClassRegisterMonth(this.value)",
+        "class": null
+      },
+      {
+        "id": "class-sync-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "checkClassEspStatus();if(typeof onSyncDateChange===",
+        "class": "form-control"
+      },
+      {
+        "id": "class-rc-search",
+        "type": "text",
+        "name": null,
+        "placeholder": "Search by roll number or student name...",
+        "handler": "filterClassRollCallRoster(this.value)",
+        "class": null
+      },
+      {
+        "id": "holiday-modal-date-picker",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "onHolidayModalDateChange(this.value)",
+        "class": "form-control"
+      },
+      {
+        "id": "holiday-name-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Govardhan Puja, Republic Day, Extra Class...",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "export-date-from",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "export-date-input"
+      },
+      {
+        "id": "export-date-to",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "export-date-input"
+      },
+      {
+        "id": "esp-select-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleAllEspCheckboxes(this.checked)",
+        "class": null
+      },
+      {
+        "id": "new-session-date",
+        "type": "date",
+        "name": null,
+        "placeholder": null,
+        "handler": "updateModalAutoSlot(this.value)",
+        "class": "form-control"
+      },
+      {
+        "id": "new-session-label",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Period 2 (Theory Lecture)",
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "new-session-start",
+        "type": "time",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      },
+      {
+        "id": "new-session-end",
+        "type": "time",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "form-control"
+      }
+    ],
+    "dropdown_selectors": [
+      {
+        "id": "unified-subject-select",
+        "title": null,
+        "onchange": "onUnifiedSubjectSelectChange(this.value)",
+        "class": "unified-subject-dropdown",
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "Loading assigned subjects..."
+          }
+        ]
+      },
+      {
+        "id": "export-range-type",
+        "title": null,
+        "onchange": "handleExportRangeChange(this.value)",
+        "class": "export-select",
+        "options_count": 3,
+        "sample_options": [
+          {
+            "value": "current-month",
+            "text": "Current Month Only"
+          },
+          {
+            "value": "all-months",
+            "text": "Full Semester (All Months)"
+          },
+          {
+            "value": "custom",
+            "text": "Custom Date Range"
+          }
+        ]
+      },
+      {
+        "id": "new-session-type",
+        "title": null,
+        "onchange": null,
+        "class": "form-control",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "THEORY",
+            "text": "Theory Lecture"
+          },
+          {
+            "value": "PRACTICAL",
+            "text": "Lab / Practical"
+          },
+          {
+            "value": "TUTORIAL",
+            "text": "Tutorial"
+          },
+          {
+            "value": "EXTRA",
+            "text": "Extra Class"
+          }
+        ]
+      },
+      {
+        "id": "new-session-slot",
+        "title": null,
+        "onchange": "togglePeriodTimeInputs(this.value)",
+        "class": "form-control",
+        "options_count": 9,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Period 1 (Auto)"
+          },
+          {
+            "value": "2",
+            "text": "Period 2 (Auto)"
+          },
+          {
+            "value": "3",
+            "text": "Period 3 (Auto)"
+          },
+          {
+            "value": "4",
+            "text": "Period 4 (Auto)"
+          },
+          {
+            "value": "5",
+            "text": "Period 5 (Auto)"
+          },
+          {
+            "value": "6",
+            "text": "Period 6 (Auto)"
+          },
+          {
+            "value": "7",
+            "text": "Period 7 (Auto)"
+          },
+          {
+            "value": "8",
+            "text": "Period 8 (Auto)"
+          }
+        ]
+      }
+    ]
+  },
+  "modals_catalog": [
+    {
+      "id": "classroom-roll-modal",
+      "title": "Live Roll Call &amp; Attendance Studio",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "class-rc-footer-date",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "manage-holiday-modal",
+      "title": "Institutional Holiday Management",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "modal-export-attendance",
+      "title": "Export Attendance Register",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "btn-do-export",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": "closeAttendanceExportModal()"
+    },
+    {
+      "id": "esp-confirm-modal",
+      "title": "Confirm ESP32 Attendance",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "add-session-modal",
+      "title": "Modal Dialog",
+      "fields": [],
+      "submit_action": null
+    }
+  ],
+  "companion_scripts": [
+    "faculty/components/core/exceljs.min.js",
+    "faculty/components/core/api.js",
+    "faculty/components/core/auth.js",
+    "faculty/components/icons.js",
+    "faculty/components/sidebar/sidebar.js",
+    "faculty/components/header/header.js",
+    "faculty/group-detail/js/group-detail-register.js",
+    "faculty/registers/registers.js"
+  ],
+  "exported_functions": [
+    "toggleAppTheme",
+    "renderFacultyIcons",
+    "renderSvg",
+    "toggleDesktopSidebar",
+    "toggleSidebar",
+    "closeSidebar",
+    "toggleUserProfile",
+    "toggleNotifications",
+    "toggleAppsLauncher",
+    "closeAllPopovers",
+    "loadClassRegister",
+    "renderRegisterScopeSwitcher",
+    "switchGroupRegister",
+    "renderClassRegisterHeader",
+    "renderClassRegisterMatrix",
+    "renderMobileCompactMatrix",
+    "toggleDigitalPen",
+    "toggleSelectAllMatrixStudents",
+    "toggleSelectAllMobileStudents",
+    "openAddPeriodModal",
+    "openAddSessionModal",
+    "togglePeriodTimeInputs",
+    "toggleMobileRegisterMode",
+    "toggleAllEspCheckboxes",
+    "openRemarkMenu"
+  ]
+}
