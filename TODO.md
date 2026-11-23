@@ -49,6 +49,30 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 597: Interactive 45s Student Enrollment, UART2 Multi-Baud Auto-Probe & Visual Attendance OLED Hold Engine
+- **Status**: Tested, Verified & Flashed to COM5 Hardware Node (344/344 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Root Cause Elimination for Fast Enrollment Timeout & Missed Scans*:
+     - In the legacy firmware, whenever the AS608 optical sensor was not detected at boot, it fell back to bench emulation mode (`isAvailable = false`) where `enrollAndExtractTemplate()` ran fixed 300ms delays without checking for finger placement, leading to an instant fake timeout in < 1 second.
+     - Furthermore, `pollAndSearch()` exited immediately (`if (!isAvailable) return 0;`), completely ignoring any finger placed on the optical glass.
+  2. *Interactive 45-Second 2-Scan Enrollment Engine ([as608_driver.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/as608_driver.h))*:
+     - Replaced the fake delay bypass with an active 45-second bounded loop actively querying `finger.getImage() == FINGERPRINT_OK`.
+     - Provides step-by-step OLED screen and audio chime prompts: `"1. Place Finger"` ➔ `"1. Scanned OK!"` ➔ `"2. Lift Finger"` ➔ `"3. Place Again"` ➔ `"Creating Model..."`.
+     - Generates 512-byte template, stores model to target slot, and holds confirmation banner on OLED for **3 full seconds** (`"FINGERPRINT SAVED!"`).
+     - If the sensor hardware is unpowered or disconnected, cleanly reports `"Sensor Not Found"` rather than faking success.
+  3. *Multi-Baud (57600/9600/19200/38400/115200) & Dual-Pin Auto-Probe*:
+     - Implemented `autoDetectSensor()` testing both pin configurations (`RX=16/TX=17` and `RX=17/TX=16`) across all standard AS608 baud rates with 3 retries and 300ms power rail stabilization.
+     - Added dynamic re-probe in `pollAndSearch()` every 6 seconds so plugging in or fixing wiring immediately activates the sensor without restarting the terminal.
+  4. *Multi-Core UART2 Thread Lock & OLED Display Hold*:
+     - In [VidyaOS_ESP32_Biometric_Node.ino](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Node.ino): Added `if (currentUiState == UI_STATE_ENROLL) return;` guard to Core 1 `loop()`, eliminating dual-core UART2 bus collisions with Core 0 remote enrollment tasks.
+     - In attendance match, duplicate scan, and unregistered finger handlers: set `lastDisplayMs = bannerExpireMs`, locking the OLED screen for 2.5 to 3.5 seconds with buzzer tones and LED signals without being overwritten by the idle clock redraw.
+     - In [oled_buzzer_ui.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/oled_buzzer_ui.h): Updated `showIdleScreen()` to display `"Ready / Scan Finger"` when sensor is connected and `"! Check AS608 Wires !"` when disconnected.
+  5. *Zero-Break Regression Suite*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Total: **344 / 344 checks passed**.
+
 ### ✅ Milestone 596: Purge External W25Qxx SPI Code, Self-Contained NVS Flash Storage & Dedicated ESP32 OLED Ping Display Banner
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (344/344 checks passed).
 - **Objective & Architectural Scope**:

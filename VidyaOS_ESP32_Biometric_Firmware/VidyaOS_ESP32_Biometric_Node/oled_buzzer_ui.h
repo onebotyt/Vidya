@@ -501,7 +501,7 @@ public:
    * Center: Institutional Clock (10:45 AM or 10:45:12 AM)
    * Bottom: 👉 Place Finger to Scan
    */
-  void showIdleScreen(int batteryPct, float batteryVolts, bool isWifiConnected, const char* currentTimeStr, int rssi = -60) {
+  void showIdleScreen(int batteryPct, float batteryVolts, bool isWifiConnected, const char* currentTimeStr, int rssi = -60, bool sensorReady = true) {
     if (!displayReady) return;
     display.clearDisplay();
 
@@ -540,7 +540,11 @@ public:
     display.setTextSize(1);
     display.drawRoundRect(2, 46, 124, 17, 3, SSD1306_WHITE);
     display.setCursor(8, 51);
-    display.print("Ready / Scan Finger");
+    if (sensorReady) {
+      display.print("Ready / Scan Finger");
+    } else {
+      display.print("! Check AS608 Wires !");
+    }
 
     display.display();
   }

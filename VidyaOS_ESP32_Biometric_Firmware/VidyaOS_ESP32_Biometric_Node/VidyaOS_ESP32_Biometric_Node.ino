@@ -70,12 +70,20 @@ enum TerminalUiState {
 
 TerminalUiState currentUiState = UI_STATE_IDLE;
 unsigned long bannerExpireMs    = 0;
+SemaphoreHandle_t displayMutex  = NULL;
 
 static const char* activeEnrollName = "";
 static uint16_t    activeEnrollRoll = 0;
 
 void onEnrollStageUpdate(const char* stageMsg) {
-  ui.showEnrollmentScreen(activeEnrollName, activeEnrollRoll, stageMsg);
+  Serial.printf("[ENROLL][STAGE] %s\n", stageMsg);
+  if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+    ui.showEnrollmentScreen(activeEnrollName, activeEnrollRoll, stageMsg);
+    xSemaphoreGive(displayMutex);
+  } else {
+    ui.showEnrollmentScreen(activeEnrollName, activeEnrollRoll, stageMsg);
+  }
+  ui.playTone(1900, 70);
 }
 
 // ─── Remote Cloud Diagnostics & System Logging (Over the Internet) ──────────
@@ -239,7 +247,6 @@ RTC_DATA_ATTR uint32_t deepSleepCycleCount = 0;
 
 TaskHandle_t wifiSyncTaskHandle = NULL;
 SemaphoreHandle_t flashMutex = NULL;
-SemaphoreHandle_t displayMutex = NULL;
 
 void enterHardwareDeepSleep() {
   Serial.println(F("[SLEEP] Inactivity timeout reached (120s). Entering Hardware Deep Sleep..."));
@@ -354,15 +361,21 @@ void handleRemoteStudentEnrollment(JsonObject cmd) {
     Serial.println(F("[ENROLL][ERROR] Biometric scan timed out or failed."));
     ui.chimeError();
     ui.flashFailLed(3, 150);
-    ui.showEnrollmentScreen(name, rollNo, "Enroll Failed/Retry");
-    delay(2000);
+    if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+      ui.showEnrollmentScreen(name, rollNo, "Enroll Failed/Retry");
+      xSemaphoreGive(displayMutex);
+    }
+    delay(3000);
     currentUiState = UI_STATE_IDLE;
     lastDisplayMs = 0;
     return;
   }
 
   Serial.println(F("[ENROLL] Finger stored! Uploading template to server..."));
-  ui.showEnrollmentScreen(name, rollNo, "Saving Template...");
+  if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+    ui.showEnrollmentScreen(name, rollNo, "Saving Template...");
+    xSemaphoreGive(displayMutex);
+  }
 
   String tplB64 = VidyaCryptoEngine::base64Encode(extractedTemplate, AS608_TEMPLATE_SIZE);
   flashStorage.recordSlotAssignment(localSlot, studentId, enroll, name, rollNo);
@@ -383,8 +396,11 @@ void handleRemoteStudentEnrollment(JsonObject cmd) {
 
   ui.chimeEnrollSuccess();
   ui.setSuccessLed(true);
-  ui.showEnrollmentScreen(name, rollNo, "FINGERPRINT SAVED!");
-  delay(800);
+  if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+    ui.showEnrollmentScreen(name, rollNo, "FINGERPRINT SAVED!");
+    xSemaphoreGive(displayMutex);
+  }
+  delay(3000); // 3 seconds hold so user clearly sees the success screen
   ui.setSuccessLed(false);
 
   currentUiState = UI_STATE_IDLE;
@@ -1145,6 +1161,12 @@ void loop() {
 #endif
 
   // 3. Detect Finger Touch and Poll AS608 Fingerprint Sensor
+  // If remote enrollment is currently active on Core 0, do not poll sensor from Core 1
+  if (currentUiState == UI_STATE_ENROLL) {
+    delay(40);
+    return;
+  }
+
   if (digitalRead(AS608_TOUCH_WAKE_PIN) == HIGH) {
     lastActivityMs = millis();
     if (currentUiState == UI_STATE_IDLE) {
@@ -1177,8 +1199,14 @@ void loop() {
       // Finger is in sensor but unassigned in local roster -> "Fingerprint Not Recognized"
       currentUiState = UI_STATE_BANNER;
       bannerExpireMs = millis() + UNREGISTERED_HOLD_MS;
+      lastDisplayMs  = bannerExpireMs;
       ui.setFailLed(true);
-      ui.showFingerNotRegistered();
+      if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(200)) == pdTRUE) {
+        ui.showFingerNotRegistered();
+        xSemaphoreGive(displayMutex);
+      } else {
+        ui.showFingerNotRegistered();
+      }
       ui.beepFingerNotRegistered();
       ui.setFailLed(false);
       fingerprintSensor.waitForFingerRelease(2000);
@@ -1205,7 +1233,13 @@ void loop() {
         // Situation: Duplicate Attendance -> "Attendance Already Marked"
         currentUiState = UI_STATE_BANNER;
         bannerExpireMs = millis() + 2500;
-        ui.showDuplicateAttendance(student.enrollment_no, student.full_name, fullTime);
+        lastDisplayMs  = bannerExpireMs;
+        if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(200)) == pdTRUE) {
+          ui.showDuplicateAttendance(student.enrollment_no, student.full_name, fullTime);
+          xSemaphoreGive(displayMutex);
+        } else {
+          ui.showDuplicateAttendance(student.enrollment_no, student.full_name, fullTime);
+        }
         ui.chimeError();
         fingerprintSensor.waitForFingerRelease(2000);
         lastActivityMs = millis();
@@ -1236,8 +1270,14 @@ void loop() {
         // Situation: Fingerprint Matched -> "Attendance Marked Successfully"
         currentUiState = UI_STATE_BANNER;
         bannerExpireMs = millis() + SUCCESS_LED_HOLD_MS;
+        lastDisplayMs  = bannerExpireMs;
         ui.setSuccessLed(true);
-        ui.showAttendanceSuccess(student.enrollment_no, student.full_name, fullTime);
+        if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(200)) == pdTRUE) {
+          ui.showAttendanceSuccess(student.enrollment_no, student.full_name, fullTime);
+          xSemaphoreGive(displayMutex);
+        } else {
+          ui.showAttendanceSuccess(student.enrollment_no, student.full_name, fullTime);
+        }
         ui.beepAttendanceSuccess(); // 2000 ms confirmation beep
         delay(500);                 // Total 2.5s hold
         ui.setSuccessLed(false);
@@ -1251,8 +1291,14 @@ void loop() {
     // Situation: Unknown Fingerprint -> "Fingerprint Not Recognized"
     currentUiState = UI_STATE_BANNER;
     bannerExpireMs = millis() + UNREGISTERED_HOLD_MS;
+    lastDisplayMs  = bannerExpireMs;
     ui.setFailLed(true);
-    ui.showFingerNotRegistered();
+    if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(200)) == pdTRUE) {
+      ui.showFingerNotRegistered();
+      xSemaphoreGive(displayMutex);
+    } else {
+      ui.showFingerNotRegistered();
+    }
     ui.beepFingerNotRegistered(); // 1800 ms
     delay(200);
     ui.setFailLed(false);
@@ -1283,7 +1329,8 @@ void loop() {
           battVolts,
           isOnline,
           clockStr,
-          isOnline ? WiFi.RSSI() : -99
+          isOnline ? WiFi.RSSI() : -99,
+          fingerprintSensor.isAvailable
         );
         xSemaphoreGive(displayMutex);
       }
