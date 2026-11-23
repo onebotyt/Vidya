@@ -27,8 +27,8 @@
 #define WIFI_PASSWORD               "Rubyblack@567"
 
 // Secondary / Fallback Wi-Fi Credentials
-#define FALLBACK_WIFI_SSID          "Airtel_neer_3811"
-#define FALLBACK_WIFI_PASS          "air56914"
+#define FALLBACK_WIFI_SSID          "Airtel_Ruby"
+#define FALLBACK_WIFI_PASS          "Rubyblack@567"
 
 // Factory Fallback Wi-Fi Credentials
 #define DEFAULT_FACTORY_WIFI_SSID   WIFI_SSID

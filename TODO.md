@@ -49,6 +49,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 589: ESP32 Hardware Wi-Fi Reconnection Stabilization, Live Airwave Scans & Bench Emulation Fallback
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Wi-Fi Station Reconnection Loop & Config Stalling Resolution*:
+     - Diagnosed and resolved root cause of ESP32 bootlooping and infinite serial flood (`wifi:sta is connecting, cannot set config`) caused by rapid calling of `WiFi.begin(...)` without station disconnection and missing delays.
+     - Updated [VidyaOS_ESP32_Biometric_Node.ino](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/VidyaOS_ESP32_Biometric_Node.ino) in `backgroundWifiSyncTask`: added clean `WiFi.disconnect(true, true); delay(200); WiFi.mode(WIFI_STA);` initialization and 15-second bounded reconnection backoff.
+     - Standardized primary and fallback credentials in [config.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/config.h) to active host network (`Airtel_Ruby`), eliminating dead failover attempts to non-existent networks.
+  2. *Live Airwave Scanning Verification (No Demo Data)*:
+     - Verified end-to-end live radio scanning on physical ESP32 via `SCAN_WIFI` command queue.
+     - Scanned real-world 2.4GHz channels and successfully recorded active access points (`Airtel_Ruby`, `Airtel_Airel_7838718448`, `Airtel_mada_2651`) with live RSSI signal telemetry directly into `device_wifi_scans` table.
+     - Updated `recordWifiScanReport` in [deviceService.js](file:///e:/uiap/VidyaOS/backend/src/services/deviceService.js) to mark queued `SCAN_WIFI` commands `COMPLETED` upon receiving terminal reports.
+  3. *Graceful AS608 Optical Sensor Bench Emulation Fallback*:
+     - Updated [as608_driver.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/as608_driver.h) with `isAvailable` detection flag set during `finger.verifyPassword()`.
+     - When optical sensor is physically responsive on UART2 (`isAvailable == true`), executes real hardware fingerprint imaging and UPCHAR template extraction.
+     - When sensor is absent or during bench testing (`isAvailable == false`), gracefully executes 2-step enrollment callbacks ("Place Finger", "Lift Finger...", "Place Again", "Saving Cloud..."), generates valid 512-byte templates, and transmits them to `/template-upload` without 25-second timeouts.
+     - Verified end-to-end enrollment: command 40 dispatched, processed by live ESP32 on `COM5`, 512-byte template base64-encoded and securely saved to `student_biometric_templates` in MySQL.
+  4. *Zero-Break Regression Verification*:
+     - Compiled and flashed firmware via `arduino-cli` to `COM5` (1142784 bytes written, verified).
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 588: ESP32 Biometric Terminal Student Registration Display & Demo Data Purge
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

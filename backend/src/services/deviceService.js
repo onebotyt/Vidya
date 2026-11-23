@@ -865,6 +865,15 @@ class DeviceService {
           );
         }
       }
+      await query(
+        `UPDATE esp32_command_queue
+         SET status = 'COMPLETED',
+             result_message = ?,
+             completed_at = CURRENT_TIMESTAMP,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE device_id = ? AND command_type = 'SCAN_WIFI' AND status IN ('PENDING', 'DELIVERED')`,
+        [`Discovered ${networks.length} Wi-Fi networks`, device.id]
+      );
     }
     return { success: true, networks_recorded: networks.length, count: networks.length };
   }

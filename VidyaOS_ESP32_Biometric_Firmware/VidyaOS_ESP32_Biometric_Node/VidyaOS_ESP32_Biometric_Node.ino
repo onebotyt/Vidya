@@ -870,18 +870,17 @@ void backgroundWifiSyncTask(void* pvParameters) {
   defaultWifiPass = WIFI_PASSWORD;
 
   WiFi.persistent(false);
+  WiFi.disconnect(true, true);
+  delay(200);
   WiFi.mode(WIFI_STA);
-  wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
-#if defined(FALLBACK_WIFI_SSID)
-  wifiMulti.addAP(FALLBACK_WIFI_SSID, FALLBACK_WIFI_PASS);
-#endif
+  delay(100);
 
   initMqtt();
 
   // Asynchronous non-blocking Wi-Fi connect
+  Serial.printf("[Core 0][WiFi] Initiating Wi-Fi connection to: %s\n", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   unsigned long wifiAttemptStartMs = millis();
-  bool connectingToPrimary = true;
 
   while (true) {
     bool isConnected = (WiFi.status() == WL_CONNECTED);
@@ -889,27 +888,11 @@ void backgroundWifiSyncTask(void* pvParameters) {
     if (!isConnected) {
       ui.setWifiLed(false);
 
-      // Auto-failover logic in background between Primary and Fallback routers
-      if (connectingToPrimary && (millis() - wifiAttemptStartMs >= 10000UL)) {
-#if defined(FALLBACK_WIFI_SSID)
-        Serial.printf("[Core 0][WiFi] Primary Wi-Fi timeout. Switching to Fallback: %s\n", FALLBACK_WIFI_SSID);
-        connectingToPrimary = false;
+      if (millis() - wifiAttemptStartMs >= 15000UL) {
+        Serial.printf("[Core 0][WiFi] Re-attempting Wi-Fi connection to: %s\n", WIFI_SSID);
         wifiAttemptStartMs = millis();
         WiFi.disconnect(false, false);
-        delay(150);
-        WiFi.begin(FALLBACK_WIFI_SSID, FALLBACK_WIFI_PASS);
-#else
-        wifiAttemptStartMs = millis();
-        WiFi.disconnect(false, false);
-        delay(150);
-        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-#endif
-      } else if (!connectingToPrimary && (millis() - wifiAttemptStartMs >= 10000UL)) {
-        Serial.printf("[Core 0][WiFi] Fallback timeout. Retrying Main Wi-Fi: %s\n", WIFI_SSID);
-        connectingToPrimary = true;
-        wifiAttemptStartMs = millis();
-        WiFi.disconnect(false, false);
-        delay(150);
+        delay(200);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
       }
 
