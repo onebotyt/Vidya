@@ -5,7 +5,7 @@
   "route": "/faculty/classes/trash.html",
   "source_file": "frontend/faculty/classes/trash.html",
   "content_hash": "8231dfdf1c35",
-  "last_scanned": "2026-11-22T23:57:22.471Z",
+  "last_scanned": "2026-11-23T00:07:43.386Z",
   "title": "Classroom Trash Bin — VidyaOS",
   "purpose": "Classroom Trash Bin & Recovery Studio: 30-day retention countdown, auto-purge policy banner, Restore Class back to active teaching, and Permanent Deletion dialog with TYPE-TO-CONFIRM safety check",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",

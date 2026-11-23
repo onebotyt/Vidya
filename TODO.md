@@ -49,6 +49,28 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 586: Public Auth Branding Endpoint for Global Hero & Student Dashboard Google Classroom Card Visual Overhaul
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Public Auth Branding Resolution in Institution Hero (`institution-hero.js`)*:
+     - Eliminated `403 Forbidden` errors on student login where `institution-hero.js` attempted to fetch `/admin/settings` (gated by `SYSTEM_ADMIN` role).
+     - Switched fallback and dynamic branding fetcher to `/auth/branding` (`fetchApi('/auth/branding', { suppressToast: true })` and `/api/v1/auth/branding`), allowing unauthenticated and non-admin users (students, faculty, visitors) to seamlessly load institution name, logo, banner, and tagline without authorization errors.
+  2. *Student Dashboard Google Classroom Card Layout & Dropdown Fix (`.google-classroom-card`)*:
+     - Fixed broken visual rendering on [student/dashboard/index.html](file:///e:/uiap/VidyaOS/frontend/student/dashboard/index.html) where `.google-classroom-card` lacked CSS, causing dropdown items ("Open Classroom", "Hide Subject Card") to render as visible inline text across dark banner covers.
+     - Implemented full CSS system for `.google-classroom-card`, `.gc-card-kebab-btn`, `.gc-card-content`, `.gc-card-heading`, `.gc-card-cohort`, `.gc-card-footer-info`, `.gc-card-faculty`, and `.gc-card-tasks-pill`.
+     - Explicitly enforced `display: none !important;` on `.gc-card-menu-dropdown`, revealing only upon tapping the 3-dot kebab menu button (`.gc-card-kebab-btn`) with smooth animated popover (`.active`).
+     - Added click-outside and `Escape` key listeners to dismiss card dropdowns in [student/dashboard/dashboard.js](file:///e:/uiap/VidyaOS/frontend/student/dashboard/dashboard.js).
+     - Standardized theme tokens in [student/home/home.css](file:///e:/uiap/VidyaOS/frontend/student/home/home.css) and [student/dashboard/dashboard.css](file:///e:/uiap/VidyaOS/frontend/student/dashboard/dashboard.css) (zero hardcoded colors).
+  3. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 585: Global Institution Hero Integration, Compact Student Home & Profile Density, and Attendance Eligibility Purge
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

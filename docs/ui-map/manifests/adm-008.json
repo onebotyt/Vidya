@@ -5,7 +5,7 @@
   "route": "/admin/app-settings.html",
   "source_file": "frontend/admin/app-settings/index.html",
   "content_hash": "bf2e2484ed4e",
-  "last_scanned": "2026-11-22T23:57:22.308Z",
+  "last_scanned": "2026-11-23T00:07:43.213Z",
   "title": "Admin App Settings &amp; Preferences — VidyaOS",
   "purpose": "Admin app preferences, Google 1-Click login, update patches, appearance",
   "shell": "Admin Shell (`sidebar.css`, `header.css`)",
