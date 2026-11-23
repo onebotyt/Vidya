@@ -49,6 +49,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 591: AS608 Slot Manager, Duplicate Data Engine & Hardware Template Deletion
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Slot Security Validation Fix & Dynamic Alignment*:
+     - Resolved `Security validation failed: slot_id 14 does not match student template registered slot 7` by eliminating static test slot assignments in [deviceController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/deviceController.js).
+     - Upgraded `recordScannedAttendanceBatch` in [deviceService.js](file:///e:/uiap/VidyaOS/backend/src/services/deviceService.js) with automated slot drift auto-healing, preventing 403 authorization crashes when templates migrate across slots.
+  2. *Physical AS608 Hardware Memory Template Deletion*:
+     - Extended [as608_driver.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/as608_driver.h) with `deleteModel(slot)` and `emptyAllModels()`.
+     - Extended [w25q32_storage.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/w25q32_storage.h) with `clearStudentSlotMapping(slot)` committing changes to onboard SPI NOR flash.
+     - Implemented `handleRemoteDeleteTemplate(cmd)` in [VidyaOS_ESP32_Biometric_Node.ino](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/VidyaOS_ESP32_Biometric_Node.ino), executing `DELETE_TEMPLATE` commands queued from the server.
+     - Flashed and verified on physical ESP32 node via `arduino-cli` on `COM5`.
+  3. *AS608 Slot Manager & Automated Duplicate Detection Engine*:
+     - Added backend API `GET /api/v1/devices/hod/:device_id/slots` returning comprehensive 300-slot EEPROM occupancy, mapped student metadata, SHA-256 signatures, and anomaly auditing (`MULTIPLE_SLOTS_FOR_STUDENT`, `MULTIPLE_STUDENTS_ON_SLOT`, `IDENTICAL_TEMPLATE_HASH`).
+     - Added `DELETE /api/v1/devices/hod/:device_id/slots/:slot_number` to unassign and erase individual physical slots.
+     - Added `POST /api/v1/devices/hod/:device_id/clean-duplicates` 1-click resolver to purge orphaned and duplicate slots across hardware and database.
+  4. *Studio UI & Modal Window*:
+     - Created `as608-slot-manager-modal` in [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/index.html) featuring capacity KPIs (Total 300, Occupied, Free, Enrolled, Duplicates), interactive filters ("Occupied Only", "All 300 Slots", "Duplicates Only"), and live search.
+     - Added "Slots & Duplicates" launcher buttons in section headers and terminal cards.
+     - Updated student preview action button to "Remove from AS608", clearing physical memory and cloud vault simultaneously.
+  5. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 590: ESP32 Biometric Enrollment Latency Optimization & Host Wi-Fi Network Auto-Alignment
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

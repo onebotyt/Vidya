@@ -4,8 +4,8 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "743bd49adad5",
-  "last_scanned": "2026-11-23T05:21:07.057Z",
+  "content_hash": "8b1d9b61c4dc",
+  "last_scanned": "2026-11-23T06:33:45.681Z",
   "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -66,6 +66,17 @@
           "Cloud Template",
           "Actions"
         ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
+          "Slot #",
+          "Student Roster Mapping",
+          "Biometric Template &amp; Hash",
+          "Slot Status",
+          "Actions"
+        ]
       }
     ],
     "modals": [
@@ -92,6 +103,11 @@
       {
         "id": "ota-update-modal",
         "title": "Wireless Firmware Update (OTA)",
+        "field_count": 0
+      },
+      {
+        "id": "as608-slot-manager-modal",
+        "title": "AS608 Hardware Slots &amp; Duplicate Audit",
         "field_count": 0
       }
     ]
@@ -129,6 +145,14 @@
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
         "title": "Refresh telemetry"
+      },
+      {
+        "id": "btn-open-as608-slots",
+        "label": "Slots &amp; Duplicates",
+        "action": "openAs608SlotManagerModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "View AS608 Hardware Slots & Clean Duplicates"
       },
       {
         "id": "btn-scan-wifi",
@@ -228,11 +252,11 @@
       },
       {
         "id": "btn-remove-selected-bio",
-        "label": "Remove",
+        "label": "Remove from AS608",
         "action": "removeCurrentSelectedStudentTemplate()",
         "class": "btn btn-danger btn-sm esp-btn-remove-bio",
         "data_ui": null,
-        "title": "Delete fingerprint template from cloud vault"
+        "title": "Delete fingerprint template from physical AS608 memory &amp; cloud vault"
       },
       {
         "id": "tab-btn-vault",
@@ -433,6 +457,62 @@
         "class": "btn btn-primary",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": null,
+        "label": "&times;",
+        "action": "closeAs608SlotManagerModal()",
+        "class": null,
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-clean-duplicates-now",
+        "label": "Auto-Resolve &amp; Clean Duplicates",
+        "action": "cleanDuplicatesOnSelectedDevice()",
+        "class": "btn btn-danger btn-sm",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "slot-tab-occupied",
+        "label": "Occupied Slots",
+        "action": "setSlotModalViewMode(",
+        "class": "btn btn-sm btn-primary slot-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "slot-tab-all",
+        "label": "All 300 Slots",
+        "action": "setSlotModalViewMode(",
+        "class": "btn btn-sm btn-secondary slot-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "slot-tab-duplicates",
+        "label": "Duplicates Only",
+        "action": "setSlotModalViewMode(",
+        "class": "btn btn-sm btn-secondary slot-tab-btn",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Refresh",
+        "action": "loadAndRenderAs608Slots()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Reload hardware slots"
+      },
+      {
+        "id": null,
+        "label": "Close",
+        "action": "closeAs608SlotManagerModal()",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": null
       }
     ],
     "input_controls": [
@@ -547,6 +627,14 @@
         "placeholder": "http://192.168.1.15:3000/uploads/firmware/firmware.bin",
         "handler": null,
         "class": "form-control"
+      },
+      {
+        "id": "slot-search-input",
+        "type": "search",
+        "name": null,
+        "placeholder": "Filter by student name, roll #, or slot...",
+        "handler": "filterAs608SlotsTable()",
+        "class": "form-control form-control-sm"
       }
     ],
     "dropdown_selectors": [
@@ -794,6 +882,12 @@
     {
       "id": "ota-update-modal",
       "title": "Wireless Firmware Update (OTA)",
+      "fields": [],
+      "submit_action": null
+    },
+    {
+      "id": "as608-slot-manager-modal",
+      "title": "AS608 Hardware Slots &amp; Duplicate Audit",
       "fields": [],
       "submit_action": null
     }
