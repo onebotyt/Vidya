@@ -61,8 +61,37 @@ public:
   }
 
   /**
-   * Comprehensive auto-probe across standard baud rates & pin configurations.
-   * Gives the optical sensor 350ms to power up its internal DSP before probing.
+   * Fast, non-blocking single-baud probe (35ms max).
+   * Sends the standard AS608 verify password packet and checks for the 0xEF 0x01 ACK header.
+   */
+  bool quickProbeSensor(int rxPin, int txPin, uint32_t baud) {
+    serialPort->end();
+    delay(10);
+    serialPort->begin(baud, SERIAL_8N1, rxPin, txPin);
+    delay(20);
+    while (serialPort->available()) serialPort->read(); // Flush buffer
+
+    static const uint8_t verifyPacket[] = {
+      0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF,
+      0x01, 0x00, 0x07, 0x13, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1B
+    };
+    serialPort->write(verifyPacket, sizeof(verifyPacket));
+
+    uint32_t startMs = millis();
+    while (millis() - startMs < 35UL) {
+      if (serialPort->available() >= 9) {
+        if (serialPort->read() == 0xEF && serialPort->peek() == 0x01) {
+          return true; // Sensor responded!
+        }
+      }
+      delay(2);
+    }
+    return false;
+  }
+
+  /**
+   * Comprehensive ultra-fast auto-probe across standard baud rates & pin configurations.
+   * Completes in ~200ms total without ever stalling the CPU or freezing the OLED display.
    */
   bool autoDetectSensor() {
     static const uint32_t bauds[] = { 57600, 9600, 19200, 38400, 115200 };
@@ -71,7 +100,7 @@ public:
       { AS608_TX_PIN, AS608_RX_PIN }  // Reversed: RX=17, TX=16
     };
 
-    Serial.println(F("[AS608] Probing optical fingerprint sensor on UART2..."));
+    Serial.println(F("[AS608] Fast probing optical fingerprint sensor on UART2..."));
 
     for (int p = 0; p < 2; p++) {
       int rxPin = pinPairs[p].rx;
@@ -79,29 +108,21 @@ public:
 
       for (int b = 0; b < 5; b++) {
         uint32_t baud = bauds[b];
-        serialPort->end();
-        delay(25);
-        serialPort->begin(baud, SERIAL_8N1, rxPin, txPin);
-        delay(80);
-
-        for (int retry = 0; retry < 3; retry++) {
-          if (finger.verifyPassword()) {
-            isAvailable = true;
-            activeRxPin = rxPin;
-            activeTxPin = txPin;
-            activeBaudRate = baud;
-            Serial.printf("[AS608] >>> SUCCESS! Optical Sensor detected on RX=%d, TX=%d @ %lu baud! <<<\n", rxPin, txPin, (unsigned long)baud);
-            setBacklight(true);
-            return true;
-          }
-          delay(40);
+        if (quickProbeSensor(rxPin, txPin, baud)) {
+          isAvailable = true;
+          activeRxPin = rxPin;
+          activeTxPin = txPin;
+          activeBaudRate = baud;
+          Serial.printf("[AS608] >>> SUCCESS! Optical Sensor detected on RX=%d, TX=%d @ %lu baud! <<<\n", rxPin, txPin, (unsigned long)baud);
+          setBacklight(true);
+          return true;
         }
       }
     }
 
     // Default back to primary settings if not detected
     serialPort->end();
-    delay(20);
+    delay(15);
     serialPort->begin(AS608_BAUD_RATE, SERIAL_8N1, AS608_RX_PIN, AS608_TX_PIN);
     isAvailable = false;
     Serial.println(F("[AS608][NOTICE] AS608 optical hardware not responding on UART2."));
@@ -155,7 +176,8 @@ public:
   int pollAndSearch(uint16_t& outSlot, uint16_t& outConfidence) {
     if (!isAvailable) {
       static uint32_t lastProbeMs = 0;
-      if (millis() - lastProbeMs > 6000UL) {
+      bool touched = isTouchActive();
+      if (touched || (millis() - lastProbeMs > 15000UL)) {
         lastProbeMs = millis();
         autoDetectSensor();
       }

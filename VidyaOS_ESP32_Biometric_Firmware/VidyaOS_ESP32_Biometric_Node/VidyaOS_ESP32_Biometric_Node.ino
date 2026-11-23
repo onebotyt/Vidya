@@ -633,20 +633,29 @@ void scanNearbyWifiNetworksAndReport() {
   Serial.println(F("[WiFi] Scanning 2.4GHz Wi-Fi channels (1-13)..."));
   ui.setWifiLed(true);
   
-  // Show animated scanning screen on 0.96" OLED
-  ui.showWifiScanningScreen(1);
-  delay(150);
-  ui.showWifiScanningScreen(2);
-  delay(150);
+  currentUiState = UI_STATE_BANNER;
+  bannerExpireMs = millis() + 8000UL;
+  lastDisplayMs  = bannerExpireMs;
 
-  int n = WiFi.scanNetworks();
+  if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(200)) == pdTRUE) {
+    ui.showWifiScanningScreen(1);
+    xSemaphoreGive(displayMutex);
+  }
+
+  int n = WiFi.scanNetworks(false, true);
   if (n < 0) n = 0;
 
   Serial.printf("[WiFi] Scan complete. Found %d access points.\n", n);
-  ui.showWifiScanningScreen(5);
-  delay(200);
-  ui.showWifiScanComplete(n);
-  delay(1000);
+  if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(200)) == pdTRUE) {
+    ui.showWifiScanComplete(n);
+    xSemaphoreGive(displayMutex);
+  }
+
+  // Wait up to 5 seconds for Wi-Fi station to re-associate to AP before sending report
+  uint32_t tConn = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - tConn < 5000UL)) {
+    delay(150);
+  }
 
   String reportJson = "{\"networks\":[";
   for (int i = 0; i < n; i++) {
@@ -670,11 +679,18 @@ void scanNearbyWifiNetworksAndReport() {
   reportJson += "]}";
 
   String decryptedResp;
-  postEncryptedToServer("/wifi-scan-report", reportJson, decryptedResp);
+  bool ok = postEncryptedToServer("/wifi-scan-report", reportJson, decryptedResp);
+  Serial.printf("[WiFi] Scan report sent to server: %s (%d networks)\n", ok ? "SUCCESS" : "FAILED", n);
 
   if (ENABLE_MQTT_TELEMETRY && mqttClient.connected()) {
     mqttClient.publish(MQTT_TOPIC_WIFI_REPORT, reportJson.c_str());
   }
+
+  WiFi.scanDelete();
+
+  delay(1200);
+  currentUiState = UI_STATE_IDLE;
+  lastDisplayMs = 0;
 }
 
 void handleScanWifiCommand(JsonObject cmd) {
