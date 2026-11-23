@@ -23,8 +23,8 @@
 #define VIDYAOS_ESP32_CONFIG_H
 
 // ─── 1. Wi-Fi & Institutional Server Configuration ──────────────────────────
-#define WIFI_SSID                   "Airtel_Ruby"
-#define WIFI_PASSWORD               "Rubyblack@567"
+#define WIFI_SSID                   "Airtel_neer_3811"
+#define WIFI_PASSWORD               "air56914"
 
 // Secondary / Fallback Wi-Fi Credentials
 #define FALLBACK_WIFI_SSID          "Airtel_Ruby"
@@ -36,8 +36,8 @@
 #define NVS_WIFI_NAMESPACE          "vidya_wifi"
 
 // Base URL of the VidyaOS Node.js / Express Backend
-// Primary: Local host IP on Wi-Fi (192.168.1.18:3000), Fallback: Render cloud
-#define VIDYAOS_SERVER_BASE_URL     "http://192.168.1.18:3000/api/v1/devices/esp32"
+// Primary: Local host IP on Wi-Fi (192.168.1.9:3000), Fallback: Render cloud
+#define VIDYAOS_SERVER_BASE_URL     "http://192.168.1.9:3000/api/v1/devices/esp32"
 #define VIDYAOS_RENDER_FALLBACK_URL "https://vidyaos-backend.onrender.com/api/v1/devices/esp32"
 
 // Unique Hardware Terminal UID & 256-Bit Shared Encryption Secret
@@ -103,7 +103,7 @@
 #define SUCCESS_LED_HOLD_MS         2500UL   // Green LED held for 2.5 seconds
 #define UNREGISTERED_HOLD_MS        2000UL   // Red LED held for 2.0 seconds
 #define FAILED_HOLD_MS              2000UL   // Red LED flash / failure hold
-#define HEARTBEAT_INTERVAL_MS       8000UL   // Poll server / report telemetry every 8s
+#define HEARTBEAT_INTERVAL_MS       1500UL   // Fast responsive 1.5s command polling
 #define OFFLINE_SYNC_BATCH_SIZE     20       // Upload 20 offline records per batch
 #define OLED_BANNER_HOLD_MS         2500UL   // Hold confirmation banner on OLED
 #define WIFI_CONNECT_TIMEOUT_MS     12000UL  // Wi-Fi connection timeout

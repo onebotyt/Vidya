@@ -145,13 +145,13 @@ public:
     if (!isAvailable) {
       Serial.println(F("[AS608][EMU] Sensor not detected. Emulating 2-step enrollment for bench testing."));
       if (onStageCallback) onStageCallback("Place Finger");
-      delay(1200);
+      delay(300);
       if (onStageCallback) onStageCallback("Lift Finger...");
-      delay(800);
+      delay(200);
       if (onStageCallback) onStageCallback("Place Again");
-      delay(1200);
+      delay(300);
       if (onStageCallback) onStageCallback("Saving Cloud...");
-      delay(500);
+      delay(150);
 
       for (int i = 0; i < AS608_TEMPLATE_SIZE; i++) {
         outTemplate512[i] = (uint8_t)((targetSlot * 19 + i * 37) & 0xFF);

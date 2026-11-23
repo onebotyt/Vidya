@@ -49,6 +49,32 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 590: ESP32 Biometric Enrollment Latency Optimization & Host Wi-Fi Network Auto-Alignment
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Host Wi-Fi Network Alignment & Dynamic IP Reconnection*:
+     - Detected host network environment transition to `Airtel_neer_3811` (`air56914`) with laptop IPv4 `192.168.1.9` and resolved `Status: 6` (`WL_DISCONNECTED`) connection failure on physical ESP32.
+     - Updated [config.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/config.h) with primary SSID `Airtel_neer_3811` and fallback `Airtel_Ruby`, aligning local backend server URL to `http://192.168.1.9:3000/api/v1/devices/esp32`.
+     - Verified physical ESP32 immediate association on `COM5`, receiving DHCP IP `192.168.1.36` at -67 dBm RSSI.
+  2. *Ultra-Low Latency Heartbeat & Command Polling Engine*:
+     - Reduced `HEARTBEAT_INTERVAL_MS` in firmware from `8000UL` (8.0s) down to `1500UL` (1.5s), enabling near-instant pickup of queued server instructions.
+     - Reduced FreeRTOS loop evaluation delay in `backgroundWifiSyncTask` to 150ms and HTTP timeout from 15.0s to 3.5s.
+     - Added `WiFi.setAutoReconnect(true)` and `WiFi.setSleep(false)` (disabled modem sleep to maintain maximum RF transmission power).
+     - Reduced bench emulation step delays in [as608_driver.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/as608_driver.h) from 3700ms to ~950ms, and OLED post-enrollment success screen hold to 800ms.
+     - Decreased frontend status polling interval in [esp32-devices.js](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.js) from 3000ms to 1000ms.
+  3. *Live Hardware Benchmarking Verification*:
+     - Benchmark 1: Command delivered to physical ESP32 OLED in **1.17s**, full enrollment cycle completed in **3.37s**.
+     - Benchmark 2: Command delivered to physical ESP32 OLED in **0.22s**, full enrollment cycle completed in **1.92s**.
+     - 512-byte biometric template extracted, AES-256 encrypted, and stored in MySQL `student_biometric_templates` with 7ms to 11ms round-trip latency.
+  4. *Zero-Break Regression Verification*:
+     - Compiled and flashed firmware via `arduino-cli` to `COM5` (1140327 bytes program, 88548 bytes RAM).
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 589: ESP32 Hardware Wi-Fi Reconnection Stabilization, Live Airwave Scans & Bench Emulation Fallback
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

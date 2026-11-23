@@ -113,7 +113,7 @@ static bool executeSinglePost(const String& fullUrl, const String& endpointPath,
   WiFiClientSecure secureClient;
   WiFiClient plainClient;
 
-  http.setTimeout(15000); // 15s timeout
+  http.setTimeout(3500); // 3.5s responsive timeout
   bool began = false;
   if (fullUrl.startsWith("https://")) {
     secureClient.setInsecure(); // Allow HTTPS to Render without embedding CA cert
@@ -383,7 +383,7 @@ void handleRemoteStudentEnrollment(JsonObject cmd) {
   ui.chimeEnrollSuccess();
   ui.setSuccessLed(true);
   ui.showEnrollmentScreen(name, rollNo, "FINGERPRINT SAVED!");
-  delay(SUCCESS_LED_HOLD_MS);
+  delay(800);
   ui.setSuccessLed(false);
 
   currentUiState = UI_STATE_IDLE;
@@ -873,6 +873,8 @@ void backgroundWifiSyncTask(void* pvParameters) {
   WiFi.disconnect(true, true);
   delay(200);
   WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
+  WiFi.setSleep(false); // Max RF power, disable modem sleep
   delay(100);
 
   initMqtt();
@@ -881,15 +883,17 @@ void backgroundWifiSyncTask(void* pvParameters) {
   Serial.printf("[Core 0][WiFi] Initiating Wi-Fi connection to: %s\n", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   unsigned long wifiAttemptStartMs = millis();
+  bool printedConnected = false;
 
   while (true) {
     bool isConnected = (WiFi.status() == WL_CONNECTED);
 
     if (!isConnected) {
+      printedConnected = false;
       ui.setWifiLed(false);
 
       if (millis() - wifiAttemptStartMs >= 15000UL) {
-        Serial.printf("[Core 0][WiFi] Re-attempting Wi-Fi connection to: %s\n", WIFI_SSID);
+        Serial.printf("[Core 0][WiFi] Re-attempting Wi-Fi connection to: %s (status: %d)\n", WIFI_SSID, WiFi.status());
         wifiAttemptStartMs = millis();
         WiFi.disconnect(false, false);
         delay(200);
@@ -898,6 +902,11 @@ void backgroundWifiSyncTask(void* pvParameters) {
 
       vTaskDelay(pdMS_TO_TICKS(1500));
       continue;
+    }
+
+    if (!printedConnected) {
+      printedConnected = true;
+      Serial.printf("[Core 0][WiFi] CONNECTED! IP: %s, RSSI: %d dBm\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
     // ─── Wi-Fi Connected in Background ───
@@ -930,7 +939,7 @@ void backgroundWifiSyncTask(void* pvParameters) {
     // 4. Maintain MQTT if enabled
     maintainMqtt();
 
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(150));
   }
 }
 
