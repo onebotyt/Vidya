@@ -32,3 +32,9 @@ backend/scripts/test-*
 *.sqlite-wal
 scratch/
 tmp/
+
+# Firmware build artifacts
+**/build/
+*.bin
+*.elf
+*.map

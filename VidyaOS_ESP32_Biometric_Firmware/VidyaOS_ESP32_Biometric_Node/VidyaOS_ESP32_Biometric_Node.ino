@@ -611,8 +611,9 @@ void handleSwitchWifiCommand(JsonObject cmd) {
     ui.setSuccessLed(false);
   } else {
     ui.beepAttendanceFailed();
-    connectToNetwork(defaultWifiSsid, defaultWifiPass, WIFI_FALLBACK_TIMEOUT_MS);
-    currentConnectedSsid = defaultWifiSsid;
+    Serial.printf("[WiFi] Switch to %s failed. Restoring main Wi-Fi: %s\n", ssid.c_str(), WIFI_SSID);
+    connectToNetwork(WIFI_SSID, WIFI_PASSWORD, WIFI_FALLBACK_TIMEOUT_MS);
+    currentConnectedSsid = WIFI_SSID;
   }
 }
 
@@ -894,15 +895,21 @@ void backgroundWifiSyncTask(void* pvParameters) {
         Serial.printf("[Core 0][WiFi] Primary Wi-Fi timeout. Switching to Fallback: %s\n", FALLBACK_WIFI_SSID);
         connectingToPrimary = false;
         wifiAttemptStartMs = millis();
+        WiFi.disconnect(false, false);
+        delay(150);
         WiFi.begin(FALLBACK_WIFI_SSID, FALLBACK_WIFI_PASS);
 #else
         wifiAttemptStartMs = millis();
+        WiFi.disconnect(false, false);
+        delay(150);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 #endif
       } else if (!connectingToPrimary && (millis() - wifiAttemptStartMs >= 10000UL)) {
         Serial.printf("[Core 0][WiFi] Fallback timeout. Retrying Main Wi-Fi: %s\n", WIFI_SSID);
         connectingToPrimary = true;
         wifiAttemptStartMs = millis();
+        WiFi.disconnect(false, false);
+        delay(150);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
       }
 

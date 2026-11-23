@@ -49,6 +49,26 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 588: ESP32 Biometric Terminal Student Registration Display & Demo Data Purge
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Real-time OLED Biometric Registration Display Synchronization (`onSelectEnrollStudent`)*:
+     - Fixed issue on [faculty/esp32-devices/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/index.html) where selecting a student from the dropdown roster (`#enroll-student-select`) only updated text on the card chip, leaving the 0.96" SSD1306 hardware OLED console frozen on the default clock.
+     - Updated `onSelectEnrollStudent(studentId)` in [faculty/esp32-devices/esp32-devices.js](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.js) to immediately push the selected student's real-time identity onto the OLED screen (Headline: `ENROLL FINGERPRINT` or `BIOMETRIC VERIFIED`, Line 1: `student.full_name`, Line 2: `Roll: #<roll> • Yr <yr> Sem <sem>`, Line 3: `Touch AS608 to Register` or `Ready • Place Finger to Scan`).
+     - Added synchronized LED bulb highlights (`[true, false, false]` for enrolled, `[false, false, true]` for enroll mode), active simulation toolbar toggle, and animated optical viewfinder pulse ring (`radar-pulse`) upon student selection.
+     - Removed automatic `setOledSimMode('standby')` reset call after `populateEnrollStudentSelect()` in `loadEsp32Overview()`, preserving the selected student view.
+  2. *Comprehensive Demo & Mock Data Purge*:
+     - Removed hardcoded dummy student names (`Amit Kumar`, `Arjun Rao`, `2024IT005`, `2024IT011`, `24011090008`) from `setOledSimMode`, `simulateStudentBiometric`, and `queueEnrollCommandForStudent`. All display modes now dynamically reflect the active roster student.
+     - Eliminated hardcoded placeholder telemetry (`7.85V (84%)`, `0 / 87`, `WiFi -58dB`, `84% 7.8V`, `1 NODE ONLINE`) from initial HTML and fallback logic, replacing with clean neutral states (`--V (--%)`, `0 / 0`, `STANDBY`) that populate strictly from live MySQL telemetry.
+     - Removed fake IP and telemetry fallbacks (`192.168.1.105`, `-56`, `88`) from `backend/src/controllers/deviceController.js` in `detectNearbyDevice`.
+  3. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 587: Student Profile Mobile Tab Dropdown Selector Overhaul
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:
