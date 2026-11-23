@@ -49,6 +49,29 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 596: Purge External W25Qxx SPI Code, Self-Contained NVS Flash Storage & Dedicated ESP32 OLED Ping Display Banner
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (344/344 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Complete Elimination of External W25Qxx SPI Chip Code & Reclaimed Hardware Pins*:
+     - Replaced [w25q32_storage.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/w25q32_storage.h) with a self-contained internal flash storage driver utilizing standard ESP32 `Preferences` (NVS) for persistent student slot mappings (`s1`..`s300`) and a fast circular RAM buffer for unsynced attendance scans.
+     - Removed all external SPI NOR flash commands (`W25Q_CMD_*`), `SPI.begin(...)`, and SPI transactions.
+     - In [config.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/config.h): Freed hardware VSPI pins (CS GPIO 5, SCK GPIO 18, MISO GPIO 19, MOSI GPIO 23) and purged W25Q32 pin macros.
+     - The terminal now operates 100% autonomously with only the ESP32 + AS608 optical sensor + SSD1306 OLED display + Buzzer, with zero external flash chip requirement.
+  2. *Dedicated ESP32 OLED Ping Display Banner & I2C Mutex Synchronization*:
+     - In [VidyaOS_ESP32_Biometric_Node.ino](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/VidyaOS_ESP32_Biometric_Node.ino): Implemented `displayMutex` FreeRTOS binary semaphore preventing multi-core I2C bus collision on `Wire` between Core 0 (background network sync) and Core 1 (attendance scanning engine).
+     - In `handleRemotePing()`: Switched active UI state to `UI_STATE_BANNER` and set `bannerExpireMs = millis() + 4000UL`, locking the screen for 4 full seconds so the Core 1 idle digital clock loop cannot prematurely overwrite the feedback screen.
+     - In [oled_buzzer_ui.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/oled_buzzer_ui.h): Redesigned `showPingFeedback()` with inverted header (`SERVER PING OK`), high-contrast center status (`LINK OK`), source metadata (`From: Web Console`), live Wi-Fi signal strength (`RSSI: -58dB`), and dual-tone piezo chime (`chimePing()`).
+     - Added serial `'p'` interactive trigger in `loop()` dispatching ping feedback directly.
+  3. *Elimination of Heartbeat Template Loop & Frontend Cleanup*:
+     - Prevented recurring template synchronization storm on boot by conditioning initial cloud sync on `!initialSyncDone`.
+     - In [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/index.html) and [esp32-devices.js](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.js): Replaced `AS608 Ready • W25Q32 OK` with `AS608 Optical • Ready`, relabeled `W25Q32 Queue` to `Offline Queue`, and purged all W25Qxx references.
+     - Compiled with Arduino CLI and flashed to physical ESP32 on `COM5` (1,146,880 bytes).
+  4. *Zero-Break Regression Verification*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Total: **344 / 344 checks passed**.
+
 ### ✅ Milestone 595: Spreadsheet Studio Transparent Cell Selection, Live Ribbon Formatting & Print Table Layout Stabilization
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

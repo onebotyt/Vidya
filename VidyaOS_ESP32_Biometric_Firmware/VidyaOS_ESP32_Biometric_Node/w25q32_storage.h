@@ -180,7 +180,7 @@ public:
     return false;
   }
 
-  uint16_t getEnrolledStudentCount() {
+  uint16_t getEnrolledStudentCount() const {
     uint16_t count = 0;
     for (uint16_t s = 1; s <= AS608_MAX_SLOTS; s++) {
       if (ramRosterCache[s].magic == SLOT_RECORD_MAGIC) count++;
