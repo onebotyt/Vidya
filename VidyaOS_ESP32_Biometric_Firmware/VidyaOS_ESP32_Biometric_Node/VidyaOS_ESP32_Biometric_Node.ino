@@ -624,6 +624,8 @@ void initWifiManager() {
   if (ok) {
     currentConnectedSsid = WiFi.SSID();
   }
+  currentUiState = UI_STATE_IDLE;
+  lastDisplayMs = 0; // Immediately draw idle clock screen
 }
 
 /**
@@ -780,33 +782,37 @@ bool performOtaUpdate(const String& binUrl) {
     began = http.begin(plainClient, binUrl);
   }
 
+  auto resetOtaFailure = [&](const char* errTitle, const char* errMsg) {
+    queueRemoteLog("ERROR", "OTA", String(errTitle) + ": " + String(errMsg));
+    ui.showAttendanceFailed(errTitle, errMsg);
+    ui.setWifiLed(false);
+    http.end();
+    delay(2000);
+    currentUiState = UI_STATE_IDLE;
+    lastDisplayMs = 0;
+  };
+
   if (!began) {
-    queueRemoteLog("ERROR", "OTA", "Failed to initialize HTTP client for: " + binUrl);
-    ui.showAttendanceFailed("OTA Connect Failed", "Check server URL");
+    resetOtaFailure("OTA Connect Failed", "Check server URL");
     return false;
   }
 
   int httpCode = http.GET();
   if (httpCode != 200) {
-    queueRemoteLog("ERROR", "OTA", "HTTP GET failed with code: " + String(httpCode));
-    ui.showAttendanceFailed("OTA HTTP Error", String(httpCode).c_str());
-    http.end();
+    resetOtaFailure("OTA HTTP Error", String(httpCode).c_str());
     return false;
   }
 
   int contentLength = http.getSize();
   queueRemoteLog("INFO", "OTA", "Firmware binary located: " + String(contentLength) + " bytes. Flashing partition...");
   if (contentLength <= 0) {
-    queueRemoteLog("ERROR", "OTA", "Invalid firmware content length (0 bytes)");
-    http.end();
+    resetOtaFailure("OTA Size Error", "Invalid firmware size (0 bytes)");
     return false;
   }
 
   bool canBegin = Update.begin(contentLength);
   if (!canBegin) {
-    queueRemoteLog("ERROR", "OTA", "Update.begin failed: insufficient partition space");
-    ui.showAttendanceFailed("OTA Space Error", "Flash partition full");
-    http.end();
+    resetOtaFailure("OTA Space Error", "Flash partition full");
     return false;
   }
 
@@ -823,15 +829,13 @@ bool performOtaUpdate(const String& binUrl) {
       ESP.restart();
       return true;
     } else {
-      queueRemoteLog("ERROR", "OTA", "Update did not finish properly");
+      resetOtaFailure("OTA Write Error", "Flash incomplete");
+      return false;
     }
   } else {
-    queueRemoteLog("ERROR", "OTA", "Update error #: " + String(Update.getError()));
-    ui.showAttendanceFailed("OTA Write Error", "Checksum mismatch");
+    resetOtaFailure("OTA Write Error", "Checksum mismatch");
+    return false;
   }
-
-  http.end();
-  return false;
 }
 
 void onMqttMessage(char* topic, byte* payload, unsigned int length) {

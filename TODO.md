@@ -49,6 +49,34 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 599: Live Wi-Fi Scanning Re-Association, Web Display Laser & Radar Animations & OLED Firmware Screen Freeze Elimination
+- **Status**: Tested, Verified & Flashed to COM5 Hardware Node (396/396 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Nearby Wi-Fi Re-Association & Live Scanning Fix*:
+     - In [VidyaOS_ESP32_Biometric_Node.ino](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/VidyaOS_ESP32_Biometric_Node.ino): In `scanNearbyWifiNetworksAndReport()`, added a 5-second bounded loop waiting for `WiFi.status() == WL_CONNECTED` so the ESP32 re-associates with the AP after switching channels before posting the encrypted report to `/wifi-scan-report`.
+     - In [esp32-devices.js](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.js): Increased scanning retry polling to 15 attempts (18 seconds) and ensured real-time AP rendering (`vivot3lite`, `mobile`, `New`).
+  2. *Futuristic Web Display Scanning Animations (0 Hardcoded Hex Colors)*:
+     - In [esp32-devices.css](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.css): Added `.oled-screen.scanning::after` with cyan laser beam sweep (`@keyframes oledLaserSweep`).
+     - Added `.esp-optical-viewfinder.scanning` with optical green pulse (`@keyframes cornerGlow` and `@keyframes fpOpticalPulse`).
+     - Added 360-degree rotating radar component (`.wifi-radar-scanner-box`, `.wifi-radar-circle`, `.wifi-radar-sweep`, `.wifi-radar-blip`) with pulsating target blips and concentric radar range rings.
+     - 100% theme token compliant using CSS variables.
+  3. *OLED Display Firmware Window Freeze Elimination*:
+     - Identified root causes for physical ESP32 OLED display freezing on boot/firmware screen:
+       * In `connectToWifiWithFailover()`: Added `currentUiState = UI_STATE_IDLE; lastDisplayMs = 0;` ensuring completion immediately unlocks the idle screen.
+       * In `performOtaUpdate()`: Added `resetOtaFailure` ensuring all failure/timeout paths immediately reset `currentUiState = UI_STATE_IDLE; lastDisplayMs = 0; ui.setWifiLed(false);`.
+       * In `as608_driver.h`: `quickProbeSensor()` with 35ms packet timeout replaces legacy 30-second blocking autoDetect sweep.
+  4. *In-Memory Backend Refresh & Safe Audio Buzzer*:
+     - Resolved `Error removing template: playBeep is not defined` in [esp32-devices.js](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.js) by defining `playBeep` safely at the root scope, assigning `window.playBeep`, and adding defensive type guards.
+     - Freshly restarted backend server (task-8253), activating database join fixes and template slot auto-healing.
+     - Bumped script and stylesheet cache busters to `?v=20261123k` in [index.html](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/index.html).
+  5. *Zero-Break Regression Suite*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **396 / 396 checks passed**.
+
 ### ✅ Milestone 598: Hardware Touch Sense (AS608 WAK / Touch Out Pin) Integration & Dual-Engine Finger Detection
 - **Status**: Tested, Verified & Flashed to COM5 Hardware Node (344/344 checks passed).
 - **Objective & Architectural Scope**:
