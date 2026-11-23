@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 587: Student Profile Mobile Tab Dropdown Selector Overhaul
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Mobile Tab Dropdown Selector (`#profile-tab-dropdown-wrap`)*:
+     - Resolved poor mobile UX on [student/profile/index.html](file:///e:/uiap/VidyaOS/frontend/student/profile/index.html) where 5 segmented tabs forced an awkward horizontal scrollbar on narrow smartphone screens (`<= 820px`), causing tabs to be cut off and hard to swipe.
+     - Added `.profile-tab-dropdown-wrap` containing `#profile-tab-select` and a reactive leading icon `#profile-tab-leading-icon`.
+     - In [student/profile/profile.css](file:///e:/uiap/VidyaOS/frontend/student/profile/profile.css), hidden the horizontal scrollbar (`.profile-tabs-scroller { display: none !important; }`) on viewports `<= 820px` while presenting a full-width, touch-friendly select container (`44px` height, 100% theme token compliant, 0 hardcoded hex colors).
+  2. *Bi-directional Tab Synchronization (`switchProfileTab`)*:
+     - Updated `switchProfileTab(tabKey)` in [student/profile/profile.js](file:///e:/uiap/VidyaOS/frontend/student/profile/profile.js) to keep both the desktop segmented buttons (`tab-btn-*`) and the mobile dropdown selector (`#profile-tab-select`) in 100% sync.
+     - Created `updateProfileTabLeadingIcon(tabKey)` to dynamically switch SVG icons matching the selected section (Academic Cohort, KYC & Demographics, Verified Documents, Account Security, All Details).
+     - Preserved deep-linking via URL hashes (`#security`, `#kyc`, `#documents`, `#academic`) and query parameters (`?complete=1`).
+  3. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Dynamic Roll Call & Live Log Suites (`test-roll-call-upgrade.js` & `test-live-log-checkin.js`): **All Passed**.
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 586: Public Auth Branding Endpoint for Global Hero & Student Dashboard Google Classroom Card Visual Overhaul
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-23T00:08:38.887Z",
+  "generated_at": "2026-11-23T02:29:01.287Z",
   "total_pages": 33,
   "totals": {
     "buttons": 847,
     "modals": 202,
-    "inputs": 405,
+    "inputs": 406,
     "apis": 301
   },
   "pages": [
@@ -392,11 +392,11 @@
       "route": "/student/profile.html",
       "title": "Student Profile &amp; Academic Credentials — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/stu-008.json",
-      "content_hash": "d70bc0e08978",
+      "content_hash": "b84a4d39ad20",
       "counts": {
         "buttons": 17,
         "modals": 1,
-        "inputs": 12,
+        "inputs": 13,
         "apis": 8
       }
     },

@@ -4,8 +4,8 @@
   "role": "Student",
   "route": "/student/profile.html",
   "source_file": "frontend/student/profile/index.html",
-  "content_hash": "d70bc0e08978",
-  "last_scanned": "2026-11-23T00:08:38.875Z",
+  "content_hash": "b84a4d39ad20",
+  "last_scanned": "2026-11-23T02:29:01.271Z",
   "title": "Student Profile &amp; Academic Credentials — VidyaOS",
   "purpose": "Academic credentials, PRN, branch, semester, active devices",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
@@ -297,6 +297,35 @@
       }
     ],
     "dropdown_selectors": [
+      {
+        "id": "profile-tab-select",
+        "title": null,
+        "onchange": "switchProfileTab(this.value)",
+        "class": "profile-tab-select",
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "academic",
+            "text": "Academic Cohort"
+          },
+          {
+            "value": "kyc",
+            "text": "KYC &amp; Demographics"
+          },
+          {
+            "value": "documents",
+            "text": "Verified Documents"
+          },
+          {
+            "value": "security",
+            "text": "Account Security"
+          },
+          {
+            "value": "all",
+            "text": "All Details"
+          }
+        ]
+      },
       {
         "id": "profile-gender",
         "title": null,
