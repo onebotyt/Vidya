@@ -49,6 +49,24 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 593: Physical ESP32 Hardware OLED Display Ping Feedback & AS608 Database Slot Query Fix
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (344/344 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Hardware OLED & Buzzer Ping Audio-Visual Feedback*:
+     - Extended [oled_buzzer_ui.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/oled_buzzer_ui.h) with `chimePing()` (A6 1760Hz + E7 2637Hz dual-tone chime) and `showPingFeedback(int rssi, const char* timeStr, const char* source)` to present immediate physical visual feedback on the SSD1306 128x64 display with Wi-Fi signal strength and timestamp.
+     - Extended [VidyaOS_ESP32_Biometric_Node.ino](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/VidyaOS_ESP32_Biometric_Node.ino) with `handleRemotePing(cmd)`, routing `PING`, `PING_ALERT`, and `CHECK_CONNECTION` through both heartbeat polling (1.5s interval) and MQTT listeners.
+     - In [deviceController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/deviceController.js): Updated `pingDevice` to enqueue a `PING` command into `esp32_command_queue` for active terminals so remote pings from the browser immediately reach the physical device.
+     - In [esp32-devices.js](file:///e:/uiap/VidyaOS/frontend/faculty/esp32-devices/esp32-devices.js): Updated `checkDeviceConnection` to show `SERVER PING OK` / `LINK VERIFIED` in tandem with the physical terminal.
+     - Compiled firmware with bundled Arduino CLI and flashed to physical ESP32 node on `COM5`.
+  2. *AS608 Slots & Duplicate Audit Database Query In-Memory Server Fix*:
+     - Resolved `Error loading slots: Unknown column 's.department_id' in 'SELECT'` in `GET /api/v1/devices/hod/:device_id/slots` by correcting column joins to `COALESCE(e.department_id, device.department_id) as department_id` and refreshing the active Node.js server process.
+     - Live endpoint test verified: returned HTTP 200 with all 300 slots, mapped student records, and duplicate anomaly detection intact.
+  3. *Zero-Break Regression Verification*:
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Total: **344 / 344 checks passed**.
+
 ### ✅ Milestone 592: Multi-Format Spreadsheet & Register Export Formatting, Alignment & Colgroup Sync
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

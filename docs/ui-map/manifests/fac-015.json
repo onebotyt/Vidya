@@ -5,7 +5,7 @@
   "route": "/faculty/classes/index.html",
   "source_file": "frontend/faculty/classes/index.html",
   "content_hash": "e29be42a6db1",
-  "last_scanned": "2026-11-23T06:47:58.457Z",
+  "last_scanned": "2026-11-23T08:01:13.119Z",
   "title": "My Teaching Classes — VidyaOS",
   "purpose": "Teaching Classes Overview: 3 KPI status cards, classroom cards with uniform 6-module action grid (Theory Classes, Laboratory, NBA, Student Performance, Direct Assessment, Indirect Assessment), 3-dot kebab menu (Edit Class, Move to Trash), Create Class modal, Broadcast Notice modal with Year cohort filter and media upload, and Trash Bin navigation with live count badge",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",

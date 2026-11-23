@@ -5,7 +5,7 @@
   "route": "/ or /landing/",
   "source_file": "frontend/landing/index.html",
   "content_hash": "53db5463ff4f",
-  "last_scanned": "2026-11-23T06:47:58.555Z",
+  "last_scanned": "2026-11-23T08:01:13.245Z",
   "title": "VidyaOS — Institutional Campus & Academic Operating System",
   "purpose": "Institutional homepage, system features, login entrance",
   "shell": "Landing Shell (`variables.css`)",

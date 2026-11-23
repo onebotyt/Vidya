@@ -427,6 +427,32 @@ void handleRemoteDeleteTemplate(JsonObject cmd) {
 }
 
 /**
+ * Remote server ping feedback handler:
+ * Plays connection chime, lights status LEDs, and displays link verification screen on OLED!
+ */
+void handleRemotePing(JsonObject cmd) {
+  Serial.println(F("[PING] Received remote ping from Web Portal! Playing chime and updating OLED display..."));
+  queueRemoteLog("INFO", "PING", "Remote ping received from Web Console - connection OK");
+
+  ui.chimePing();
+  ui.setSuccessLed(true);
+  ui.setWifiLed(true);
+
+  char timeBuf[16];
+  getFormattedTime(timeBuf, sizeof(timeBuf), NULL, 0);
+  int rssi = WiFi.RSSI();
+
+  JsonObject payload = cmd["payload"].is<JsonObject>() ? cmd["payload"].as<JsonObject>() : cmd;
+  const char* src = payload["source"] | "Web Portal";
+
+  ui.showPingFeedback(rssi, timeBuf, src);
+
+  delay(2200);
+  ui.setSuccessLed(false);
+  lastActivityMs = millis();
+}
+
+/**
  * Drains unsynced offline attendance scans from W25Q32 SPI Flash to the server.
  * Protected by FreeRTOS mutex to guarantee thread-safety between Core 0 and Core 1.
  */
@@ -765,6 +791,7 @@ void onMqttMessage(char* topic, byte* payload, unsigned int length) {
     JsonObject cmd = doc.as<JsonObject>();
     String cmdType = cmd["command_type"] | "";
     if (cmdType == "SCAN_WIFI") handleScanWifiCommand(cmd);
+    else if (cmdType == "PING" || cmdType == "PING_ALERT") handleRemotePing(cmd);
     else if (cmdType == "SWITCH_WIFI") handleSwitchWifiCommand(cmd);
     else if (cmdType == "FALLBACK_WIFI") handleFallbackWifiCommand(cmd);
     else if (cmdType == "RESET_WIFI") handleResetWifiCommand(cmd);
@@ -877,6 +904,8 @@ void sendHeartbeatAndProcessCommands() {
           syncDepartmentTemplatesFromServer();
         } else if (cmdType == "BUZZER_CHIME") {
           ui.beepAttendanceSuccess();
+        } else if (cmdType == "PING" || cmdType == "PING_ALERT" || cmdType == "CHECK_CONNECTION") {
+          handleRemotePing(cmd);
         } else if (cmdType == "SCAN_WIFI") {
           handleScanWifiCommand(cmd);
         } else if (cmdType == "SWITCH_WIFI" || cmdType == "ADD_WIFI") {
