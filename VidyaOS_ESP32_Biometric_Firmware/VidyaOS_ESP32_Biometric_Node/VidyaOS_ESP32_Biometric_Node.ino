@@ -1075,7 +1075,8 @@ void setup() {
   // 3. Initialize Flash Storage (Ultra-resilient: runs RAM cache if flash not wired)
   flashStorage.begin();
 
-  // 4. Initialize AS608 Fingerprint Sensor & turn backlight ON
+  // 4. Initialize AS608 Fingerprint Sensor & Hardware Touch Sense
+  fingerprintSensor.initTouchPin(AS608_TOUCH_WAKE_PIN);
   fingerprintSensor.begin();
 
   // 5. Create FreeRTOS Mutexes for thread-safe access across CPU cores
@@ -1134,6 +1135,12 @@ void loop() {
 #endif
       pDoc["source"] = "USB Serial";
       handleRemotePing(pDoc.as<JsonObject>());
+    } else if (ch == 't' || ch == 'T') {
+      int raw = digitalRead(AS608_TOUCH_WAKE_PIN);
+      bool active = fingerprintSensor.isTouchActive();
+      Serial.println(F("\n[SERIAL] >>> AS608 Hardware Touch Pin Diagnostic <<<"));
+      Serial.printf("[TOUCH] GPIO %d Raw Value: %d | Status: %s\n",
+        AS608_TOUCH_WAKE_PIN, raw, active ? "FINGER DETECTED (TOUCH ACTIVE!)" : "Idle (No finger on sensor)");
     }
   }
 
@@ -1167,10 +1174,16 @@ void loop() {
     return;
   }
 
-  if (digitalRead(AS608_TOUCH_WAKE_PIN) == HIGH) {
+  bool isTouched = fingerprintSensor.isTouchActive();
+  if (isTouched) {
     lastActivityMs = millis();
     if (currentUiState == UI_STATE_IDLE) {
-      ui.showScanningScreen();
+      if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+        ui.showScanningScreen();
+        xSemaphoreGive(displayMutex);
+      } else {
+        ui.showScanningScreen();
+      }
     }
   }
 

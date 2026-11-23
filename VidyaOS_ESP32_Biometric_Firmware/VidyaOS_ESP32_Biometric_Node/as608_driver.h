@@ -30,8 +30,35 @@ public:
   int activeRxPin = AS608_RX_PIN;
   int activeTxPin = AS608_TX_PIN;
   uint32_t activeBaudRate = AS608_BAUD_RATE;
+  uint8_t touchPin = AS608_TOUCH_WAKE_PIN;
+  uint8_t touchActiveState = HIGH;
 
-  VidyaAS608Sensor(HardwareSerial* ser) : serialPort(ser), finger(ser), isAvailable(false) {}
+  VidyaAS608Sensor(HardwareSerial* ser) : serialPort(ser), finger(ser), isAvailable(false), touchPin(AS608_TOUCH_WAKE_PIN), touchActiveState(HIGH) {}
+
+  /**
+   * Initializes the AS608 hardware touch sense pin (Pin 5 / WAK / Touch Out).
+   * Automatically auto-detects active-HIGH vs active-LOW baseline.
+   */
+  void initTouchPin(uint8_t pin = AS608_TOUCH_WAKE_PIN) {
+    touchPin = pin;
+    pinMode(touchPin, INPUT_PULLDOWN);
+    delay(30);
+    int hiCount = 0;
+    for (int i = 0; i < 5; i++) {
+      if (digitalRead(touchPin) == HIGH) hiCount++;
+      delay(5);
+    }
+    touchActiveState = (hiCount >= 3) ? LOW : HIGH;
+    Serial.printf("[TOUCH] Initialized AS608 Touch Sense on GPIO %d (Active %s, baseline=%d)\n",
+      touchPin, (touchActiveState == HIGH ? "HIGH" : "LOW"), hiCount >= 3 ? 1 : 0);
+  }
+
+  /**
+   * Returns true immediately (<1μs) if a finger is touching the AS608 sensor glass!
+   */
+  bool isTouchActive() {
+    return (digitalRead(touchPin) == touchActiveState);
+  }
 
   /**
    * Comprehensive auto-probe across standard baud rates & pin configurations.
@@ -135,6 +162,18 @@ public:
       return 0;
     }
 
+    // Touch Sense Optimization:
+    // If the hardware touch pin is idle, throttle optical scans to prevent needless UART traffic.
+    // If touch pin is active, immediately trigger instantaneous optical capture!
+    bool touchActive = isTouchActive();
+    if (!touchActive) {
+      static uint32_t lastOpticalCheckMs = 0;
+      if (millis() - lastOpticalCheckMs < 120UL) {
+        return 0;
+      }
+      lastOpticalCheckMs = millis();
+    }
+
     uint8_t p = finger.getImage();
     if (p == FINGERPRINT_NOFINGER) return 0; // No finger present
     if (p != FINGERPRINT_OK) return -1;      // Image capture error
@@ -152,6 +191,7 @@ public:
   }
 
   bool hasFinger() {
+    if (isTouchActive()) return true;
     if (!isAvailable) return false;
     uint8_t p = finger.getImage();
     return (p != FINGERPRINT_NOFINGER);
@@ -174,18 +214,20 @@ public:
   }
 
   void waitForFingerRelease(uint32_t timeoutMs = 2500) {
-    if (!isAvailable) return;
     uint32_t start = millis();
     while ((millis() - start < timeoutMs)) {
-      if (finger.getImage() == FINGERPRINT_NOFINGER) break;
+      bool touched = isTouchActive();
+      if (!touched) {
+        if (!isAvailable || finger.getImage() == FINGERPRINT_NOFINGER) break;
+      }
       delay(40);
     }
   }
 
   /**
    * Real, responsive 2-scan student fingerprint enrollment.
-   * Features a generous 45-second timeout, real-time finger detection checking,
-   * and clean stage callbacks.
+   * Leverages the AS608 hardware Touch Pin for instant finger detection,
+   * generous 45-second timeout, and clean stage callbacks.
    */
   bool enrollAndExtractTemplate(
     uint16_t targetSlot,
@@ -203,20 +245,44 @@ public:
       }
     }
 
-    // Step 1: Wait for 1st finger touch (45 second timeout!)
+    // Step 1: Wait for 1st finger touch (45 second timeout with Touch Pin detection!)
     if (onStageCallback) onStageCallback("1. Place Finger");
     uint32_t t0 = millis();
-    while (finger.getImage() != FINGERPRINT_OK) {
+    bool touch1 = false;
+    while (!touch1) {
       if (millis() - t0 > 45000UL) {
         Serial.println(F("[AS608][TIMEOUT] Enrollment timed out waiting for 1st touch."));
         if (onStageCallback) onStageCallback("Timeout: No Finger");
         return false;
       }
-      delay(40);
+      if (isTouchActive()) {
+        Serial.println(F("[AS608][TOUCH] Hardware touch pin triggered (1st touch)!"));
+        touch1 = true;
+        break;
+      }
+      if (isAvailable && finger.getImage() == FINGERPRINT_OK) {
+        touch1 = true;
+        break;
+      }
+      delay(25);
     }
 
     if (onStageCallback) onStageCallback("1. Scanned OK!");
-    delay(250);
+    delay(100);
+
+    // Give optical sensor a moment to capture the full print ridges
+    uint8_t p = finger.getImage();
+    uint32_t tImg = millis();
+    while (p != FINGERPRINT_OK && (millis() - tImg < 2000UL)) {
+      delay(40);
+      p = finger.getImage();
+    }
+
+    if (p != FINGERPRINT_OK) {
+      Serial.println(F("[AS608][ERROR] Failed to convert image 1."));
+      if (onStageCallback) onStageCallback("Poor Image / Retry");
+      return false;
+    }
 
     if (finger.image2Tz(1) != FINGERPRINT_OK) {
       Serial.println(F("[AS608][ERROR] Failed to convert image 1 to template."));
@@ -226,27 +292,53 @@ public:
 
     // Step 2: Prompt to lift finger
     if (onStageCallback) onStageCallback("2. Lift Finger");
-    delay(350);
+    delay(200);
     uint32_t tLift = millis();
-    while (finger.getImage() != FINGERPRINT_NOFINGER) {
-      if (millis() - tLift > 6000UL) break; // Proceed even if residue
-      delay(40);
+    while (millis() - tLift < 6000UL) {
+      bool stillTouched = isTouchActive();
+      if (!stillTouched && (!isAvailable || finger.getImage() == FINGERPRINT_NOFINGER)) {
+        break;
+      }
+      delay(30);
     }
 
-    // Step 3: Wait for same finger again (45 second timeout!)
+    // Step 3: Wait for same finger again (45 second timeout with Touch Pin detection!)
     if (onStageCallback) onStageCallback("3. Place Again");
     t0 = millis();
-    while (finger.getImage() != FINGERPRINT_OK) {
+    bool touch2 = false;
+    while (!touch2) {
       if (millis() - t0 > 45000UL) {
         Serial.println(F("[AS608][TIMEOUT] Enrollment timed out waiting for 2nd touch."));
         if (onStageCallback) onStageCallback("Timeout: No Finger");
         return false;
       }
-      delay(40);
+      if (isTouchActive()) {
+        Serial.println(F("[AS608][TOUCH] Hardware touch pin triggered (2nd touch)!"));
+        touch2 = true;
+        break;
+      }
+      if (isAvailable && finger.getImage() == FINGERPRINT_OK) {
+        touch2 = true;
+        break;
+      }
+      delay(25);
     }
 
     if (onStageCallback) onStageCallback("2. Scanned OK!");
-    delay(250);
+    delay(100);
+
+    p = finger.getImage();
+    tImg = millis();
+    while (p != FINGERPRINT_OK && (millis() - tImg < 2000UL)) {
+      delay(40);
+      p = finger.getImage();
+    }
+
+    if (p != FINGERPRINT_OK) {
+      Serial.println(F("[AS608][ERROR] Failed to convert image 2."));
+      if (onStageCallback) onStageCallback("Poor Image / Retry");
+      return false;
+    }
 
     if (finger.image2Tz(2) != FINGERPRINT_OK) {
       Serial.println(F("[AS608][ERROR] Failed to convert image 2 to template."));
@@ -256,7 +348,7 @@ public:
 
     // Step 4: Create model and store in sensor hardware slot
     if (onStageCallback) onStageCallback("Creating Model...");
-    uint8_t p = finger.createModel();
+    p = finger.createModel();
     if (p != FINGERPRINT_OK) {
       Serial.printf("[AS608][ERROR] createModel returned 0x%02X (Fingers did not match)\n", p);
       if (onStageCallback) onStageCallback("Fingers Mismatch!");

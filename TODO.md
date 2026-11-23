@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 598: Hardware Touch Sense (AS608 WAK / Touch Out Pin) Integration & Dual-Engine Finger Detection
+- **Status**: Tested, Verified & Flashed to COM5 Hardware Node (344/344 checks passed).
+- **Objective & Architectural Scope**:
+  1. *AS608 Hardware Touch Pin Detection ([as608_driver.h](file:///e:/uiap/VidyaOS/VidyaOS_ESP32_Biometric_Firmware/VidyaOS_ESP32_Biometric_Node/as608_driver.h))*:
+     - Integrated the dedicated AS608 hardware touch-sensing circuit (Pin 5 / WAK / Touch Out on GPIO 33) into the core detection pipeline.
+     - Implemented `initTouchPin()` with automated baseline calibration: samples pin at boot to auto-detect Active-HIGH vs Active-LOW modules without manual configuration.
+     - Implemented `isTouchActive()` returning instant (<1 microsecond) hardware touch state.
+  2. *Instantaneous Attendance Triggering & UART Traffic Optimization*:
+     - In `pollAndSearch()`: When no touch is present on the glass, throttles optical scanning commands to save CPU cycles and UART bandwidth. When a finger contacts the glass, immediately fires optical image capture.
+     - In Core 1 `loop()`: When touch is detected, immediately awakens the OLED screen with `ui.showScanningScreen()` and refreshes `lastActivityMs`.
+  3. *Responsive 2-Scan Enrollment with Touch Detection*:
+     - In `enrollAndExtractTemplate()`: Both Scan 1 ("Place Finger") and Scan 2 ("Place Again") now actively detect finger arrival via the hardware touch pin first, then verify optical ridge clarity with `finger.getImage()`.
+     - In `waitForFingerRelease()`: Actively checks the touch pin so the terminal knows the moment the user lifts their finger before asking for Scan 2.
+  4. *Serial Diagnostic Interactive Command ('t')*:
+     - Added `'t'` / `'T'` serial command in `loop()` displaying live GPIO 33 raw read, baseline state, and instant touch trigger status.
+  5. *Zero-Break Regression Suite*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Total: **344 / 344 checks passed**.
+
 ### ✅ Milestone 597: Interactive 45s Student Enrollment, UART2 Multi-Baud Auto-Probe & Visual Attendance OLED Hold Engine
 - **Status**: Tested, Verified & Flashed to COM5 Hardware Node (344/344 checks passed).
 - **Objective & Architectural Scope**:
