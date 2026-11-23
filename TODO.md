@@ -49,6 +49,27 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 594: Unit Test Marksheet (UT1..UTn) 5-Column Alignment, Vertical Merge Parity & Stale Cache Healing
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Single Unit Test (UT1..UTn) 5-Column Institutional Layout & Header Sync*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Standardized `singleTestSheet` headers to the canonical 5-column institutional standard: Col 0: `SR. NO.`, Col 1: `ROLL NO.`, Col 2: `REG. NO.`, Col 3: `UBTER ROLL NO.`, Col 4: `STUDENT NAME`, Col 5..9: `Unit Test ${tNum} (Total Marks : ${testTotalMax})`, Col 10: `Unit Test Details`.
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Extended vertical merges in `singleTestSheet.merges` to encompass all 5 student identity columns (`0,0` to `1,0`, `0,1` to `1,1`, `0,2` to `1,2`, `0,3` to `1,3`, and `0,4` to `1,4`), matching `backend/src/services/excelExportService.js`.
+     - Blanked out Row 1 cells `(1, 0..4)` so that Row 1 cleanly skips cols 0..4 under vertical merges without stray empty boxes in print preview (`generateSheetPrintableHtml`) or Word export (`exportSheetToWordDoc`).
+     - Standardized default formatting templates in `getSavedTemplates()` to the 5-column institutional standard.
+  2. *Deep LocalStorage Cache Invalidation & In-Memory Auto-Healing*:
+     - Upgraded startup cache purge in `initSheetsStudio()` and `office-home.js` to inspect serialized workbooks (`vidyaos_excel_wb_*`) and template stores (`vidyaos_excel_templates`), automatically purging any stale workbooks where `single-test` sheets were missing `REG. NO.`, `UBTER ROLL NO.`, or vertical header merges.
+     - Added robust auto-healing in `hydrateAcademicSheetsFromGroup()`: when any valid cached workbook is loaded, all `single-test` sheets are actively healed so that cell `C1` (`0, 2`) always contains `REG. NO.`, cell `D1` (`0, 3`) contains `UBTER ROLL NO.`, cell `E1` (`0, 4`) contains `STUDENT NAME`, and all 5 identity columns remain vertically merged, preserving all teacher-entered student test scores.
+  3. *Zero-Break Regression Verification*:
+     - Mirrored frontend assets across `frontend/`, `frontend/www/`, and Capacitor android assets.
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 593: Physical ESP32 Hardware OLED Display Ping Feedback & AS608 Database Slot Query Fix
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (344/344 checks passed).
 - **Objective & Architectural Scope**:
