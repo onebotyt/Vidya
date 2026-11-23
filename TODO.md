@@ -49,6 +49,31 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 592: Multi-Format Spreadsheet & Register Export Formatting, Alignment & Colgroup Sync
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Unified Attendance Register Studio Export Parity*:
+     - In [facultyController.js](file:///e:/uiap/VidyaOS/backend/src/controllers/facultyController.js): Updated `exportAttendanceRegister` format detection to support `doc`, `docx`, and `word`, preventing Word requests from defaulting to `.xlsx`.
+     - In [excelExportService.js](file:///e:/uiap/VidyaOS/backend/src/services/excelExportService.js): Streamlined `buildAttendanceRegisterHtml` Overview Summary sheet to the canonical institutional 4-column student format (`ROLL NO.`, `UBTER REGISTRATION NO.`, `UBTER ROLL NO.`, `STUDENT NAME`) plus month breakdown, aligning with `generateAttendanceRegisterExcel` and eliminating A4 landscape page overflow.
+     - In [group-detail-register.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-register.js): Added full dual-support for format cards (`.export-format-card[data-format]`) and radio controls, synchronized dropdown (`#export-range-type`), date bounds (`#export-date-from`, `#export-date-to`), and action buttons (`#btn-do-export` / `#btn-execute-export`), ensuring selections are accurately dispatched.
+     - In [registers/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/registers/index.html): Added "Overview Summary (Totals Only)" option to the Time Period dropdown for rapid executive ledger exports.
+  2. *Unified Sheets Studio Alignment, Colgroup Widths & Worksheet Sanitization*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Sanitized ExcelJS worksheet names with regex `/[*?:/\\\[\]]/g` and 31-character truncation in `EXCEL_WB.sheets.forEach`, preventing workbook corruption.
+     - Upgraded horizontal text alignment resolution across ExcelJS, PDF (`generateSheetPrintableHtml`), and Word (`exportSheetToWordDoc`): Dynamically inspects column headers for `NAME` / `STUDENT` tokens (or column 4 / 2) to guarantee student names are left-aligned while roll numbers, registration numbers, marks, totals, and percentages remain centered.
+     - Resolved `<colgroup>` percentage calculation mismatch in `generateSheetPrintableHtml` and `exportSheetToWordDoc` by computing shared `colEffectiveWidths`, ensuring total column percentages sum to 100% and preventing student names from being squished down to 68px.
+     - Added missing vertical header merges for columns 0..3 (`SR. NO.`, `ROLL NO.`, `REG. NO.`, `UBTER ROLL NO.`) in `singleTestSheet`.
+  3. *Dead Endpoint Cleanup*:
+     - In [group-detail-sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/group-detail/js/group-detail-sheets.js): Removed dead server fallback call to non-existent `/api/v1/faculty/export/table-to-excel`, replacing with clean toast notification and dynamic asset handling.
+  4. *Zero-Break Regression Verification*:
+     - Mirrored frontend assets across `frontend/`, `frontend/www/`, and Capacitor android assets.
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 591: AS608 Slot Manager, Duplicate Data Engine & Hardware Template Deletion
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:
