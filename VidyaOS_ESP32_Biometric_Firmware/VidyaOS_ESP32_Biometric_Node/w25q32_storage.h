@@ -265,6 +265,14 @@ public:
     saveStudentSlotMapping(slot, studentId, rollNo, enrollNo, name, "");
   }
 
+  void clearStudentSlotMapping(uint16_t slot) {
+    if (slot < 1 || slot > AS608_MAX_SLOTS) return;
+    memset(&ramRosterCache[slot], 0, sizeof(LocalStudentSlotEntry));
+    if (flashPresent) {
+      commitRosterToFlash();
+    }
+  }
+
   bool lookupStudentBySlot(uint16_t slot, LocalStudentSlotEntry& outEntry) {
     if (slot < 1 || slot > AS608_MAX_SLOTS) return false;
     if (ramRosterCache[slot].magic == SLOT_RECORD_MAGIC) {

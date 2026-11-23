@@ -391,6 +391,42 @@ void handleRemoteStudentEnrollment(JsonObject cmd) {
 }
 
 /**
+ * Remote student fingerprint template deletion handler:
+ * Removes template from physical AS608 hardware memory and local SPI/RAM cache.
+ */
+void handleRemoteDeleteTemplate(JsonObject cmd) {
+  JsonObject payload = cmd["payload"].is<JsonObject>() ? cmd["payload"].as<JsonObject>() : cmd;
+  uint16_t slot = payload["slot_id"] | 0;
+  uint32_t studentId = payload["student_id"] | 0;
+
+  if (slot == 0 && studentId > 0) {
+    if (flashMutex != NULL && xSemaphoreTake(flashMutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+      for (uint16_t s = 1; s <= AS608_MAX_SLOTS; s++) {
+        LocalStudentSlotEntry entry;
+        if (flashStorage.lookupStudentBySlot(s, entry) && entry.student_id == studentId) {
+          slot = s;
+          break;
+        }
+      }
+      xSemaphoreGive(flashMutex);
+    }
+  }
+
+  if (slot >= 1 && slot <= AS608_MAX_SLOTS) {
+    fingerprintSensor.deleteModel(slot);
+    if (flashMutex != NULL && xSemaphoreTake(flashMutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+      flashStorage.clearStudentSlotMapping(slot);
+      xSemaphoreGive(flashMutex);
+    }
+    Serial.printf("[DELETE] Cleared slot #%u from AS608 and local flash roster\n", slot);
+    ui.setSuccessLed(true);
+    ui.playTone(1800, 150);
+    delay(200);
+    ui.setSuccessLed(false);
+  }
+}
+
+/**
  * Drains unsynced offline attendance scans from W25Q32 SPI Flash to the server.
  * Protected by FreeRTOS mutex to guarantee thread-safety between Core 0 and Core 1.
  */
@@ -835,6 +871,8 @@ void sendHeartbeatAndProcessCommands() {
         String cmdType = String((const char*)(cmd["command_type"] | ""));
         if (cmdType == "ENROLL_STUDENT") {
           handleRemoteStudentEnrollment(cmd);
+        } else if (cmdType == "DELETE_TEMPLATE" || cmdType == "REMOVE_TEMPLATE") {
+          handleRemoteDeleteTemplate(cmd);
         } else if (cmdType == "SYNC_TEMPLATES") {
           syncDepartmentTemplatesFromServer();
         } else if (cmdType == "BUZZER_CHIME") {

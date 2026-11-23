@@ -116,6 +116,36 @@ public:
   }
 
   /**
+   * Deletes a student fingerprint template from AS608 hardware slot memory.
+   */
+  bool deleteModel(uint16_t slot) {
+    if (!isAvailable) {
+      Serial.printf("[AS608][EMU] Emulating template deletion from slot #%u\n", slot);
+      return true;
+    }
+    uint8_t p = finger.deleteModel(slot);
+    if (p == FINGERPRINT_OK) {
+      Serial.printf("[AS608] Slot #%u successfully deleted from optical hardware.\n", slot);
+      return true;
+    } else {
+      Serial.printf("[AS608][WARN] deleteModel for slot #%u returned 0x%02X\n", slot, p);
+      return false;
+    }
+  }
+
+  /**
+   * Clears all fingerprint templates from AS608 hardware memory (1..300).
+   */
+  bool emptyAllModels() {
+    if (!isAvailable) {
+      Serial.println(F("[AS608][EMU] Emulating empty all templates"));
+      return true;
+    }
+    uint8_t p = finger.emptyDatabase();
+    return (p == FINGERPRINT_OK);
+  }
+
+  /**
    * Bounded wait for student to remove their finger from the glass,
    * preventing multiple repeated scans from a single touch.
    */
