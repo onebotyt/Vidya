@@ -216,6 +216,11 @@ public:
     playTone(2093, 160);
   }
 
+  void chimePing() {
+    playTone(1760, 70); delay(30);
+    playTone(2637, 130);
+  }
+
   void chimeError() {
     playTone(420, 140); delay(40);
     playTone(310, 200);
