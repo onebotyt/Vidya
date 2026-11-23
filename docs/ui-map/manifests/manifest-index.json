@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-23T06:33:45.955Z",
+  "generated_at": "2026-11-23T06:38:39.110Z",
   "total_pages": 33,
   "totals": {
     "buttons": 855,
@@ -288,7 +288,7 @@
       "route": "/faculty/registers/index.html",
       "title": "Attendance Register Studio — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-018.json",
-      "content_hash": "bf2963ef2a70",
+      "content_hash": "11e440b313c5",
       "counts": {
         "buttons": 47,
         "modals": 10,

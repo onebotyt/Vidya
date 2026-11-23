@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/registers/index.html",
   "source_file": "frontend/faculty/registers/index.html",
-  "content_hash": "bf2963ef2a70",
-  "last_scanned": "2026-11-23T06:33:45.884Z",
+  "content_hash": "11e440b313c5",
+  "last_scanned": "2026-11-23T06:38:39.052Z",
   "title": "Attendance Register Studio — VidyaOS",
   "purpose": "Unified Attendance Register Studio: Dedicated multi-subject attendance matrix, subject switcher toolbar, live roll call studio (Dynamic QR, 6-digit PIN, live check-ins feed, and manual roll call roster), ESP32 hardware scan sync, custom holiday & working day management, and clean 5-column institutional export & print (Roll No, UBTER Reg No, UBTER Roll No, Name, Days)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -736,7 +736,7 @@
         "title": null,
         "onchange": "handleExportRangeChange(this.value)",
         "class": "export-select",
-        "options_count": 3,
+        "options_count": 4,
         "sample_options": [
           {
             "value": "current-month",
@@ -745,6 +745,10 @@
           {
             "value": "all-months",
             "text": "Full Semester (All Months)"
+          },
+          {
+            "value": "overview_only",
+            "text": "Overview Summary (Totals Only)"
           },
           {
             "value": "custom",
