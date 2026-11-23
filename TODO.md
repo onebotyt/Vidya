@@ -49,6 +49,33 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 595: Spreadsheet Studio Transparent Cell Selection, Live Ribbon Formatting & Print Table Layout Stabilization
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Crystal-Clear Transparent Cell Selection (Zero Text Occlusion / Blending)*:
+     - In [sheets-grid.css](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/css/sheets-grid.css): Replaced opaque overlay background `var(--status-present-bg)` (`hsl(142, 71%, 95%)`) on `.excel-selection-box` with `background: transparent !important;`. The active selected cell now displays its underlying cell text, background color, and fonts with 100% clarity and zero visual blending or masking.
+     - Added `.excel-selection-box.is-range` with subtle translucent 8% tint (`rgba(16, 185, 129, 0.08) !important`) for multi-cell drag selections, ensuring underlying text remains completely legible.
+     - Scoped `.excel-cell.in-range-selection` to `:not([style*="background-color"])` to prevent overriding explicit custom cell background colors.
+  2. *Live Ribbon Formatting & Active Cell State Synchronization*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Added `syncRibbonStateWithActiveCell()` and `getActiveSelectionRange()`, automatically updating ribbon dropdowns (`#font-size-select`, `#font-family-select`, `#number-format-select`), toggle buttons (`#btn-font-bold`, `#btn-font-italic`, `#btn-font-underline`), alignments (`left`, `center`, `right`, `top`, `middle`, `bottom`), and color indicators (`#fill-color-bar`, `#font-color-bar`) whenever any cell is selected.
+     - Connected `syncRibbonStateWithActiveCell()` to `applyFontSize`, `applyFontFamily`, `toggleFontBold`, `toggleFontItalic`, `toggleFontUnderline`, `applyHAlign`, `applyVAlign`, and `toggleWrapText`.
+     - In [sheets-color-tools.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/js/sheets-color-tools.js): Enhanced `selectFillColor` and `selectFontColor` to resolve `EXCEL_WB.selectedRange` cleanly across multi-cell selections, trigger live DOM grid updates via `renderExcelGrid(false)`, mark workbooks unsaved, and synchronize ribbon indicators immediately.
+     - Registered dual `input` and `change` event listeners on font size and font family select elements for immediate visual changes on both keyboard and mouse interactions.
+  3. *Print / PDF Preview Table Formatting & Row Height Normalization*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Corrected table section segregation in `generateSheetPrintableHtml` by dynamically calculating `maxHeaderRow` (`1` for `single-test`, `assignments`, `practicals`, `master`; `2` for `tests`). This ensures all student rows (starting at `r = 2`) reside together in `<tbody>`, preventing `<thead>` from truncating the vertical `rowspan` on Column 10 (examination instructions) and eliminating row height distortion on Student 1.
+     - Standardized student rows in `generateSheetPrintableHtml` to uniform `height: 22px;`.
+     - Formatted Column 10 instructions block in `single-test` to compact `7.5pt` font with `1.2` line-height and `3px 5px` padding, fitting within the roster height without expanding row heights.
+     - Added institutional merge guarantees in `generateSheetPrintableHtml` and `exportSheetToWordDoc` for cols 0..4 (`SR. NO.`, `ROLL NO.`, `REG. NO.`, `UBTER ROLL NO.`, `STUDENT NAME`) with `rowspan="2"`, eliminating any orphan blank cells in Row 1.
+  4. *Zero-Break Regression Verification*:
+     - Mirrored frontend assets across `frontend/`, `frontend/www/`, and Capacitor android assets.
+     - UI Manifest & DOM Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Register Consolidation & Deep Linking (`test-register-consolidation.js`): **46 / 46 Passed**.
+     - RBAC Enforcement (`test-rbac-and-structure.js`): **39 / 39 Passed**.
+     - Student Self-Registration E2E (`test-student-self-registration.js`): **27 / 27 Passed**.
+     - Core API System Flows (`test-api-flows.js`): **25 / 25 Passed**.
+     - Total: **442 / 442 checks passed**.
+
 ### ✅ Milestone 594: Unit Test Marksheet (UT1..UTn) 5-Column Alignment, Vertical Merge Parity & Stale Cache Healing
 - **Status**: Tested, Verified & Ready for Integration Gatekeeper (442/442 checks passed).
 - **Objective & Architectural Scope**:

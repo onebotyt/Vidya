@@ -63,13 +63,8 @@
 #define OLED_SCREEN_WIDTH           128
 #define OLED_SCREEN_HEIGHT          64
 
-// W25Qxx (W25Q32 / W25Q64 / W25Q128) SPI NOR Flash Module (VSPI)
-#define W25Q32_CS_PIN               5    // VSPI Chip Select (Active LOW)
-#define W25Q32_SCK_PIN              18   // VSPI Serial Clock
-#define W25Q32_MISO_PIN             19   // VSPI Master-In Slave-Out (DO)
-#define W25Q32_MOSI_PIN             23   // VSPI Master-Out Slave-In (DI)
-#define W25Q32_TOTAL_BYTES          (4UL * 1024UL * 1024UL) // 4,194,304 Bytes
-#define W25Q32_SECTOR_SIZE          4096
+// Internal ESP32 NVS & RAM Roster Storage (Zero External SPI Flash required)
+#define INTERNAL_STORAGE_ENABLED    true
 
 // Dedicated 4 Status LED Indicators
 #define LED_WIFI_PIN                27   // Blue: Solid = Wi-Fi Connected, Blinking = Reconnecting/Offline

@@ -686,30 +686,32 @@ public:
   void showPingFeedback(int rssi, const char* timeStr, const char* source = "Web Console") {
     if (!displayReady) return;
     display.clearDisplay();
-    display.fillRect(0, 0, 128, 13, SSD1306_WHITE);
+    // Solid top banner
+    display.fillRect(0, 0, 128, 14, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
     display.setTextSize(1);
-    display.setCursor(18, 3);
+    display.setCursor(16, 3);
     display.print("SERVER PING OK");
 
+    // Center confirmation
     display.setTextColor(SSD1306_WHITE);
     display.setTextSize(2);
-    display.setCursor(6, 18);
+    display.setCursor(18, 20);
     display.print("LINK OK");
 
+    // Bottom info box
     display.setTextSize(1);
-    display.setCursor(4, 38);
-    display.print("From: ");
-    display.print(source ? source : "Web Console");
+    display.drawRoundRect(2, 40, 124, 22, 3, SSD1306_WHITE);
+    display.setCursor(6, 44);
+    char srcBuf[22];
+    snprintf(srcBuf, sizeof(srcBuf), "From: %s", source ? source : "Web Console");
+    display.print(srcBuf);
 
-    display.setCursor(4, 50);
-    char wifiBuf[16];
-    snprintf(wifiBuf, sizeof(wifiBuf), "WiFi:%ddBm", rssi);
-    display.print(wifiBuf);
-    if (timeStr && strlen(timeStr) > 0) {
-      display.setCursor(72, 50);
-      display.print(timeStr);
-    }
+    display.setCursor(6, 52);
+    char statBuf[24];
+    snprintf(statBuf, sizeof(statBuf), "RSSI:%ddB %s", rssi, (timeStr && strlen(timeStr) > 0) ? timeStr : "");
+    display.print(statBuf);
+
     display.display();
   }
 };

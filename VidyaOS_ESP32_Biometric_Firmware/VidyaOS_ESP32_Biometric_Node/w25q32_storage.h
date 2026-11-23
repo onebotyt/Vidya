@@ -1,14 +1,12 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * VIDYAOS W25Q32 SPI FLASH & SECURE ROSTER STORAGE DRIVER
- * File: esp32_firmware/VidyaOS_ESP32_Biometric_Node/w25q32_storage.h
- *
- * Implements:
- *   1. Hardware Slot Allocation Directory: Maps AS608 hardware slots (1..300)
- *      to student identities (student_id, official_enrollment_no, full_name, class_roll_no).
- *   2. Offline Circular Scans Buffer: Stores offline attendance scans when Wi-Fi is down.
- *   3. Ultra-Resilient Fallback: If external SPI Flash is not connected or fails JEDEC check,
- *      firmware automatically runs from high-speed internal ESP32 RAM cache without freezing!
+ * VIDYAOS EMBEDDED INTERNAL NVS & RAM SECURE ROSTER STORAGE DRIVER
+ * File: VidyaOS_ESP32_Biometric_Node/w25q32_storage.h
+ * 
+ * Hardware-Independent Internal Non-Volatile Storage (NVS) & High-Speed RAM Cache.
+ * Zero external SPI chips (W25Qxx) required! Uses ESP32 internal flash partition
+ * via the Preferences library + static RAM cache for instantaneous sub-microsecond
+ * student lookups during biometric attendance scans.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -16,24 +14,12 @@
 #define VIDYAOS_W25Q32_STORAGE_H
 
 #include <Arduino.h>
-#include <SPI.h>
-#include <string.h>
+#include <Preferences.h>
 #include "config.h"
-
-// Flash Layout Offsets
-#define ROSTER_BASE_ADDR            0x00000000UL // 0MB - 1MB: 300 Local Student Slot Entries
-#define OFFLINE_QUEUE_BASE_ADDR     0x00100000UL // 1MB - 3.5MB: 20,000 Offline Attendance Records
-#define CONFIG_BASE_ADDR            0x00380000UL // 3.5MB - 4MB: Device & Network Config
-
-#define W25Q_CMD_WRITE_ENABLE       0x06
-#define W25Q_CMD_READ_STATUS1       0x05
-#define W25Q_CMD_PAGE_PROGRAM       0x02
-#define W25Q_CMD_SECTOR_ERASE       0x20
-#define W25Q_CMD_READ_DATA          0x03
-#define W25Q_CMD_JEDEC_ID           0x9F
 
 #define SLOT_RECORD_MAGIC           0x5653 // "VS" (Vidya Slot)
 #define OFFLINE_RECORD_MAGIC        0x564F // "VO" (Vidya Offline)
+#define MAX_OFFLINE_BUFFER_RECORDS  64
 
 #pragma pack(push, 1)
 struct LocalStudentSlotEntry {
@@ -45,7 +31,7 @@ struct LocalStudentSlotEntry {
   char     full_name[24];          // e.g. "Arjun Rao"
   char     template_sha256[65];    // SHA-256 hash of 512-byte template
   uint8_t  reserved[1];            // Pad to 120 bytes
-}; // Exactly 120 bytes per slot entry
+};
 
 struct OfflineAttendanceRecord {
   uint16_t magic;                  // 0x564F when written
@@ -59,154 +45,59 @@ struct OfflineAttendanceRecord {
   char     full_name[44];          // Student Name
   char     enrollment_no[20];      // Enrollment No
   uint8_t  reserved[14];           // Pad to 128 bytes
-}; // Exactly 128 bytes per offline attendance record
+};
 #pragma pack(pop)
-
-static_assert(sizeof(OfflineAttendanceRecord) == 128, "OfflineAttendanceRecord must be 128 bytes");
-static_assert(sizeof(LocalStudentSlotEntry) == 120, "LocalStudentSlotEntry layout changed; review flash offsets");
 
 class W25Q32FlashManager {
 private:
   LocalStudentSlotEntry ramRosterCache[AS608_MAX_SLOTS + 1];
+  OfflineAttendanceRecord offlineQueue[MAX_OFFLINE_BUFFER_RECORDS];
   uint32_t writeHeadIndex = 0;
   uint32_t unsyncedCount  = 0;
-  bool     flashPresent   = false;
+  Preferences prefs;
+  bool isInitialized = false;
 
-  void select()   { if (flashPresent) digitalWrite(W25Q32_CS_PIN, LOW); }
-  void deselect() { if (flashPresent) digitalWrite(W25Q32_CS_PIN, HIGH); }
-
-  void waitBusy() {
-    if (!flashPresent) return;
-    uint32_t start = millis();
-    select();
-    SPI.transfer(W25Q_CMD_READ_STATUS1);
-    while ((SPI.transfer(0x00) & 0x01) && (millis() - start < 300)) {
-      delayMicroseconds(50);
-    }
-    deselect();
-  }
-
-  void writeEnable() {
-    if (!flashPresent) return;
-    select();
-    SPI.transfer(W25Q_CMD_WRITE_ENABLE);
-    deselect();
+  void makeSlotKey(uint16_t slot, char* outKey, size_t maxLen) {
+    snprintf(outKey, maxLen, "s%u", slot);
   }
 
 public:
   bool begin() {
-    pinMode(W25Q32_CS_PIN, OUTPUT);
-    digitalWrite(W25Q32_CS_PIN, HIGH);
-    SPI.begin(W25Q32_SCK_PIN, W25Q32_MISO_PIN, W25Q32_MOSI_PIN, W25Q32_CS_PIN);
-
-    // Read JEDEC Manufacturer & Device ID
-    digitalWrite(W25Q32_CS_PIN, LOW);
-    SPI.transfer(W25Q_CMD_JEDEC_ID);
-    uint8_t mf = SPI.transfer(0x00);
-    uint8_t id1 = SPI.transfer(0x00);
-    uint8_t id2 = SPI.transfer(0x00);
-    digitalWrite(W25Q32_CS_PIN, HIGH);
-
-    flashPresent = (mf == 0xEF && id1 == 0x40 && (id2 == 0x16 || id2 == 0x17 || id2 == 0x18));
     memset(ramRosterCache, 0, sizeof(ramRosterCache));
+    memset(offlineQueue, 0, sizeof(offlineQueue));
+    writeHeadIndex = 0;
+    unsyncedCount  = 0;
 
-    if (flashPresent) {
-      Serial.printf("[W25Q32] SPI Flash detected (MF: 0x%02X, ID: 0x%02X%02X)\n", mf, id1, id2);
-      loadRosterFromFlash();
-      scanOfflineQueuePointers();
-    } else {
-      Serial.println(F("[W25Q32] External SPI Flash not detected. Running with high-speed ESP32 RAM cache."));
-    }
-    return flashPresent;
-  }
+    // Open NVS namespace for persistent student slot mappings
+    if (prefs.begin("vidya_slots", false)) {
+      isInitialized = true;
+      uint16_t loadedCount = 0;
 
-  bool isHardwareFlashPresent() const { return flashPresent; }
-
-  void readBytes(uint32_t addr, uint8_t* buf, size_t len) {
-    if (!flashPresent) return;
-    waitBusy();
-    select();
-    SPI.transfer(W25Q_CMD_READ_DATA);
-    SPI.transfer((addr >> 16) & 0xFF);
-    SPI.transfer((addr >> 8) & 0xFF);
-    SPI.transfer(addr & 0xFF);
-    for (size_t i = 0; i < len; i++) {
-      buf[i] = SPI.transfer(0x00);
-    }
-    deselect();
-  }
-
-  void eraseSector4K(uint32_t addr) {
-    if (!flashPresent) return;
-    waitBusy();
-    writeEnable();
-    select();
-    SPI.transfer(W25Q_CMD_SECTOR_ERASE);
-    SPI.transfer((addr >> 16) & 0xFF);
-    SPI.transfer((addr >> 8) & 0xFF);
-    SPI.transfer(addr & 0xFF);
-    deselect();
-    waitBusy();
-  }
-
-  bool writePage(uint32_t addr, const uint8_t* buf, size_t len) {
-    if (!flashPresent) return false;
-    if (buf == nullptr && len > 0) return false;
-    if (addr >= W25Q32_TOTAL_BYTES || len > (W25Q32_TOTAL_BYTES - addr)) return false;
-
-    size_t written = 0;
-    while (written < len) {
-      const uint32_t currentAddr = addr + written;
-      const size_t pageRemaining = 256U - (currentAddr % 256U);
-      const size_t chunk = ((len - written) < pageRemaining)
-                             ? (len - written)
-                             : pageRemaining;
-
-      waitBusy();
-      writeEnable();
-      select();
-      SPI.transfer(W25Q_CMD_PAGE_PROGRAM);
-      SPI.transfer((currentAddr >> 16) & 0xFF);
-      SPI.transfer((currentAddr >> 8) & 0xFF);
-      SPI.transfer(currentAddr & 0xFF);
-      for (size_t i = 0; i < chunk; ++i) {
-        SPI.transfer(buf[written + i]);
+      // Restore all previously saved slots from internal flash NVS
+      for (uint16_t slot = 1; slot <= AS608_MAX_SLOTS; slot++) {
+        char key[16];
+        makeSlotKey(slot, key, sizeof(key));
+        if (prefs.isKey(key)) {
+          size_t sz = prefs.getBytes(key, &ramRosterCache[slot], sizeof(LocalStudentSlotEntry));
+          if (sz == sizeof(LocalStudentSlotEntry) && ramRosterCache[slot].magic == SLOT_RECORD_MAGIC) {
+            loadedCount++;
+          } else {
+            memset(&ramRosterCache[slot], 0, sizeof(LocalStudentSlotEntry));
+          }
+        }
       }
-      deselect();
-      waitBusy();
-      written += chunk;
+      Serial.printf("[STORAGE] Internal NVS & RAM Roster Storage initialized. Restored %u slots from internal flash.\n", loadedCount);
+    } else {
+      Serial.println(F("[STORAGE] Failed to open NVS namespace 'vidya_slots'. Operating with RAM cache only."));
+      isInitialized = true;
     }
     return true;
   }
 
-  void loadRosterFromFlash() {
-    if (!flashPresent) return;
-    for (uint16_t slot = 1; slot <= AS608_MAX_SLOTS; slot++) {
-      uint32_t addr = ROSTER_BASE_ADDR + (uint32_t)slot * sizeof(LocalStudentSlotEntry);
-      readBytes(addr, (uint8_t*)&ramRosterCache[slot], sizeof(LocalStudentSlotEntry));
-      if (ramRosterCache[slot].magic != SLOT_RECORD_MAGIC) {
-        memset(&ramRosterCache[slot], 0, sizeof(LocalStudentSlotEntry));
-      }
-    }
+  bool isHardwareFlashPresent() const {
+    return true; // Internal ESP32 NVS flash is always present
   }
 
-  void commitRosterToFlash() {
-    if (!flashPresent) return;
-    uint32_t totalBytes = (AS608_MAX_SLOTS + 1) * sizeof(LocalStudentSlotEntry);
-    for (uint32_t offset = 0; offset < totalBytes; offset += W25Q32_SECTOR_SIZE) {
-      eraseSector4K(ROSTER_BASE_ADDR + offset);
-    }
-    for (uint16_t slot = 1; slot <= AS608_MAX_SLOTS; slot++) {
-      if (ramRosterCache[slot].magic == SLOT_RECORD_MAGIC) {
-        uint32_t addr = ROSTER_BASE_ADDR + (uint32_t)slot * sizeof(LocalStudentSlotEntry);
-        writePage(addr, (const uint8_t*)&ramRosterCache[slot], sizeof(LocalStudentSlotEntry));
-      }
-    }
-  }
-
-  /**
-   * Queries the local RAM cache and returns the first free slot (1..300).
-   */
   bool getNextFreeSlot(uint16_t& outSlot) {
     for (uint16_t s = 1; s <= AS608_MAX_SLOTS; s++) {
       if (ramRosterCache[s].magic != SLOT_RECORD_MAGIC) {
@@ -250,9 +141,11 @@ public:
     strncpy(entry.template_sha256, templateSha256 ? templateSha256 : "", sizeof(entry.template_sha256) - 1);
     entry.template_sha256[sizeof(entry.template_sha256) - 1] = '\0';
 
-    if (flashPresent) {
-      commitRosterToFlash();
-    }
+    // Persist to internal ESP32 NVS Flash
+    char key[16];
+    makeSlotKey(slot, key, sizeof(key));
+    prefs.putBytes(key, &entry, sizeof(LocalStudentSlotEntry));
+    Serial.printf("[STORAGE] Mapped Slot %u -> Student ID %lu (%s) in Internal NVS Flash\n", slot, (unsigned long)studentId, entry.full_name);
   }
 
   void recordSlotAssignment(
@@ -268,9 +161,14 @@ public:
   void clearStudentSlotMapping(uint16_t slot) {
     if (slot < 1 || slot > AS608_MAX_SLOTS) return;
     memset(&ramRosterCache[slot], 0, sizeof(LocalStudentSlotEntry));
-    if (flashPresent) {
-      commitRosterToFlash();
+
+    // Remove from internal ESP32 NVS Flash
+    char key[16];
+    makeSlotKey(slot, key, sizeof(key));
+    if (prefs.isKey(key)) {
+      prefs.remove(key);
     }
+    Serial.printf("[STORAGE] Cleared Slot %u from Internal NVS Flash\n", slot);
   }
 
   bool lookupStudentBySlot(uint16_t slot, LocalStudentSlotEntry& outEntry) {
@@ -290,23 +188,9 @@ public:
     return count;
   }
 
-  // ─── Offline Scans Buffer ─────────────────────────────────────────────────
+  // ─── Offline Scans Buffer (Circular RAM Buffer) ─────────────────────────
   void scanOfflineQueuePointers() {
-    writeHeadIndex = 0;
-    unsyncedCount  = 0;
-    if (!flashPresent) return;
-
-    for (uint32_t i = 0; i < 2000; i++) {
-      uint32_t addr = OFFLINE_QUEUE_BASE_ADDR + i * sizeof(OfflineAttendanceRecord);
-      OfflineAttendanceRecord rec;
-      readBytes(addr, (uint8_t*)&rec, sizeof(rec));
-      if (rec.magic == OFFLINE_RECORD_MAGIC) {
-        writeHeadIndex = i + 1;
-        if (rec.synced == 0xFF) unsyncedCount++;
-      } else {
-        break;
-      }
-    }
+    // Unsynced count is maintained live in memory
   }
 
   bool appendOfflineAttendance(
@@ -319,7 +203,8 @@ public:
     uint8_t confidence,
     const char* eventId
   ) {
-    OfflineAttendanceRecord rec;
+    uint32_t idx = writeHeadIndex % MAX_OFFLINE_BUFFER_RECORDS;
+    OfflineAttendanceRecord& rec = offlineQueue[idx];
     rec.magic = OFFLINE_RECORD_MAGIC;
     rec.synced = 0xFF; // Unsynced
     rec.confidence = confidence;
@@ -335,29 +220,19 @@ public:
     rec.enrollment_no[sizeof(rec.enrollment_no) - 1] = '\0';
     memset(rec.reserved, 0, sizeof(rec.reserved));
 
-    if (flashPresent) {
-      uint32_t addr = OFFLINE_QUEUE_BASE_ADDR + writeHeadIndex * sizeof(OfflineAttendanceRecord);
-      if ((addr % W25Q32_SECTOR_SIZE) == 0) {
-        eraseSector4K(addr);
-      }
-      writePage(addr, (const uint8_t*)&rec, sizeof(rec));
-    }
     writeHeadIndex++;
-    unsyncedCount++;
+    if (unsyncedCount < MAX_OFFLINE_BUFFER_RECORDS) {
+      unsyncedCount++;
+    }
     return true;
   }
 
   size_t fetchUnsyncedBatch(OfflineAttendanceRecord* outBatch, uint32_t* outIndices, size_t maxRecords) {
     size_t count = 0;
-    if (!flashPresent) return 0;
-
-    for (uint32_t i = 0; i < writeHeadIndex && count < maxRecords; i++) {
-      uint32_t addr = OFFLINE_QUEUE_BASE_ADDR + i * sizeof(OfflineAttendanceRecord);
-      OfflineAttendanceRecord rec;
-      readBytes(addr, (uint8_t*)&rec, sizeof(rec));
-      if (rec.magic == OFFLINE_RECORD_MAGIC && rec.synced == 0xFF) {
-        outBatch[count] = rec;
-        outIndices[count] = i;
+    for (size_t i = 0; i < MAX_OFFLINE_BUFFER_RECORDS && count < maxRecords; i++) {
+      if (offlineQueue[i].magic == OFFLINE_RECORD_MAGIC && offlineQueue[i].synced == 0xFF) {
+        outBatch[count] = offlineQueue[i];
+        outIndices[count] = (uint32_t)i;
         count++;
       }
     }
@@ -365,18 +240,18 @@ public:
   }
 
   void markRecordSynced(uint32_t index) {
-    if (!flashPresent) {
+    if (index < MAX_OFFLINE_BUFFER_RECORDS) {
+      offlineQueue[index].synced = 0x00;
       if (unsyncedCount > 0) unsyncedCount--;
-      return;
     }
-    uint32_t addr = OFFLINE_QUEUE_BASE_ADDR + index * sizeof(OfflineAttendanceRecord);
-    uint8_t syncedFlag = 0x00;
-    writePage(addr + offsetof(OfflineAttendanceRecord, synced), &syncedFlag, 1);
-    if (unsyncedCount > 0) unsyncedCount--;
   }
 
   uint32_t getUnsyncedCount() const { return unsyncedCount; }
-  uint32_t getUsedFlashKb() const   { return flashPresent ? ((writeHeadIndex * sizeof(OfflineAttendanceRecord)) / 1024) : 0; }
+  uint32_t getUsedFlashKb() const   {
+    return (uint32_t)((getEnrolledStudentCount() * sizeof(LocalStudentSlotEntry)) / 1024);
+  }
 };
+
+typedef W25Q32FlashManager VidyaStorageManager;
 
 #endif // VIDYAOS_W25Q32_STORAGE_H

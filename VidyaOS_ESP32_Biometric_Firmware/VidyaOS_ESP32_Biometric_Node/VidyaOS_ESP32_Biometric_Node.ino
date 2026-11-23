@@ -239,6 +239,7 @@ RTC_DATA_ATTR uint32_t deepSleepCycleCount = 0;
 
 TaskHandle_t wifiSyncTaskHandle = NULL;
 SemaphoreHandle_t flashMutex = NULL;
+SemaphoreHandle_t displayMutex = NULL;
 
 void enterHardwareDeepSleep() {
   Serial.println(F("[SLEEP] Inactivity timeout reached (120s). Entering Hardware Deep Sleep..."));
@@ -431,12 +432,22 @@ void handleRemoteDeleteTemplate(JsonObject cmd) {
  * Plays connection chime, lights status LEDs, and displays link verification screen on OLED!
  */
 void handleRemotePing(JsonObject cmd) {
-  Serial.println(F("[PING] Received remote ping from Web Portal! Playing chime and updating OLED display..."));
+  Serial.println(F("\n======================================================="));
+  Serial.println(F("[PING] >>> Received Remote Ping from Web Console! <<<"));
+  Serial.println(F("======================================================="));
   queueRemoteLog("INFO", "PING", "Remote ping received from Web Console - connection OK");
 
-  ui.chimePing();
+  // Lock UI state to BANNER so Core 1 loop() idle screen will NOT overwrite it!
+  currentUiState = UI_STATE_BANNER;
+  bannerExpireMs = millis() + 4000UL; // Hold for 4 full seconds
+  lastDisplayMs  = bannerExpireMs;
+
+  // Turn on status LEDs
   ui.setSuccessLed(true);
   ui.setWifiLed(true);
+
+  // Audio confirmation chime
+  ui.chimePing();
 
   char timeBuf[16];
   getFormattedTime(timeBuf, sizeof(timeBuf), NULL, 0);
@@ -445,9 +456,15 @@ void handleRemotePing(JsonObject cmd) {
   JsonObject payload = cmd["payload"].is<JsonObject>() ? cmd["payload"].as<JsonObject>() : cmd;
   const char* src = payload["source"] | "Web Portal";
 
-  ui.showPingFeedback(rssi, timeBuf, src);
+  // Safely update OLED with displayMutex to prevent I2C collision with Core 1
+  if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
+    ui.showPingFeedback(rssi, timeBuf, src);
+    xSemaphoreGive(displayMutex);
+  } else {
+    ui.showPingFeedback(rssi, timeBuf, src);
+  }
 
-  delay(2200);
+  delay(3500);
   ui.setSuccessLed(false);
   lastActivityMs = millis();
 }
@@ -888,7 +905,9 @@ void sendHeartbeatAndProcessCommands() {
 #endif
     if (deserializeJson(doc, hbResp) == DeserializationError::Ok) {
       uint16_t cloudCount = doc["cloud_template_count"] | 0;
-      if (cloudCount > 0 && enrolledCount == 0) {
+      static bool initialSyncDone = false;
+      if (cloudCount > 0 && enrolledCount == 0 && !initialSyncDone) {
+        initialSyncDone = true;
         syncDepartmentTemplatesFromServer();
       }
 
@@ -1043,9 +1062,12 @@ void setup() {
   // 4. Initialize AS608 Fingerprint Sensor & turn backlight ON
   fingerprintSensor.begin();
 
-  // 5. Create FreeRTOS Mutex for thread-safe flash access across CPU cores
+  // 5. Create FreeRTOS Mutexes for thread-safe access across CPU cores
   if (flashMutex == NULL) {
     flashMutex = xSemaphoreCreateMutex();
+  }
+  if (displayMutex == NULL) {
+    displayMutex = xSemaphoreCreateMutex();
   }
 
   // 6. Launch Non-Blocking Background Wi-Fi & Server Sync Task on Core 0
@@ -1089,6 +1111,13 @@ void loop() {
     } else if (ch == 'p' || ch == 'P') {
       Serial.println(F("\n[SERIAL] >>> Manual Heartbeat Ping Triggered! <<<"));
       lastHeartbeatMs = 0;
+#if defined(ARDUINOJSON_VERSION_MAJOR) && (ARDUINOJSON_VERSION_MAJOR >= 7)
+      JsonDocument pDoc;
+#else
+      DynamicJsonDocument pDoc(128);
+#endif
+      pDoc["source"] = "USB Serial";
+      handleRemotePing(pDoc.as<JsonObject>());
     }
   }
 
@@ -1248,13 +1277,16 @@ void loop() {
       char clockStr[16];
       getFormattedTime(dummyFull, sizeof(dummyFull), clockStr, sizeof(clockStr));
 
-      ui.showIdleScreen(
-        battPct,
-        battVolts,
-        isOnline,
-        clockStr,
-        isOnline ? WiFi.RSSI() : -99
-      );
+      if (displayMutex != NULL && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+        ui.showIdleScreen(
+          battPct,
+          battVolts,
+          isOnline,
+          clockStr,
+          isOnline ? WiFi.RSSI() : -99
+        );
+        xSemaphoreGive(displayMutex);
+      }
     }
   }
 
