@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "3df2b991c61a",
-  "last_scanned": "2026-11-24T16:18:12.318Z",
+  "content_hash": "2d6bd1ff691b",
+  "last_scanned": "2026-11-24T16:32:07.890Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
@@ -217,6 +217,22 @@
         "title": null
       },
       {
+        "id": "reg-quick-submit-btn",
+        "label": "Continue to Registration Portal &rarr;",
+        "action": null,
+        "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 mt-2 cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "&larr; Back to Sign In",
+        "action": "showSignInView()",
+        "class": "font-semibold text-blue-700 hover:underline cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "google-signup-btn",
         "label": "Sign up with Google (Auto-Fill)",
         "action": "handleGoogleSignIn()",
@@ -245,22 +261,6 @@
         "label": "Register Now &rarr;",
         "action": null,
         "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer mt-1",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Already a Member ? Login Now",
-        "action": "showSignInView()",
-        "class": "w-full py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 transition cursor-pointer",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sign In &rarr;",
-        "action": "showSignInView()",
-        "class": "font-semibold text-blue-700 hover:underline cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -451,6 +451,22 @@
         "class": "w-full h-9 pl-8 pr-9 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
+        "id": "reg-quick-fullname",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Aarav Rawat",
+        "handler": null,
+        "class": "w-full h-9 px-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-quick-identifier",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 2401050012",
+        "handler": null,
+        "class": "w-full h-9 px-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
         "id": "reg-full-name",
         "type": "text",
         "name": null,
@@ -580,6 +596,31 @@
       }
     ],
     "dropdown_selectors": [
+      {
+        "id": "reg-quick-role",
+        "title": null,
+        "onchange": null,
+        "class": "w-full h-9 px-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "student",
+            "text": "Student"
+          },
+          {
+            "value": "faculty",
+            "text": "Faculty / Staff"
+          },
+          {
+            "value": "hod",
+            "text": "Head of Department (HOD)"
+          },
+          {
+            "value": "admin",
+            "text": "Administrator"
+          }
+        ]
+      },
       {
         "id": "reg-dept",
         "title": null,
