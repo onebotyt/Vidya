@@ -4,9 +4,9 @@
   "role": "HOD / Faculty",
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
-  "content_hash": "ae9581ed180f",
-  "last_scanned": "2026-11-24T06:00:26.827Z",
-  "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
+  "content_hash": "0afdc2f1e565",
+  "last_scanned": "2026-11-24T15:56:28.076Z",
+  "title": "Biometric Attendance &amp; Student Fingerprints — VidyaOS",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
   "states": "Desktop: split terminals & OLED simulator, biometric roster; Mobile: responsive card stack",
@@ -48,10 +48,6 @@
       {
         "id": "",
         "class": "esp-hw-top-toolbar"
-      },
-      {
-        "id": "esp-loading-bar-fill",
-        "class": "esp-loading-bar-fill"
       }
     ],
     "tables": [
@@ -61,9 +57,9 @@
         "headers": [
           "Roll #",
           "Student Name",
-          "UBTER Roll #",
-          "Cohort",
-          "Cloud Template",
+          "Student ID",
+          "Class / Year",
+          "Fingerprint Status",
           "Actions"
         ]
       },
@@ -71,23 +67,33 @@
         "id": "unnamed-table",
         "class": "table",
         "headers": [
+          "Select",
+          "Network Name",
+          "Signal",
+          "Security"
+        ]
+      },
+      {
+        "id": "unnamed-table",
+        "class": "table",
+        "headers": [
           "Slot #",
-          "Student Roster Mapping",
-          "Biometric Template &amp; Hash",
-          "Slot Status",
+          "Student Name",
+          "Fingerprint Data",
+          "Status",
           "Actions"
         ]
       }
     ],
     "modals": [
       {
-        "id": "register-esp-modal",
-        "title": "Pair Department ESP32 Terminal",
+        "id": "register-device-modal",
+        "title": "Add New Attendance Machine",
         "field_count": 0
       },
       {
         "id": "esp-config-modal",
-        "title": "ESP32 Firmware Configuration (`config.h`)",
+        "title": "Machine Setup Code (config.h)",
         "field_count": 0
       },
       {
@@ -97,17 +103,17 @@
       },
       {
         "id": "add-wifi-modal",
-        "title": "Add Wi-Fi Network Manually",
+        "title": "Add Wi-Fi Network",
         "field_count": 0
       },
       {
         "id": "ota-update-modal",
-        "title": "Wireless Firmware Update (OTA)",
+        "title": "Update Machine Software",
         "field_count": 0
       },
       {
         "id": "as608-slot-manager-modal",
-        "title": "AS608 Hardware Slots &amp; Duplicate Audit",
+        "title": "Scanner Memory &amp; Stored Fingerprints",
         "field_count": 0
       }
     ]
@@ -116,27 +122,27 @@
     "action_buttons": [
       {
         "id": "btn-quick-register-bio",
-        "label": "+ Register Biometric",
+        "label": "+ Register Fingerprint",
         "action": "focusBiometricEnrollmentSection()",
         "class": "btn btn-primary btn-sm",
         "data_ui": null,
-        "title": "Register student fingerprint on ESP32"
+        "title": "Register student fingerprint"
       },
       {
         "id": "btn-check-esp-connect",
-        "label": "Check ESP Connected",
+        "label": "Check Connection",
         "action": "checkActiveEspConnection()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
-        "title": "Ping active ESP32 node and verify link"
+        "title": "Verify machine link"
       },
       {
         "id": "btn-add-esp-terminal",
-        "label": "+ Add ESP Terminal",
+        "label": "+ Add Machine",
         "action": "openRegisterDeviceModal()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
-        "title": null
+        "title": "Add attendance machine"
       },
       {
         "id": null,
@@ -144,47 +150,71 @@
         "action": "loadEsp32Overview()",
         "class": "btn btn-secondary btn-sm",
         "data_ui": null,
-        "title": "Refresh telemetry"
-      },
-      {
-        "id": "btn-open-as608-slots",
-        "label": "Slots &amp; Duplicates",
-        "action": "openAs608SlotManagerModal()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": "View AS608 Hardware Slots & Clean Duplicates"
+        "title": "Refresh status"
       },
       {
         "id": "btn-scan-wifi",
-        "label": "Scan Nearby",
+        "label": "Scan",
         "action": "triggerScanNearbyWifi()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-secondary btn-xs",
         "data_ui": null,
-        "title": "Scan nearby Wi-Fi networks"
+        "title": "Scan Wi-Fi"
       },
       {
         "id": "btn-add-wifi-manual",
-        "label": "+ Add Network",
+        "label": "+ Add",
         "action": "openAddWifiModal()",
-        "class": "btn btn-primary btn-sm",
+        "class": "btn btn-primary btn-xs",
         "data_ui": null,
-        "title": "Add Wi-Fi manually"
+        "title": "Add Wi-Fi"
       },
       {
         "id": "btn-fallback-wifi",
-        "label": "Fallback Default",
+        "label": "Default Wi-Fi",
         "action": "triggerWifiFallback()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-secondary btn-xs",
         "data_ui": null,
-        "title": "Trigger fallback to primary default Wi-Fi"
+        "title": null
+      },
+      {
+        "id": "btn-open-as608-slots",
+        "label": "Memory Slots",
+        "action": "openAs608SlotManagerModal()",
+        "class": "btn btn-secondary btn-xs",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "btn-reset-wifi",
-        "label": "Emergency Reset",
+        "label": "Reset",
         "action": "triggerWifiReset()",
-        "class": "btn btn-outline-danger btn-sm",
+        "class": "btn btn-outline-danger btn-xs",
         "data_ui": null,
-        "title": "Emergency clear saved Wi-Fi"
+        "title": null
+      },
+      {
+        "id": "btn-enroll-selected-student",
+        "label": "Start Fingerprint Registration",
+        "action": "enrollCurrentSelectedStudent()",
+        "class": "btn btn-primary btn-sm esp-primary-cta",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-simulate-test-scan",
+        "label": "Test Attendance Scan",
+        "action": "simulateCurrentSelectedStudent()",
+        "class": "btn btn-secondary btn-xs esp-btn-test-scan",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-remove-selected-bio",
+        "label": "Delete",
+        "action": "removeCurrentSelectedStudentTemplate()",
+        "class": "btn btn-outline-danger btn-xs esp-btn-remove-bio",
+        "data_ui": null,
+        "title": null
       },
       {
         "id": "sim-btn-standby",
@@ -235,32 +265,8 @@
         "title": null
       },
       {
-        "id": "btn-enroll-selected-student",
-        "label": "Enroll Fingerprint on ESP32",
-        "action": "enrollCurrentSelectedStudent()",
-        "class": "btn btn-primary btn-sm esp-btn-enroll",
-        "data_ui": null,
-        "title": "Trigger AS608 biometric enrollment on active ESP32"
-      },
-      {
-        "id": "btn-simulate-test-scan",
-        "label": "Test Scan",
-        "action": "simulateCurrentSelectedStudent()",
-        "class": "btn btn-secondary btn-sm esp-btn-test-scan",
-        "data_ui": null,
-        "title": "Simulate attendance verification scan"
-      },
-      {
-        "id": "btn-remove-selected-bio",
-        "label": "Remove from AS608",
-        "action": "removeCurrentSelectedStudentTemplate()",
-        "class": "btn btn-danger btn-sm esp-btn-remove-bio",
-        "data_ui": null,
-        "title": "Delete fingerprint template from physical AS608 memory &amp; cloud vault"
-      },
-      {
         "id": "tab-btn-vault",
-        "label": "Student Biometric Vault 0",
+        "label": "Student Directory 0",
         "action": "switchEspTab(",
         "class": "esp-tab-btn active",
         "data_ui": null,
@@ -276,7 +282,7 @@
       },
       {
         "id": "tab-btn-logs",
-        "label": "Remote ESP32 System Logs",
+        "label": "Diagnostics &amp; System Logs",
         "action": "switchEspTab(",
         "class": "esp-tab-btn",
         "data_ui": null,
@@ -284,57 +290,17 @@
       },
       {
         "id": null,
-        "label": "Refresh",
+        "label": "Refresh Logs",
         "action": "loadDeviceRemoteLogs()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-secondary btn-xs",
         "data_ui": null,
-        "title": "Refresh logs from cloud"
-      },
-      {
-        "id": null,
-        "label": "Clear",
-        "action": "clearDeviceRemoteLogs()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": "Clear remote logs"
+        "title": "Refresh logs"
       },
       {
         "id": null,
         "label": "&times;",
         "action": "closeRegisterDeviceModal()",
         "class": null,
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-esp-detect-rescan",
-        "label": "Rescan",
-        "action": "startEspDetectionScan()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "btn-esp-detect-usb",
-        "label": "USB Serial",
-        "action": "detectViaWebSerial()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": "Detect ESP32 connected via USB cable"
-      },
-      {
-        "id": "btn-esp-detect-sim",
-        "label": "Detect Now",
-        "action": "simulateEspDetection()",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": "Detect nearby ESP32 node immediately"
-      },
-      {
-        "id": null,
-        "label": "Generate",
-        "action": "generateRandomHexSecret()",
-        "class": "btn btn-secondary btn-sm",
         "data_ui": null,
         "title": null
       },
@@ -347,8 +313,8 @@
         "title": null
       },
       {
-        "id": "btn-submit-pair-esp",
-        "label": "Add &amp; Pair ESP Terminal",
+        "id": null,
+        "label": "Save &amp; Connect Machine",
         "action": null,
         "class": "btn btn-primary",
         "data_ui": null,
@@ -364,17 +330,9 @@
       },
       {
         "id": null,
-        "label": "Copy `config.h`",
-        "action": "copyEspConfigCode()",
-        "class": "btn btn-secondary",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Done",
+        "label": "Close",
         "action": "closeEspConfigModal()",
-        "class": "btn btn-primary",
+        "class": "btn btn-secondary",
         "data_ui": null,
         "title": null
       },
@@ -388,14 +346,6 @@
       },
       {
         "id": null,
-        "label": "Rescan",
-        "action": "triggerScanNearbyWifi(true)",
-        "class": "btn btn-secondary btn-sm",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
         "label": "Cancel",
         "action": "closeScanWifiModal()",
         "class": "btn btn-secondary",
@@ -404,7 +354,7 @@
       },
       {
         "id": null,
-        "label": "Connect &amp; Switch Terminal Now",
+        "label": "Connect Machine Now",
         "action": null,
         "class": "btn btn-primary",
         "data_ui": null,
@@ -452,7 +402,7 @@
       },
       {
         "id": "btn-submit-ota",
-        "label": "Update Firmware Now (OTA)",
+        "label": "Start Software Update",
         "action": null,
         "class": "btn btn-primary",
         "data_ui": null,
@@ -468,33 +418,33 @@
       },
       {
         "id": "btn-clean-duplicates-now",
-        "label": "Auto-Resolve &amp; Clean Duplicates",
+        "label": "Auto-Clean Duplicates",
         "action": "cleanDuplicatesOnSelectedDevice()",
-        "class": "btn btn-danger btn-sm",
+        "class": "btn btn-danger btn-xs",
         "data_ui": null,
         "title": null
       },
       {
         "id": "slot-tab-occupied",
-        "label": "Occupied Slots",
+        "label": "Used Slots",
         "action": "setSlotModalViewMode(",
-        "class": "btn btn-sm btn-primary slot-tab-btn",
+        "class": "btn btn-xs btn-primary slot-tab-btn",
         "data_ui": null,
         "title": null
       },
       {
         "id": "slot-tab-all",
-        "label": "All 300 Slots",
+        "label": "All Slots",
         "action": "setSlotModalViewMode(",
-        "class": "btn btn-sm btn-secondary slot-tab-btn",
+        "class": "btn btn-xs btn-secondary slot-tab-btn",
         "data_ui": null,
         "title": null
       },
       {
         "id": "slot-tab-duplicates",
-        "label": "Duplicates Only",
+        "label": "Duplicates",
         "action": "setSlotModalViewMode(",
-        "class": "btn btn-sm btn-secondary slot-tab-btn",
+        "class": "btn btn-xs btn-secondary slot-tab-btn",
         "data_ui": null,
         "title": null
       },
@@ -502,20 +452,28 @@
         "id": null,
         "label": "Refresh",
         "action": "loadAndRenderAs608Slots()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-secondary btn-xs",
         "data_ui": null,
-        "title": "Reload hardware slots"
+        "title": "Reload slots"
       },
       {
         "id": null,
         "label": "Close",
         "action": "closeAs608SlotManagerModal()",
-        "class": "btn btn-secondary btn-sm",
+        "class": "btn btn-secondary btn-xs",
         "data_ui": null,
         "title": null
       }
     ],
     "input_controls": [
+      {
+        "id": "enroll-student-search",
+        "type": "search",
+        "name": null,
+        "placeholder": "Search student name or roll...",
+        "handler": "filterEnrollStudentDropdown()",
+        "class": "form-control form-control-sm esp-search-input-compact"
+      },
       {
         "id": "chk-buzzer-audio",
         "type": "checkbox",
@@ -533,12 +491,12 @@
         "class": "form-control form-control-sm"
       },
       {
-        "id": "esp-dept-input",
-        "type": "hidden",
+        "id": "esp-name-input",
+        "type": "text",
         "name": null,
-        "placeholder": null,
+        "placeholder": "e.g. IT Department Classroom Scanner",
         "handler": null,
-        "class": null
+        "class": "form-control"
       },
       {
         "id": "esp-uid-input",
@@ -549,50 +507,18 @@
         "class": "form-control"
       },
       {
-        "id": "esp-name-input",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. IT Lab Biometric Terminal 01",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "esp-secret-input",
-        "type": "text",
-        "name": null,
-        "placeholder": "64-character hex AES-256 key",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
-        "id": "scanned-wifi-ssid",
-        "type": "text",
-        "name": "esp_selected_wifi_ssid",
-        "placeholder": "Select a network above or type SSID",
-        "handler": null,
-        "class": "form-control"
-      },
-      {
         "id": "scanned-wifi-password",
         "type": "password",
-        "name": "esp_selected_wifi_key",
-        "placeholder": "Leave blank if open Wi-Fi network",
+        "name": null,
+        "placeholder": "Enter Wi-Fi password",
         "handler": null,
         "class": "form-control"
-      },
-      {
-        "id": "scanned-wifi-is-default",
-        "type": "checkbox",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": null
       },
       {
         "id": "manual-wifi-ssid",
         "type": "text",
         "name": null,
-        "placeholder": "e.g. IT_DEPT_FACULTY_5G",
+        "placeholder": "e.g. IT_DEPT_WIFI",
         "handler": null,
         "class": "form-control"
       },
@@ -600,7 +526,7 @@
         "id": "manual-wifi-password",
         "type": "password",
         "name": null,
-        "placeholder": "Router WPA2/WPA3 password",
+        "placeholder": "Enter password",
         "handler": null,
         "class": "form-control"
       },
@@ -624,7 +550,7 @@
         "id": "ota-custom-url",
         "type": "url",
         "name": null,
-        "placeholder": "http://192.168.1.15:3000/uploads/firmware/firmware.bin",
+        "placeholder": "http://...",
         "handler": null,
         "class": "form-control"
       },
@@ -632,7 +558,7 @@
         "id": "slot-search-input",
         "type": "search",
         "name": null,
-        "placeholder": "Filter by student name, roll #, or slot...",
+        "placeholder": "Search by student name or roll...",
         "handler": "filterAs608SlotsTable()",
         "class": "form-control form-control-sm"
       }
@@ -647,7 +573,7 @@
         "sample_options": [
           {
             "value": "",
-            "text": "Loading Departments..."
+            "text": "Loading..."
           }
         ]
       },
@@ -660,24 +586,41 @@
         "sample_options": [
           {
             "value": "",
-            "text": "Select Active ESP32..."
+            "text": "Select Machine..."
           }
         ]
       },
       {
-        "id": "enroll-cohort-filter",
+        "id": "enroll-status-filter",
         "title": null,
-        "onchange": "filterEnrollStudentDropdown(this.value)",
-        "class": "esp-cohort-filter-select",
-        "options_count": 5,
+        "onchange": "filterEnrollStudentDropdown()",
+        "class": "form-select form-select-sm",
+        "options_count": 3,
         "sample_options": [
           {
             "value": "pending",
-            "text": "Pending Only"
+            "text": "Pending Registration"
+          },
+          {
+            "value": "enrolled",
+            "text": "Registered Only"
           },
           {
             "value": "all",
             "text": "All Students"
+          }
+        ]
+      },
+      {
+        "id": "enroll-year-filter",
+        "title": null,
+        "onchange": "filterEnrollStudentDropdown()",
+        "class": "form-select form-select-sm",
+        "options_count": 4,
+        "sample_options": [
+          {
+            "value": "all",
+            "text": "All Years"
           },
           {
             "value": "1",
@@ -694,6 +637,19 @@
         ]
       },
       {
+        "id": "enroll-cohort-filter",
+        "title": null,
+        "onchange": null,
+        "class": null,
+        "options_count": 1,
+        "sample_options": [
+          {
+            "value": "pending",
+            "text": "Pending"
+          }
+        ]
+      },
+      {
         "id": "enroll-student-select",
         "title": null,
         "onchange": "onSelectEnrollStudent(this.value)",
@@ -702,7 +658,7 @@
         "sample_options": [
           {
             "value": "",
-            "text": "Choose a student from roster..."
+            "text": "Select student..."
           }
         ]
       },
@@ -744,90 +700,49 @@
           },
           {
             "value": "ENROLLED",
-            "text": "Enrolled (Template OK)"
+            "text": "Registered Only"
           },
           {
             "value": "PENDING",
-            "text": "Not Enrolled"
+            "text": "Needs Registration Only"
           }
         ]
       },
       {
-        "id": "esp-log-level-filter",
+        "id": "log-filter-level",
         "title": null,
-        "onchange": "loadDeviceRemoteLogs()",
-        "class": "form-select",
+        "onchange": "renderDeviceRemoteLogs()",
+        "class": "form-select form-select-sm",
         "options_count": 4,
         "sample_options": [
           {
-            "value": "ALL",
+            "value": "all",
             "text": "All Levels"
           },
           {
-            "value": "INFO",
-            "text": "INFO"
+            "value": "error",
+            "text": "Errors Only"
           },
           {
-            "value": "WARN",
-            "text": "WARN"
+            "value": "warn",
+            "text": "Warnings"
           },
           {
-            "value": "ERROR",
-            "text": "ERROR"
+            "value": "info",
+            "text": "Info"
           }
         ]
       },
       {
-        "id": "esp-year-input",
+        "id": "esp-dept-input",
         "title": null,
         "onchange": null,
         "class": "form-select",
-        "options_count": 3,
+        "options_count": 1,
         "sample_options": [
           {
-            "value": "1",
-            "text": "1st Year"
-          },
-          {
-            "value": "2",
-            "text": "2nd Year"
-          },
-          {
-            "value": "3",
-            "text": "3rd Year"
-          }
-        ]
-      },
-      {
-        "id": "esp-sem-input",
-        "title": null,
-        "onchange": null,
-        "class": "form-select",
-        "options_count": 6,
-        "sample_options": [
-          {
-            "value": "1",
-            "text": "Sem 1"
-          },
-          {
-            "value": "2",
-            "text": "Sem 2"
-          },
-          {
-            "value": "3",
-            "text": "Sem 3"
-          },
-          {
-            "value": "4",
-            "text": "Sem 4"
-          },
-          {
-            "value": "5",
-            "text": "Sem 5"
-          },
-          {
-            "value": "6",
-            "text": "Sem 6"
+            "value": "",
+            "text": "Your Assigned Department"
           }
         ]
       },
@@ -840,11 +755,11 @@
         "sample_options": [
           {
             "value": "local",
-            "text": "Local Host Server (/uploads/firmware/firmware.bin)"
+            "text": "Local Server Build (firmware.bin)"
           },
           {
             "value": "github",
-            "text": "GitHub Actions CI/CD Cloud Build"
+            "text": "Cloud Official Release"
           },
           {
             "value": "custom",
@@ -856,14 +771,14 @@
   },
   "modals_catalog": [
     {
-      "id": "register-esp-modal",
-      "title": "Pair Department ESP32 Terminal",
+      "id": "register-device-modal",
+      "title": "Add New Attendance Machine",
       "fields": [],
       "submit_action": null
     },
     {
       "id": "esp-config-modal",
-      "title": "ESP32 Firmware Configuration (`config.h`)",
+      "title": "Machine Setup Code (config.h)",
       "fields": [],
       "submit_action": null
     },
@@ -875,19 +790,19 @@
     },
     {
       "id": "add-wifi-modal",
-      "title": "Add Wi-Fi Network Manually",
+      "title": "Add Wi-Fi Network",
       "fields": [],
       "submit_action": null
     },
     {
       "id": "ota-update-modal",
-      "title": "Wireless Firmware Update (OTA)",
+      "title": "Update Machine Software",
       "fields": [],
       "submit_action": null
     },
     {
       "id": "as608-slot-manager-modal",
-      "title": "AS608 Hardware Slots &amp; Duplicate Audit",
+      "title": "Scanner Memory &amp; Stored Fingerprints",
       "fields": [],
       "submit_action": null
     }

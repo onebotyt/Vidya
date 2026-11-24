@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/registers/index.html",
   "source_file": "frontend/faculty/registers/index.html",
-  "content_hash": "11e440b313c5",
-  "last_scanned": "2026-11-24T06:00:27.433Z",
+  "content_hash": "73ea87a84fbd",
+  "last_scanned": "2026-11-24T15:56:28.381Z",
   "title": "Attendance Register Studio — VidyaOS",
   "purpose": "Unified Attendance Register Studio: Dedicated multi-subject attendance matrix, subject switcher toolbar, live roll call studio (Dynamic QR, 6-digit PIN, live check-ins feed, and manual roll call roster), ESP32 hardware scan sync, custom holiday & working day management, and clean 5-column institutional export & print (Roll No, UBTER Reg No, UBTER Roll No, Name, Days)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -147,16 +147,16 @@
         "class": "matrix-bulk-bar"
       },
       {
-        "id": "mobile-periods-bar",
-        "class": "class-periods-bar"
-      },
-      {
         "id": "class-rc-progress-bar",
         "class": "rollcall-progress-bar"
       },
       {
         "id": "",
         "class": "rollcall-manual-toolbar"
+      },
+      {
+        "id": "mobile-bulk-bar",
+        "class": "mobile-bulk-bar mobile-bulk-floating-dock"
       }
     ],
     "tables": [
@@ -165,6 +165,17 @@
         "class": "register-table",
         "headers": [
           "Loading register headers..."
+        ]
+      },
+      {
+        "id": "mobile-compact-matrix-table",
+        "class": "mobile-compact-table",
+        "headers": [
+          "Roll",
+          "Student Name",
+          "Class 1",
+          "Class 2",
+          "Attended"
         ]
       },
       {
@@ -326,7 +337,7 @@
         "id": "btn-add-period-pc",
         "label": "Add Period Add",
         "action": "openAddPeriodModal()",
-        "class": "btn btn-secondary btn-sm btn-add-period",
+        "class": "btn btn-secondary btn-sm btn-add-period hide-on-mobile",
         "data_ui": null,
         "title": "Add extra class period or session for this subject"
       },
@@ -363,28 +374,36 @@
         "title": null
       },
       {
-        "id": "btn-mobile-del-class",
-        "label": "Remove P2",
-        "action": "confirmDeleteCurrentPeriod()",
-        "class": "btn-roster-del-period",
-        "data_ui": null,
-        "title": "Remove this period"
-      },
-      {
-        "id": null,
-        "label": "All Day (Combined)",
-        "action": "switchMobilePeriod(",
-        "class": "period-pill active",
+        "id": "btn-period-single",
+        "label": "P1",
+        "action": null,
+        "class": "mobile-period-btn active",
         "data_ui": null,
         "title": null
       },
       {
-        "id": null,
-        "label": "Add Class Period",
-        "action": "openAddSessionModal()",
-        "class": "btn-add-second-period",
+        "id": "btn-mobile-del-class",
+        "label": "Delete P2",
+        "action": "confirmDeleteCurrentPeriod()",
+        "class": "mobile-del-class-btn",
         "data_ui": null,
-        "title": "Add an extra class period for this date"
+        "title": "Delete this period"
+      },
+      {
+        "id": "btn-mobile-add-class",
+        "label": "Add Period",
+        "action": "openAddPeriodModal()",
+        "class": "mobile-add-class-btn",
+        "data_ui": null,
+        "title": "Add Theory, Practical, or Custom Period"
+      },
+      {
+        "id": "mobile-search-clear-btn",
+        "label": "&times;",
+        "action": "clearMobileStudentSearch()",
+        "class": "mobile-search-clear",
+        "data_ui": null,
+        "title": "Clear search"
       },
       {
         "id": null,
@@ -483,7 +502,7 @@
         "title": null
       },
       {
-        "id": null,
+        "id": "btn-save-holiday",
         "label": "Save Configuration",
         "action": "submitSaveHoliday()",
         "class": "btn btn-primary btn-sm",
@@ -571,6 +590,30 @@
         "title": null
       },
       {
+        "id": null,
+        "label": "Present",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-dock-mark btn-dock-present",
+        "data_ui": null,
+        "title": "Mark all selected students Present"
+      },
+      {
+        "id": null,
+        "label": "Absent",
+        "action": "bulkMarkAttendance(",
+        "class": "btn-dock-mark btn-dock-absent",
+        "data_ui": null,
+        "title": "Mark all selected students Absent"
+      },
+      {
+        "id": null,
+        "label": "Cancel selection",
+        "action": "deselectAllMobileStudents()",
+        "class": "btn-dock-dismiss",
+        "data_ui": null,
+        "title": "Cancel selection"
+      },
+      {
         "id": "btn-esp-sync",
         "label": "Icon Button",
         "action": "triggerEspDaySync()",
@@ -635,6 +678,22 @@
         "placeholder": null,
         "handler": "checkClassEspStatus();if(typeof onSyncDateChange===",
         "class": "form-control"
+      },
+      {
+        "id": "mobile-student-search-input",
+        "type": "text",
+        "name": null,
+        "placeholder": "Quick search student by name or roll...",
+        "handler": "filterMobileStudents(this.value)",
+        "class": "mobile-search-input"
+      },
+      {
+        "id": "mobile-check-all",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleSelectAllMobileStudents(this.checked)",
+        "class": null
       },
       {
         "id": "class-rc-search",
@@ -893,6 +952,7 @@
     "faculty/components/core/api.js",
     "faculty/components/core/auth.js",
     "faculty/components/icons.js",
+    "faculty/components/faculty-ui.js",
     "faculty/components/sidebar/sidebar.js",
     "faculty/components/header/header.js",
     "faculty/group-detail/js/group-detail-register.js",
@@ -901,6 +961,8 @@
   "exported_functions": [
     "toggleAppTheme",
     "renderFacultyIcons",
+    "openModal",
+    "closeModal",
     "renderSvg",
     "toggleDesktopSidebar",
     "toggleSidebar",
@@ -921,8 +983,6 @@
     "openAddPeriodModal",
     "openAddSessionModal",
     "togglePeriodTimeInputs",
-    "toggleMobileRegisterMode",
-    "toggleAllEspCheckboxes",
-    "openRemarkMenu"
+    "toggleMobileRegisterMode"
   ]
 }

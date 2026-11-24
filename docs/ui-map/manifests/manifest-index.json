@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-24T06:00:27.632Z",
+  "generated_at": "2026-11-24T15:56:28.465Z",
   "total_pages": 33,
   "totals": {
-    "buttons": 855,
-    "modals": 203,
-    "inputs": 407,
+    "buttons": 845,
+    "modals": 202,
+    "inputs": 405,
     "apis": 301
   },
   "pages": [
@@ -104,13 +104,13 @@
     {
       "page_id": "HOD-005",
       "route": "/faculty/esp32-devices.html",
-      "title": "ESP32 Biometric Terminals &amp; Student Fingerprint Vault — HOD Portal",
+      "title": "Biometric Attendance &amp; Student Fingerprints — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/hod-005.json",
-      "content_hash": "ae9581ed180f",
+      "content_hash": "0afdc2f1e565",
       "counts": {
-        "buttons": 50,
+        "buttons": 43,
         "modals": 6,
-        "inputs": 25,
+        "inputs": 23,
         "apis": 6
       }
     },
@@ -145,7 +145,7 @@
       "route": "/faculty/group-detail.html",
       "title": "Teaching Group Classroom - VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-004.json",
-      "content_hash": "609970308d5f",
+      "content_hash": "4d61a2f5ac3e",
       "counts": {
         "buttons": 188,
         "modals": 59,
@@ -210,7 +210,7 @@
       "route": "/faculty/course-file.html",
       "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-012.json",
-      "content_hash": "4f1241864cd0",
+      "content_hash": "61d47c2bac84",
       "counts": {
         "buttons": 23,
         "modals": 24,
@@ -249,9 +249,9 @@
       "route": "/faculty/classes/index.html",
       "title": "My Teaching Classes — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-015.json",
-      "content_hash": "e29be42a6db1",
+      "content_hash": "cc1938dc96d3",
       "counts": {
-        "buttons": 23,
+        "buttons": 16,
         "modals": 9,
         "inputs": 27,
         "apis": 12
@@ -288,11 +288,11 @@
       "route": "/faculty/registers/index.html",
       "title": "Attendance Register Studio — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-018.json",
-      "content_hash": "11e440b313c5",
+      "content_hash": "73ea87a84fbd",
       "counts": {
-        "buttons": 47,
+        "buttons": 51,
         "modals": 10,
-        "inputs": 16,
+        "inputs": 18,
         "apis": 23
       }
     },
@@ -416,13 +416,13 @@
     {
       "page_id": "PUB-002",
       "route": "/login/",
-      "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
+      "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "b284b14c2f79",
+      "content_hash": "67befa172a8c",
       "counts": {
         "buttons": 31,
-        "modals": 7,
-        "inputs": 10,
+        "modals": 6,
+        "inputs": 8,
         "apis": 11
       }
     },
@@ -431,7 +431,7 @@
       "route": "/login/register/",
       "title": "Register — VidyaOS Campus Management",
       "manifest_file": "docs/ui-map/manifests/pub-003.json",
-      "content_hash": "7087cd93f912",
+      "content_hash": "3e8c80962cde",
       "counts": {
         "buttons": 5,
         "modals": 0,

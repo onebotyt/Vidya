@@ -4,9 +4,9 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "b284b14c2f79",
-  "last_scanned": "2026-11-24T06:00:27.622Z",
-  "title": "VidyaOS | UGIP Nainital — Institutional Campus Operating System",
+  "content_hash": "67befa172a8c",
+  "last_scanned": "2026-11-24T15:56:28.461Z",
+  "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
   "states": "Desktop: centered card with brand illustration; Mobile: full-width card with numeric keypad support",
@@ -92,11 +92,6 @@
         "field_count": 0
       },
       {
-        "id": "galleryModal",
-        "title": "Campus Gallery",
-        "field_count": 0
-      },
-      {
         "id": "activation-modal",
         "title": "Modal Dialog",
         "field_count": 0
@@ -126,58 +121,26 @@
   "ui_elements": {
     "action_buttons": [
       {
-        "id": "uploadImagesBtn",
-        "label": "＋ Upload Images",
-        "action": null,
-        "class": "upload-images",
-        "data_ui": null,
-        "title": "Upload photos to campus gallery"
-      },
-      {
-        "id": null,
-        "label": "★Our Campus View gallery ↗",
-        "action": null,
-        "class": "card",
+        "id": "nbaGuidelinesBtn",
+        "label": "NBA Guidelines",
+        "action": "showNbaGuidelinesModal()",
+        "class": "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100/80 shadow-xs transition cursor-pointer",
         "data_ui": null,
         "title": null
       },
       {
-        "id": null,
-        "label": "★Nainital View gallery ↗",
-        "action": null,
-        "class": "card",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "★Academic Block View gallery ↗",
-        "action": null,
-        "class": "card",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "★Natural Beauty View gallery ↗",
-        "action": null,
-        "class": "card",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "google-signin-btn",
-        "label": "Continue with Google",
-        "action": "handleGoogleSignIn()",
-        "class": "google",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "pw-toggle-btn",
+        "id": "carouselPrevBtn",
         "label": "Icon Button",
-        "action": "togglePw()",
-        "class": "eye",
+        "action": null,
+        "class": "pointer-events-auto w-7 h-7 rounded-full bg-white/95 hover:bg-white text-slate-800 border border-slate-200 shadow-md flex items-center justify-center transition active:scale-95 cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "carouselNextBtn",
+        "label": "Icon Button",
+        "action": null,
+        "class": "pointer-events-auto w-7 h-7 rounded-full bg-white/95 hover:bg-white text-slate-800 border border-slate-200 shadow-md flex items-center justify-center transition active:scale-95 cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -185,23 +148,47 @@
         "id": "force-login-btn",
         "label": "Disconnect Other Device &amp; Sign In Here",
         "action": "submitForceLogin()",
-        "class": "btn-force",
+        "class": "mt-2 w-full py-1.5 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded text-[11px] font-medium transition cursor-pointer",
         "data_ui": null,
         "title": null
       },
       {
-        "id": "status-alert-close",
-        "label": "&times;",
-        "action": "document.getElementById(",
-        "class": "status-alert-close",
+        "id": "google-signin-btn",
+        "label": "Continue with Google",
+        "action": "handleGoogleSignIn()",
+        "class": "w-full flex items-center justify-center gap-2 h-9 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-xs font-medium text-slate-700 transition cursor-pointer shadow-xs",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "forgotPasswordBtn",
+        "label": "Forgot password?",
+        "action": "handleForgotPassword()",
+        "class": "text-[11px] font-medium text-blue-700 hover:underline cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "pw-toggle-btn",
+        "label": "Icon Button",
+        "action": "togglePw()",
+        "class": "absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600 px-1 cursor-pointer",
         "data_ui": null,
         "title": null
       },
       {
         "id": "submit-btn",
-        "label": "Sign In →",
+        "label": "Sign In",
         "action": null,
-        "class": "signin",
+        "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 mt-1 cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Android APK",
+        "action": "openDownloadAppModal(",
+        "class": "apk-btn h-7 px-1.5 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[10px] font-medium text-slate-600 flex items-center justify-center gap-1 transition cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -209,9 +196,9 @@
         "id": null,
         "label": "Desktop App",
         "action": "openDownloadAppModal(",
-        "class": "app-action-btn beta-btn",
+        "class": "h-7 px-1.5 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[10px] font-medium text-slate-600 flex items-center justify-center gap-1 transition cursor-pointer",
         "data_ui": null,
-        "title": "Download VidyaOS for PC & Mobile"
+        "title": null
       },
       {
         "id": null,
@@ -262,6 +249,46 @@
         "title": null
       },
       {
+        "id": "lightboxClose",
+        "label": "Icon Button",
+        "action": "closeLightboxModal()",
+        "class": "absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-950/75 hover:bg-slate-950 text-white flex items-center justify-center border border-white/15 transition cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "lightboxPrev",
+        "label": "Icon Button",
+        "action": "prevLightboxSlide()",
+        "class": "absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center border border-white/15 transition cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "lightboxNext",
+        "label": "Icon Button",
+        "action": "nextLightboxSlide()",
+        "class": "absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center border border-white/15 transition cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "infoModalClose",
+        "label": "Icon Button",
+        "action": "closeInfoModal()",
+        "class": "text-slate-400 hover:text-slate-600 p-1 cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "infoModalOk",
+        "label": "Got it",
+        "action": "closeInfoModal()",
+        "class": "px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": null,
         "label": "&times;",
         "action": "closeDownloadAppModal()",
@@ -298,38 +325,6 @@
         "label": "Copy Link for Safari",
         "action": "copyCurrentWebUrl(this)",
         "class": "download-primary-btn",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "galleryClose",
-        "label": "×",
-        "action": null,
-        "class": "gallery-close",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "galleryUploadBtn",
-        "label": "＋ Upload to this gallery",
-        "action": null,
-        "class": "gallery-upload",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "galleryPrev",
-        "label": "‹",
-        "action": null,
-        "class": "gallery-arrow",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": "galleryNext",
-        "label": "›",
-        "action": null,
-        "class": "gallery-arrow",
         "data_ui": null,
         "title": null
       },
@@ -376,28 +371,20 @@
     ],
     "input_controls": [
       {
-        "id": "galleryUpload",
-        "type": "file",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": null
-      },
-      {
         "id": "identifier",
         "type": "text",
         "name": "identifier",
-        "placeholder": "Email, Mobile or UBTER Roll No.",
+        "placeholder": "Email, mobile or Roll No.",
         "handler": null,
-        "class": null
+        "class": "w-full h-9 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "password",
         "type": "password",
         "name": "password",
-        "placeholder": "Enter your password",
+        "placeholder": "Enter password",
         "handler": null,
-        "class": null
+        "class": "w-full h-9 pl-8 pr-9 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "m-identifier",
@@ -422,14 +409,6 @@
         "placeholder": null,
         "handler": null,
         "class": "m-checkbox-input"
-      },
-      {
-        "id": "galleryModalUpload",
-        "type": "file",
-        "name": null,
-        "placeholder": null,
-        "handler": null,
-        "class": null
       },
       {
         "id": "act-new-pw",
@@ -466,12 +445,6 @@
       "submit_action": null
     },
     {
-      "id": "galleryModal",
-      "title": "Campus Gallery",
-      "fields": [],
-      "submit_action": null
-    },
-    {
       "id": "activation-modal",
       "title": "Modal Dialog",
       "fields": [],
@@ -503,6 +476,7 @@
     }
   ],
   "companion_scripts": [
+    "login/https:/cdn.tailwindcss.com/3.4.17",
     "mobile-bridge.js",
     "login/core/ui.js",
     "login/core/api.js",
@@ -522,6 +496,11 @@
     "switchDownloadTab",
     "render",
     "openGallery",
-    "closeGallery"
+    "closeGallery",
+    "renderSlides",
+    "renderBottomCards",
+    "closeInfoModal",
+    "openLightboxModal",
+    "closeLightboxModal"
   ]
 }

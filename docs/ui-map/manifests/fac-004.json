@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/group-detail.html",
   "source_file": "frontend/faculty/group-detail/index.html",
-  "content_hash": "609970308d5f",
-  "last_scanned": "2026-11-24T06:00:27.001Z",
+  "content_hash": "4d61a2f5ac3e",
+  "last_scanned": "2026-11-24T15:56:28.185Z",
   "title": "Teaching Group Classroom - VidyaOS",
   "purpose": "Comprehensive cohort studio (Stream, Classwork, People, Marks)",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -1363,20 +1363,20 @@
         "title": null
       },
       {
-        "id": "btn-mobile-del-class",
-        "label": "Remove P2",
-        "action": "confirmDeleteCurrentPeriod()",
-        "class": "btn-roster-del-period",
-        "data_ui": null,
-        "title": "Remove this period"
-      },
-      {
         "id": "btn-period-single",
         "label": "P1",
         "action": null,
         "class": "mobile-period-btn active",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": "btn-mobile-del-class",
+        "label": "Delete P2",
+        "action": "confirmDeleteCurrentPeriod()",
+        "class": "mobile-del-class-btn",
+        "data_ui": null,
+        "title": "Delete this period"
       },
       {
         "id": "btn-mobile-add-class",

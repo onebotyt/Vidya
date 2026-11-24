@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/course-file.html",
   "source_file": "frontend/faculty/course-file/index.html",
-  "content_hash": "4f1241864cd0",
-  "last_scanned": "2026-11-24T06:00:27.134Z",
+  "content_hash": "61d47c2bac84",
+  "last_scanned": "2026-11-24T15:56:28.254Z",
   "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
   "purpose": "NBA/NAAC course compliance file compilation",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",
@@ -109,12 +109,10 @@
         "id": "table-students-roster",
         "class": "data-table",
         "headers": [
-          "Roll No",
-          "UBTER Roll No",
+          "#",
           "Student Full Name",
-          "Email Address",
           "Attended",
-          "Attendance %"
+          "%"
         ]
       },
       {
@@ -122,11 +120,9 @@
         "class": "data-table",
         "headers": [
           "#",
-          "Assignment Title",
-          "Issue Date",
-          "Due Date",
-          "Max Marks",
-          "Submissions"
+          "Assignment Title &amp; Due Date",
+          "Marks",
+          "Turned In"
         ]
       },
       {
@@ -289,7 +285,7 @@
     "action_buttons": [
       {
         "id": "btn-combine-export",
-        "label": "Combine &amp; Export All",
+        "label": "Combine &amp; Export All Export Dossier",
         "action": "openCombineExportModal()",
         "class": "btn btn-primary btn-combine-export",
         "data_ui": null,
@@ -297,9 +293,9 @@
       },
       {
         "id": null,
-        "label": "Print Dossier Index",
+        "label": "Print Dossier Index Print Index",
         "action": "printDossierIndex()",
-        "class": "btn btn-outline",
+        "class": "btn btn-outline btn-print-dossier",
         "data_ui": null,
         "title": "Print complete institutional dossier index and cover sheet"
       },
@@ -377,7 +373,7 @@
       },
       {
         "id": null,
-        "label": "Print Student List",
+        "label": "Print Student List Print",
         "action": "printStudentRoster()",
         "class": "btn btn-sm btn-primary",
         "data_ui": null,
@@ -385,9 +381,9 @@
       },
       {
         "id": null,
-        "label": "Upload Signed / Certified PDF Roster (Optional)",
+        "label": "Upload Signed / Certified PDF Roster (Optional) Upload PDF Roster",
         "action": "openDirectUploadModal(",
-        "class": "btn btn-outline",
+        "class": "btn btn-outline modal-footer-btn-main",
         "data_ui": null,
         "title": null
       },
@@ -401,7 +397,7 @@
       },
       {
         "id": null,
-        "label": "Print Schedule",
+        "label": "Print Schedule Print",
         "action": "printAssignmentSchedule()",
         "class": "btn btn-sm btn-primary",
         "data_ui": null,
@@ -409,9 +405,9 @@
       },
       {
         "id": null,
-        "label": "Upload Signed Tutorial Schedule PDF (Optional)",
+        "label": "Upload Signed Tutorial Schedule PDF (Optional) Upload Schedule PDF",
         "action": "openDirectUploadModal(",
-        "class": "btn btn-outline",
+        "class": "btn btn-outline modal-footer-btn-main",
         "data_ui": null,
         "title": null
       },

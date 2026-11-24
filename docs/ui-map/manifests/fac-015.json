@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/classes/index.html",
   "source_file": "frontend/faculty/classes/index.html",
-  "content_hash": "e29be42a6db1",
-  "last_scanned": "2026-11-24T06:00:27.206Z",
+  "content_hash": "cc1938dc96d3",
+  "last_scanned": "2026-11-24T15:56:28.281Z",
   "title": "My Teaching Classes — VidyaOS",
   "purpose": "Teaching Classes Overview: 3 KPI status cards, classroom cards with uniform 6-module action grid (Theory Classes, Laboratory, NBA, Student Performance, Direct Assessment, Indirect Assessment), 3-dot kebab menu (Edit Class, Move to Trash), Create Class modal, Broadcast Notice modal with Year cohort filter and media upload, and Trash Bin navigation with live count badge",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -74,12 +74,7 @@
     }
   ],
   "layout_structure": {
-    "toolbars": [
-      {
-        "id": "classes-sem-pills-bar",
-        "class": "classes-sem-pills-scroll"
-      }
-    ],
+    "toolbars": [],
     "tables": [],
     "modals": [
       {
@@ -144,62 +139,6 @@
         "label": "Broadcast",
         "action": "openBroadcastNoticeModal()",
         "class": "btn-action-outline",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "All",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill active",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sem 1",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sem 2",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sem 3",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sem 4",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sem 5",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "Sem 6",
-        "action": "handleSemesterFilterPill(",
-        "class": "sem-filter-pill",
         "data_ui": null,
         "title": null
       },
@@ -351,11 +290,11 @@
       },
       {
         "id": "input-class-year",
-        "type": "text",
+        "type": "hidden",
         "name": null,
         "placeholder": null,
         "handler": null,
-        "class": "form-control-input"
+        "class": null
       },
       {
         "id": "input-class-units",
@@ -415,11 +354,11 @@
       },
       {
         "id": "input-edit-class-year",
-        "type": "text",
+        "type": "hidden",
         "name": null,
         "placeholder": null,
         "handler": null,
-        "class": "form-control-input"
+        "class": null
       },
       {
         "id": "input-edit-class-units",
