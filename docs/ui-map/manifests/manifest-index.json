@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-24T18:12:21.337Z",
+  "generated_at": "2026-11-24T18:19:11.565Z",
   "total_pages": 33,
   "totals": {
     "buttons": 852,
     "modals": 202,
     "inputs": 417,
-    "apis": 303
+    "apis": 304
   },
   "pages": [
     {
@@ -132,12 +132,12 @@
       "route": "/faculty/dashboard.html",
       "title": "Faculty Dashboard — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-002.json",
-      "content_hash": "c90c223e7bf6",
+      "content_hash": "5b648b928909",
       "counts": {
         "buttons": 0,
         "modals": 0,
         "inputs": 0,
-        "apis": 7
+        "apis": 8
       }
     },
     {
