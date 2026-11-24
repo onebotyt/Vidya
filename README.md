@@ -64,6 +64,37 @@ All demo accounts use password: `Admin@123` (Admin) or `Password@123` (Faculty &
 
 ---
 
+## 📱 Mobile & 💻 Desktop Applications
+
+The exact same responsive website codebase in `frontend/` powers:
+1. **Web Application**: Responsive desktop and mobile browsers.
+2. **Mobile Application (Android APK / AAB)**: Packaged with Capacitor (`capacitor.config.json` + `mobile-bridge.js`).
+3. **Desktop Application (Windows .exe / macOS .dmg / Linux .deb)**: Packaged with Tauri (`src-tauri/` Rust WebView2 wrapper).
+
+📖 Read the complete step-by-step build & packaging guide: **[MOBILE_AND_DESKTOP_DEPLOYMENT_GUIDE.md](MOBILE_AND_DESKTOP_DEPLOYMENT_GUIDE.md)**.
+
+---
+
+## 🧭 UI Memory Map & Contract Documentation
+
+VidyaOS includes a deterministic machine-readable UI manifest and contract map system:
+- **UI Memory Map Index**: `docs/ui-map/README.md`
+- **Page Directory (42 registered views)**: `docs/ui-map/pages.md`
+- **Shared Components & Design Tokens**: `docs/ui-map/components.md`
+- **Navigation & Workflow State Machine**: `docs/ui-map/flows.mmd`
+- **Machine-Readable Manifests (33 master pages)**: `docs/ui-map/manifests/*.json` & `docs/ui-map/manifests/manifest-index.json`
+- **Complete Frontend UI Guide**: `docs/frontend-complete-ui-guide.md`
+- **Student Records & Classroom Architecture**: `SYSTEM_ARCHITECTURE_STUDENT_RECORDS_AND_CLASSROOM.md`
+
+Verify manifest parity at any time:
+```bash
+cd backend
+node scripts/extract-ui-manifest.js
+node scripts/test-ui-manifest-sync.js
+```
+
+---
+
 ## 👥 Contributors & Collaboration
 
 - **Lead Architect (Dev 1)**: [@onebotyt](https://github.com/onebotyt)

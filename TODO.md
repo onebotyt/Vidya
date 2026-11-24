@@ -49,6 +49,73 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 602: Spreadsheet Studio Ribbon Mouse Focus Protection, Instant Live Styling & Selection Retention
+- **Status**: Tested, Verified & Synced across Web, Android Assets & Distribution (305/305 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Ribbon Toolbar Mouse Focus Protection & Prevention of Cell Deselection*:
+     - Attached global `mousedown` event listener intercepting interactions on `#excel-ribbon`, `.excel-color-palette-popup`, `.excel-color-btn-wrapper`, `.excel-dropdown-menu`, `.excel-mini-menu`, `.excel-conditional-dropdown`, and `.excel-templates-dropdown`.
+     - Calls `e.preventDefault()` on all non-input/non-select toolbar targets, preventing default browser focus stealing and stopping active cell/range deselection when formatting buttons, icons, or swatches are clicked.
+     - Preserves active cell bounding box (`#excel-selection-box`) firmly over the selected cell or multi-cell range during all toolbar operations.
+  2. *Instant Live In-Place Cell Formatting Updates*:
+     - In [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js): Overhauled `applyFormattingToRange(fn)` to update cell models in memory (`setCell`) and immediately apply updated inline styles to matching live DOM elements (`td.style.cssText = buildCellInlineStyle(cell.s)`) without tearing down or rebuilding `tbody.innerHTML`.
+     - In `buildCellInlineStyle(s)`: Added `!important` to all formatting attributes (`font-weight`, `font-style`, `text-decoration`, `font-family`, `font-size`, `color`, `background`, `text-align`, `vertical-align`) and changed `background-color` to `background` so CSS variable gradients like `var(--table-th-bg)` render cleanly.
+     - In `renderExcelGrid(rebuildStructure)`: Eliminated the unnecessary `sheet.merges?.length > 0` condition that was forcing full table destruction on every formatting toggle. In-place updates now execute seamlessly for sheets with merged headers.
+     - In `updateSelectionBoxUI()`: Added `requestAnimationFrame` retry when geometry is momentarily unsettled instead of permanently hiding the selection box with `display: 'none'`.
+  3. *Color Palette Delegation & Live Synchronization*:
+     - In [sheets-color-tools.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/js/sheets-color-tools.js): Connected `selectFillColor` and `selectFontColor` to `applyFillColor` and `applyFontColor` with direct in-place DOM updates and selection box preservation.
+     - In [sheets-grid.css](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/css/sheets-grid.css): Protected cells with custom background formatting from being overwritten by range selection tint (`:not([style*="background"])`).
+  4. *Multi-Target Synchronization*:
+     - Mirrored updated files (`sheets.js`, `sheets-grid.css`, `sheets-color-tools.js`) to `frontend/www/faculty/sheets/` and `frontend/android/app/src/main/assets/public/faculty/sheets/`.
+  5. *Zero-Break Regression Suite*:
+     - UI Manifest & DOM Sync (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Total: **305 / 305 checks passed**.
+
+### ✅ Milestone 601: Complete Web & Backend Distribution Package with Mobile/Desktop Architecture Documentation
+- **Status**: Completed & Verified (Zip integrity verified: 19.49 MB, 627 entries, 0 excluded files).
+- **Objective & Architectural Scope**:
+  1. *Clean Multi-Platform Distribution Architecture*:
+     - Packaged both Frontend (pure responsive website core) and Backend into clean, compact distribution archives:
+       * Primary Path: [e:/uiap/VidyaOS_Web_and_Backend.zip](file:///e:/uiap/VidyaOS_Web_and_Backend.zip)
+       * In-Repo Path: [e:/uiap/VidyaOS/VidyaOS_Web_and_Backend.zip](file:///e:/uiap/VidyaOS/VidyaOS_Web_and_Backend.zip)
+     - Frontend includes all production client modules (`admin`, `faculty`, `student`, `login`, `landing`, `shared`, `global-components`, `images`, `scripts/prepare-mobile.js`, `server.js`, `mobile-bridge.js`, `capacitor.config.json`).
+     - Cleanly excluded all bulky platform build artifacts (`node_modules/`, `android/`, `src-tauri/`, `www/`, `.git/`, `uploads/`), keeping the distribution size to 19.49 MB.
+     - Backend includes complete source code (`src/`), MySQL migrations (001-008 in `database/`), audit/sync scripts, and `server.js`.
+  2. *Comprehensive Mobile & Desktop Applications Documentation*:
+     - Created [MOBILE_AND_DESKTOP_DEPLOYMENT_GUIDE.md](file:///e:/uiap/VidyaOS/MOBILE_AND_DESKTOP_DEPLOYMENT_GUIDE.md) detailing how the single website core powers:
+       * Web application across responsive desktop/mobile viewports.
+       * Native Android application via Capacitor (`capacitor.config.json`, `mobile-bridge.js`, OTA updates, Android Studio build commands).
+       * Native Desktop application via Tauri (`src-tauri/`, Rust WebView2 wrapper, minimal <15MB RAM footprint, hot-reload and bundle generation).
+  3. *Full UI Memory Map & Documentation Bundling*:
+     - Included complete `docs/ui-map/` inventory (`manifests/*.json`, `manifest-index.json`, `pages.md`, `components.md`, `flows.mmd`, `README.md`).
+     - Included [SYSTEM_ARCHITECTURE_STUDENT_RECORDS_AND_CLASSROOM.md](file:///e:/uiap/VidyaOS/SYSTEM_ARCHITECTURE_STUDENT_RECORDS_AND_CLASSROOM.md), [MULTI_DEVELOPER_SETUP.md](file:///e:/uiap/VidyaOS/MULTI_DEVELOPER_SETUP.md), and [TODO.md](file:///e:/uiap/VidyaOS/TODO.md).
+  4. *Zip Archive Integrity*:
+     - Verified archive structure: 627 total entries, 0 leaks of `node_modules`, `android`, `www`, `src-tauri`, or `.git`.
+
+### ✅ Milestone 600: Classroom Academic Dossier Pure Server-Side Redirection & Legacy Folder Pruning
+- **Status**: Tested, Verified & Ready for Integration Gatekeeper (305/305 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Elimination of Legacy Redirect Stub Folders*:
+     - Removed 6 legacy redirect directories from `frontend/faculty/` and `frontend/www/faculty/`:
+       * `direct-assessment/`
+       * `indirect-assessment/`
+       * `lab-classes/`
+       * `theory-classes/`
+       * `student-performance/`
+       * `assessment-process/`
+     - Reclaimed directory cleanliness while preserving complete single-page dynamic rendering in [frontend/faculty/course-file/index.html](file:///e:/uiap/VidyaOS/frontend/faculty/course-file/index.html).
+  2. *Server-Side HTTP 301 Permanent Redirection Engine*:
+     - In [backend/server.js](file:///e:/uiap/VidyaOS/backend/server.js): Implemented `redirectCourseFileModule(type)` generating HTTP 301 permanent redirects for all legacy route aliases (`/faculty/theory-classes`, `/faculty/lab-classes`, `/faculty/direct-assessment`, `/faculty/indirect-assessment`, `/faculty/student-performance`, `/faculty/assessment-process`) straight to `/faculty/course-file/index.html?type=<module>`, preserving all query parameters (`groupId`, `subjectId`, etc.).
+     - In [frontend/server.js](file:///e:/uiap/VidyaOS/frontend/server.js): Updated `STATIC_REWRITES` regex mapping to cleanly rewrite all 6 legacy routes to `/faculty/course-file/index.html?type=...` with automatic query string preservation.
+     - In [vercel.json](file:///e:/uiap/VidyaOS/vercel.json): Updated edge rewrites for `/faculty/theory-classes`, `/faculty/lab-classes`, `/faculty/student-performance`, `/faculty/assessment-process`, `/faculty/direct-assessment`, and `/faculty/indirect-assessment` to route to `/faculty/course-file/index.html?type=...`. Cleaned up legacy student rewrite paths.
+  3. *Android Capacitor Synchronization*:
+     - Ran [prepare-mobile.js](file:///e:/uiap/VidyaOS/frontend/scripts/prepare-mobile.js) ensuring `www/faculty/` and Android public assets match the clean canonical directory structure.
+  4. *Zero-Break Regression Suite*:
+     - UI Manifest & Contract Parity (`test-ui-manifest-sync.js`): **221 / 221 Passed**.
+     - Theme Support Integrity (`test-theme-support.js`): **84 / 84 Passed** (0 hardcoded hex colors).
+     - Backend & Frontend Syntax: `node -c server.js` verified clean syntax across both servers.
+     - Total: **305 / 305 checks passed**.
+
 ### ✅ Milestone 599: Live Wi-Fi Scanning Re-Association, Web Display Laser & Radar Animations & OLED Firmware Screen Freeze Elimination
 - **Status**: Tested, Verified & Flashed to COM5 Hardware Node (396/396 checks passed).
 - **Objective & Architectural Scope**:

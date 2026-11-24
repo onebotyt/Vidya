@@ -142,6 +142,7 @@ The following files represent obsolete, monolithic, or duplicate code that is sa
 | `frontend/student/components/dossier/` | ~34 KB | Orphaned experimental dossier files (`dossier.js`, `dossier.css`) | Removed completely |
 | `frontend/student/components/delete-modal/` | ~39 KB | Orphaned modal duplicate in student components | Removed completely |
 | `frontend/student/nba/index.html` (dead link) | - | 404 dead link in navigation | Removed from sidebar and headers |
+| `frontend/faculty/{direct-assessment, indirect-assessment, lab-classes, theory-classes, student-performance, assessment-process}` | ~130 KB (aggregate) | Redundant standalone redirect folders superseded by unified `/faculty/course-file/index.html` | Pruned directories from disk; replaced with server-side 301 redirects in `backend/server.js`, `frontend/server.js`, and `vercel.json` |
 
 ---
 
