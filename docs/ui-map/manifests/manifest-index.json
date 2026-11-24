@@ -1,7 +1,7 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-24T16:32:07.897Z",
+  "generated_at": "2026-11-24T16:41:05.192Z",
   "total_pages": 33,
   "totals": {
     "buttons": 851,
@@ -28,7 +28,7 @@
       "route": "/admin/dashboard.html",
       "title": "Admin Dashboard — VidyaOS Institutional Console",
       "manifest_file": "docs/ui-map/manifests/adm-003.json",
-      "content_hash": "a1e2dacb22f6",
+      "content_hash": "33c27909a70b",
       "counts": {
         "buttons": 0,
         "modals": 0,
@@ -54,7 +54,7 @@
       "route": "/admin/settings.html",
       "title": "Institution Settings — Admin Console",
       "manifest_file": "docs/ui-map/manifests/adm-006.json",
-      "content_hash": "814cc3f27c37",
+      "content_hash": "3b4124acb492",
       "counts": {
         "buttons": 6,
         "modals": 0,
@@ -80,7 +80,7 @@
       "route": "/admin/app-settings.html",
       "title": "Admin App Settings &amp; Preferences — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/adm-008.json",
-      "content_hash": "bf2e2484ed4e",
+      "content_hash": "fc14429ddc60",
       "counts": {
         "buttons": 5,
         "modals": 2,

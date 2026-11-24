@@ -5,7 +5,7 @@
   "route": "/login/",
   "source_file": "frontend/login/index.html",
   "content_hash": "2d6bd1ff691b",
-  "last_scanned": "2026-11-24T16:32:07.890Z",
+  "last_scanned": "2026-11-24T16:41:05.186Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",

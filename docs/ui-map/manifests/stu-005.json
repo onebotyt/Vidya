@@ -5,7 +5,7 @@
   "route": "/student/scores.html",
   "source_file": "frontend/student/scores/index.html",
   "content_hash": "d8ef35295240",
-  "last_scanned": "2026-11-24T16:32:07.859Z",
+  "last_scanned": "2026-11-24T16:41:05.147Z",
   "title": "My Test Scores &amp; Marks — Student Portal",
   "purpose": "Class test scores, mid-term results, faculty feedback",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
