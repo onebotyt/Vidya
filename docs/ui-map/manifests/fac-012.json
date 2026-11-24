@@ -5,7 +5,7 @@
   "route": "/faculty/course-file.html",
   "source_file": "frontend/faculty/course-file/index.html",
   "content_hash": "61d47c2bac84",
-  "last_scanned": "2026-11-24T16:53:17.964Z",
+  "last_scanned": "2026-11-24T17:03:55.588Z",
   "title": "Course File Preparation (NBA/NAAC) — VidyaOS",
   "purpose": "NBA/NAAC course compliance file compilation",
   "shell": "Classroom Shell (`classroom-nav.css`, `nav.js`)",

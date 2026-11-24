@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "2d6bd1ff691b",
-  "last_scanned": "2026-11-24T16:53:18.165Z",
+  "content_hash": "579fb026284a",
+  "last_scanned": "2026-11-24T17:03:55.817Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
@@ -217,26 +217,10 @@
         "title": null
       },
       {
-        "id": "reg-quick-submit-btn",
-        "label": "Continue to Registration Portal &rarr;",
-        "action": null,
-        "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 mt-2 cursor-pointer",
-        "data_ui": null,
-        "title": null
-      },
-      {
-        "id": null,
-        "label": "&larr; Back to Sign In",
-        "action": "showSignInView()",
-        "class": "font-semibold text-blue-700 hover:underline cursor-pointer",
-        "data_ui": null,
-        "title": null
-      },
-      {
         "id": "google-signup-btn",
         "label": "Sign up with Google (Auto-Fill)",
         "action": "handleGoogleSignIn()",
-        "class": "w-full flex items-center justify-center gap-2 h-9 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-xs font-medium text-slate-700 transition cursor-pointer shadow-xs mb-3",
+        "class": "w-full flex items-center justify-center gap-2 h-9 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-xs font-medium text-slate-700 transition cursor-pointer shadow-xs mb-3.5",
         "data_ui": null,
         "title": null
       },
@@ -260,7 +244,23 @@
         "id": "reg-submit-btn",
         "label": "Register Now &rarr;",
         "action": null,
-        "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer mt-1",
+        "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer mt-2",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Already a Member ? Login Now",
+        "action": "showSignInView()",
+        "class": "w-full h-9 rounded-lg border border-blue-600 bg-white hover:bg-blue-50/60 active:scale-[0.99] text-blue-700 text-xs font-semibold transition cursor-pointer mt-1",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sign In &rarr;",
+        "action": "showSignInView()",
+        "class": "font-semibold text-blue-700 hover:underline cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -451,22 +451,6 @@
         "class": "w-full h-9 pl-8 pr-9 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
-        "id": "reg-quick-fullname",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. Aarav Rawat",
-        "handler": null,
-        "class": "w-full h-9 px-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
-      },
-      {
-        "id": "reg-quick-identifier",
-        "type": "text",
-        "name": null,
-        "placeholder": "e.g. 2401050012",
-        "handler": null,
-        "class": "w-full h-9 px-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
-      },
-      {
         "id": "reg-full-name",
         "type": "text",
         "name": null,
@@ -488,7 +472,7 @@
         "name": null,
         "placeholder": "10-digit mobile number",
         "handler": null,
-        "class": "w-full h-8 pl-10 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+        "class": "w-full h-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "reg-roll-not-available",
@@ -504,7 +488,7 @@
         "name": null,
         "placeholder": "11-digit numeric UBTER roll no",
         "handler": null,
-        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-mono transition"
       },
       {
         "id": "reg-password",
@@ -512,7 +496,7 @@
         "name": null,
         "placeholder": "Min. 8 characters",
         "handler": null,
-        "class": "w-full h-8 pl-2.5 pr-7 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+        "class": "w-full h-8 pl-8 pr-7 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "reg-confirm-password",
@@ -520,15 +504,15 @@
         "name": null,
         "placeholder": "Retype password",
         "handler": null,
-        "class": "w-full h-8 pl-2.5 pr-7 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+        "class": "w-full h-8 pl-8 pr-7 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "reg-ubter-reg",
         "type": "text",
         "name": null,
-        "placeholder": "# E.G. 24101054",
+        "placeholder": "E.G. 24101054",
         "handler": null,
-        "class": "w-full h-7 px-2 text-[11px] font-mono rounded-md border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-blue-600"
+        "class": "w-full h-8 pl-6 pr-2 text-[11px] font-mono rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-blue-600"
       },
       {
         "id": "reg-class-roll",
@@ -536,7 +520,7 @@
         "name": null,
         "placeholder": "e.g. 15",
         "handler": null,
-        "class": "w-full h-7 px-2 text-[11px] font-mono rounded-md border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-blue-600"
+        "class": "w-full h-8 pl-8 pr-2 text-[11px] font-mono rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-blue-600"
       },
       {
         "id": "reg-terms",
@@ -597,40 +581,15 @@
     ],
     "dropdown_selectors": [
       {
-        "id": "reg-quick-role",
-        "title": null,
-        "onchange": null,
-        "class": "w-full h-9 px-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
-        "options_count": 4,
-        "sample_options": [
-          {
-            "value": "student",
-            "text": "Student"
-          },
-          {
-            "value": "faculty",
-            "text": "Faculty / Staff"
-          },
-          {
-            "value": "hod",
-            "text": "Head of Department (HOD)"
-          },
-          {
-            "value": "admin",
-            "text": "Administrator"
-          }
-        ]
-      },
-      {
         "id": "reg-dept",
         "title": null,
         "onchange": "handleRegDeptChange()",
-        "class": "w-full h-8 px-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
+        "class": "w-full h-8 pl-8 pr-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
         "options_count": 7,
         "sample_options": [
           {
             "value": "",
-            "text": "— Select Branch —"
+            "text": "— Select Branch / Department —"
           },
           {
             "value": "4",
@@ -662,7 +621,7 @@
         "id": "reg-sem",
         "title": null,
         "onchange": null,
-        "class": "w-full h-8 px-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
+        "class": "w-full h-8 pl-8 pr-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
         "options_count": 6,
         "sample_options": [
           {
