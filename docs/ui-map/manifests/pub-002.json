@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "f28f6c2265d3",
-  "last_scanned": "2026-11-24T17:50:11.364Z",
+  "content_hash": "af91aeb1cc9f",
+  "last_scanned": "2026-11-24T18:12:21.333Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
@@ -183,7 +183,7 @@
         "id": "pw-toggle-btn",
         "label": "Icon Button",
         "action": "togglePw()",
-        "class": "absolute inset-y-0 right-2 flex items-center text-blue-600 hover:text-blue-800 transition-colors px-1 cursor-pointer",
+        "class": "eye-toggle-btn absolute inset-y-0 right-2 flex items-center text-blue-600 hover:text-blue-800 transition-colors px-1 cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -231,7 +231,7 @@
         "id": "reg-pw-toggle",
         "label": "Icon Button",
         "action": "toggleRegPw(",
-        "class": "absolute inset-y-0 right-1.5 flex items-center text-slate-400 hover:text-blue-600 px-0.5 cursor-pointer",
+        "class": "eye-toggle-btn absolute inset-y-0 right-1.5 flex items-center text-blue-600 hover:text-blue-800 px-0.5 cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -239,7 +239,7 @@
         "id": "reg-cpw-toggle",
         "label": "Icon Button",
         "action": "toggleRegPw(",
-        "class": "absolute inset-y-0 right-1.5 flex items-center text-slate-400 hover:text-blue-600 px-0.5 cursor-pointer",
+        "class": "eye-toggle-btn absolute inset-y-0 right-1.5 flex items-center text-blue-600 hover:text-blue-800 px-0.5 cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -459,7 +459,7 @@
         "name": null,
         "placeholder": "e.g. Aarav Sharma",
         "handler": null,
-        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+        "class": "w-full h-8 pl-8 pr-2.5 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "reg-email",
@@ -467,15 +467,15 @@
         "name": null,
         "placeholder": "student@gmail.com",
         "handler": null,
-        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+        "class": "w-full h-8 pl-8 pr-2.5 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
         "id": "reg-phone",
         "type": "tel",
         "name": null,
-        "placeholder": "10-digit mobile number",
+        "placeholder": "10-digit no.",
         "handler": null,
-        "class": "w-full h-full px-2.5 text-xs bg-transparent focus:outline-none text-slate-800"
+        "class": "w-full h-full px-2 text-xs bg-transparent focus:outline-none text-slate-800"
       },
       {
         "id": "reg-roll-not-available",
@@ -489,9 +489,9 @@
         "id": "reg-ubter-roll",
         "type": "text",
         "name": null,
-        "placeholder": "11-digit numeric UBTER roll no",
+        "placeholder": "11-digit roll",
         "handler": null,
-        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-mono transition"
+        "class": "w-full h-8 pl-8 pr-2.5 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 font-mono transition"
       },
       {
         "id": "reg-password",
