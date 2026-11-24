@@ -18,6 +18,17 @@ pnpm-debug.log*
 
 # Archive files
 *.zip
+*.tar
+*.gz
+*.rar
+
+# Web & Mobile Build Outputs
+www/
+**/www/
+dist/
+**/dist/
+_reference_unzipped/
+**/_reference_unzipped/
 
 # Operating System & IDE
 .DS_Store

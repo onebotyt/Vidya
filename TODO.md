@@ -49,6 +49,18 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 603: Lightweight Pure-Codebase Distribution Package (2.70 MB, Zero Image Bloat)
+- **Status**: Completed, Verified & Archived (2.70 MB, 0 binary raster images, 100% pure code & markdown).
+- **Objective & Architectural Scope**:
+  1. *Elimination of Binary Image Assets from Distribution Archive*:
+     - Purged all binary raster images (`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.ico`, `.bmp`, `.tiff`) and `frontend/images/` from the distribution packaging engine.
+     - Reduced ZIP archive size from 19.49 MB down to **2.70 MB** (an 86.2% size reduction).
+  2. *Pure Codebase Verification*:
+     - The archive contains 100% source code (HTML5, CSS3, JS, SQL, JSON, YAML) and Markdown documentation (`docs/ui-map/`, `MOBILE_AND_DESKTOP_DEPLOYMENT_GUIDE.md`, etc.).
+     - Verified with `tar -tf`: exactly 0 image files present.
+     - Primary File: [e:/uiap/VidyaOS_Web_and_Backend.zip](file:///e:/uiap/VidyaOS_Web_and_Backend.zip) (2.70 MB).
+     - In-Repo File: [e:/uiap/VidyaOS/VidyaOS_Web_and_Backend.zip](file:///e:/uiap/VidyaOS/VidyaOS_Web_and_Backend.zip) (2.70 MB).
+
 ### ✅ Milestone 602: Spreadsheet Studio Ribbon Mouse Focus Protection, Instant Live Styling & Selection Retention
 - **Status**: Tested, Verified & Synced across Web, Android Assets & Distribution (305/305 checks passed).
 - **Objective & Architectural Scope**:
