@@ -1,13 +1,13 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-24T17:03:55.824Z",
+  "generated_at": "2026-11-24T17:50:11.369Z",
   "total_pages": 33,
   "totals": {
-    "buttons": 851,
+    "buttons": 852,
     "modals": 202,
     "inputs": 417,
-    "apis": 304
+    "apis": 303
   },
   "pages": [
     {
@@ -418,12 +418,12 @@
       "route": "/login/",
       "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
       "manifest_file": "docs/ui-map/manifests/pub-002.json",
-      "content_hash": "579fb026284a",
+      "content_hash": "f28f6c2265d3",
       "counts": {
-        "buttons": 37,
+        "buttons": 38,
         "modals": 6,
         "inputs": 20,
-        "apis": 14
+        "apis": 13
       }
     },
     {
