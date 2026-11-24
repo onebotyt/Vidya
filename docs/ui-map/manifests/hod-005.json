@@ -5,7 +5,7 @@
   "route": "/faculty/esp32-devices.html",
   "source_file": "frontend/faculty/esp32-devices/index.html",
   "content_hash": "0afdc2f1e565",
-  "last_scanned": "2026-11-24T16:09:44.848Z",
+  "last_scanned": "2026-11-24T16:18:12.017Z",
   "title": "Biometric Attendance &amp; Student Fingerprints — VidyaOS",
   "purpose": "Department ESP32 Biometric Terminals, AES-256-GCM Keys, Student Fingerprint Cloud Vault & Wi-Fi Management",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",

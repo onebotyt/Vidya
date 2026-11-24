@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "9539a7703269",
-  "last_scanned": "2026-11-24T16:09:45.178Z",
+  "content_hash": "3df2b991c61a",
+  "last_scanned": "2026-11-24T16:18:12.318Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
@@ -23,7 +23,8 @@
     "google_pending",
     "status",
     "message",
-    "error"
+    "error",
+    "action"
   ],
   "api_contracts": [
     {
@@ -84,6 +85,16 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/auth/carousel",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/departments",
+      "type": "REST"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/v1/auth/student/register",
       "type": "REST"
     }
   ],
@@ -202,6 +213,54 @@
         "label": "Desktop App",
         "action": "openDownloadAppModal(",
         "class": "h-7 px-1.5 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[10px] font-medium text-slate-600 flex items-center justify-center gap-1 transition cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "google-signup-btn",
+        "label": "Sign up with Google (Auto-Fill)",
+        "action": "handleGoogleSignIn()",
+        "class": "w-full flex items-center justify-center gap-2 h-9 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-xs font-medium text-slate-700 transition cursor-pointer shadow-xs mb-3",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reg-pw-toggle",
+        "label": "Icon Button",
+        "action": "toggleRegPw(",
+        "class": "absolute inset-y-0 right-1.5 flex items-center text-blue-600 hover:text-blue-800 px-0.5 cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reg-cpw-toggle",
+        "label": "Icon Button",
+        "action": "toggleRegPw(",
+        "class": "absolute inset-y-0 right-1.5 flex items-center text-blue-600 hover:text-blue-800 px-0.5 cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "reg-submit-btn",
+        "label": "Register Now &rarr;",
+        "action": null,
+        "class": "w-full h-9 rounded-lg bg-blue-700 hover:bg-blue-800 active:scale-[0.99] text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer mt-1",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Already a Member ? Login Now",
+        "action": "showSignInView()",
+        "class": "w-full py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 transition cursor-pointer",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "Sign In &rarr;",
+        "action": "showSignInView()",
+        "class": "font-semibold text-blue-700 hover:underline cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -392,6 +451,86 @@
         "class": "w-full h-9 pl-8 pr-9 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
       },
       {
+        "id": "reg-full-name",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. Aarav Sharma",
+        "handler": null,
+        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-email",
+        "type": "email",
+        "name": null,
+        "placeholder": "student@gmail.com",
+        "handler": null,
+        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-phone",
+        "type": "tel",
+        "name": null,
+        "placeholder": "10-digit mobile number",
+        "handler": null,
+        "class": "w-full h-8 pl-10 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-roll-not-available",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": "toggleRollNotAvailable(this.checked)",
+        "class": "w-3 h-3 text-blue-600 rounded border-slate-300 focus:ring-0 cursor-pointer"
+      },
+      {
+        "id": "reg-ubter-roll",
+        "type": "text",
+        "name": null,
+        "placeholder": "11-digit numeric UBTER roll no",
+        "handler": null,
+        "class": "w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Min. 8 characters",
+        "handler": null,
+        "class": "w-full h-8 pl-2.5 pr-7 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-confirm-password",
+        "type": "password",
+        "name": null,
+        "placeholder": "Retype password",
+        "handler": null,
+        "class": "w-full h-8 pl-2.5 pr-7 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+      },
+      {
+        "id": "reg-ubter-reg",
+        "type": "text",
+        "name": null,
+        "placeholder": "# E.G. 24101054",
+        "handler": null,
+        "class": "w-full h-7 px-2 text-[11px] font-mono rounded-md border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-blue-600"
+      },
+      {
+        "id": "reg-class-roll",
+        "type": "text",
+        "name": null,
+        "placeholder": "e.g. 15",
+        "handler": null,
+        "class": "w-full h-7 px-2 text-[11px] font-mono rounded-md border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-blue-600"
+      },
+      {
+        "id": "reg-terms",
+        "type": "checkbox",
+        "name": null,
+        "placeholder": null,
+        "handler": null,
+        "class": "w-3.5 h-3.5 mt-0.5 text-blue-600 rounded border-slate-300 focus:ring-0 cursor-pointer"
+      },
+      {
         "id": "m-identifier",
         "type": "text",
         "name": "identifier",
@@ -440,7 +579,78 @@
         "class": null
       }
     ],
-    "dropdown_selectors": []
+    "dropdown_selectors": [
+      {
+        "id": "reg-dept",
+        "title": null,
+        "onchange": "handleRegDeptChange()",
+        "class": "w-full h-8 px-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
+        "options_count": 7,
+        "sample_options": [
+          {
+            "value": "",
+            "text": "— Select Branch —"
+          },
+          {
+            "value": "4",
+            "text": "Information Technology (IT)"
+          },
+          {
+            "value": "2",
+            "text": "Electronics Engineering (ECE)"
+          },
+          {
+            "value": "3",
+            "text": "Electrical Engineering (EE)"
+          },
+          {
+            "value": "5",
+            "text": "Mechanical Engineering (ME)"
+          },
+          {
+            "value": "6",
+            "text": "Civil Engineering (CE)"
+          },
+          {
+            "value": "8",
+            "text": "Pharmacy (PHARM)"
+          }
+        ]
+      },
+      {
+        "id": "reg-sem",
+        "title": null,
+        "onchange": null,
+        "class": "w-full h-8 px-2 text-xs rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 cursor-pointer",
+        "options_count": 6,
+        "sample_options": [
+          {
+            "value": "1",
+            "text": "Semester 1 (Year 1)"
+          },
+          {
+            "value": "2",
+            "text": "Semester 2 (Year 1)"
+          },
+          {
+            "value": "3",
+            "text": "Semester 3 (Year 2)"
+          },
+          {
+            "value": "4",
+            "text": "Semester 4 (Year 2)"
+          },
+          {
+            "value": "5",
+            "text": "Semester 5 (Year 3)"
+          },
+          {
+            "value": "6",
+            "text": "Semester 6 (Year 3)"
+          }
+        ]
+      }
+    ]
   },
   "modals_catalog": [
     {
@@ -507,6 +717,9 @@
     "renderBottomCards",
     "closeInfoModal",
     "openLightboxModal",
-    "closeLightboxModal"
+    "closeLightboxModal",
+    "loadRegistrationDepartments",
+    "toggleRollNotAvailable",
+    "toggleRegPw"
   ]
 }
