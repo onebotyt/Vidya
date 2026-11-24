@@ -4,8 +4,8 @@
   "role": "Public",
   "route": "/login/",
   "source_file": "frontend/login/index.html",
-  "content_hash": "67befa172a8c",
-  "last_scanned": "2026-11-24T15:56:28.461Z",
+  "content_hash": "9539a7703269",
+  "last_scanned": "2026-11-24T16:09:45.178Z",
   "title": "VidyaOS | UGIP Nainital — Institutional Sign In",
   "purpose": "Single sign-on portal, role redirection, multi-device warning",
   "shell": "Auth Shell (`login/index.css`)",
@@ -79,6 +79,11 @@
     {
       "method": "GET",
       "endpoint": "/api/v1/admin/settings",
+      "type": "REST"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/v1/auth/carousel",
       "type": "REST"
     }
   ],
@@ -172,7 +177,7 @@
         "id": "pw-toggle-btn",
         "label": "Icon Button",
         "action": "togglePw()",
-        "class": "absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600 px-1 cursor-pointer",
+        "class": "absolute inset-y-0 right-2 flex items-center text-blue-600 hover:text-blue-800 transition-colors px-1 cursor-pointer",
         "data_ui": null,
         "title": null
       },
@@ -497,6 +502,7 @@
     "render",
     "openGallery",
     "closeGallery",
+    "loadCarouselConfig",
     "renderSlides",
     "renderBottomCards",
     "closeInfoModal",
