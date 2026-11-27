@@ -1,10 +1,10 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-26T13:05:51.270Z",
+  "generated_at": "2026-11-27T14:49:45.699Z",
   "total_pages": 33,
   "totals": {
-    "buttons": 868,
+    "buttons": 867,
     "modals": 202,
     "inputs": 418,
     "apis": 304
@@ -171,9 +171,9 @@
       "route": "/faculty/students/index.html",
       "title": "Students Management — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-007.json",
-      "content_hash": "fbad4bdaab19",
+      "content_hash": "287e76aa8e09",
       "counts": {
-        "buttons": 38,
+        "buttons": 37,
         "modals": 7,
         "inputs": 18,
         "apis": 7

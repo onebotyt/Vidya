@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/students/index.html",
   "source_file": "frontend/faculty/students/index.html",
-  "content_hash": "fbad4bdaab19",
-  "last_scanned": "2026-11-26T13:05:51.100Z",
+  "content_hash": "287e76aa8e09",
+  "last_scanned": "2026-11-27T14:49:45.228Z",
   "title": "Students Management — VidyaOS",
   "purpose": "Department student roster, cohort management, roll number sequencing, self-registration, 30-day trash recovery, student transfer and withdrawal workflows with zero data loss, and student profile dossier modal",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -193,14 +193,6 @@
         "class": "btn-stu-outline",
         "data_ui": null,
         "title": "Bulk Import via CSV"
-      },
-      {
-        "id": null,
-        "label": "Re-Index",
-        "action": "reindexRoll()",
-        "class": "btn-stu-outline btn-reindex",
-        "data_ui": null,
-        "title": "Re-index Roll Numbers"
       },
       {
         "id": null,
@@ -512,7 +504,7 @@
         "id": "add-stu-enroll",
         "type": "text",
         "name": null,
-        "placeholder": "24011090008",
+        "placeholder": "e.g. 24011120029",
         "handler": null,
         "class": null
       },
@@ -520,7 +512,7 @@
         "id": "add-stu-reg",
         "type": "text",
         "name": null,
-        "placeholder": "24101054001",
+        "placeholder": "e.g. 24022212",
         "handler": null,
         "class": null
       },
@@ -536,7 +528,7 @@
         "id": "add-stu-phone",
         "type": "tel",
         "name": null,
-        "placeholder": "9876543210",
+        "placeholder": "e.g. 9876543210",
         "handler": null,
         "class": null
       }

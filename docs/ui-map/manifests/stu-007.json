@@ -5,7 +5,7 @@
   "route": "/student/leave.html",
   "source_file": "frontend/student/leave/index.html",
   "content_hash": "a808ae715df7",
-  "last_scanned": "2026-11-26T13:05:51.250Z",
+  "last_scanned": "2026-11-27T14:49:45.663Z",
   "title": "Leave Applications — Student Portal",
   "purpose": "Apply for medical / duty leave, track application approval",
   "shell": "Student Shell (`classroom-nav.css`, `nav.js`)",
