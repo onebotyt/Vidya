@@ -10,7 +10,7 @@
   'use strict';
 
   // Current Client App Version (Stamped during CI/CD build)
-  window.VIDYAOS_APP_VERSION = '1.0.158';
+  window.VIDYAOS_APP_VERSION = '1.0.160';
 
   // 1. Cloud Backend URL
   const CLOUD_BACKEND_URL = 'https://vidyaos-backend.onrender.com';
@@ -88,6 +88,23 @@
   if (isCapacitor) {
     if (document.documentElement) {
       document.documentElement.classList.add('is-native-shell');
+
+      // Ensure proper safe area top inset for the mobile status bar
+      let sbHeight = 0;
+      if (window.NativeSystemUI && typeof window.NativeSystemUI.getStatusBarHeight === 'function') {
+        try {
+          sbHeight = window.NativeSystemUI.getStatusBarHeight();
+        } catch (_) {}
+      }
+      if (!sbHeight || sbHeight < 20) {
+        sbHeight = 36; // Calibrated Android status bar height in dp
+      }
+
+      const currentVal = document.documentElement.style.getPropertyValue('--safe-area-inset-top');
+      if (!currentVal || parseInt(currentVal, 10) === 0) {
+        document.documentElement.style.setProperty('--safe-area-inset-top', `${sbHeight}px`);
+        document.documentElement.style.setProperty('--status-bar-height', `${sbHeight}px`);
+      }
     }
   }
 

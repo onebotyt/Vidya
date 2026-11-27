@@ -49,6 +49,23 @@ All accounts share the password: **`Admin@123`** (Admin) or **`Password@123`** (
 | **Faculty / Class Teacher** | `prof.patel@college.edu` | `Password@123` | `/faculty/registers.html` |
 | **Student** | `student.it01@college.edu` | `Password@123` | `/student/attendance.html` |
 
+### ✅ Milestone 604: Faculty Sheets Signatures Button Sync, Add Sheet Selector Menu & Export All Workbook Engine
+- **Status**: Tested, Verified & Synced across Web, Android Assets & UI Manifests (305/305 checks passed).
+- **Objective & Architectural Scope**:
+  1. *Signatures ON/OFF Button Synchronization ([editor.html](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/editor.html), [sheets.js](file:///e:/uiap/VidyaOS/frontend/faculty/sheets/sheets.js))*:
+     - Resolved duplicate `#btn-toggle-signatures-bar` / `#btn-signatures-label` IDs between the View Ribbon and Studio Bar 3 by assigning `#btn-toggle-signatures-view` / `#label-view-signatures` to the View Ribbon button.
+     - Updated `applySignatureBarVisibility()` and `togglePrintSignatures()` to synchronize both buttons, labels (`Signatures: ON` / `Signatures: OFF`), `#excel-signatures-bar`, and `#sheet-print-signatures`.
+  2. *Same-Line Add Sheet Options Dropdown (`#btn-add-sheet-dropdown`)*:
+     - Added `+ Add Sheet ▾` on Studio Bar 3 opening `#add-sheet-dropdown-menu` with options: **Unit Test Sheet (UT#)**, **Assignment Marksheet**, **Practical & Lab Sheet**, **Master Evaluation Sheet**, **Blank Custom Sheet**, and **Duplicate Active Sheet**.
+     - Implemented `addSheetByOption(optionType)` with roster population and automatic tab switching.
+  3. *Same-Line Export All Workbook Button (`#btn-export-all-dropdown`)*:
+     - Added `Export All ▾` on Studio Bar 3 opening `#export-all-dropdown-menu` with `exportAllWorkbookSheets(format)` supporting **Full Excel Workbook (.xlsx)**, **Combined Printable PDF (.pdf)**, **Combined Word Document (.doc)**, and **Combined CSV Data (.csv)** across all sheets in `EXCEL_WB.sheets`.
+  4. *Verification*:
+     - `node -c frontend/faculty/sheets/sheets.js`: syntax clean.
+     - `node backend/scripts/test-ui-manifest-sync.js`: **221 / 221 Passed**.
+     - `node backend/scripts/test-theme-support.js`: **84 / 84 Passed**.
+     - `node frontend/scripts/prepare-mobile.js`: `www/` and Android public assets synchronized.
+
 ### ✅ Milestone 603: Lightweight Pure-Codebase Distribution Package (2.70 MB, Zero Image Bloat)
 - **Status**: Completed, Verified & Archived (2.70 MB, 0 binary raster images, 100% pure code & markdown).
 - **Objective & Architectural Scope**:

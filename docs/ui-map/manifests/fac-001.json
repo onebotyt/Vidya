@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
   "source_file": "frontend/faculty/student-records/index.html",
-  "content_hash": "2187076ca136",
-  "last_scanned": "2026-11-24T18:19:11.337Z",
+  "content_hash": "206c5780dc91",
+  "last_scanned": "2026-11-26T13:05:51.039Z",
   "title": "Student Academic Records & Dossiers — VidyaOS",
   "purpose": "Student Academic Records & Dossiers: Decoupled historical records archive, full student demographic profile dossiers, multi-semester evaluation matrices, tests and attendance summaries, and multi-format exports",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -80,58 +80,48 @@
         "id": "unnamed-table",
         "class": "rec-excel-table",
         "headers": [
-          "S.NO",
-          "Semester",
-          "Subject Short Name",
-          "Assignment NO.",
+          "Sem",
+          "Name",
+          "A.NO",
           "Marks",
-          "Submission Date",
-          "Document"
+          "SuDate",
+          "Doc"
         ]
       },
       {
         "id": "unnamed-table",
         "class": "rec-excel-table",
         "headers": [
-          "#",
-          "Semester",
-          "Subject Code",
-          "Subject Name",
-          "Assessment / Exam Title",
-          "Component",
-          "Max Marks",
-          "Marks Scored",
-          "Score %",
-          "Performance Grade"
+          "Sem",
+          "Name",
+          "T.NO",
+          "Marks",
+          "SuDate",
+          "Doc"
         ]
       },
       {
         "id": "unnamed-table",
         "class": "rec-excel-table",
         "headers": [
-          "#",
-          "Semester",
-          "Subject Code",
-          "Lab Subject Name",
-          "Experiment / Practical Title",
-          "Component",
-          "Max Marks",
-          "Marks Scored",
-          "Score %",
-          "Record Status"
+          "Sem",
+          "Name",
+          "P.NO",
+          "Marks",
+          "SuDate",
+          "Doc"
         ]
       },
       {
         "id": "rec-matrix-table",
         "class": "rec-matrix-table",
         "headers": [
-          "Month / Session",
-          "Subject Name",
-          "Code",
+          "Month",
+          "Name",
           "Held",
-          "Attended",
-          "Absent",
-          "Att %",
+          "Att",
+          "Abs",
+          "%",
           "Status"
         ]
       },
@@ -155,7 +145,7 @@
         "field_count": 0
       },
       {
-        "id": "export-inc-tests",
+        "id": "dossier-export-drawer",
         "title": "Modal Dialog",
         "field_count": 5
       },
@@ -321,7 +311,7 @@
       },
       {
         "id": "btn-profile-export",
-        "label": "Personal Details",
+        "label": "Bio-Data",
         "action": "toggleProfileExportMenu(event)",
         "class": "btn-rec-export-profile",
         "data_ui": null,
@@ -360,28 +350,52 @@
         "title": null
       },
       {
-        "id": null,
-        "label": "View Sheet",
-        "action": "event.stopPropagation(); selectDossierSection(",
-        "class": "btn-rec-card-view",
+        "id": "tab-item-assignments",
+        "label": "Coursework --",
+        "action": "selectDossierSection(",
+        "class": "rec-section-tab-item active",
         "data_ui": null,
         "title": null
       },
       {
-        "id": null,
-        "label": "View Matrix",
-        "action": "event.stopPropagation(); selectDossierSection(",
-        "class": "btn-rec-card-view",
+        "id": "tab-item-tests",
+        "label": "Exams --",
+        "action": "selectDossierSection(",
+        "class": "rec-section-tab-item",
         "data_ui": null,
         "title": null
       },
       {
-        "id": null,
-        "label": "View Files",
-        "action": "event.stopPropagation(); selectDossierSection(",
-        "class": "btn-rec-card-view",
+        "id": "tab-item-labs",
+        "label": "Practicals --",
+        "action": "selectDossierSection(",
+        "class": "rec-section-tab-item",
         "data_ui": null,
         "title": null
+      },
+      {
+        "id": "tab-item-attendance",
+        "label": "Attendance 100%",
+        "action": "selectDossierSection(",
+        "class": "rec-section-tab-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "tab-item-documents",
+        "label": "Other Documents 0 Files",
+        "action": "selectDossierSection(",
+        "class": "rec-section-tab-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-toggle-export-options",
+        "label": "Export Options (8) ▾",
+        "action": "toggleDossierExportDrawer()",
+        "class": "btn-rec-outline btn-toggle-export-options",
+        "data_ui": null,
+        "title": "Configure formats and data sections to export"
       },
       {
         "id": null,
@@ -393,7 +407,7 @@
       },
       {
         "id": null,
-        "label": "Export Selected Dossier",
+        "label": "Export Selected",
         "action": "executeSingleStudentExport()",
         "class": "btn-rec-solid",
         "data_ui": null,
@@ -534,7 +548,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -542,7 +556,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -550,7 +564,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -558,7 +572,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -566,7 +580,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -574,7 +588,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -582,7 +596,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -590,7 +604,7 @@
         "type": "checkbox",
         "name": null,
         "placeholder": null,
-        "handler": null,
+        "handler": "updateDossierExportBadge()",
         "class": null
       },
       {
@@ -761,6 +775,35 @@
         ]
       },
       {
+        "id": "dossier-section-select",
+        "title": null,
+        "onchange": "selectDossierSection(this.value)",
+        "class": "rec-section-select",
+        "options_count": 5,
+        "sample_options": [
+          {
+            "value": "assignments",
+            "text": "Coursework (0/0)"
+          },
+          {
+            "value": "tests",
+            "text": "Exams (0/0)"
+          },
+          {
+            "value": "labs",
+            "text": "Practicals (0/0)"
+          },
+          {
+            "value": "attendance",
+            "text": "Attendance (100%)"
+          },
+          {
+            "value": "documents",
+            "text": "Other Documents (0 Files)"
+          }
+        ]
+      },
+      {
         "id": "export-cohort-session",
         "title": null,
         "onchange": "onExportSessionChange(this.value)",
@@ -910,7 +953,7 @@
       "submit_action": null
     },
     {
-      "id": "export-inc-tests",
+      "id": "dossier-export-drawer",
       "title": "Modal Dialog",
       "fields": [
         "export-inc-tests",

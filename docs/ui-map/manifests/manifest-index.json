@@ -1,12 +1,12 @@
 {
   "generator": "UIMS (UI Manifest & Contract Extractor)",
   "version": "1.0.0",
-  "generated_at": "2026-11-24T18:19:11.565Z",
+  "generated_at": "2026-11-26T13:05:51.270Z",
   "total_pages": 33,
   "totals": {
-    "buttons": 852,
+    "buttons": 868,
     "modals": 202,
-    "inputs": 417,
+    "inputs": 418,
     "apis": 304
   },
   "pages": [
@@ -119,11 +119,11 @@
       "route": "/faculty/student-records/index.html (Legacy /faculty/registers.html redirects here)",
       "title": "Student Academic Records & Dossiers — VidyaOS",
       "manifest_file": "docs/ui-map/manifests/fac-001.json",
-      "content_hash": "2187076ca136",
+      "content_hash": "206c5780dc91",
       "counts": {
-        "buttons": 36,
+        "buttons": 39,
         "modals": 14,
-        "inputs": 27,
+        "inputs": 28,
         "apis": 6
       }
     },
@@ -275,9 +275,9 @@
       "route": "/faculty/sheets/editor.html",
       "title": "Spreadsheet Studio — Institutional Excel Workspace",
       "manifest_file": "docs/ui-map/manifests/fac-017.json",
-      "content_hash": "174156458f50",
+      "content_hash": "ecaf408f4f9f",
       "counts": {
-        "buttons": 205,
+        "buttons": 218,
         "modals": 26,
         "inputs": 63,
         "apis": 16

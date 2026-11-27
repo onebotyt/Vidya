@@ -4,8 +4,8 @@
   "role": "Faculty",
   "route": "/faculty/sheets/editor.html",
   "source_file": "frontend/faculty/sheets/editor.html",
-  "content_hash": "174156458f50",
-  "last_scanned": "2026-11-24T18:19:11.483Z",
+  "content_hash": "ecaf408f4f9f",
+  "last_scanned": "2026-11-26T13:05:51.186Z",
   "title": "Spreadsheet Studio — Institutional Excel Workspace",
   "purpose": "Dedicated Excel Spreadsheet Studio: Multi-sheet academic evaluation studio (Master Internal Evaluation, Class Tests, Assignment Marksheet, Practical Marksheet with 8-tab ribbon, formula bar, physical grid, color formatting suite, and XLSX/PDF export)",
   "shell": "VidyaOS Semantic Shell (`variables.css`, `header.js`, `sidebar.js`)",
@@ -1077,7 +1077,7 @@
         "title": "Show/Hide Institutional Header Banner"
       },
       {
-        "id": "btn-toggle-signatures-bar",
+        "id": "btn-toggle-signatures-view",
         "label": "Signatures: ON",
         "action": "toggleSignatureBarVisibility()",
         "class": "excel-tool-btn active",
@@ -1237,6 +1237,62 @@
         "title": "Insert Function (fx)"
       },
       {
+        "id": "btn-add-sheet-dropdown",
+        "label": "Add Sheet ▼",
+        "action": "toggleAddSheetMenu(event)",
+        "class": "btn btn-secondary btn-sm",
+        "data_ui": null,
+        "title": "Add a new worksheet to this workbook"
+      },
+      {
+        "id": null,
+        "label": "UT Unit Test Sheet New UT marksheet with Q1–Q4 &amp; roster",
+        "action": "addSheetByOption(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "ASN Assignment Marksheet Coursework A1–A5 &amp; average sheet",
+        "action": "addSheetByOption(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "LAB Practical &amp; Lab Sheet Lab record, creative work, attendance &amp; viva",
+        "action": "addSheetByOption(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "EVAL Master Evaluation Sheet Consolidated internal evaluation ledger",
+        "action": "addSheetByOption(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "+ Blank Custom Sheet Empty spreadsheet tab for custom data",
+        "action": "addSheetByOption(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": "DUP Duplicate Active Sheet Copy current worksheet with all data",
+        "action": "addSheetByOption(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
         "id": "btn-toggle-college-banner",
         "label": "College Banner",
         "action": "toggleInstitutionalBanner()",
@@ -1251,6 +1307,14 @@
         "class": "btn btn-secondary btn-sm active",
         "data_ui": null,
         "title": "Show/Hide Formula Bar"
+      },
+      {
+        "id": "btn-toggle-signatures-bar",
+        "label": "Signatures: ON",
+        "action": "toggleSignatureBarVisibility()",
+        "class": "btn btn-secondary btn-sm active",
+        "data_ui": null,
+        "title": "Show/Hide Institutional Signatures Bar"
       },
       {
         "id": "btn-fit-columns-screen",
@@ -1312,6 +1376,46 @@
         "id": null,
         "label": ".CSV Raw Data Values Comma-separated tabular text (.csv)",
         "action": "exportCurrentSheet(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": "btn-export-all-dropdown",
+        "label": "Export All ▼",
+        "action": "toggleExportAllMenu(event)",
+        "class": "btn btn-secondary btn-sm studio-export-btn",
+        "data_ui": null,
+        "title": "Export all sheets in this workbook"
+      },
+      {
+        "id": null,
+        "label": ".XLSX Full Excel Workbook All sheets as tabs in one .xlsx file",
+        "action": "exportAllWorkbookSheets(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".PDF Combined Printable PDF All sheets in one multi-page A4 PDF",
+        "action": "exportAllWorkbookSheets(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".DOC Combined Word Document All sheets formatted in one .doc file",
+        "action": "exportAllWorkbookSheets(",
+        "class": "export-menu-item",
+        "data_ui": null,
+        "title": null
+      },
+      {
+        "id": null,
+        "label": ".CSV Combined CSV Data All sheets exported into one .csv file",
+        "action": "exportAllWorkbookSheets(",
         "class": "export-menu-item",
         "data_ui": null,
         "title": null
